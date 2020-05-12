@@ -200,7 +200,7 @@ public class PrivilegeSynchronizer implements Runnable {
             HiveObjectRef dbToRefresh = getObjToRefresh(HiveObjectType.DATABASE, dbName, null);
             PrivilegeBag grantDatabaseBag = new PrivilegeBag();
             addGrantPrivilegesToBag(policyProvider, grantDatabaseBag, HiveObjectType.DATABASE,
-                  dbName, null, null, authorizer);
+                dbName, null, null, authorizer);
             hiveClient.refresh_privileges(dbToRefresh, authorizer, grantDatabaseBag);
             LOG.debug("processing " + dbName);
 
@@ -210,7 +210,7 @@ public class PrivilegeSynchronizer implements Runnable {
               HiveObjectRef tableToRefresh = getObjToRefresh(HiveObjectType.TABLE, dbName, tblName);
               PrivilegeBag grantTableBag = new PrivilegeBag();
               addGrantPrivilegesToBag(policyProvider, grantTableBag, HiveObjectType.TABLE,
-                    dbName, tblName, null, authorizer);
+                  dbName, tblName, null, authorizer);
               hiveClient.refresh_privileges(tableToRefresh, authorizer, grantTableBag);
 
               HiveObjectRef tableOfColumnsToRefresh = getObjToRefresh(HiveObjectType.COLUMN, dbName, tblName);
@@ -220,11 +220,11 @@ public class PrivilegeSynchronizer implements Runnable {
                 tbl = hiveClient.getTable(dbName, tblName);
                 for (FieldSchema fs : tbl.getPartitionKeys()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                        dbName, tblName, fs.getName(), authorizer);
+                          dbName, tblName, fs.getName(), authorizer);
                 }
                 for (FieldSchema fs : tbl.getSd().getCols()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                        dbName, tblName, fs.getName(), authorizer);
+                          dbName, tblName, fs.getName(), authorizer);
                 }
                 hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
               } catch (MetaException e) {
