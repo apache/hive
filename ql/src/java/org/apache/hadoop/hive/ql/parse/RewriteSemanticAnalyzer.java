@@ -262,7 +262,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       rewrittenCtx.setHDFSCleanup(true);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
-      ctx.addRewrittenStatementContext(rewrittenCtx);
+      ctx.addSubContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }
