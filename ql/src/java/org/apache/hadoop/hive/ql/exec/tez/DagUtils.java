@@ -1396,6 +1396,9 @@ public class DagUtils {
 
     // TODO: convert this to a predicate too
     hiveConf.stripHiddenConfigurations(conf);
+
+    // Remove hive configs which are used only in HS2 and not needed for execution
+    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname); 
     return conf;
   }
 
