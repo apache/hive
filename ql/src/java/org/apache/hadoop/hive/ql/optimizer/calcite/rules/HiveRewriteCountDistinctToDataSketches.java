@@ -28,6 +28,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
@@ -166,9 +167,9 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       }
 
       Integer ai = aggCall.getArgList().get(0);
+      RexInputRef inputRef = rexBuilder.makeInputRef(aggregate.getInput(), ai);
       RexNode call =
-          rexBuilder.makeCall(SqlStdOperatorTable.PLUS, rexBuilder.makeInputRef(aggCall.getType(), ai),
-              rexBuilder.makeInputRef(aggCall.getType(), ai));
+          rexBuilder.makeCall(SqlStdOperatorTable.PLUS, inputRef, inputRef);
       newProjectsBelow.add(call);
 
       newAggCalls.add(aggCall);
