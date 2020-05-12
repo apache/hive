@@ -94,14 +94,13 @@ public class PrivilegeSynchronizer implements Runnable {
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName, null, null, null), principal,
                     principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                    (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
+                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case TABLE:
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName, tblName, null, null), principal,
-                    principalType,
-                    new PrivilegeGrantInfo(acl.getKey().toString(), (int) (System.currentTimeMillis() / 1000), GRANTOR,
-                        PrincipalType.USER, false), authorizer));
+                    principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
+                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case COLUMN:
 
@@ -120,9 +119,8 @@ public class PrivilegeSynchronizer implements Runnable {
             StringUtils.join(Arrays.asList(ArrayUtils.toObject(columnPrivilegeBits)), " ");
         privBag.addToPrivileges(
             new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
-                principal, principalType,
-                new PrivilegeGrantInfo(columnPrivilegeBitsString, (int) (System.currentTimeMillis() / 1000), GRANTOR,
-                    PrincipalType.USER, false), authorizer));
+                principal, principalType, new PrivilegeGrantInfo(columnPrivilegeBitsString,
+                    (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
 
         columnUpdateFlag = false;
       }
