@@ -63,4 +63,9 @@ public class BootstrapLoadLogger extends ReplLogger {
     (new BootstrapLoadEnd(dbName, numTables, numFunctions, dumpDir, lastReplId))
             .log(LogTag.END);
   }
+
+  @Override
+  public void endLog(long totalCount) {
+    //Do Nothing
+  }
 }

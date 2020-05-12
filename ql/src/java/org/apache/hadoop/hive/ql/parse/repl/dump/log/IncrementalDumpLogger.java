@@ -60,4 +60,9 @@ public class IncrementalDumpLogger extends ReplLogger {
   public void endLog(String lastReplId) {
     (new IncrementalDumpEnd(dbName, eventSeqNo, dumpDir, lastReplId)).log(LogTag.END);
   }
+
+  @Override
+  public void endLog(long totalCount) {
+    //Do Nothing
+  }
 }

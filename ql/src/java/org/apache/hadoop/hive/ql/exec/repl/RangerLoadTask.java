@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.NoOpRangerRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,8 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
   private static final Logger LOG = LoggerFactory.getLogger(RangerLoadTask.class);
 
   private transient RangerRestClient rangerRestClient;
+
+  private transient ReplLogger replLogger;
 
   public RangerLoadTask() {
     super();
@@ -87,6 +91,9 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());
         rangerExportPolicyList = rangerRestClient.readRangerPoliciesFromJsonFile(new Path(work.getCurrentDumpPath(),
                 ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME), conf);
+        replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
+          work.getCurrentDumpPath().toString(), rangerExportPolicyList.getListSize());
+        replLogger.startLog();
         if (rangerExportPolicyList != null && !CollectionUtils.isEmpty(rangerExportPolicyList.getPolicies())) {
           rangerPolicies = rangerExportPolicyList.getPolicies();
         }
@@ -108,6 +115,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
                 conf.getVar(REPL_RANGER_SERVICE_NAME));
         LOG.info("Number of ranger policies imported {}", rangerExportPolicyList.getListSize());
         importCount = rangerExportPolicyList.getListSize();
+        replLogger.endLog(importCount);
         LOG.info("Ranger policy import finished {} ", importCount);
       }
       return 0;

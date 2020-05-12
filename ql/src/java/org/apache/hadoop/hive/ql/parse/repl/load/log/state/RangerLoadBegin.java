@@ -15,30 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl;
+package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * ReplLogger.
+ * RangerLoadBegin.
  *
- * Logger class for Repl Events.
+ * ReplState to define Ranger Load Begin.
  **/
-public abstract class ReplLogger {
+public class RangerLoadBegin extends ReplState {
+  @JsonProperty
+  private String sourceDbName;
 
-  public ReplLogger() {
-  }
+  @JsonProperty
+  private String targetDbName;
 
-  public abstract void startLog();
+  @JsonProperty
+  private Long estimatedNumPolicies;
 
-  public abstract void endLog(String lastReplId);
+  @JsonProperty
+  private Long loadStartTime;
 
-  public abstract void endLog(long totalCount);
-
-  public void tableLog(String tableName, TableType tableType) {
-  }
-  public void functionLog(String funcName){
-  }
-  public void eventLog(String eventId, String eventType) {
+  public RangerLoadBegin(String sourceDbName, String targetDbName, long estimatedNumPolicies) {
+    this.sourceDbName = sourceDbName;
+    this.targetDbName = targetDbName;
+    this.estimatedNumPolicies = estimatedNumPolicies;
+    this.loadStartTime = System.currentTimeMillis() / 1000;
   }
 }

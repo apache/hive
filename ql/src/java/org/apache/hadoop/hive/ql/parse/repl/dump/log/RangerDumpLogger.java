@@ -15,46 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.load.log;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log;
 
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadBegin;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadEnd;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadEvent;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.RangerDumpBegin;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.RangerDumpEnd;
 
-public class IncrementalLoadLogger extends ReplLogger {
+/**
+ * RangerDumpLogger.
+ *
+ * Repllogger for Ranger Dump.
+ **/
+public class RangerDumpLogger extends ReplLogger {
   private String dbName;
   private String dumpDir;
-  private long numEvents;
-  private long eventSeqNo;
 
-  public IncrementalLoadLogger(String dbName, String dumpDir, int numEvents) {
+  public RangerDumpLogger(String dbName, String dumpDir) {
     this.dbName = dbName;
     this.dumpDir = dumpDir;
-    this.numEvents = numEvents;
-    this.eventSeqNo = 0;
   }
 
   @Override
   public void startLog() {
-    (new IncrementalLoadBegin(dbName, dumpDir, numEvents)).log(LogTag.START);
-  }
-
-  @Override
-  public void eventLog(String eventId, String eventType) {
-    eventSeqNo++;
-    (new IncrementalLoadEvent(dbName, eventId, eventType, eventSeqNo, numEvents))
-            .log(LogTag.EVENT_LOAD);
+    (new RangerDumpBegin(dbName)).log(LogTag.RANGER_DUMP_START);
   }
 
   @Override
   public void endLog(String lastReplId) {
-    (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.END);
+    //Do nothing for Ranger
   }
 
   @Override
-  public void endLog(long totalCount) {
-    //Do Nothing
+  public void endLog(long count) {
+    (new RangerDumpEnd(dbName, count, dumpDir))
+            .log(LogTag.RANGER_DUMP_END);
   }
 }

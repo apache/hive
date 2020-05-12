@@ -15,30 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * ReplLogger.
+ * RangerDumpEnd.
  *
- * Logger class for Repl Events.
+ * ReplState to define Ranger Dump End.
  **/
-public abstract class ReplLogger {
+public class RangerDumpEnd extends ReplState {
+  @JsonProperty
+  private String dbName;
 
-  public ReplLogger() {
-  }
+  @JsonProperty
+  private Long actualNumPolicies;
 
-  public abstract void startLog();
+  @JsonProperty
+  private Long dumpEndTime;
 
-  public abstract void endLog(String lastReplId);
+  @JsonProperty
+  private String dumpDir;
 
-  public abstract void endLog(long totalCount);
-
-  public void tableLog(String tableName, TableType tableType) {
-  }
-  public void functionLog(String funcName){
-  }
-  public void eventLog(String eventId, String eventType) {
+  public RangerDumpEnd(String dbName,
+                       long actualNumPolicies,
+                       String dumpDir) {
+    this.dbName = dbName;
+    this.actualNumPolicies = actualNumPolicies;
+    this.dumpEndTime = System.currentTimeMillis() / 1000;
+    this.dumpDir = dumpDir;
   }
 }
