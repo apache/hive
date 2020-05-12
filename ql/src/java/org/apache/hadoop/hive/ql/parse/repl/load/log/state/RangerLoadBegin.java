@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -26,15 +27,19 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * ReplState to define Ranger Load Begin.
  **/
 public class RangerLoadBegin extends ReplState {
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private String sourceDbName;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private String targetDbName;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private Long estimatedNumPolicies;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private Long loadStartTime;
 

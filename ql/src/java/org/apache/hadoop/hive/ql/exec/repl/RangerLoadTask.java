@@ -91,8 +91,9 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());
         rangerExportPolicyList = rangerRestClient.readRangerPoliciesFromJsonFile(new Path(work.getCurrentDumpPath(),
                 ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME), conf);
+        int expectedPolicyCount = rangerExportPolicyList != null ? rangerExportPolicyList.getListSize() : 0;
         replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
-          work.getCurrentDumpPath().toString(), rangerExportPolicyList.getListSize());
+          work.getCurrentDumpPath().toString(), expectedPolicyCount);
         replLogger.startLog();
         if (rangerExportPolicyList != null && !CollectionUtils.isEmpty(rangerExportPolicyList.getPolicies())) {
           rangerPolicies = rangerExportPolicyList.getPolicies();

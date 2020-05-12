@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -26,15 +27,19 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * ReplState to define Ranger Dump End.
  **/
 public class RangerDumpEnd extends ReplState {
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private String dbName;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private Long actualNumPolicies;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private Long dumpEndTime;
 
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
   private String dumpDir;
 

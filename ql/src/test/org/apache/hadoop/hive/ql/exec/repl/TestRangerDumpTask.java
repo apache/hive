@@ -33,21 +33,16 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
  * Unit test class for testing Ranger Dump.
@@ -141,14 +136,14 @@ public class TestRangerDumpTask {
     ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
     ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
     Mockito.verify(logger,
-      Mockito.times(2)).info(replStateCaptor.capture(),
-      eventCaptor.capture(), eventDetailsCaptor.capture());
+        Mockito.times(2)).info(replStateCaptor.capture(),
+        eventCaptor.capture(), eventDetailsCaptor.capture());
     Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
     Assert.assertEquals("RANGER_DUMP_START", eventCaptor.getAllValues().get(0));
     Assert.assertEquals("RANGER_DUMP_END", eventCaptor.getAllValues().get(1));
     Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
-      .toString().contains("{\"dbName\":\"testdb\",\"dumpStartTime"));
+        .toString().contains("{\"dbName\":\"testdb\",\"dumpStartTime"));
     Assert.assertTrue(eventDetailsCaptor
-      .getAllValues().get(1).toString().contains("{\"dbName\":\"testdb\",\"actualNumPolicies\":0,\"dumpEndTime\""));
+        .getAllValues().get(1).toString().contains("{\"dbName\":\"testdb\",\"actualNumPolicies\":0,\"dumpEndTime\""));
   }
 }
