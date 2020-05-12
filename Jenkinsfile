@@ -109,7 +109,7 @@ podTemplate(
     containerTemplate(name: 'maven', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1500m',
-        resourceLimitCpu: '4000m',
+        resourceLimitCpu: '3000m',
         resourceRequestMemory: '6750Mi',
         resourceLimitMemory: '10000Mi'
     ),
