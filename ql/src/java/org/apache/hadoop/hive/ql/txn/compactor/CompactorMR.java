@@ -481,6 +481,13 @@ public class CompactorMR {
       } else {
         dataOutput.writeInt(base.toString().length());
         dataOutput.writeBytes(base.toString());
+        String attemptId = deltasToAttemptId.get(base.toString());
+        if (attemptId == null) {
+          dataOutput.writeInt(0);
+        } else {
+          dataOutput.writeInt(attemptId.length());
+          dataOutput.writeBytes(attemptId.toString());
+        }
       }
       dataOutput.writeInt(deltas.length);
       for (int i = 0; i < deltas.length; i++) {
@@ -518,10 +525,17 @@ public class CompactorMR {
       LOG.debug("Read bucket number of " + bucketNum);
       len = dataInput.readInt();
       LOG.debug("Read base path length of " + len);
+      String baseAttemptId = null;
       if (len > 0) {
         buf = new byte[len];
         dataInput.readFully(buf);
         base = new Path(new String(buf));
+        len = dataInput.readInt();
+        if (len > 0) {
+          buf = new byte[len];
+          dataInput.readFully(buf);
+          baseAttemptId = new String(buf);
+        }
       }
       numElements = dataInput.readInt();
       deltas = new Path[numElements];
@@ -539,6 +553,9 @@ public class CompactorMR {
           attemptId = new String(buf);
         }
         deltasToAttemptId.put(deltas[i].toString(), attemptId);
+      }
+      if (baseAttemptId != null) {
+        deltasToAttemptId.put(base.toString(), baseAttemptId);
       }
     }
 
