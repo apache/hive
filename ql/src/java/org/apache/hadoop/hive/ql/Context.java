@@ -121,7 +121,7 @@ public class Context {
   // Some statements, e.g., UPDATE, DELETE, or MERGE, get rewritten into different
   // subqueries that create new contexts. We keep them here so we can clean them
   // up when we are done.
-  private final Set<Context> rewrittenStatementContexts;
+  private final Set<Context> subContexts;
 
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
@@ -325,7 +325,7 @@ public class Context {
   private Context(Configuration conf, String executionId)  {
     this.conf = conf;
     this.executionId = executionId;
-    this.rewrittenStatementContexts = new HashSet<>();
+    this.subContexts = new HashSet<>();
 
     // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
@@ -343,7 +343,7 @@ public class Context {
     // hence it needs to be used carefully. In particular, following objects
     // are ignored:
     // opContext, pathToCS, cboInfo, cboSucceeded, tokenRewriteStream, viewsTokenRewriteStreams,
-    // rewrittenStatementContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
+    // subContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
     this.isHDFSCleanup = ctx.isHDFSCleanup;
     this.resFile = ctx.resFile;
     this.resDir = ctx.resDir;
@@ -378,7 +378,7 @@ public class Context {
     this.statsSource = ctx.statsSource;
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
-    this.rewrittenStatementContexts = new HashSet<>();
+    this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
   }
 
@@ -857,7 +857,7 @@ public class Context {
 
   public void clear(boolean deleteResultDir) throws IOException {
     // First clear the other contexts created by this query
-    for (Context subContext : rewrittenStatementContexts) {
+    for (Context subContext : subContexts) {
       subContext.clear();
     }
     // Then clear this context
@@ -1057,8 +1057,8 @@ public class Context {
     }
   }
 
-  public void addRewrittenStatementContext(Context context) {
-    rewrittenStatementContexts.add(context);
+  public void addSubContext(Context context) {
+    subContexts.add(context);
   }
 
   public void addCS(String path, ContentSummary cs) {
@@ -1132,7 +1132,7 @@ public class Context {
       return this.calcitePlan;
     }
 
-    for (Context context : rewrittenStatementContexts) {
+    for (Context context : subContexts) {
       if (context.calcitePlan != null) {
         return context.calcitePlan;
       }
