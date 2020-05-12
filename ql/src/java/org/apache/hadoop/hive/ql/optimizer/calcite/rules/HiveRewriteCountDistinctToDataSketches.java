@@ -153,7 +153,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         return;
       }
       if (isPercentileCont(aggCall)) {
-        rewriteCountDistinct2(aggCall);
+        rewritePercentileCont(aggCall);
         return;
       }
       appendAggCall(aggCall);
@@ -211,7 +211,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjects.add(projRex);
     }
 
-    private void rewriteCountDistinct2(AggregateCall aggCall) {
+    private void rewritePercentileCont(AggregateCall aggCall) {
 
       RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
 
