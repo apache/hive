@@ -567,7 +567,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RelNode newPlan = logicalPlan();
 
           if (isImpalaPlan) {
+            // 2. If we are creating a view, populate the definition
+            if (cboCtx.type == PreCboCtx.Type.VIEW) {
+              saveViewDefinition();
+            }
+            // 3. Create Impala operator
             sinkOp = getImpalaSinkOperator(newPlan);
+            // 4. Generate explain plan
             if (this.ctx.isExplainPlan()) {
               doExplainPlan(newPlan);
             }

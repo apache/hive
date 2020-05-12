@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.ExecutionEngine;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
@@ -12842,30 +12843,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.setResDir(null);
         ctx.setResFile(null);
 
-        try {
-          PlanUtils.addInputsForView(pCtx);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-
-        // Generate lineage info for create view statements
-        // if LineageLogger hook is configured.
-        // Add the transformation that computes the lineage information.
-        Set<String> postExecHooks = Sets.newHashSet(Splitter.on(",").trimResults()
-            .omitEmptyStrings()
-            .split(Strings.nullToEmpty(HiveConf.getVar(conf, HiveConf.ConfVars.POSTEXECHOOKS))));
-        if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
-            || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
-            || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
-          List<Transform> transformations = new ArrayList<Transform>();
-          transformations.add(new HiveOpConverterPostProc());
-          transformations.add(new Generator(postExecHooks));
-          for (Transform t : transformations) {
-            pCtx = t.transform(pCtx);
+        if (conf.getExecutionEngine() != ExecutionEngine.IMPALA) {
+          try {
+            PlanUtils.addInputsForView(pCtx);
+          } catch (HiveException e) {
+            throw new SemanticException(e);
           }
-          // we just use view name as location.
-          queryState.getLineageState()
-              .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
+
+          // Generate lineage info for create view statements
+          // if LineageLogger hook is configured.
+          // Add the transformation that computes the lineage information.
+          Set<String> postExecHooks = Sets.newHashSet(Splitter.on(",").trimResults()
+              .omitEmptyStrings()
+              .split(Strings.nullToEmpty(HiveConf.getVar(conf, HiveConf.ConfVars.POSTEXECHOOKS))));
+          if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
+              || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
+              || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
+            List<Transform> transformations = new ArrayList<Transform>();
+            transformations.add(new HiveOpConverterPostProc());
+            transformations.add(new Generator(postExecHooks));
+            for (Transform t : transformations) {
+              pCtx = t.transform(pCtx);
+            }
+            // we just use view name as location.
+            queryState.getLineageState()
+                .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
+          }
         }
         return;
       }
@@ -12877,7 +12880,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
     }
 
-    if (impalaHelper == null) {
+    if (conf.getExecutionEngine() != ExecutionEngine.IMPALA) {
       // 7. Perform Logical optimization
       if (LOG.isDebugEnabled()) {
         LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
