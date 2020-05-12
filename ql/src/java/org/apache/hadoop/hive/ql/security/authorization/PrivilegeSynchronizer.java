@@ -154,8 +154,8 @@ public class PrivilegeSynchronizer implements Runnable {
 
     switch (type) {
     case DATABASE:
-      objectAcls = policyProvider.
-          getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
+      objectAcls = policyProvider
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
       break;
 
     case TABLE:
@@ -220,11 +220,11 @@ public class PrivilegeSynchronizer implements Runnable {
                 tbl = hiveClient.getTable(dbName, tblName);
                 for (FieldSchema fs : tbl.getPartitionKeys()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                      dbName, tblName, fs.getName(), authorizer);
+                        dbName, tblName, fs.getName(), authorizer);
                 }
                 for (FieldSchema fs : tbl.getSd().getCols()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                      dbName, tblName, fs.getName(), authorizer);
+                        dbName, tblName, fs.getName(), authorizer);
                 }
                 hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
               } catch (MetaException e) {
