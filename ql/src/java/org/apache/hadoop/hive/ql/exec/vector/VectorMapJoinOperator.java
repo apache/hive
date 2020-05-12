@@ -238,12 +238,12 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   }
 
   @Override
-  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row)
+  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row, int partitionId)
       throws HiveException {
     // Extract the actual row from row batch
     VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
     Object[] actualRow = getRowObject(inBatch, batchIndex);
-    super.spillBigTableRow(hybridHtContainer, actualRow);
+    super.spillBigTableRow(hybridHtContainer, actualRow, partitionId);
   }
 
   // Code borrowed from VectorReduceSinkOperator

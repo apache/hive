@@ -153,5 +153,58 @@ JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz';
 
+-- 3-way mapjoin with left outer join (1 big table, 2 small tables)
+SELECT 1;
+
+set hive.mapjoin.hybridgrace.hashtable=false;
+
+EXPLAIN
+select *
+from
+(
+select key from src1 group by key
+) x
+left join src2 z on x.key = z.key
+join
+(
+select key from srcpart y group by key
+) y on y.key = x.key;
+
+select *
+from
+(
+select key from src1 group by key
+) x
+left join src2 z on x.key = z.key
+join
+(
+select key from srcpart y group by key
+) y on y.key = x.key;
+
+set hive.mapjoin.hybridgrace.hashtable=true;
+
+EXPLAIN
+select *
+from
+(
+select key from src1 group by key
+) x
+left join src2 z on x.key = z.key
+join
+(
+select key from srcpart y group by key
+) y on y.key = x.key;
+
+select *
+from
+(
+select key from src1 group by key
+) x
+left join src2 z on x.key = z.key
+join
+(
+select key from srcpart y group by key
+) y on y.key = x.key;
+
 
 reset hive.cbo.enable;

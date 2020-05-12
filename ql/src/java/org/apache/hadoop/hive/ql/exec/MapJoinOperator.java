@@ -212,6 +212,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         // we can't use the cached table because it has spilled.
 
         loadHashTable(getExecContext(), MapredContext.get());
+        for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+          if (pos != conf.getPosBigTable()) {
+            firstSmallTable = (HybridHashTableContainer) mapJoinTables[pos];
+            break;
+          }
+        }
       } else {
         if (LOG.isDebugEnabled()) {
           String s = "Using tables from cache: [";
@@ -439,7 +445,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           // postpone the join processing for this pair by also spilling this big table row.
           if (joinResult == JoinUtil.JoinResult.SPILL &&
               !bigTableRowSpilled) {  // For n-way join, only spill big table rows once
-            spillBigTableRow(mapJoinTables[pos], row);
+            spillBigTableRow(firstSmallTable, row, ((HybridHashTableContainer) mapJoinTables[pos]).getToSpillPartitionId());
             bigTableRowSpilled = true;
           }
         }
@@ -471,9 +477,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
    * @param hybridHtContainer Hybrid hashtable container
    * @param row big table row
    */
-  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row) throws HiveException {
+  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row, int partitionId) throws HiveException {
     HybridHashTableContainer ht = (HybridHashTableContainer) hybridHtContainer;
-    int partitionId = ht.getToSpillPartitionId();
     HashPartition hp = ht.getHashPartitions()[partitionId];
     ObjectContainer bigTable = hp.getMatchfileObjContainer();
     bigTable.add(row);
