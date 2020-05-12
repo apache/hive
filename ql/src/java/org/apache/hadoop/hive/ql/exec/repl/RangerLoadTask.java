@@ -104,9 +104,13 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         LOG.info("There are no ranger policies to import");
         rangerPolicies = new ArrayList<>();
       }
-      List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPolicies, work.getSourceDbName(),
-              work.getTargetDbName());
-      long importCount = 0;
+      List<RangerPolicy> rangerPoliciesWithDenyPolicy = rangerRestClient.addDenyPolicies(rangerPolicies,
+          conf.getVar(REPL_RANGER_SERVICE_NAME), work.getSourceDbName(), work.getTargetDbName());
+
+      List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPoliciesWithDenyPolicy,
+          work.getSourceDbName(), work.getTargetDbName());
+
+      int importCount = 0;
       if (!CollectionUtils.isEmpty(updatedRangerPolicies)) {
         if (rangerExportPolicyList == null) {
           rangerExportPolicyList = new RangerExportPolicyList();
