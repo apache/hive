@@ -167,13 +167,12 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjects.add(projRex);
     }
 
-    abstract class X {
+    abstract class RewriteProcedure {
       abstract boolean isApplicable(AggregateCall aggCall);
-
       abstract void rewrite(AggregateCall aggCall);
     }
 
-    class CountDistinct extends X {
+    class CountDistinctRewrite extends RewriteProcedure {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
@@ -185,11 +184,9 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         rewriteCountDistinct(aggCall);
       }
 
-
-
     }
 
-    class PercentileCont extends X {
+    class PercentileContRewrite extends RewriteProcedure {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
