@@ -181,7 +181,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       abstract boolean isApplicable(AggregateCall aggCall);
       abstract void rewrite(AggregateCall aggCall);
 
-      private SqlOperator getSqlOperator(String fnName) {
+      protected SqlOperator getSqlOperator(String fnName) {
         UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
         if (!fn.getCalciteFunction().isPresent()) {
           throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
@@ -199,12 +199,40 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
-        return isSimpleCountDistinct(aggCall);
+        return aggCall.isDistinct() && aggCall.getArgList().size() == 1
+        && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
       }
 
       @Override
       void rewrite(AggregateCall aggCall) {
-        rewriteCountDistinct(aggCall);
+        RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
+
+        Integer argIndex = aggCall.getArgList().get(0);
+        RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+        newProjectsBelow.add(call);
+
+        ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
+
+        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        boolean distinct = false;
+        boolean approximate = true;
+        boolean ignoreNulls = true;
+        List<Integer> argList = newArgList;
+        int filterArg = aggCall.filterArg;
+        RelCollation collation = aggCall.getCollation();
+        RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+        String name = aggFunction.getName();
+
+        AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+            collation, type, name);
+
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
+        RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+        projRex = rexBuilder.makeCast(origType, projRex);
+
+        newAggCalls.add(newAgg);
+        newProjects.add(projRex);
       }
 
     }
@@ -217,100 +245,52 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
-        return isPercentileCont(aggCall);
+        // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
+        return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
+            && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
       }
 
       @Override
       void rewrite(AggregateCall aggCall) {
-        rewritePercentileCont(aggCall) ;
+        RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
+
+        Integer argIndex = aggCall.getArgList().get(1);
+        RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+
+        RelDataType doubleType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DOUBLE);
+        RelDataType floatType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT);
+        call = rexBuilder.makeCast(floatType, call);
+        newProjectsBelow.add(call);
+
+        ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
+
+        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        boolean distinct = false;
+        boolean approximate = true;
+        boolean ignoreNulls = true;
+        List<Integer> argList = newArgList;
+        int filterArg = aggCall.filterArg;
+        RelCollation collation = aggCall.getCollation();
+        RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+        String name = aggFunction.getName();
+
+        AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+            collation, type, name);
+
+        Integer origFractionIdx = aggCall.getArgList().get(0);
+        RexNode fraction = getProject(aggregate.getInput()).getChildExps().get(origFractionIdx);
+        fraction = rexBuilder.makeCast(floatType, fraction);
+
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
+        RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, fraction));
+        projRex = rexBuilder.makeCast(origType, projRex);
+
+        newAggCalls.add(newAgg);
+        newProjects.add(projRex);
 
       }
 
-    }
-
-    @Deprecated
-    private boolean isSimpleCountDistinct(AggregateCall aggCall) {
-      return aggCall.isDistinct() && aggCall.getArgList().size() == 1
-          && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
-    }
-
-    @Deprecated
-    private boolean isPercentileCont(AggregateCall aggCall) {
-      // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
-      return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
-          && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
-    }
-@Deprecated
-    private void rewriteCountDistinct(AggregateCall aggCall) {
-
-      RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
-
-      Integer argIndex = aggCall.getArgList().get(0);
-      RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
-      newProjectsBelow.add(call);
-
-      ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
-
-      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass, DataSketchesFunctions.DATA_TO_SKETCH);
-      boolean distinct = false;
-      boolean approximate = true;
-      boolean ignoreNulls = true;
-      List<Integer> argList = newArgList;
-      int filterArg = aggCall.filterArg;
-      RelCollation collation = aggCall.getCollation();
-      RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-      String name = aggFunction.getName();
-
-      AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-          collation, type, name);
-
-      SqlOperator projectOperator = getSqlOperator(sketchClass, DataSketchesFunctions.SKETCH_TO_ESTIMATE);
-      RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
-      projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
-      projRex = rexBuilder.makeCast(origType, projRex);
-
-      newAggCalls.add(newAgg);
-      newProjects.add(projRex);
-    }
-
-    private void rewritePercentileCont(AggregateCall aggCall) {
-
-      RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
-
-      Integer argIndex = aggCall.getArgList().get(1);
-      RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
-
-      RelDataType doubleType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DOUBLE);
-      RelDataType floatType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT);
-      call = rexBuilder.makeCast(floatType, call);
-      newProjectsBelow.add(call);
-
-      ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
-
-      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass2, DataSketchesFunctions.DATA_TO_SKETCH);
-      boolean distinct = false;
-      boolean approximate = true;
-      boolean ignoreNulls = true;
-      List<Integer> argList = newArgList;
-      int filterArg = aggCall.filterArg;
-      RelCollation collation = aggCall.getCollation();
-      RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-      String name = aggFunction.getName();
-
-      AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-          collation, type, name);
-
-      Integer origFractionIdx = aggCall.getArgList().get(0);
-      RexNode fraction = getProject(aggregate.getInput()).getChildExps().get(origFractionIdx);
-      fraction = rexBuilder.makeCast(floatType, fraction);
-
-      SqlOperator projectOperator = getSqlOperator(sketchClass2, DataSketchesFunctions.GET_QUANTILE);
-      RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
-      projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, fraction));
-      projRex = rexBuilder.makeCast(origType, projRex);
-
-      newAggCalls.add(newAgg);
-      newProjects.add(projRex);
     }
 
     private Project getProject(RelNode input) {
@@ -322,14 +302,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         return (Project) hepRelVertex.getCurrentRel();
       }
       throw new RuntimeException("unexpected");
-    }
-
-    private SqlOperator getSqlOperator(String sketchClass, String fnName) {
-      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
-      if (!fn.getCalciteFunction().isPresent()) {
-        throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
-      }
-      return fn.getCalciteFunction().get();
     }
   }
 }
