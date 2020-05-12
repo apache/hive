@@ -194,13 +194,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       List<Integer> argList = newArgList;
       int filterArg = aggCall.filterArg;
       RelCollation collation = aggCall.getCollation();
-      int groupCount = aggregate.getGroupCount();
-      RelNode input = aggregate.getInput();
       RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
       String name = aggFunction.getName();
 
       AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-          collation, groupCount, input, type, name);
+          collation, type, name);
 
       SqlOperator projectOperator = getSqlOperator(sketchClass, DataSketchesFunctions.SKETCH_TO_ESTIMATE);
       RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
