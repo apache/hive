@@ -158,6 +158,7 @@ public class ColumnStatsAutoGatherContext {
       throws IOException, ParseException, SemanticException {
     // 1. initialization
     Context ctx = new Context(conf);
+    origCtx.addSubContext(ctx);
     ctx.setOpContext(origCtx.getOpContext());
     ctx.setExplainConfig(origCtx.getExplainConfig());
 

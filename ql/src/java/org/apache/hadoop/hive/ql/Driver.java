@@ -681,7 +681,7 @@ public class Driver implements IDriver {
           // and then, we acquire locks. If snapshot is still valid, we continue as usual.
           // But if snapshot is not valid, we recompile the query.
           driverContext.setRetrial(true);
-          driverContext.getBackupContext().addRewrittenStatementContext(context);
+          driverContext.getBackupContext().addSubContext(context);
           driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
           context = driverContext.getBackupContext();
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,

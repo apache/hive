@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -409,7 +408,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       analyzeRewrite.setColName(colNames);
       analyzeRewrite.setColType(colType);
       qbp.setAnalyzeRewrite(analyzeRewrite);
-      origCtx.addRewrittenStatementContext(ctx);
+      origCtx.addSubContext(ctx);
       initCtx(ctx);
       ctx.setExplainConfig(origCtx.getExplainConfig());
       LOG.info("Invoking analyze on rewritten query");

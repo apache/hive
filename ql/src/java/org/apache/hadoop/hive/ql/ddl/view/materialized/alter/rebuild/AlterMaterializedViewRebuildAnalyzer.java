@@ -95,7 +95,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       String rewrittenInsertStatement = String.format(REWRITTEN_INSERT_STATEMENT,
           tableName.getEscapedNotEmptyDbTable(), viewText);
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
-      this.ctx.addRewrittenStatementContext(ctx);
+      this.ctx.addSubContext(ctx);
 
       if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
         // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a

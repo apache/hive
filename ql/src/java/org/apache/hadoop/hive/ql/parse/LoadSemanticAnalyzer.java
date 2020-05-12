@@ -531,7 +531,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       rewrittenCtx = new Context(conf);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
-      ctx.addRewrittenStatementContext(rewrittenCtx);
+      ctx.addSubContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.LOAD_DATA_LAUNCH_JOB_IO_ERROR.getMsg());
     }
