@@ -1744,6 +1744,45 @@ public class TestCompactor {
 
   }
 
+  @Test
+  public void testCompactionDataLoadedWithInsertOverwrite() throws Exception {
+    String externalTableName = "test_comp_txt";
+    String tableName = "test_comp";
+    executeStatementOnDriver("DROP TABLE IF EXISTS " + externalTableName, driver);
+    executeStatementOnDriver("DROP TABLE IF EXISTS " + tableName, driver);
+    executeStatementOnDriver("CREATE EXTERNAL TABLE " + externalTableName + "(a int, b int, c int) STORED AS TEXTFILE",
+        driver);
+    executeStatementOnDriver(
+        "CREATE TABLE " + tableName + "(a int, b int, c int) STORED AS ORC TBLPROPERTIES('transactional'='true')",
+        driver);
+
+    executeStatementOnDriver("INSERT INTO " + externalTableName + " values (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4)",
+        driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tableName + " SELECT * FROM test_comp_txt", driver);
+
+    executeStatementOnDriver("UPDATE " + tableName + " SET b=55, c=66 WHERE a=2", driver);
+    executeStatementOnDriver("DELETE FROM " + tableName + " WHERE a=4", driver);
+    executeStatementOnDriver("UPDATE " + tableName + " SET b=77 WHERE a=1", driver);
+
+    executeStatementOnDriver("SELECT * FROM " + tableName + " ORDER BY a", driver);
+    ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(3, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\t77\t1", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\t3\t3", valuesReadFromHiveDriver.get(2));
+
+    runMajorCompaction("default", tableName);
+
+    // Validate after compaction.
+    executeStatementOnDriver("SELECT * FROM " + tableName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(3, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\t77\t1", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
+  }
+
   private List<ShowCompactResponseElement> getCompactionList() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
     runInitiator(conf);
@@ -1804,7 +1843,6 @@ public class TestCompactor {
       partNames.add(compact.getPartitionname());
     }
   }
-
 
   private void processStreamingAPI(String dbName, String tblName, boolean newStreamingAPI)
       throws StreamingException, ClassNotFoundException,
