@@ -123,15 +123,15 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjectsBelow = new ArrayList<RexNode>();
       rexBuilder = aggregate.getCluster().getRexBuilder();
 
-      // add non-aggregated fields - as identity projections
-      addGroupFields();
+      // add identity projections
+      addProjectedFields();
 
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
         processAggCall(aggCall);
       }
     }
 
-    private void addGroupFields() {
+    private void addProjectedFields() {
       for (int i = 0; i < aggregate.getGroupCount(); i++) {
         newProjects.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
       }
@@ -168,6 +168,41 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void rewriteCountDistinct(AggregateCall aggCall) {
+
+      RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
+
+      Integer ai = aggCall.getArgList().get(0);
+      RexInputRef inputRef = rexBuilder.makeInputRef(aggregate.getInput(), ai);
+      RexNode call = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, inputRef, inputRef);
+      newProjectsBelow.add(call);
+
+      ArrayList<Integer> ii = Lists.newArrayList(newProjectsBelow.size() - 1);
+
+      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+      boolean distinct = false;
+      boolean approximate = true;
+      boolean ignoreNulls = aggCall.ignoreNulls();
+      List<Integer> argList = ii;//aggCall.getArgList();
+      int filterArg = aggCall.filterArg;
+      RelCollation collation = aggCall.getCollation();
+      int groupCount = aggregate.getGroupCount();
+      RelNode input = aggregate.getInput();
+      RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+      String name = aggFunction.getName();
+
+      AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+          collation, groupCount, input, type, name);
+
+      SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
+      RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
+      projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+      projRex = rexBuilder.makeCast(origType, projRex);
+
+      newAggCalls.add(newAgg);
+      newProjects.add(projRex);
+    }
+
+    private void rewriteC(AggregateCall aggCall) {
 
       RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
 
