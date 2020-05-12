@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 public class BooleanColumnStatsMerger extends ColumnStatsMerger {
 
   @Override
-  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     BooleanColumnStatsData aggregateData = aggregateColStats.getStatsData().getBooleanStats();
     BooleanColumnStatsData newData = newColStats.getStatsData().getBooleanStats();
     aggregateData.setNumTrues(aggregateData.getNumTrues() + newData.getNumTrues());

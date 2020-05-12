@@ -24,11 +24,16 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 
+import com.google.common.base.MoreObjects;
+
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
+
   @Override
-  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DecimalColumnStatsDataInspector aggregateData = decimalInspectorFromStats(aggregateColStats);
     DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(newColStats);
 
@@ -42,7 +47,7 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
     } else {
       NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
       NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      long ndv = -1;
+      final long ndv;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
@@ -50,8 +55,8 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
-          + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
+      log.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
+          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }
 
@@ -59,36 +64,32 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
   }
 
   public void setLowValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    final Decimal aggregateLowValue = aggregateData.getLowValue();
+    final Decimal newLowValue = newData.getLowValue();
+
+    final Decimal mergedLowValue;
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
-    }
-
-    Decimal aggregateLowValue = aggregateData.getLowValue();
-    Decimal newLowValue = newData.getLowValue();
-
-    Decimal mergedLowValue = null;
-    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
-      mergedLowValue = aggregateLowValue.compareTo(newLowValue) > 0 ? newLowValue : aggregateLowValue;
+    } else if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      mergedLowValue = ObjectUtils.min(newLowValue, aggregateLowValue);
     } else {
-      mergedLowValue = aggregateLowValue == null ? newLowValue : aggregateLowValue;
+      mergedLowValue = MoreObjects.firstNonNull(aggregateLowValue, newLowValue);
     }
 
     aggregateData.setLowValue(mergedLowValue);
   }
 
   public void setHighValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    final Decimal aggregateHighValue = aggregateData.getHighValue();
+    final Decimal newHighValue = newData.getHighValue();
+
+    final Decimal mergedHighValue;
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
-    }
-
-    Decimal aggregateHighValue = aggregateData.getHighValue();
-    Decimal newHighValue = newData.getHighValue();
-
-    Decimal mergedHighValue = null;
-    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
-      mergedHighValue = aggregateHighValue.compareTo(newHighValue) > 0 ? aggregateHighValue : newHighValue;
+    } else if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      mergedHighValue = ObjectUtils.max(aggregateHighValue, newHighValue);
     } else {
-      mergedHighValue = aggregateHighValue == null ? newHighValue : aggregateHighValue;
+      mergedHighValue = MoreObjects.firstNonNull(aggregateHighValue, newHighValue);
     }
 
     aggregateData.setHighValue(mergedHighValue);
