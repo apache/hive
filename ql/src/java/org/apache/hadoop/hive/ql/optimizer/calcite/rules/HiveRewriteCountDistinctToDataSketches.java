@@ -110,10 +110,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   // NOTE: methods in this class are not re-entrant; drop-to-frame to constructor during debugging
   class VBuilder {
 
+    private final RexBuilder rexBuilder;
+
     private Aggregate aggregate;
     private List<AggregateCall> newAggCalls;
     private List<RexNode> newProjects;
-    private final RexBuilder rexBuilder;
     private List<RexNode> newProjectsBelow;
 
     public VBuilder(Aggregate aggregate) {
@@ -166,17 +167,56 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjects.add(projRex);
     }
 
+    abstract class X {
+      abstract boolean isApplicable(AggregateCall aggCall);
+
+      abstract void rewrite(AggregateCall aggCall);
+    }
+
+    class CountDistinct extends X {
+
+      @Override
+      boolean isApplicable(AggregateCall aggCall) {
+        return isSimpleCountDistinct(aggCall);
+      }
+
+      @Override
+      void rewrite(AggregateCall aggCall) {
+        rewriteCountDistinct(aggCall);
+      }
+
+
+
+    }
+
+    class PercentileCont extends X {
+
+      @Override
+      boolean isApplicable(AggregateCall aggCall) {
+        return isPercentileCont(aggCall);
+      }
+
+      @Override
+      void rewrite(AggregateCall aggCall) {
+        rewritePercentileCont(aggCall) ;
+
+      }
+
+    }
+
+    @Deprecated
     private boolean isSimpleCountDistinct(AggregateCall aggCall) {
       return aggCall.isDistinct() && aggCall.getArgList().size() == 1
           && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
     }
 
+    @Deprecated
     private boolean isPercentileCont(AggregateCall aggCall) {
       // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
       return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
           && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
     }
-
+@Deprecated
     private void rewriteCountDistinct(AggregateCall aggCall) {
 
       RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
