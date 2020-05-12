@@ -116,6 +116,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     private List<AggregateCall> newAggCalls;
     private List<RexNode> newProjects;
     private List<RexNode> newProjectsBelow;
+    private List<RewriteProcedure> rewrites;
 
     public VBuilder(Aggregate aggregate) {
       this.aggregate = aggregate;
@@ -123,9 +124,13 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjects = new ArrayList<RexNode>();
       newProjectsBelow = new ArrayList<RexNode>();
       rexBuilder = aggregate.getCluster().getRexBuilder();
+      rewrites = new ArrayList<RewriteProcedure>();
 
       // add identity projections
       addProjectedFields();
+
+      rewrites.add(new CountDistinctRewrite(sketchClass));
+      rewrites.add(new PercentileContRewrite(sketchClass2));
 
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
         processAggCall(aggCall);
@@ -149,13 +154,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void processAggCall(AggregateCall aggCall) {
-      if (isSimpleCountDistinct(aggCall)) {
-        rewriteCountDistinct(aggCall);
-        return;
-      }
-      if (isPercentileCont(aggCall)) {
-        rewritePercentileCont(aggCall);
-        return;
+      for (RewriteProcedure rewrite : rewrites) {
+        if (rewrite.isApplicable(aggCall)) {
+          rewrite.rewrite(aggCall);
+          return;
+        }
       }
       appendAggCall(aggCall);
     }
@@ -168,11 +171,31 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     abstract class RewriteProcedure {
+
+      final String sketchClass;
+
+      public RewriteProcedure(String sketchClass) {
+        this.sketchClass = sketchClass;
+      }
+
       abstract boolean isApplicable(AggregateCall aggCall);
       abstract void rewrite(AggregateCall aggCall);
+
+      private SqlOperator getSqlOperator(String fnName) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        return fn.getCalciteFunction().get();
+      }
+
     }
 
     class CountDistinctRewrite extends RewriteProcedure {
+
+      public CountDistinctRewrite(String sketchClass) {
+        super(sketchClass);
+      }
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
@@ -187,6 +210,10 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     class PercentileContRewrite extends RewriteProcedure {
+
+      public PercentileContRewrite(String sketchClass) {
+        super(sketchClass);
+      }
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
@@ -304,21 +331,5 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       }
       return fn.getCalciteFunction().get();
     }
-  }
-
-  abstract class RewriteBase {
-
-    private SqlOperator getSqlOperator(String fnName) {
-      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
-      if (!fn.getCalciteFunction().isPresent()) {
-        throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
-      }
-      return fn.getCalciteFunction().get();
-    }
-
-  }
-
-  static class CountDistinctRewrite {
-
   }
 }
