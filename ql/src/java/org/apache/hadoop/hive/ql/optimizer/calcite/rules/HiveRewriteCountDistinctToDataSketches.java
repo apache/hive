@@ -190,7 +190,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass, DataSketchesFunctions.DATA_TO_SKETCH);
       boolean distinct = false;
       boolean approximate = true;
-      boolean ignoreNulls = aggCall.ignoreNulls();
+      boolean ignoreNulls = true;
       List<Integer> argList = newArgList;
       int filterArg = aggCall.filterArg;
       RelCollation collation = aggCall.getCollation();
@@ -226,7 +226,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass2, DataSketchesFunctions.DATA_TO_SKETCH);
       boolean distinct = false;
       boolean approximate = true;
-      boolean ignoreNulls = aggCall.ignoreNulls();
+      boolean ignoreNulls = true;
       List<Integer> argList = newArgList;
       int filterArg = aggCall.filterArg;
       RelCollation collation = aggCall.getCollation();
