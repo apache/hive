@@ -1079,7 +1079,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert mergerOptions.getBaseDir() != null : "no baseDir?: " + mergerOptions.getRootPath();
           //we are compacting and it's acid schema so create a reader for the 1st bucket file that is not empty
           FileSystem fs = mergerOptions.getBaseDir().getFileSystem(conf);
-          Path bucketPath = AcidUtils.createBucketFile(mergerOptions.getBaseDir(), bucket);
+          String attemptId = null;
+          if (deltasToAttemptId != null) {
+            attemptId = deltasToAttemptId.get(mergerOptions.getBaseDir().toString());
+          }
+          Path bucketPath = AcidUtils.createBucketFile(mergerOptions.getBaseDir(), bucket, attemptId);
           if(fs.exists(bucketPath) && fs.getFileStatus(bucketPath).getLen() > 0) {
             //doing major compaction - it's possible where full compliment of bucket files is not
             //required (on Tez) that base_x/ doesn't have a file for 'bucket'
