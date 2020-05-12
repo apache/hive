@@ -31,6 +31,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableBitSet.Builder;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
@@ -83,11 +84,14 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     newAggCalls = vb.newAggCalls;
-    List<String> filedNames = new ArrayList<String>();
-    for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
-      filedNames.add("ff_" + i);
+    List<String> filedNames=new ArrayList<String>();
+    for (int i=0;i<vb.newProjectsBelow.size();i++ ) {
+      filedNames.add("ff_"+i);
     }
-    RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, filedNames);
+    RelNode newProjectBelow=
+        projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, filedNames);
+
+
 
     RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
@@ -153,12 +157,20 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void appendAggCall(AggregateCall aggCall, SqlOperator projectOperator) {
+
       RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
       RexNode projRex = rexBuilder.makeInputRef(aggCall.getType(), newProjects.size());
       if (projectOperator != null) {
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
         projRex = rexBuilder.makeCast(origType, projRex);
       }
+
+      Integer ai = aggCall.getArgList().get(0);
+      RexNode call =
+          rexBuilder.makeCall(SqlStdOperatorTable.PLUS, rexBuilder.makeInputRef(aggCall.getType(), ai),
+              rexBuilder.makeInputRef(aggCall.getType(), ai));
+      newProjectsBelow.add(call);
+
       newAggCalls.add(aggCall);
       newProjects.add(projRex);
     }
