@@ -52,37 +52,41 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int)
-                    outputColumnNames: _col1
+                    expressions: UDFToFloat(id) (type: float)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: percentile_cont(0.2, _col1, 1, 0)
+                      aggregations: ds_kll_sketch(_col0)
                       minReductionHashAggr: 0.95454544
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>)
+                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: binary)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: percentile_cont(VALUE._col0)
+                aggregations: ds_kll_sketch(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: UDFToDouble(ds_kll_quantile(_col0, 0.2)) (type: double)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -98,4 +102,4 @@ POSTHOOK: query: select percentile_cont(0.2) within group(order by id) from sket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-4.2
+4.0

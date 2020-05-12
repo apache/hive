@@ -21,16 +21,19 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableBitSet.Builder;
 import org.apache.curator.shaded.com.google.common.collect.Lists;
@@ -57,6 +60,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
   private final String sketchClass;
+  private final String sketchClass2 = "kll";
   private final ProjectFactory projectFactory;
 
   public HiveRewriteCountDistinctToDataSketches(String sketchClass) {
@@ -90,8 +94,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
     RelNode newProjectBelow=
         projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, filedNames);
-
-
 
     RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
@@ -150,6 +152,10 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         rewriteCountDistinct(aggCall);
         return;
       }
+      if (isPercentileCont(aggCall)) {
+        rewriteCountDistinct2(aggCall);
+        return;
+      }
       appendAggCall(aggCall);
     }
 
@@ -165,6 +171,12 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
           && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
     }
 
+    private boolean isPercentileCont(AggregateCall aggCall) {
+      // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
+      return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
+          && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
+    }
+
     private void rewriteCountDistinct(AggregateCall aggCall) {
 
       RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
@@ -175,7 +187,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
       ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
 
-      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass, DataSketchesFunctions.DATA_TO_SKETCH);
       boolean distinct = false;
       boolean approximate = true;
       boolean ignoreNulls = aggCall.ignoreNulls();
@@ -190,7 +202,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
           collation, groupCount, input, type, name);
 
-      SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
+      SqlOperator projectOperator = getSqlOperator(sketchClass, DataSketchesFunctions.SKETCH_TO_ESTIMATE);
       RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
       projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
       projRex = rexBuilder.makeCast(origType, projRex);
@@ -199,6 +211,68 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       newProjects.add(projRex);
     }
 
+    private void rewriteCountDistinct2(AggregateCall aggCall) {
+
+      RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
+
+      Integer argIndex = aggCall.getArgList().get(1);
+      RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+
+      RelDataType doubleType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DOUBLE);
+      RelDataType floatType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT);
+      call = rexBuilder.makeCast(floatType, call);
+      newProjectsBelow.add(call);
+
+      ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
+
+      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(sketchClass2, DataSketchesFunctions.DATA_TO_SKETCH);
+      boolean distinct = false;
+      boolean approximate = true;
+      boolean ignoreNulls = aggCall.ignoreNulls();
+      List<Integer> argList = newArgList;
+      int filterArg = aggCall.filterArg;
+      RelCollation collation = aggCall.getCollation();
+      RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+      String name = aggFunction.getName();
+
+      AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+          collation, type, name);
+
+      Integer origFractionIdx = aggCall.getArgList().get(0);
+      RexNode fraction = getProject(aggregate.getInput()).getChildExps().get(origFractionIdx);
+      fraction = rexBuilder.makeCast(floatType, fraction);
+
+      SqlOperator projectOperator = getSqlOperator(sketchClass2, DataSketchesFunctions.GET_QUANTILE);
+      RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
+      projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, fraction));
+      projRex = rexBuilder.makeCast(origType, projRex);
+
+      newAggCalls.add(newAgg);
+      newProjects.add(projRex);
+    }
+
+    private Project getProject(RelNode input) {
+      if (input instanceof Project) {
+        return (Project) input;
+      }
+      if (input instanceof HepRelVertex) {
+        HepRelVertex hepRelVertex = (HepRelVertex) input;
+        return (Project) hepRelVertex.getCurrentRel();
+      }
+      throw new RuntimeException("unexpected");
+    }
+
+    private SqlOperator getSqlOperator(String sketchClass, String fnName) {
+      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+      if (!fn.getCalciteFunction().isPresent()) {
+        throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+      }
+      return fn.getCalciteFunction().get();
+    }
+  }
+
+  abstract class RewriteBase {
+
     private SqlOperator getSqlOperator(String fnName) {
       UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
       if (!fn.getCalciteFunction().isPresent()) {
@@ -206,5 +280,10 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       }
       return fn.getCalciteFunction().get();
     }
+
+  }
+
+  static class CountDistinctRewrite {
+
   }
 }
