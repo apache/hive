@@ -543,28 +543,6 @@ public final class Utilities {
     }
   }
 
-  public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
-    try {
-      Graph stageGraph = plan.getQueryPlan().getStageGraph();
-      if (stageGraph == null) {
-        return;
-      }
-      List<Adjacency> adjList = stageGraph.getAdjacencyList();
-      if (adjList == null) {
-        return;
-      }
-      for (Adjacency adj : adjList) {
-        List<String> children = adj.getChildren();
-        if (CollectionUtils.isEmpty(children)) {
-          return;
-        }
-        conf.setStrings("mapreduce.workflow.adjacency." + adj.getNode(),
-            children.toArray(new String[0]));
-      }
-    } catch (IOException e) {
-    }
-  }
-
   public static List<String> getFieldSchemaString(List<FieldSchema> fl) {
     if (fl == null) {
       return null;

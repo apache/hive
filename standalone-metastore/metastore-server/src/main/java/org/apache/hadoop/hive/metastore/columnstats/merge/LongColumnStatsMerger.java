@@ -27,7 +27,7 @@ import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.lon
 
 public class LongColumnStatsMerger extends ColumnStatsMerger {
   @Override
-  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     LongColumnStatsDataInspector aggregateData = longInspectorFromStats(aggregateColStats);
     LongColumnStatsDataInspector newData = longInspectorFromStats(newColStats);
     setLowValue(aggregateData, newData);
@@ -38,7 +38,7 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
     } else {
       NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
       NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      long ndv = -1;
+      final long ndv;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
@@ -46,8 +46,8 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
-          + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
+      log.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
+          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }
 
@@ -55,22 +55,34 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
   }
 
   public void setLowValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
-    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+    final long lowValue;
+
+    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      lowValue = Math.min(aggregateData.getLowValue(), newData.getLowValue());
+    } else if (aggregateData.isSetLowValue()) {
+      lowValue = aggregateData.getLowValue();
+    } else if (newData.isSetLowValue()) {
+      lowValue = newData.getLowValue();
+    } else {
       return;
     }
-    long lowValue = Math.min(
-        aggregateData.isSetLowValue() ? aggregateData.getLowValue() : Long.MAX_VALUE,
-        newData.isSetLowValue() ? newData.getLowValue() : Long.MAX_VALUE);
+
     aggregateData.setLowValue(lowValue);
   }
 
   public void setHighValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
-    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+    final long highValue;
+
+    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      highValue = Math.max(aggregateData.getHighValue(), newData.getHighValue());
+    } else if (aggregateData.isSetHighValue()) {
+      highValue = aggregateData.getHighValue();
+    } else if (newData.isSetHighValue()) {
+      highValue = newData.getHighValue();
+    } else {
       return;
     }
-    long highValue = Math.max(
-        aggregateData.isSetHighValue() ? aggregateData.getHighValue() : Long.MIN_VALUE,
-        newData.isSetHighValue() ? newData.getHighValue() : Long.MIN_VALUE);
+
     aggregateData.setHighValue(highValue);
   }
 }
