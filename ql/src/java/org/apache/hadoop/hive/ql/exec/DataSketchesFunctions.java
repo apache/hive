@@ -109,7 +109,8 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     }
     SketchDescriptor sc = sketchClasses.get(className);
     if (!sc.fnMap.containsKey(function)) {
-      throw new IllegalArgumentException(String.format("The Sketch-class '%s' doesn't have a '%s' method", function));
+      throw new IllegalArgumentException(
+          String.format("The Sketch-class '%s' doesn't have a '%s' method", className, function));
     }
     return sketchClasses.get(className).fnMap.get(function);
   }

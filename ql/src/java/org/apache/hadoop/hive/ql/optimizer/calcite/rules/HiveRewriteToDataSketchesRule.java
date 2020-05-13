@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.hep.HepRelVertex;
@@ -56,16 +58,18 @@ import com.google.common.collect.ImmutableList;
  * 3. A new Project is inserted on top of the Aggregate; which unwraps the resulting
  *    count-distinct estimation from the sketch representation
  */
-public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
+public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
-  private final String sketchClass;
-  private final String sketchClass2 = "kll";
+  protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteToDataSketchesRule.class);
+  private final Optional<String> countDistinctSketchType;
+  private final Optional<String> percentileContSketchType;
   private final ProjectFactory projectFactory;
 
-  public HiveRewriteCountDistinctToDataSketches(String sketchClass) {
+  public HiveRewriteToDataSketchesRule(Optional<String> countDistinctSketchType,
+      Optional<String> percentileContSketchType) {
     super(operand(HiveAggregate.class, any()));
-    this.sketchClass = sketchClass;
+    this.countDistinctSketchType = countDistinctSketchType;
+    this.percentileContSketchType = percentileContSketchType;
     projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
 
@@ -108,7 +112,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
    * Helper class to help in building a new Aggregate and Project.
    */
   // NOTE: methods in this class are not re-entrant; drop-to-frame to constructor during debugging
-  class VBuilder {
+  private class VBuilder {
 
     private final RexBuilder rexBuilder;
 
@@ -129,8 +133,12 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       // add identity projections
       addProjectedFields();
 
-      rewrites.add(new CountDistinctRewrite(sketchClass));
-      rewrites.add(new PercentileContRewrite(sketchClass2));
+      if (countDistinctSketchType.isPresent()) {
+        rewrites.add(new CountDistinctRewrite(countDistinctSketchType.get()));
+      }
+      if (percentileContSketchType.isPresent()) {
+        rewrites.add(new PercentileContRewrite(percentileContSketchType.get()));
+      }
 
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
         processAggCall(aggCall);
@@ -172,7 +180,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     abstract class RewriteProcedure {
 
-      final String sketchClass;
+      private final String sketchClass;
 
       public RewriteProcedure(String sketchClass) {
         this.sketchClass = sketchClass;
@@ -257,7 +265,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         Integer argIndex = aggCall.getArgList().get(1);
         RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
 
-        RelDataType doubleType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DOUBLE);
         RelDataType floatType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT);
         call = rexBuilder.makeCast(floatType, call);
         newProjectsBelow.add(call);

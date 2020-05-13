@@ -2471,12 +2471,19 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.bi.rewrite.countdistinct.enabled",
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
-
     HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
         "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
         new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
             + "Distinct counting can be done with: hll"),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_ENABLED("hive.optimize.bi.rewrite.percentile_cont.enabled",
+        true,
+        "Enables to rewrite PERCENTILE_CONT(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_SKETCH(
+        "hive.optimize.bi.rewrite.percentile_cont.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting PERCENTILE_CONT expressions. Options: kll"),
+
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,

@@ -237,7 +237,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteCountDistinctToDataSketches;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -1973,10 +1973,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
+        Optional<String> countDistinctSketchType = Optional.empty();
+        Optional<String> percentileContSketchType = Optional.empty();
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
-          String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
-          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
-              new HiveRewriteCountDistinctToDataSketches(sketchClass));
+          countDistinctSketchType= Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH));
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_ENABLED)) {
+          percentileContSketchType = Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_SKETCH));
+        }
+        if (countDistinctSketchType.isPresent() || percentileContSketchType.isPresent()) {
+          RelOptRule rule = new HiveRewriteToDataSketchesRule(countDistinctSketchType, percentileContSketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
       }
       // Run this optimization early, since it is expanding the operator pipeline.
