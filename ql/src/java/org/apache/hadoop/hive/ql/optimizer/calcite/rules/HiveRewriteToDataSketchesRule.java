@@ -49,14 +49,25 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 /**
- * This rule could rewrite {@code count(distinct(x))} calls to be calculated using sketch based functions.
+ * This rule could rewrite aggregate calls to be calculated using sketch based functions.
  *
- * The transformation here works on Aggregate nodes; the operations done are the following:
+ * <br/>
+ * Currently it can rewrite:
+ * <ul>
+ *  <li>{@code count(distinct(x))} to distinct counting sketches</li>
+ *  <li>{@code percentile_cont(0.2) within group (order by id)}</li>
+ *  </ul>
  *
- * 1. Identify candidate {@code count(distinct)} aggregate calls
- * 2. A new Aggregate is created in which the aggregation is done by the sketch function
- * 3. A new Project is inserted on top of the Aggregate; which unwraps the resulting
- *    count-distinct estimation from the sketch representation
+ * <p>
+ *   The transformation here works on Aggregate nodes; the operations done are the following:
+ * </p>
+ * <ol>
+ * <li>Identify candidate aggregate calls</li>
+ * <li>A new Project is inserted below the Aggregate; to help with data pre-processing</li>
+ * <li>A new Aggregate is created in which the aggregation is done by the sketch function</li>
+ * <li>A new Project is inserted on top of the Aggregate; which unwraps the resulting
+ *    count-distinct estimation from the sketch representation</li>
+ * </ol>
  */
 public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
