@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableBitSet.Builder;
@@ -248,6 +249,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
         RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjects.size());
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.ROUND, ImmutableList.of(projRex));
         projRex = rexBuilder.makeCast(origType, projRex);
 
         newAggCalls.add(newAgg);
