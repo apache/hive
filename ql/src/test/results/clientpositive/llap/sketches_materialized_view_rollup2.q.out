@@ -63,7 +63,7 @@ STAGE PLANS:
                   alias: default.mv_1
                   Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: 'rewrite; mv matching' (type: string), category (type: char(1)), UDFToLong(ds_hll_estimate(_c1)) (type: bigint)
+                    expressions: 'rewrite; mv matching' (type: string), category (type: char(1)), UDFToLong(round(ds_hll_estimate(_c1))) (type: bigint)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 394 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -256,7 +256,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'rewrite; but no mv usage' (type: string), _col0 (type: char(1)), UDFToLong(ds_hll_estimate(_col1)) (type: bigint)
+                  expressions: 'rewrite; but no mv usage' (type: string), _col0 (type: char(1)), UDFToLong(round(ds_hll_estimate(_col1))) (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 402 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -510,7 +510,7 @@ STAGE PLANS:
                   alias: default.mv_1
                   Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: 'rewrite; mv matching' (type: string), category (type: char(1)), UDFToLong(ds_hll_estimate(_c1)) (type: bigint)
+                    expressions: 'rewrite; mv matching' (type: string), category (type: char(1)), UDFToLong(round(ds_hll_estimate(_c1))) (type: bigint)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 394 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -596,7 +596,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'rewrite;mv matching with rollup' (type: string), UDFToLong(ds_hll_estimate(_col0)) (type: bigint)
+                  expressions: 'rewrite;mv matching with rollup' (type: string), UDFToLong(round(ds_hll_estimate(_col0))) (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
