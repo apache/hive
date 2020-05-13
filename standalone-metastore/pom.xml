@@ -72,7 +72,7 @@
     <guava.version>28.1-jre</guava.version>
     <hadoop.version>3.1.1.7.2.2.0-SNAPSHOT</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.9.9</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
