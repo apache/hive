@@ -65,13 +65,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
 
-        excludeQuery("temp_table_multi_insert_partitioned.q");
-        //        --! qt:disabled:flaky
-        excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
-        //      --! qt:disabled:flaky
-        excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
-        //    --! qt:disabled:flaky
-
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
@@ -245,11 +238,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
-
-        //        excludeQuery("multi_insert_partitioned.q");
-        excludeQuery("temp_table_multi_insert_partitioned.q");
-        excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
-        excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -544,7 +532,6 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
-        excludeQuery("accumulo_joins.q");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");
