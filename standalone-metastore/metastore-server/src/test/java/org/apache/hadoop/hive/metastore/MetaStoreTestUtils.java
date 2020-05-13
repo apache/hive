@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
+import java.sql.DriverManager;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashMap;
@@ -160,6 +161,7 @@ public class MetaStoreTestUtils {
                                             Configuration conf, boolean keepJdbcUri,
                                             boolean keepWarehousePath,
                                             boolean withHouseKeepingThreads) throws Exception {
+    DriverManager.setLoginTimeout(300);
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
 
