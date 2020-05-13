@@ -182,8 +182,7 @@ public class CoreCliDriver extends CliAdapter {
             : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    }
-    catch (AssumptionViolatedException e) {
+    } catch (AssumptionViolatedException e) {
       skipped = true;
       throw e;
     } catch (Exception e) {

@@ -119,7 +119,7 @@
     <resources>
     </resources>
     <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifectId -->
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>

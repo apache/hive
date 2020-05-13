@@ -526,6 +526,22 @@ public class HiveConf extends Configuration {
         "This is the base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
+    REPL_INCLUDE_AUTHORIZATION_METADATA("hive.repl.include.authorization.metadata", false,
+            "This configuration will enable security and authorization related metadata along "
+                    + "with the hive data and metadata replication. "),
+    REPL_AUTHORIZATION_PROVIDER_SERVICE("hive.repl.authorization.provider.service", "ranger",
+            "This configuration will define which service will provide the security and authorization "
+                    + "related metadata that needs to be replicated along "
+                    + "with the hive data and metadata replication. Set the configuration "
+                    + "hive.repl.include.authorization.metadata to false to disable "
+                    + "security policies being replicated "),
+    REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT("hive.repl.authorization.provider.service.endpoint",
+            "",
+            "This configuration will define the authorization service endpoint"),
+    REPL_RANGER_SERVICE_NAME("hive.repl.ranger.service.name",
+            "hive",
+            "This configuration will define the service name for which the ranger authorization"
+                    + " policies needs to be replicated"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -3033,6 +3049,8 @@ public class HiveConf extends Configuration {
             "Wait time in ms default to 30 seconds."
     ),
     HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
+    HIVE_DRUID_KERBEROS_ENABLE("hive.druid.kerberos.enable", true,
+        "Enable/Disable Kerberos authentication explicitly while connecting to a druid cluster."),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 public class BinaryColumnStatsMerger extends ColumnStatsMerger {
 
   @Override
-  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     BinaryColumnStatsData aggregateData = aggregateColStats.getStatsData().getBinaryStats();
     BinaryColumnStatsData newData = newColStats.getStatsData().getBinaryStats();
     aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));

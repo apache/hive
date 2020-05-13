@@ -1,0 +1,1653 @@
+PREHOOK: query: explain
+select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value > 'val_2') and key is not null) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: string)
+                  1 _col1 (type: string), _col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 631 Data size: 112846 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col2 is null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89420 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: true (type: boolean), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string), _col2 (type: string)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: string), _col2 (type: string)
+                    Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: boolean)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+150	val_150
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+190	val_190
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+2	val_2
+PREHOOK: query: explain
+select * 
+from src b 
+where not exists 
+  (select distinct a.key 
+  from src a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * 
+from src b 
+where not exists 
+  (select distinct a.key 
+  from src a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: string)
+                  Filter Operator
+                    predicate: (value > 'val_2') (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: value (type: string), key (type: string)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 566 Data size: 101016 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col2 is null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89236 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    keys: _col1 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 41 Data size: 3731 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: true (type: boolean), _col0 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 41 Data size: 3895 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 41 Data size: 3895 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: boolean)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from src b 
+where not exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+150	val_150
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+190	val_190
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+2	val_2
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select *
+from src b
+where not exists
+  (select a.key
+  from src a
+  where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select *
+from src b
+where not exists
+  (select a.key
+  from src a
+  where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: string), _col1 (type: string)
+                  Filter Operator
+                    predicate: ((value > 'val_2') and key is not null) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                residual filter predicates: {(_col3 > _col0)} {(_col1 <> _col4)}
+                Statistics: Num rows: 41500 Data size: 14940000 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col2 is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: true (type: boolean), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: boolean), _col1 (type: string), _col2 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select *
+from src b
+where not exists
+  (select a.key
+  from src a
+  where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from src b
+where not exists
+  (select a.key
+  from src a
+  where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+98	val_98
+98	val_98
+Warning: Shuffle Join MERGEJOIN[60][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+PREHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 5 <- Map 10 (XPROD_EDGE), Map 4 (XPROD_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Map 9 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: p_name (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: part
+                  Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: p_type (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: string)
+                  Filter Operator
+                    predicate: (UDFToDouble(p_type) is not null and p_type is not null) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: p_type (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: pp1
+                  filterExpr: UDFToDouble(p_partkey) is not null (type: boolean)
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: UDFToDouble(p_partkey) is not null (type: boolean)
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToDouble(p_partkey) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 676 Data size: 152100 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 676 Data size: 152100 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 1014 Data size: 124050 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col2 is null (type: boolean)
+                  Statistics: Num rows: 676 Data size: 82700 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 676 Data size: 81796 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 676 Data size: 81796 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1
+                Statistics: Num rows: 676 Data size: 70304 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col1 (type: string)
+                  minReductionHashAggr: 0.964497
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 24 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 24 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 24 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToDouble(_col0) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 24 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: double)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: double)
+                    Statistics: Num rows: 24 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string)
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: double)
+                  1 _col1 (type: double)
+                outputColumnNames: _col1
+                Statistics: Num rows: 24 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col1 (type: string)
+                  minReductionHashAggr: 0.5
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 12 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 12 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 8 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 12 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: true (type: boolean), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: boolean)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[60][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+PREHOOK: query: SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique blue firebrick mint
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique gainsboro frosted violet
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique metallic orange dim
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique misty red olive
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique olive coral navajo
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet chocolate turquoise
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine dodger light gainsboro
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine floral ivory bisque
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine pink moccasin thistle
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine rose maroon antique
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond aquamarine yellow dodger mint
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+PREHOOK: query: create table tschema(id int, name string,dept string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tschema
+POSTHOOK: query: create table tschema(id int, name string,dept string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tschema
+PREHOOK: query: insert into tschema values(1,'a','it'),(2,'b','eee'),(NULL, 'c', 'cse')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tschema
+POSTHOOK: query: insert into tschema values(1,'a','it'),(2,'b','eee'),(NULL, 'c', 'cse')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tschema
+POSTHOOK: Lineage: tschema.dept SCRIPT []
+POSTHOOK: Lineage: tschema.id SCRIPT []
+POSTHOOK: Lineage: tschema.name SCRIPT []
+PREHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tschema
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tschema
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(eid=[_UTF-16LE'empno'], id=[$0])
+  HiveAggregate(group=[{0}])
+    HiveFilter(condition=[IS NULL($1)])
+      HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(id=[$0])
+          HiveTableScan(table=[[default, tschema]], table:alias=[a])
+        HiveProject(literalTrue=[true], id0=[$0])
+          HiveAggregate(group=[{0}])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, tschema]], table:alias=[c])
+
+PREHOOK: query: select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tschema
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tschema
+#### A masked pattern was here ####
+empno	NULL
+PREHOOK: query: drop table tschema
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tschema
+PREHOOK: Output: default@tschema
+POSTHOOK: query: drop table tschema
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tschema
+POSTHOOK: Output: default@tschema

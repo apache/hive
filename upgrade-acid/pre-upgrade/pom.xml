@@ -214,7 +214,7 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             </plugins>
         </pluginManagement>
         <plugins>
-            <!-- plugins are always listed in sorted order by groupId, artifectId -->
+            <!-- plugins are always listed in sorted order by groupId, artifactId -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>

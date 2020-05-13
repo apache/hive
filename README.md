@@ -75,9 +75,24 @@ Getting Started
 Requirements
 ============
 
-- Java 1.7 or 1.8
+Java
+------
 
-- Hadoop 1.x, 2.x, 3.x (3.x required for Hive 3.x)
+| Hive Version  | Java Version  |
+| ------------- |:-------------:|
+| Hive 1.0      | Java 6        |
+| Hive 1.1      | Java 6        |
+| Hive 1.2      | Java 7        |
+| Hive 2.x      | Java 7        |
+| Hive 3.x      | Java 8        |
+| Hive 4.x      | Java 8        |
+
+
+Hadoop
+------
+
+- Hadoop 1.x, 2.x
+- Hadoop 3.x (Hive 3.x)
 
 
 Upgrading from older versions of Hive
