@@ -65,16 +65,12 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
 
-        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
-        excludeQuery("udaf_context_ngrams.q"); // disabled in HIVE-20741
-        excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
-        excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
-        excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
-        excludeQuery("constprog_cast.q"); // TODO: Enable when we move to Calcite 1.23
-        //        excludeQuery("multi_insert_partitioned.q");
         excludeQuery("temp_table_multi_insert_partitioned.q");
+        //        --! qt:disabled:flaky
         excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
+        //      --! qt:disabled:flaky
         excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
+        //    --! qt:disabled:flaky
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -188,10 +184,6 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.query.files");
-        excludeQuery("druid_timestamptz.q"); // Disabled in HIVE-20322
-        excludeQuery("druidmini_joins.q"); // Disabled in HIVE-20322
-        excludeQuery("druidmini_masking.q"); // Disabled in HIVE-20322
-        //excludeQuery("druidmini_test1.q"); // Disabled in HIVE-20322
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
@@ -253,13 +245,7 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
-        excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
-        excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
-        excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
-        excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
-        excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
+
         //        excludeQuery("multi_insert_partitioned.q");
         excludeQuery("temp_table_multi_insert_partitioned.q");
         excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
@@ -345,12 +331,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
-        excludeQuery("cbo_query44.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query45.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query67.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query70.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query86.q"); // TODO: Enable when we move to Calcite 1.18
-
         setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
         if (useConstraints) {
@@ -420,7 +400,6 @@ public class CliConfigs {
 
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludesFrom(testConfigProps, "spark.only.query.negative.files");
-        excludeQuery("authorization_uri_import.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
