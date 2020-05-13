@@ -56,7 +56,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
-        excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
         excludesFrom(testConfigProps, "druid.kafka.query.files");
