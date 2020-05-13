@@ -56,6 +56,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
         excludesFrom(testConfigProps, "druid.kafka.query.files");
@@ -63,8 +64,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
-
-        disabledFrom(testConfigProps, "disabled.query.files");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
         excludeQuery("udaf_context_ngrams.q"); // disabled in HIVE-20741
@@ -76,7 +75,6 @@ public class CliConfigs {
         excludeQuery("temp_table_multi_insert_partitioned.q");
         excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
         excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
-
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");

@@ -55,7 +55,6 @@ public abstract class AbstractCliConfig {
   // FIXME: file paths in strings should be changed to either File or Path ... anything but String
   private String resultsDirectory;
   private Set<String> excludedQueryFileNames = new LinkedHashSet<>();
-  private Set<String> disabledQueryFileNames = new LinkedHashSet<>();
   private String hadoopVersion;
   private String logDirectory;
   // these should have viable defaults
@@ -131,31 +130,8 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  private void disabledFrom(URL resource, String key) {
-    try (InputStream is = resource.openStream()) {
-      Properties props = new Properties();
-      props.load(is);
-
-      String fileNames = getSysPropValue(key);
-      if (fileNames == null) {
-        fileNames = props.getProperty(key);
-      }
-      if (fileNames != null) {
-        for (String qFile : TEST_SPLITTER.split(fileNames)) {
-          disableQuery(qFile);
-        }
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("error processing:" + resource, e);
-    }
-  }
-
   protected void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
-  }
-
-  protected void disableQuery(String qFile) {
-    disabledQueryFileNames.add(qFile);
   }
 
   private static final Splitter TEST_SPLITTER =
@@ -267,9 +243,6 @@ public abstract class AbstractCliConfig {
           || QTestSystemProperties.shouldForceExclusions()) {
         testFiles.remove(new File(queryDir, qFileName));
       }
-    }
-    for (String qFileName : disabledQueryFileNames) {
-      ignoredFiles.add(new File(queryDir, qFileName));
     }
 
     return testFiles;
