@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.RangerDumpEnd;
  *
  * Repllogger for Ranger Dump.
  **/
-public class RangerDumpLogger extends ReplLogger {
+public class RangerDumpLogger extends ReplLogger<Long> {
   private String dbName;
   private String dumpDir;
 
@@ -38,17 +38,11 @@ public class RangerDumpLogger extends ReplLogger {
 
   @Override
   public void startLog() {
-    (new RangerDumpBegin(dbName)).log(LogTag.RANGER_DUMP_START);
+    new RangerDumpBegin(dbName).log(LogTag.RANGER_DUMP_START);
   }
 
   @Override
-  public void endLog(String lastReplId) {
-    //Do nothing for Ranger
-  }
-
-  @Override
-  public void endLog(long count) {
-    (new RangerDumpEnd(dbName, count, dumpDir))
-            .log(LogTag.RANGER_DUMP_END);
+  public void endLog(Long count) {
+    new RangerDumpEnd(dbName, count, dumpDir).log(LogTag.RANGER_DUMP_END);
   }
 }

@@ -83,7 +83,7 @@ public class TestRangerDumpTask {
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("cm_hive");
+    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     int status = task.execute();
@@ -107,7 +107,7 @@ public class TestRangerDumpTask {
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("cm_hive");
+    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
@@ -127,7 +127,7 @@ public class TestRangerDumpTask {
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("cm_hive");
+    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     int status = task.execute();

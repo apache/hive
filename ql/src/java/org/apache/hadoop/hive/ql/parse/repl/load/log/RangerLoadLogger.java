@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.log.state.RangerLoadEnd;
  *
  * Repllogger for Ranger Load.
  **/
-public class RangerLoadLogger extends ReplLogger {
+public class RangerLoadLogger extends ReplLogger<Long> {
   private String sourceDbName;
   private String targetDbName;
   private String dumpDir;
@@ -42,17 +42,11 @@ public class RangerLoadLogger extends ReplLogger {
 
   @Override
   public void startLog() {
-    (new RangerLoadBegin(sourceDbName, targetDbName, estimatedNumPolicies)).log(LogTag.RANGER_LOAD_START);
+    new RangerLoadBegin(sourceDbName, targetDbName, estimatedNumPolicies).log(LogTag.RANGER_LOAD_START);
   }
 
   @Override
-  public void endLog(String lastReplId) {
-    //Do nothing for Ranger
-  }
-
-  @Override
-  public void endLog(long count) {
-    (new RangerLoadEnd(sourceDbName, targetDbName, count, dumpDir))
-            .log(LogTag.RANGER_LOAD_END);
+  public void endLog(Long count) {
+    new RangerLoadEnd(sourceDbName, targetDbName, count, dumpDir).log(LogTag.RANGER_LOAD_END);
   }
 }

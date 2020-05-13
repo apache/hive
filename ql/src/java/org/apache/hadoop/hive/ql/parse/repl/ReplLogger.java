@@ -24,16 +24,14 @@ import org.apache.hadoop.hive.metastore.TableType;
  *
  * Logger class for Repl Events.
  **/
-public abstract class ReplLogger {
+public abstract class ReplLogger<T> {
 
   public ReplLogger() {
   }
 
   public abstract void startLog();
 
-  public abstract void endLog(String lastReplId);
-
-  public abstract void endLog(long totalCount);
+  public abstract void endLog(T logVal);
 
   public void tableLog(String tableName, TableType tableType) {
   }

@@ -23,7 +23,12 @@ import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadEvent;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
-public class IncrementalLoadLogger extends ReplLogger {
+/**
+ * IncrementalLoadLogger.
+ *
+ * Repllogger for Incremental Load.
+ **/
+public class IncrementalLoadLogger extends ReplLogger<String> {
   private String dbName;
   private String dumpDir;
   private long numEvents;
@@ -51,10 +56,5 @@ public class IncrementalLoadLogger extends ReplLogger {
   @Override
   public void endLog(String lastReplId) {
     (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.END);
-  }
-
-  @Override
-  public void endLog(long totalCount) {
-    //Do Nothing
   }
 }

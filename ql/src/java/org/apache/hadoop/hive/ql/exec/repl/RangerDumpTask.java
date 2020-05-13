@@ -75,7 +75,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
   @Override
   public int execute() {
     try {
-      int exportCount = 0;
+      long exportCount = 0;
       Path filePath = null;
       LOG.info("Exporting Ranger Metadata");
       if (rangerRestClient == null) {
