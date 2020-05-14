@@ -867,7 +867,8 @@ public class TaskExecutorService extends AbstractService
     return sc;
   }
 
-  private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
+  @VisibleForTesting
+  void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
     synchronized (lock) {
       LOG.debug("Fragment {} guaranteed state changed to {}; finishable {}, in wait queue {}, "
           + "in preemption queue {}", taskWrapper.getRequestId(), taskWrapper.isGuaranteed(),
