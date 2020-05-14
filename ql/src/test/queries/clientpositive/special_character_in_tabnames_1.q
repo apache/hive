@@ -1,3 +1,4 @@
+--! qt:disabled:flaky
 --! qt:dataset:src1
 --! qt:dataset:src
 --! qt:dataset:lineitem
