@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
-import java.sql.DriverManager;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashMap;
@@ -161,7 +160,6 @@ public class MetaStoreTestUtils {
                                             Configuration conf, boolean keepJdbcUri,
                                             boolean keepWarehousePath,
                                             boolean withHouseKeepingThreads) throws Exception {
-    DriverManager.setLoginTimeout(300);
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
 
@@ -178,7 +176,7 @@ public class MetaStoreTestUtils {
         String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
         if (!keepJdbcUri) {
           // Setting metastore instance specific jdbc url postfixed with port
-          jdbcUrl = "jdbc:derby:;databaseName=" + TMP_DIR + File.separator
+          jdbcUrl = "jdbc:derby:memory;databaseName=" + TMP_DIR + File.separator
               + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX + "_" + metaStorePort + ";create=true";
           MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
         }
