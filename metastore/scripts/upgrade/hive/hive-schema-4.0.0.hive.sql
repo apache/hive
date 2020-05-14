@@ -1701,7 +1701,7 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  (SELECT * FROM `sys`.`TBL_COL_PRIVS` P LATERAL VIEW explode(split_map_privs(P.`TBL_COL_PRIV`)) `TBL_COL_PRIVIS` AS P.`TBL_COL_PRIV`)) P
+  (SELECT * FROM `sys`.`TBL_COL_PRIVS` LATERAL VIEW explode(split_map_privs(`TBL_COL_PRIV`)) `TBL_COL_PRIVIS` AS `TBL_COL_PRIV`)) P
                           JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
