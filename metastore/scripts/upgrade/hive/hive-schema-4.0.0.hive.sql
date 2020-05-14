@@ -1671,14 +1671,14 @@ FROM
   `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
                        JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
                        JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
-                       LEFT JOIN (SELECT * FROM `sys`.`TBL_COL_PRIVS` lateral view explode(split_map_privs(`TBL_COL_PRIV`)) `TBL_COL_PRIV` ) AS P
-                       ON (T.`TBL_ID` = P.`TBL_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
   NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND (array_contains(split_map_privs(P.`TBL_COL_PRIV`), 'SELECT') AND P.`AUTHORIZER`=current_authorizer();
+  AND array_contains(split_map_privs(P.`TBL_COL_PRIV`),"SELECT") AND P.`AUTHORIZER`=current_authorizer();
+
 
 CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
@@ -1701,7 +1701,7 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  (SELECT * FROM `sys`.`TBL_COL_PRIVS` lateral view explode(split_map_privs(`TBL_COL_PRIV`)) `TBL_COL_PRIV`) AS P
+  (SELECT * FROM `sys`.`TBL_COL_PRIVS` P LATERAL VIEW explode(split_map_privs(P.`TBL_COL_PRIV`)) `TBL_COL_PRIVIS` AS P.`TBL_COL_PRIV`)) P
                           JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
