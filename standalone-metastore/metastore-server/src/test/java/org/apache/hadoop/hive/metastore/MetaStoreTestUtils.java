@@ -176,7 +176,7 @@ public class MetaStoreTestUtils {
         String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
         if (!keepJdbcUri) {
           // Setting metastore instance specific jdbc url postfixed with port
-          jdbcUrl = "jdbc:derby:memory;databaseName=" + TMP_DIR + File.separator
+          jdbcUrl = "jdbc:derby:memory:" + TMP_DIR + File.separator
               + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX + "_" + metaStorePort + ";create=true";
           MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
         }
