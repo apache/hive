@@ -148,7 +148,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       sessionState.err =
           new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
-        LOG.error("Error creating PrintStream", e);
+      log.error("Error creating PrintStream", e);
         sessionState.out = null;
         sessionState.info = null;
         sessionState.err = null;
@@ -172,10 +172,10 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(() -> {
           try {
             final String queryId = queryState.getQueryId();
-            LOG.info("Query timed out after: " + queryTimeout + " seconds. Cancelling the execution now: " + queryId);
+            log.info("Query timed out after: " + queryTimeout + " seconds. Cancelling the execution now: " + queryId);
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
-            LOG.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
+            log.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
           }
           return null;
         }, queryTimeout, TimeUnit.SECONDS);
@@ -215,7 +215,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       OperationState opState = getStatus().getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
-        LOG.info("Not running the query. Operation is already in terminal state: " + opState
+        log.info("Not running the query. Operation is already in terminal state: " + opState
             + ", perhaps cancelled due to query timeout or by another thread.");
         return;
       }
@@ -233,7 +233,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           || (getStatus().getState() == OperationState.TIMEDOUT)
           || (getStatus().getState() == OperationState.CLOSED)
           || (getStatus().getState() == OperationState.FINISHED)) {
-        LOG.warn("Ignore exception in terminal state", e);
+        log.warn("Ignore exception in terminal state", e);
         return;
       }
       setState(OperationState.ERROR);
@@ -324,7 +324,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           } catch (HiveSQLException e) {
             // TODO: why do we invent our own error path op top of the one from Future.get?
             setOperationException(e);
-            LOG.error("Error running hive query", e);
+            log.error("Error running hive query", e);
           } finally {
             LogUtils.unregisterLoggingContext();
 
@@ -341,7 +341,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
         setOperationException(new HiveSQLException(e));
-        LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+        log.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
       } finally {
         /**
          * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
@@ -383,9 +383,9 @@ public class SQLOperation extends ExecuteStatementOperation {
         boolean success = backgroundHandle.cancel(true);
         String queryId = queryState.getQueryId();
         if (success) {
-          LOG.info("The running operation has been successfully interrupted: " + queryId);
+          log.info("The running operation has been successfully interrupted: " + queryId);
         } else if (state == OperationState.CANCELED) {
-          LOG.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
+          log.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
         }
       }
     }
@@ -398,7 +398,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("Operation seems to be in invalid state, SessionState is null");
+      log.warn("Operation seems to be in invalid state, SessionState is null");
     } else {
       ss.deleteTmpOutputFile();
       ss.deleteTmpErrOutputFile();
@@ -415,12 +415,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     String queryId = null;
     if (stateAfterCancel == OperationState.CANCELED) {
       queryId = queryState.getQueryId();
-      LOG.info("Cancelling the query execution: " + queryId);
+      log.info("Cancelling the query execution: " + queryId);
     }
     cleanup(stateAfterCancel);
     cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
-      LOG.info("Successfully cancelled the query: " + queryId);
+      log.info("Successfully cancelled the query: " + queryId);
     }
   }
 
@@ -471,7 +471,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       driver.setMaxRows(capacity);
       if (driver.getResults(convey)) {
         if (convey.size() == capacity) {
-          LOG.info("Result set buffer filled to capacity [{}]", capacity);
+          log.info("Result set buffer filled to capacity [{}]", capacity);
         }
         return decode(convey, rowSet);
       }
@@ -548,8 +548,8 @@ public class SQLOperation extends ExecuteStatementOperation {
           final String names = fieldSchemas.stream().map(i -> i.getName()).collect(Collectors.joining(","));
           final String types = fieldSchemas.stream().map(i -> i.getType()).collect(Collectors.joining(","));
 
-          LOG.debug("Column names: " + names);
-          LOG.debug("Column types: " + types);
+          log.debug("Column names: {}", names);
+          log.debug("Column types: {}", types);
 
           props.setProperty(serdeConstants.LIST_COLUMNS, names);
           props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
