@@ -104,8 +104,9 @@ def jobWrappers(closure) {
   }
 }
 
-jobWrappers {
-podTemplate(
+
+def hdbPodTemplate(closure) {
+  podTemplate(
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
@@ -130,6 +131,12 @@ spec:
   nodeSelector:
     type: slave
 ''') {
+    closure();
+  }
+}
+
+jobWrappers {
+hdbPodTemplate {
 
 properties([
     // max 5 build/branch/day
