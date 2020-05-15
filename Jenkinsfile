@@ -71,18 +71,6 @@ du -h --max-depth=1
 }
 
 
-def jobWrappers(closure) {
-  // allocate 1 precommit token for the execution
-  try{
-    lock(label:'hive-precommit',quantity:1)  {
-      timestamps {
-        closure()
-      }
-    }
-  } finally {
-    setPrLabel(currentBuild.currentResult)
-  }
-}
 
 
 def rsyncPodTemplate(closure) {
@@ -130,75 +118,87 @@ spec:
   }
 }
 
-jobWrappers {
 
-// launch the "rsync" container to store build data
-rsyncPodTemplate {
-  node(POD_LABEL) {
-    container('rsync') {
-      stage('Prepare rsync') {
-        sh '''printf 'env.S="%s"' "`hostname -i`" | tee load.props'''
-        load 'load.props'
-        sh 'df -h /data'
-      }
-    }
-
-    def splits
-    executorNode {
-      container('hdb') {
-        stage('Checkout') {
-          checkout scm
-          // why dup?
-          sh '''#!/bin/bash -e
-              # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-              find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-          '''
-        }
-        stage('Compile') {
-          buildHive("install -Dtest=noMatches")
-          sh '''#!/bin/bash -e
-              # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-              find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-          '''
-        }
-        stage('Upload') {
-          sh  'rsync -rltDq --stats . rsync://$S/data'
-
-          splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
-        }
-      }
-    }
-
-    stage('Testing') {
-
-      def branches = [:]
-      for (int i = 0; i < splits.size(); i++) {
-        def num = i
-        def split = splits[num]
-        def splitName=String.format("split-%02d",num+1)
-        branches[splitName] = {
-          executorNode {
-            stage('Prepare') {
-                sh  'rsync -rltDq --stats rsync://$S/data .'
-                writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
-                writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
+def jobWrappers(closure) {
+  try {
+    // allocate 1 precommit token for the execution
+    lock(label:'hive-precommit',quantity:1)  {
+      timestamps {
+        rsyncPodTemplate {
+          node(POD_LABEL) {
+            // launch the "rsync" container to store build data
+            container('rsync') {
+              stage('Prepare rsync') {
+                sh '''printf 'env.S="%s"' "`hostname -i`" | tee load.props'''
+                load 'load.props'
+                sh 'df -h /data'
+              }
             }
-            try {
-              stage('Test') {
-                sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
-                buildHive("install -q")
-              }
-            } finally {
-              stage('Archive') {
-                junit '**/TEST-*.xml'
-              }
+            closure()
+          }
+        }
+      }
+    }
+  } finally {
+    setPrLabel(currentBuild.currentResult)
+  }
+}
+
+jobWrappers {
+  
+  def splits
+  executorNode {
+    container('hdb') {
+      stage('Checkout') {
+        checkout scm
+        // why dup?
+        sh '''#!/bin/bash -e
+            # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+            find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+        '''
+      }
+      stage('Compile') {
+        buildHive("install -Dtest=noMatches")
+        sh '''#!/bin/bash -e
+            # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+            find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+        '''
+      }
+      stage('Upload') {
+        sh  'rsync -rltDq --stats . rsync://$S/data'
+
+        splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
+      }
+    }
+  }
+
+  stage('Testing') {
+
+    def branches = [:]
+    for (int i = 0; i < splits.size(); i++) {
+      def num = i
+      def split = splits[num]
+      def splitName=String.format("split-%02d",num+1)
+      branches[splitName] = {
+        executorNode {
+          stage('Prepare') {
+              sh  'rsync -rltDq --stats rsync://$S/data .'
+              writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
+              writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
+          }
+          try {
+            stage('Test') {
+              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
+              buildHive("install -q")
+            }
+          } finally {
+            stage('Archive') {
+              junit '**/TEST-*.xml'
             }
           }
         }
       }
-      parallel branches
     }
+    parallel branches
   }
 }
-
-
