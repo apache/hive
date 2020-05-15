@@ -73,9 +73,9 @@ def rsyncPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'rsync', image: 'kgyrtkirk/htk-rsync:latest', ttyEnabled: true,
         alwaysPullImage: true,
-        resourceRequestCpu: '1m',
-        resourceLimitCpu: '100m',
-        resourceRequestMemory: '10Mi',
+        resourceRequestCpu: '300m',
+        resourceLimitCpu: '3000m',
+        resourceRequestMemory: '250Mi',
     ),
   ]) {
     closure();
@@ -87,9 +87,8 @@ def hdbPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '1300m',
-        resourceLimitCpu: '3000m',
-        resourceRequestMemory: '6750Mi',
+        resourceRequestCpu: '1000m',
+        resourceRequestMemory: '6500Mi',
         resourceLimitMemory: '12000Mi'
     ),
   ], yaml:'''
