@@ -35,10 +35,12 @@ def setPrLabel(String prLabel) {
 setPrLabel("PENDING");
 
 def executorNode(run) {
-    node(POD_LABEL) {
-      container('hdb') {
-        run()
-      }
+  hdbPodTemplate {
+      node(POD_LABEL) {
+        container('hdb') {
+          run()
+        }
+    }
   }
 }
 
@@ -176,48 +178,45 @@ rsyncPodTemplate {
       }
     }
 
-    hdbPodTemplate {
-      // launch the main pod
-      node(POD_LABEL) {
-        container('hdb') {
-          stage('Checkout') {
-            checkout scm
-            // why dup?
-            sh '''#!/bin/bash -e
-                # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-                find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-            '''
-          }
-          stage('Compile') {
-            buildHive("install -Dtest=noMatches")
-            sh '''#!/bin/bash -e
-                # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-                find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-            '''
-          }
-          stage('Upload') {
-            sh  'rsync -rltDq --stats . rsync://$S/data'
-          }
+    executorNode {
+      container('hdb') {
+        stage('Checkout') {
+          checkout scm
+          // why dup?
+          sh '''#!/bin/bash -e
+              # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+              find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+          '''
+        }
+        stage('Compile') {
+          buildHive("install -Dtest=noMatches")
+          sh '''#!/bin/bash -e
+              # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+              find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+          '''
+        }
+        stage('Upload') {
+          sh  'rsync -rltDq --stats . rsync://$S/data'
         }
       }
+    }
 
-      stage('Testing') {
-        testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-          sh  'rsync -rltDq --stats rsync://$S/data .'
-        }, {
-          sh '''
+    stage('Testing') {
+      testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
+        sh  'rsync -rltDq --stats rsync://$S/data .'
+      }, {
+        sh '''
 echo "@INC"
 cat inclusions.txt
 echo "@ENC"
 cat exclusions.txt
 echo "@END"
 '''
-          buildHive("install -q")
-          withEnv(["SCRIPT=$params.SCRIPT"]) {
-            sh '''$SCRIPT'''
-          }
-       })
-      }
+        buildHive("install -q")
+        withEnv(["SCRIPT=$params.SCRIPT"]) {
+          sh '''$SCRIPT'''
+        }
+      })
     }
   }
 }
