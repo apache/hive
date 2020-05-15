@@ -61,7 +61,7 @@ public abstract class Operation {
   private volatile MetricsScope currentStateScope;
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
-  public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
   protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
@@ -140,7 +140,7 @@ public abstract class Operation {
     try {
       taskStatus = getTaskStatus();
     } catch (HiveSQLException sqlException) {
-      LOG.error("Error getting task status for " + opHandle.toString(), sqlException);
+      log.error("Error getting task status for {}", opHandle, sqlException);
     }
     return new OperationStatus(state, taskStatus, operationStart, operationComplete, hasResultSet, operationException);
   }
@@ -240,7 +240,7 @@ public abstract class Operation {
     createOperationLog();
     LogUtils.registerLoggingContext(queryState.getConf());
 
-    LOG.info(
+    log.info(
         "[opType={}, queryId={}, startTime={}, sessionId={}, createTime={}, userName={}, ipAddress={}]",
         opHandle.getOperationType(),
         queryState.getQueryId(),
@@ -304,11 +304,11 @@ public abstract class Operation {
     LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
-        LOG.warn("Operation seems to be in invalid state, opHandle is null");
+        log.warn("Operation seems to be in invalid state, opHandle is null");
         return;
       }
       if (operationLog == null) {
-        LOG.warn("Operation [ " + opHandle.getHandleIdentifier() + " ] " + "logging is enabled, "
+        log.warn("Operation [ " + opHandle.getHandleIdentifier() + " ] " + "logging is enabled, "
             + "but its OperationLog object cannot be found. "
             + "Perhaps the operation has already terminated.");
       } else {
@@ -316,7 +316,7 @@ public abstract class Operation {
           scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
         } else {
-          LOG.info("Closing operation log {} without delay", operationLog);
+          log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();
         }
       }
