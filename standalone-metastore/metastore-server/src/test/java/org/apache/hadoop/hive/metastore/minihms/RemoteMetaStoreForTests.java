@@ -37,7 +37,7 @@ public class RemoteMetaStoreForTests extends AbstractMetaStoreService {
   public void start() throws Exception {
     MetastoreConf.setBoolVar(getConfiguration(), MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-        getConfiguration(), true, false, false);
+        getConfiguration());
     super.start();
   }
 }
