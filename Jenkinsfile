@@ -138,8 +138,8 @@ properties([
     // do not run multiple testruns on the same branch
 //    disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '19', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
+        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
+        string(name: 'OPTS', defaultValue: '-pl common -am', description: 'additional maven opts'),
         string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
 ])
