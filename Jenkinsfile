@@ -1,5 +1,8 @@
 
+
 def setPrLabel(String prLabel) {
+  if (env.CHANGE_ID) {
+
    def mapping=[
     "SUCCESS":"tests passed",
     "UNSTABLE":"tests unstable",
@@ -14,6 +17,7 @@ def setPrLabel(String prLabel) {
    newLabels.add(mapping[prLabel])
    echo ('' +newLabels)
    pullRequest.labels=newLabels
+  }
 }
 
 setPrLabel("PENDING");
