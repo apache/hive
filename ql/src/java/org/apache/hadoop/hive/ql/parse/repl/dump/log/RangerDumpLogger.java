@@ -15,28 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.RangerDumpBegin;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.RangerDumpEnd;
 
 /**
- * ReplLogger.
+ * RangerDumpLogger.
  *
- * Logger class for Repl Events.
+ * Repllogger for Ranger Dump.
  **/
-public abstract class ReplLogger<T> {
+public class RangerDumpLogger extends ReplLogger<Long> {
+  private String dbName;
+  private String dumpDir;
 
-  public ReplLogger() {
+  public RangerDumpLogger(String dbName, String dumpDir) {
+    this.dbName = dbName;
+    this.dumpDir = dumpDir;
   }
 
-  public abstract void startLog();
-
-  public abstract void endLog(T logVal);
-
-  public void tableLog(String tableName, TableType tableType) {
+  @Override
+  public void startLog() {
+    new RangerDumpBegin(dbName).log(LogTag.RANGER_DUMP_START);
   }
-  public void functionLog(String funcName){
-  }
-  public void eventLog(String eventId, String eventType) {
+
+  @Override
+  public void endLog(Long count) {
+    new RangerDumpEnd(dbName, count, dumpDir).log(LogTag.RANGER_DUMP_END);
   }
 }
