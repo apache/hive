@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.cli;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -34,7 +33,6 @@ import java.util.List;
 /**
  * CliDriver that runs the negative Kudu Qtests.
  */
-@Ignore("HIVE-23314")
 @RunWith(Parameterized.class)
 public class TestKuduNegativeCliDriver {
 
