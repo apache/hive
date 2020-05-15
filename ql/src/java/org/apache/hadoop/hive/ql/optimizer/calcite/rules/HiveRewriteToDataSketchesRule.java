@@ -55,8 +55,18 @@ import com.google.common.collect.Lists;
  * <br/>
  * Currently it can rewrite:
  * <ul>
- *  <li>{@code count(distinct(x))} to distinct counting sketches</li>
- *  <li>{@code percentile_cont(0.2) within group (order by id)}</li>
+ *  <li>{@code count(distinct(x))} to distinct counting sketches
+ *    <pre>
+ *     SELECT COUNT(DISTINCT id) FROM sketch_input;
+ *       ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
+ *    </pre>
+ *  </li>
+ *  <li>{@code percentile_cont(0.2) within group (order by id)}
+ *    <pre>
+ *     SELECT PERCENTILE_CONT(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
+ *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
+ *    </pre>
+ *  </li>
  *  </ul>
  *
  * <p>
