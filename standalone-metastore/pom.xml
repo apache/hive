@@ -64,7 +64,7 @@
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
+    <maven.surefire.version>3.0.0-M4</maven.surefire.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>

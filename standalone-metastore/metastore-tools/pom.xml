@@ -35,7 +35,7 @@
 
   <properties>
     <hive.version>4.0.0-SNAPSHOT</hive.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
+    <maven.surefire.version>3.0.0-M4</maven.surefire.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <javac.errorprone.version>2.8</javac.errorprone.version>
