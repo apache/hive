@@ -24,7 +24,7 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
     node(POD_LABEL) {
-      container('maven') {
+      container('hdb') {
         timestamps {
           run()
         }
@@ -35,7 +35,7 @@ def executorNode(run) {
 // FIXME decomission this method
 def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
   def splits
-  container('maven') {
+  container('hdb') {
     splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
   }
   def branches = [:]
@@ -110,7 +110,7 @@ podTemplate(
   containers: [
   //cloudbees/jnlp-slave-with-java-build-tools
   //kgyrtkirk/hive-dev-box:executor
-    containerTemplate(name: 'maven', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
+    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1300m',
         resourceLimitCpu: '3000m',
@@ -150,7 +150,7 @@ properties([
 
 // launch the main pod
 node(POD_LABEL) {
-  container('maven') {
+  container('hdb') {
     stage('Prepare') {
     // FIXME can this be moved outside?
     checkout scm
