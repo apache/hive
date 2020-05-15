@@ -114,12 +114,11 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
     }
 
     newAggCalls = vb.newAggCalls;
-    List<String> fieldNames=new ArrayList<String>();
-    for (int i=0;i<vb.newProjectsBelow.size();i++ ) {
-      fieldNames.add("ff_"+i);
+    List<String> fieldNames = new ArrayList<String>();
+    for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
+      fieldNames.add("ff_" + i);
     }
-    RelNode newProjectBelow=
-        projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
+    RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
 
     RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
@@ -173,7 +172,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       }
       Builder b = ImmutableBitSet.builder();
       b.addAll(aggregate.getGroupSet());
-      for (AggregateCall aggCall: aggregate.getAggCallList()) {
+      for (AggregateCall aggCall : aggregate.getAggCallList()) {
         b.addAll(aggCall.getArgList());
       }
       ImmutableBitSet inputs = b.build();
@@ -209,6 +208,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       }
 
       abstract boolean isApplicable(AggregateCall aggCall);
+
       abstract void rewrite(AggregateCall aggCall);
 
       protected SqlOperator getSqlOperator(String fnName) {
@@ -230,7 +230,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       @Override
       boolean isApplicable(AggregateCall aggCall) {
         return aggCall.isDistinct() && aggCall.getArgList().size() == 1
-        && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
+            && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
       }
 
       @Override
