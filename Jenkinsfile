@@ -13,7 +13,6 @@ properties([
 
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
-
    def mapping=[
     "SUCCESS":"tests passed",
     "UNSTABLE":"tests unstable",
@@ -179,10 +178,10 @@ jobWrappers {
               sh  'rsync -rltDq --stats rsync://$S/data .'
               writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
               writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
+              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
           }
           try {
             stage('Test') {
-              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
               buildHive("install -q")
             }
           } finally {
