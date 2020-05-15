@@ -170,8 +170,8 @@ rsyncPodTemplate {
   node(POD_LABEL) {
     container('rsync') {
       stage('Prepare rsync') {
-        sh '''printf 'env.S="%s"' "`hostname -i`" | tee /tmp/load.props'''
-        load '/tmp/load.props'
+        sh '''printf 'env.S="%s"' "`hostname -i`" | tee load.props'''
+        load 'load.props'
         sh 'df -h /data'
       }
     }
