@@ -48,6 +48,7 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
 
+  <!-- why the f*ck this pom.xml has a dependencyManagement block? -->
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -122,24 +123,6 @@
           </exclusion>
         </exclusions>
         <version>2.5</version>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.jupiter.api.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-runner -->
-      <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-runner</artifactId>
-        <version>${junit.platform.runner.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
       </dependency>
       <dependency>
         <groupId>info.picocli</groupId>
