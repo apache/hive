@@ -1701,7 +1701,17 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  (SELECT * FROM `sys`.`TBL_COL_PRIVS` LATERAL VIEW explode(split_map_privs(`TBL_COL_PRIV`)) `TBL_COL_PRIVIS` AS `TBL_COL_PRIV`)) P
+  (SELECT
+        Q.`GRANTOR`,
+        Q.`GRANT_OPTION`,
+        Q.`PRINCIPAL_NAME`,
+        Q.`PRINCIPAL_TYPE`,
+        Q.`AUTHORIZER`,
+        Q.`COLUMN_NAME`,
+        Q.`TBL_COL_PRIV`,
+        Q.`TBL_ID`
+       FROM `sys`.`TBL_COL_PRIVS` AS Q
+       LATERAL VIEW explode(split_map_privs(`TBL_COL_PRIV`)) `TBL_COL_PRIV_TMP` AS Q.`TBL_COL_PRIV`) P
                           JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
