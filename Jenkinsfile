@@ -37,9 +37,7 @@ setPrLabel("PENDING");
 def executorNode(run) {
     node(POD_LABEL) {
       container('hdb') {
-        timestamps {
-          run()
-        }
+        run()
       }
   }
 }
@@ -109,7 +107,9 @@ def jobWrappers(closure) {
   // allocate 1 precommit token for the execution
   try{
     lock(label:'hive-precommit',quantity:1)  {
-      closure()
+      timestamps {
+        closure()
+      }
     }
   } finally {
     setPrLabel(currentBuild.currentResult)
@@ -168,7 +168,7 @@ node(POD_LABEL) {
     sh 'df -h'
     sh '''echo S==$S'''
     sh '''cat << EOF > rsyncd.conf
-[ws]
+[data]
 path = $PWD
 read only = true
 timeout = 300
@@ -196,7 +196,7 @@ find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while rea
 
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-    sh  'rsync -arvvq --stats rsync://$S:9873/ws .'
+    sh  'rsync -arvvq --stats rsync://$S:9873/data .'
   }, {
     sh '''
 echo "@INC"
