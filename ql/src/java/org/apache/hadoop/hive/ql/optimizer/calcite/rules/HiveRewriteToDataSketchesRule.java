@@ -114,12 +114,12 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
     }
 
     newAggCalls = vb.newAggCalls;
-    List<String> filedNames=new ArrayList<String>();
+    List<String> fieldNames=new ArrayList<String>();
     for (int i=0;i<vb.newProjectsBelow.size();i++ ) {
-      filedNames.add("ff_"+i);
+      fieldNames.add("ff_"+i);
     }
     RelNode newProjectBelow=
-        projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, filedNames);
+        projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
 
     RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
