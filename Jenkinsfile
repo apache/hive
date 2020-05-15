@@ -44,40 +44,6 @@ def executorNode(run) {
   }
 }
 
-// FIXME decomission this method
-def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
-  def splits
-  container('hdb') {
-    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
-  }
-  def branches = [:]
-  for (int i = 0; i < splits.size(); i++) {
-    def num = i
-    def split = splits[num]
-    def splitName=String.format("split-%02d",num+1)
-    branches[splitName] = {
-      executorNode {
-      	stage('Prepare') {
-            prepare()
-            writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
-            writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
-        }
-        try {
-      		stage('Test') {
-            run()
-      		}
-        } finally {
-      		stage('Archive') {
-            junit '**/TEST-*.xml'
-      		}
-        }
-      }
-    }
-  }
-  parallel branches
-}
-
-
 def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
