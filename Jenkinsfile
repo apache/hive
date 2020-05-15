@@ -134,7 +134,6 @@ def rsyncPodTemplate(closure) {
 
 }
 
-
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
@@ -178,6 +177,7 @@ rsyncPodTemplate {
       }
     }
 
+    def splits
     executorNode {
       container('hdb') {
         stage('Checkout') {
@@ -197,29 +197,42 @@ rsyncPodTemplate {
         }
         stage('Upload') {
           sh  'rsync -rltDq --stats . rsync://$S/data'
+
+          splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
         }
       }
     }
 
     stage('Testing') {
-      testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-        sh  'rsync -rltDq --stats rsync://$S/data .'
-      }, {
-        sh '''
-echo "@INC"
-cat inclusions.txt
-echo "@ENC"
-cat exclusions.txt
-echo "@END"
-'''
-        buildHive("install -q")
-        withEnv(["SCRIPT=$params.SCRIPT"]) {
-          sh '''$SCRIPT'''
+
+      def branches = [:]
+      for (int i = 0; i < splits.size(); i++) {
+        def num = i
+        def split = splits[num]
+        def splitName=String.format("split-%02d",num+1)
+        branches[splitName] = {
+          executorNode {
+            stage('Prepare') {
+                sh  'rsync -rltDq --stats rsync://$S/data .'
+                writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
+                writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
+            }
+            try {
+              stage('Test') {
+                sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
+                buildHive("install -q")
+              }
+            } finally {
+              stage('Archive') {
+                junit '**/TEST-*.xml'
+              }
+            }
+          }
         }
-      })
+      }
+      parallel branches
     }
   }
-}
 }
 
 
