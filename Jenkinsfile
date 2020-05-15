@@ -1,4 +1,16 @@
 
+properties([
+    // max 5 build/branch/day
+//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    // do not run multiple testruns on the same branch
+//    disableConcurrentBuilds(),
+    parameters([
+        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
+        string(name: 'OPTS', defaultValue: '-pl storage-api -am', description: 'additional maven opts'),
+        string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
+    ])
+])
+
 
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
@@ -105,6 +117,11 @@ def jobWrappers(closure) {
 }
 
 
+def rsyncPodTemplate(closure) {
+
+}
+
+
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
@@ -138,17 +155,6 @@ spec:
 jobWrappers {
 hdbPodTemplate {
 
-properties([
-    // max 5 build/branch/day
-//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
-    // do not run multiple testruns on the same branch
-//    disableConcurrentBuilds(),
-    parameters([
-        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-pl storage-api -am', description: 'additional maven opts'),
-        string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
-    ])
-])
 
 // launch the main pod
 node(POD_LABEL) {
