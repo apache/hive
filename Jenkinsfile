@@ -106,10 +106,7 @@ def jobWrappers(closure) {
 
 jobWrappers {
 podTemplate(
-  //workspaceVolume: dynamicPVC(requestsSize: "16Gi"),
   containers: [
-  //cloudbees/jnlp-slave-with-java-build-tools
-  //kgyrtkirk/hive-dev-box:executor
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1300m',
@@ -117,8 +114,6 @@ podTemplate(
         resourceRequestMemory: '6750Mi',
         resourceLimitMemory: '12000Mi'
     ),
-//    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-//    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
   ], yaml:'''
 spec:
   securityContext:
@@ -143,7 +138,7 @@ properties([
 //    disableConcurrentBuilds(),
     parameters([
         string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-pl common -am', description: 'additional maven opts'),
+        string(name: 'OPTS', defaultValue: '-pl storage-api -am', description: 'additional maven opts'),
         string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
 ])
