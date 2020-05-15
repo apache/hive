@@ -197,14 +197,14 @@ rsyncPodTemplate {
           }
           stage('Upload') {
             sh  'rsync -arq --stats . rsync://$S/data'
-          
+          }
         }
       }
 
       stage('Testing') {
         testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
           sh  'rsync -arq --stats rsync://$S/data .'
-       {
+        }, {
           sh '''
 echo "@INC"
 cat inclusions.txt
