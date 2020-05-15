@@ -177,8 +177,8 @@ jobWrappers {
         executorNode {
           stage('Prepare') {
               sh  'rsync -rltDq --stats rsync://$S/data .'
-              writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
-              writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
+              writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
+              writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
           }
           try {
             stage('Test') {
