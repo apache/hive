@@ -85,7 +85,7 @@
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.version>2.10.0</jackson.version>
     <javolution.version>5.5.1</javolution.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
