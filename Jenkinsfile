@@ -11,7 +11,6 @@ properties([
     ])
 ])
 
-
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
 
@@ -70,9 +69,6 @@ du -h --max-depth=1
   }
 }
 
-
-
-
 def rsyncPodTemplate(closure) {
   podTemplate(
   containers: [
@@ -85,7 +81,6 @@ def rsyncPodTemplate(closure) {
   ]) {
     closure();
   }
-
 }
 
 def hdbPodTemplate(closure) {
@@ -118,7 +113,6 @@ spec:
   }
 }
 
-
 def jobWrappers(closure) {
   try {
     // allocate 1 precommit token for the execution
@@ -145,7 +139,7 @@ def jobWrappers(closure) {
 }
 
 jobWrappers {
-  
+
   def splits
   executorNode {
     container('hdb') {
