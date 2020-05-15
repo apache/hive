@@ -118,6 +118,17 @@ def jobWrappers(closure) {
 
 
 def rsyncPodTemplate(closure) {
+  podTemplate(
+  containers: [
+    containerTemplate(name: 'rsync', image: 'kgyrtkirk/htk-rsync:latest', ttyEnabled: true,
+        alwaysPullImage: true,
+        resourceRequestCpu: '1m',
+        resourceLimitCpu: '100m',
+        resourceRequestMemory: '10Mi',
+    ),
+  ]) {
+    closure();
+  }
 
 }
 
@@ -153,70 +164,62 @@ spec:
 }
 
 jobWrappers {
-hdbPodTemplate {
 
+// launch the "rsync" container to store build data
+rsyncPodTemplate {
+  node(POD_LABEL) {
+    container('rsync') {
+      stage('Prepare rsync') {
+        sh '''printf 'env.S="%s"' "`hostname -i`" | tee /tmp/load.props'''
+        load '/tmp/load.props'
+        sh 'df -h /data'
+      }
+    }
 
-// launch the main pod
-node(POD_LABEL) {
-  container('hdb') {
-    stage('Prepare') {
-    // FIXME can this be moved outside?
-    checkout scm
-    sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
-    sh '''cat /home/jenkins/agent/load.props'''
-    load '/home/jenkins/agent/load.props'
-    sh 'df -h'
-    sh '''echo S==$S'''
-    sh '''cat << EOF > rsyncd.conf
-[data]
-path = $PWD
-read only = true
-timeout = 300
-use chroot = false
-EOF
-cat rsyncd.conf
-'''
-    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
-    sh '''#!/bin/bash -e
-# make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-'''
-  }
-  stage('Compile') {
-    buildHive("install -Dtest=noMatches")
-    sh '''#!/bin/bash -e
-# make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-'''
-  }
-}
+    hdbPodTemplate {
+      // launch the main pod
+      node(POD_LABEL) {
+        container('hdb') {
+          stage('Checkout') {
+            checkout scm
+            // why dup?
+            sh '''#!/bin/bash -e
+                # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+                find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+            '''
+          }
+          stage('Compile') {
+            buildHive("install -Dtest=noMatches")
+            sh '''#!/bin/bash -e
+                # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+                find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+            '''
+          }
+          stage('Upload') {
+            sh  'rsync -arq --stats . rsync://$S:9873/data'
+          }
+        }
+      }
 
-
-
-
-stage('Testing') {
-  testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-    sh  'rsync -arvvq --stats rsync://$S:9873/data .'
-  }, {
-    sh '''
+      stage('Testing') {
+        testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
+          sh  'rsync -arq --stats rsync://$S:9873/data .'
+        }, {
+          sh '''
 echo "@INC"
 cat inclusions.txt
 echo "@ENC"
 cat exclusions.txt
 echo "@END"
 '''
-      buildHive("install -q")
-      withEnv(["SCRIPT=$params.SCRIPT"]) {
-        sh '''$SCRIPT'''
+          buildHive("install -q")
+          withEnv(["SCRIPT=$params.SCRIPT"]) {
+            sh '''$SCRIPT'''
+          }
+       })
       }
-  })
-}
-
-}
-
-
-//jenkins/jnlp-slave:3.27-1
-}
+    }
+  }
 }
 
 
