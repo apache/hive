@@ -907,6 +907,9 @@ public class TaskExecutorService extends AbstractService
   }
 
   private void addToPreemptionQueue(TaskWrapper taskWrapper) {
+    if (taskWrapper.isInPreemptionQueue()) {
+      return;
+    }
     synchronized (lock) {
       insertIntoPreemptionQueueOrFailUnlocked(taskWrapper);
       taskWrapper.setIsInPreemptableQueue(true);

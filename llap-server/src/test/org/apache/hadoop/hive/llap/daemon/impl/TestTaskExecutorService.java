@@ -249,7 +249,7 @@ public class TestTaskExecutorService {
 
 
     TaskExecutorServiceForTest taskExecutorService =
-      new TaskExecutorServiceForTest(3, 2, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
+      new TaskExecutorServiceForTest(4, 2, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
@@ -315,6 +315,15 @@ public class TestTaskExecutorService {
       assertTrue(taskWrapper.canFinishForPriority());
       assertEquals(3, taskExecutorService.preemptionQueue.size());
 
+      // double notification test (nothing should change from the above sequence)
+      taskExecutorService.finishableStateUpdated(taskWrapper3, true);taskWrapper = taskExecutorService.preemptionQueue.peek();
+      assertNotNull(taskWrapper);
+      assertTrue(taskWrapper.isInPreemptionQueue());
+      // no more non-finishables left, r2 is smallest among the finishables
+      assertEquals(fragmentId2, taskWrapper.getRequestId());
+      assertTrue(taskWrapper.canFinishForPriority());
+      assertEquals(3, taskExecutorService.preemptionQueue.size());
+
       // remove r2 from scheduler
       taskExecutorService.killFragment(fragmentId2);
 
@@ -334,6 +343,9 @@ public class TestTaskExecutorService {
       // r3 is non-finishable and should be at top
       assertEquals(fragmentId3, taskWrapper.getRequestId());
       assertFalse(taskWrapper.canFinishForPriority());
+      assertEquals(2, taskExecutorService.preemptionQueue.size());
+      // make sure the task is not added twice to pre-emption queue
+      taskExecutorService.tryScheduleUnderLock(taskWrapper);
       assertEquals(2, taskExecutorService.preemptionQueue.size());
 
       // remove r3 from scheduler
