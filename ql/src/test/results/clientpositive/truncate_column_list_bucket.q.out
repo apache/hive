@@ -119,29 +119,20 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test_tab_n3
-              numFiles 2
-              numRows 500
               partition_columns part
               partition_columns.types string
-              rawDataSize 4812
-              serialization.ddl struct test_tab_n3 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 1761
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -151,10 +142,8 @@ STAGE PLANS:
                 name default.test_tab_n3
                 partition_columns part
                 partition_columns.types string
-                serialization.ddl struct test_tab_n3 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.test_tab_n3
             name: default.test_tab_n3
@@ -248,29 +237,20 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test_tab_n3
-              numFiles 2
-              numRows 500
               partition_columns part
               partition_columns.types string
-              rawDataSize 4812
-              serialization.ddl struct test_tab_n3 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 1761
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -280,10 +260,8 @@ STAGE PLANS:
                 name default.test_tab_n3
                 partition_columns part
                 partition_columns.types string
-                serialization.ddl struct test_tab_n3 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.test_tab_n3
             name: default.test_tab_n3

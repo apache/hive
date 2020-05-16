@@ -579,30 +579,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
-                    columns.comments 
                     columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
-                    numFiles 1
-                    numRows 15
-                    rawDataSize 16430
-                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3483
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
@@ -610,14 +600,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
-                      numFiles 1
-                      numRows 15
-                      rawDataSize 16430
-                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 3483
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
                   name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
@@ -653,30 +637,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns l3_snapshot_number
-                    columns.comments 
                     columns.types bigint
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_snap_number_2018022300104
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 6
-                    serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 7
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns l3_snapshot_number
@@ -684,14 +658,8 @@ STAGE PLANS:
                       columns.types bigint
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_snap_number_2018022300104
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 6
-                      serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 7
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.l3_clarity__l3_snap_number_2018022300104
                   name: default.l3_clarity__l3_snap_number_2018022300104
@@ -734,30 +702,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
                     bucket_count 64
                     bucket_field_name idp_data_date
                     bucketing_version 2
                     column.name.delimiter ,
                     columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
-                    columns.comments 
                     columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                     name default.l3_monthly_dw_dimplan
-                    numFiles 1
-                    numRows 180340
-                    rawDataSize 269826156
-                    serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 5242699
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
                       bucket_count 64
                       bucket_field_name idp_data_date
                       bucketing_version 2
@@ -767,14 +726,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                       name default.l3_monthly_dw_dimplan
-                      numFiles 1
-                      numRows 180340
-                      rawDataSize 269826156
-                      serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 5242699
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_monthly_dw_dimplan
                   name: default.l3_monthly_dw_dimplan
@@ -817,30 +770,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
-                    columns.comments 
                     columns.types bigint:bigint:timestamp:bigint:date
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 120
-                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 677
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
@@ -848,14 +791,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:timestamp:bigint:date
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 120
-                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 677
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
                   name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
@@ -1104,30 +1041,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
-                    columns.comments 
                     columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
-                    numFiles 1
-                    numRows 15
-                    rawDataSize 16430
-                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3483
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
@@ -1135,14 +1062,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
-                      numFiles 1
-                      numRows 15
-                      rawDataSize 16430
-                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 3483
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
                   name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
@@ -1178,30 +1099,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns l3_snapshot_number
-                    columns.comments 
                     columns.types bigint
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_snap_number_2018022300104
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 6
-                    serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 7
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns l3_snapshot_number
@@ -1209,14 +1120,8 @@ STAGE PLANS:
                       columns.types bigint
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_snap_number_2018022300104
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 6
-                      serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 7
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.l3_clarity__l3_snap_number_2018022300104
                   name: default.l3_clarity__l3_snap_number_2018022300104
@@ -1259,30 +1164,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
                     bucket_count 64
                     bucket_field_name idp_data_date
                     bucketing_version 2
                     column.name.delimiter ,
                     columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
-                    columns.comments 
                     columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                     name default.l3_monthly_dw_dimplan
-                    numFiles 1
-                    numRows 180340
-                    rawDataSize 269826156
-                    serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 5242699
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
                       bucket_count 64
                       bucket_field_name idp_data_date
                       bucketing_version 2
@@ -1292,14 +1188,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                       name default.l3_monthly_dw_dimplan
-                      numFiles 1
-                      numRows 180340
-                      rawDataSize 269826156
-                      serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 5242699
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_monthly_dw_dimplan
                   name: default.l3_monthly_dw_dimplan
@@ -1342,30 +1232,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
-                    columns.comments 
                     columns.types bigint:bigint:timestamp:bigint:date
 #### A masked pattern was here ####
                     name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 120
-                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 677
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
@@ -1373,14 +1253,8 @@ STAGE PLANS:
                       columns.types bigint:bigint:timestamp:bigint:date
 #### A masked pattern was here ####
                       name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 120
-                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 677
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
                   name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
@@ -1567,30 +1441,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_2":"true","col_3":"true"}}
                     bucket_count 4
                     bucket_field_name col_1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
-                    columns.comments 
                     columns.types int:string:string
 #### A masked pattern was here ####
                     name default.test_table
-                    numFiles 3
-                    numRows 4
-                    rawDataSize 42
-                    serialization.ddl struct test_table { i32 col_1, string col_2, string col_3}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 46
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_2":"true","col_3":"true"}}
                       bucket_count 4
                       bucket_field_name col_1
                       bucketing_version 2
@@ -1600,14 +1465,8 @@ STAGE PLANS:
                       columns.types int:string:string
 #### A masked pattern was here ####
                       name default.test_table
-                      numFiles 3
-                      numRows 4
-                      rawDataSize 42
-                      serialization.ddl struct test_table { i32 col_1, string col_2, string col_3}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 46
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.test_table
                   name: default.test_table
@@ -1725,30 +1584,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_2":"true","col_3":"true"}}
                     bucket_count 4
                     bucket_field_name col_1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
-                    columns.comments 
                     columns.types int:string:string
 #### A masked pattern was here ####
                     name default.test_table
-                    numFiles 3
-                    numRows 4
-                    rawDataSize 42
-                    serialization.ddl struct test_table { i32 col_1, string col_2, string col_3}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 46
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_2":"true","col_3":"true"}}
                       bucket_count 4
                       bucket_field_name col_1
                       bucketing_version 2
@@ -1758,14 +1608,8 @@ STAGE PLANS:
                       columns.types int:string:string
 #### A masked pattern was here ####
                       name default.test_table
-                      numFiles 3
-                      numRows 4
-                      rawDataSize 42
-                      serialization.ddl struct test_table { i32 col_1, string col_2, string col_3}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 46
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.test_table
                   name: default.test_table

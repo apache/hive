@@ -184,30 +184,21 @@ STAGE PLANS:
                   partition values:
                     employeesalary 2000.0
                   properties:
-                    bucket_count -1
                     column.name.delimiter ,
                     columns employeeid,employeename
-                    columns.comments 
                     columns.types int:string
                     field.delim |
 #### A masked pattern was here ####
                     name default.employee_part
-                    numFiles 1
-                    numRows 0
                     partition_columns employeesalary
                     partition_columns.types double
-                    rawDataSize 0
-                    serialization.ddl struct employee_part { i32 employeeid, string employeename}
                     serialization.format |
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 105
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns employeeid,employeename
@@ -218,10 +209,8 @@ STAGE PLANS:
                       name default.employee_part
                       partition_columns employeesalary
                       partition_columns.types double
-                      serialization.ddl struct employee_part { i32 employeeid, string employeename}
                       serialization.format |
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.employee_part
                   name: default.employee_part
@@ -482,30 +471,21 @@ STAGE PLANS:
                   partition values:
                     employeesalary 4000.0
                   properties:
-                    bucket_count -1
                     column.name.delimiter ,
                     columns employeeid,employeename
-                    columns.comments 
                     columns.types int:string
                     field.delim |
 #### A masked pattern was here ####
                     name default.employee_part
-                    numFiles 1
-                    numRows 0
                     partition_columns employeesalary
                     partition_columns.types double
-                    rawDataSize 0
-                    serialization.ddl struct employee_part { i32 employeeid, string employeename}
                     serialization.format |
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 105
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns employeeid,employeename
@@ -516,10 +496,8 @@ STAGE PLANS:
                       name default.employee_part
                       partition_columns employeesalary
                       partition_columns.types double
-                      serialization.ddl struct employee_part { i32 employeeid, string employeename}
                       serialization.format |
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.employee_part
                   name: default.employee_part

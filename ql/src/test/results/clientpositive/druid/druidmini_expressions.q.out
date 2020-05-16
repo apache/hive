@@ -240,13 +240,11 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                   output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     EXTERNAL TRUE
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
-                    columns.comments 
                     columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean:string:string:string
                     druid.datasource default.druid_table_alltypesorc
                     druid.fieldNames vc
@@ -258,23 +256,15 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.druid_table_alltypesorc
-                    numFiles 0
-                    numRows 9173
-                    rawDataSize 0
-                    serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                     storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                 
                     input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                     output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       EXTERNAL TRUE
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
@@ -290,15 +280,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.druid_table_alltypesorc
-                      numFiles 0
-                      numRows 9173
-                      rawDataSize 0
-                      serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                       storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                     name: default.druid_table_alltypesorc
                   name: default.druid_table_alltypesorc
