@@ -172,30 +172,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -203,15 +193,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
@@ -223,30 +208,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -254,15 +229,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
@@ -347,30 +317,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -378,15 +338,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
@@ -398,30 +353,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -429,15 +374,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
@@ -522,30 +462,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -553,15 +483,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
@@ -573,30 +498,20 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns customer
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.daysales_temp
-              numFiles 1
-              numRows 1
               partition_columns dt
               partition_columns.types string
-              rawDataSize 1
-              serialization.ddl struct daysales_temp { i32 customer}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns customer
@@ -604,15 +519,10 @@ STAGE PLANS:
                 columns.types int
 #### A masked pattern was here ####
                 name default.daysales_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt
                 partition_columns.types string
-                rawDataSize 0
-                serialization.ddl struct daysales_temp { i32 customer}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.daysales_temp
             name: default.daysales_temp
