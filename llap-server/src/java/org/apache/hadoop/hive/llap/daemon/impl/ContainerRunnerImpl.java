@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
@@ -271,23 +272,19 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber(),
           vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo, amNodeId);
 
-      String[] localDirs = fragmentInfo.getLocalDirs();
-      Preconditions.checkNotNull(localDirs);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Dirs are: " + Arrays.toString(localDirs));
-      }
       // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
 
-      Configuration callableConf = new Configuration(getConfig());
+      // Lazy create conf object, as it gets expensive in this codepath.
+      Supplier<Configuration> callableConf = () -> new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
       // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
       ConfVars tezSummary = ConfVars.TEZ_EXEC_SUMMARY;
       ConfVars llapTasks = ConfVars.LLAP_TASK_TIME_SUMMARY;
-      boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
-                             && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
+      boolean addTaskTimes = getConfig().getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
+                             && getConfig().getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
 
       final String llapHost;
       if (UserGroupInformation.isSecurityEnabled()) {

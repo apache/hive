@@ -211,9 +211,9 @@ public class QueryTracker extends AbstractService {
         LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
       }
       if (!vertex.getIsExternalSubmission()) {
+        String[] localDirs = (ShuffleHandler.get().isDirWatcherEnabled()) ? queryInfo.getLocalDirs() : null;
         ShuffleHandler.get()
-            .registerDag(appIdString, dagIdentifier, appToken,
-                user, queryInfo.getLocalDirs());
+            .registerDag(appIdString, dagIdentifier, appToken, user, localDirs);
       }
 
       return queryInfo.registerFragment(

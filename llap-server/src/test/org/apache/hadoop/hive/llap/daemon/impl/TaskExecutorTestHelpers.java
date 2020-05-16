@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.base.Supplier;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -212,7 +213,7 @@ public class TaskExecutorTestHelpers {
     public MockRequest(SubmitWorkRequestProto requestProto, QueryFragmentInfo fragmentInfo,
                        boolean canFinish, boolean canFinishQueue, long workTime,
                        TezEvent initialEvent, boolean isGuaranteed) {
-      super(requestProto, fragmentInfo, new Configuration(), new ExecutionContextImpl("localhost"),
+      super(requestProto, fragmentInfo, Configuration::new, new ExecutionContextImpl("localhost"),
           null, new Credentials(), 0, mock(AMReporter.class), null, mock(
           LlapDaemonExecutorMetrics.class), mock(KilledTaskHandler.class), mock(
           FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
