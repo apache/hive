@@ -460,7 +460,7 @@ public class Hive {
   /**
    * closes the connection to metastore for the calling thread
    */
-  private void close() {
+  public void close() {
     LOG.debug("Closing current thread's connection to Hive Metastore.");
     if (metaStoreClient != null) {
       metaStoreClient.close();
