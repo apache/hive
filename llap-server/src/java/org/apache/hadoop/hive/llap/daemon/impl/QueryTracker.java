@@ -160,7 +160,8 @@ public class QueryTracker extends AbstractService {
     String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber,
     int attemptNumber,
     String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-    String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId) throws IOException {
+      String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId,
+      ContainerRunnerImpl.UgiPool ugiPool) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     // Note: This is a readLock to prevent a race with queryComplete. Operations
@@ -191,7 +192,7 @@ public class QueryTracker extends AbstractService {
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
                 tokenInfo.userName, tokenInfo.appId, amNodeId, vertex.getTokenIdentifier(), appToken,
-                vertex.getIsExternalSubmission());
+                vertex.getIsExternalSubmission(), ugiPool);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
