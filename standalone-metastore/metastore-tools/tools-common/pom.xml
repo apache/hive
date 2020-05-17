@@ -50,9 +50,10 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
