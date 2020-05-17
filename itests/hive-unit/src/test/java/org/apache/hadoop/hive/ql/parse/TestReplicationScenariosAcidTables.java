@@ -1702,6 +1702,28 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
   }
 
+  @Test
+  public void testReplTargetOfReplication() throws Throwable {
+    // Bootstrap
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, primaryDbName).verifyReplTargetProperty(replicatedDbName);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
+
+    //Try to do a dump on replicated db. It should fail
+    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='1')");
+    try {
+      replica.dump(replicatedDbName);
+    } catch (Exception e) {
+      Assert.assertEquals("Cannot dump database as it is a Target of replication.", e.getMessage());
+    }
+    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='')");
+
+    //Try to dump a different db on replica. That should succeed
+    replica.run("create database " + replicatedDbName + "_extra with dbproperties ('repl.source.for' = '1, 2, 3')")
+      .dump(replicatedDbName + "_extra");
+    replica.run("drop database if exists " + replicatedDbName + "_extra cascade");
+  }
+
   private void verifyPathExist(FileSystem fs, Path filePath) throws IOException {
     assertTrue("Path not found:" + filePath, fs.exists(filePath));
   }
