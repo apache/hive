@@ -24,10 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -70,6 +69,7 @@ public class QueryInfo {
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
   private final String tokenUserName, appId;
+  private final ContainerRunnerImpl.UgiPool ugiPool;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
     String dagName, String hiveQueryIdString,
@@ -79,7 +79,7 @@ public class QueryInfo {
     String tokenAppId, final LlapNodeId amNodeId,
     String tokenIdentifier,
     Token<JobTokenIdentifier> appToken,
-    boolean isExternalQuery) {
+    boolean isExternalQuery, ContainerRunnerImpl.UgiPool ugiPool) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -96,6 +96,7 @@ public class QueryInfo {
     this.appTokenIdentifier = tokenIdentifier;
     this.appToken = appToken;
     this.isExternalQuery = isExternalQuery;
+    this.ugiPool = ugiPool;
     final InetSocketAddress address =
         NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
     SecurityUtil.setTokenService(appToken, address);
@@ -332,21 +333,11 @@ public class QueryInfo {
     return appId;
   }
 
-
-  private final BlockingQueue<UserGroupInformation> ugiPool = new LinkedBlockingQueue<>();
-
-  public UserGroupInformation getUmbilicalUgi() {
-
-    UserGroupInformation ugi;
-    ugi = ugiPool.poll();
-    if (ugi == null) {
-      ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
-      ugi.addToken(appToken);
-    }
-    return ugi;
+  UserGroupInformation getUmbilicalUgi() throws ExecutionException {
+    return ugiPool.getUmbilicalUgi(appTokenIdentifier, appToken);
   }
 
-  public void returnUmbilicalUgi(UserGroupInformation ugi) {
-    ugiPool.offer(ugi);
+  void returnUmbilicalUgi(UserGroupInformation ugi) {
+    ugiPool.returnUmbilicalUgi(appTokenIdentifier, ugi);
   }
 }
