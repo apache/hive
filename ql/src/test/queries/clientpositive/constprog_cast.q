@@ -1,3 +1,5 @@
+--! qt:disabled:Enable when we move to Calcite 1.23
+
 set hive.optimize.constant.propagation=true;
 
 CREATE TABLE constcasttest (id string);
