@@ -159,30 +159,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -192,10 +182,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -207,30 +195,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -240,10 +218,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -368,30 +344,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -401,10 +367,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -449,30 +413,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -482,10 +436,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -634,30 +586,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -667,10 +609,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -715,30 +655,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -748,10 +678,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -896,30 +824,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -929,10 +847,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -944,30 +860,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -977,10 +883,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1022,30 +926,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns ds,key,value
-                    columns.comments 
                     columns.types string:int:string
 #### A masked pattern was here ####
                     name default.pcr_t2_n0
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 18
-                    serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 19
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns ds,key,value
@@ -1053,14 +947,8 @@ STAGE PLANS:
                       columns.types string:int:string
 #### A masked pattern was here ####
                       name default.pcr_t2_n0
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 18
-                      serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 19
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t2_n0
                   name: default.pcr_t2_n0
@@ -1216,30 +1104,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1249,10 +1127,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1264,30 +1140,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1297,10 +1163,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1312,30 +1176,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-10
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1345,10 +1199,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1391,30 +1243,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns ds,key,value
-                    columns.comments 
                     columns.types string:int:string
 #### A masked pattern was here ####
                     name default.pcr_t2_n0
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 18
-                    serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 19
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns ds,key,value
@@ -1422,14 +1264,8 @@ STAGE PLANS:
                       columns.types string:int:string
 #### A masked pattern was here ####
                       name default.pcr_t2_n0
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 18
-                      serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 19
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t2_n0
                   name: default.pcr_t2_n0
@@ -1753,30 +1589,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1786,10 +1612,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1801,30 +1625,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1834,10 +1648,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -1962,30 +1774,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1995,10 +1797,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2043,30 +1843,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2076,10 +1866,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2228,30 +2016,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2261,10 +2039,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2309,30 +2085,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2342,10 +2108,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2482,30 +2246,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2515,10 +2269,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2530,30 +2282,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2563,10 +2305,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2608,30 +2348,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns ds,key,value
-                    columns.comments 
                     columns.types string:int:string
 #### A masked pattern was here ####
                     name default.pcr_t2_n0
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 18
-                    serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 19
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns ds,key,value
@@ -2639,14 +2369,8 @@ STAGE PLANS:
                       columns.types string:int:string
 #### A masked pattern was here ####
                       name default.pcr_t2_n0
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 18
-                      serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 19
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t2_n0
                   name: default.pcr_t2_n0
@@ -2790,30 +2514,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2823,10 +2537,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2838,30 +2550,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2871,10 +2573,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2886,30 +2586,20 @@ STAGE PLANS:
                   partition values:
                     ds 2000-04-10
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.pcr_t1_n2
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 160
-                    serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 180
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2919,10 +2609,8 @@ STAGE PLANS:
                       name default.pcr_t1_n2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct pcr_t1_n2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t1_n2
                   name: default.pcr_t1_n2
@@ -2965,30 +2653,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns ds,key,value
-                    columns.comments 
                     columns.types string:int:string
 #### A masked pattern was here ####
                     name default.pcr_t2_n0
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 18
-                    serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 19
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","key":"true","value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns ds,key,value
@@ -2996,14 +2674,8 @@ STAGE PLANS:
                       columns.types string:int:string
 #### A masked pattern was here ####
                       name default.pcr_t2_n0
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 18
-                      serialization.ddl struct pcr_t2_n0 { string ds, i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 19
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t2_n0
                   name: default.pcr_t2_n0

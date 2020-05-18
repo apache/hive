@@ -682,7 +682,7 @@
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
-                <source>${project.build.directory}/generated-sources</source>
+                <source>build/generated-sources</source>
                 <source>src/gen/version</source>
               </sources>
             </configuration>

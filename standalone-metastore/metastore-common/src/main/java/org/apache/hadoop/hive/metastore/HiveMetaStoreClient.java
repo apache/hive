@@ -393,7 +393,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 JavaUtils.getClassLoader());
         return (URIResolverHook) ReflectionUtils.newInstance(uriResolverClass, null);
       } catch (Exception e) {
-        LOG.error("Exception loading uri resolver hook" + e);
+        LOG.error("Exception loading uri resolver hook", e);
         return null;
       }
     }
@@ -576,14 +576,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
-        LOG.info("Trying to connect to metastore with URI (" + store + ")");
+        LOG.info("Trying to connect to metastore with URI ({})", store);
 
         try {
           if (useSSL) {
             try {
               String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
               if (trustStorePath.isEmpty()) {
-                throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH.toString()
+                throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
                     + " Not configured for SSL connection");
               }
               String trustStorePassword =
@@ -699,8 +699,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             tte = e;
             LOG.warn("Failed to connect to the MetaStore Server URI ({})",
                 store);
-
-            // Include stack trace in DEBUG logging
             LOG.debug("Failed to connect to the MetaStore Server URI ({})",
                 store, e);
           }
@@ -3437,13 +3435,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
     NotificationEventResponse rsp = client.get_next_notification(rqst);
-    LOG.debug("Got back " + rsp.getEventsSize() + " events");
+    LOG.debug("Got back {} events", rsp.getEventsSize());
     NotificationEventResponse filtered = new NotificationEventResponse();
     if (rsp != null && rsp.getEvents() != null) {
       long nextEventId = lastEventId + 1;
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
-        LOG.debug("Got event with id : " + e.getEventId());
+        LOG.debug("Got event with id : {}", e.getEventId());
         if (e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +

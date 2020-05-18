@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
@@ -225,6 +226,7 @@ public class QTestUtil {
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
+    dispatcher.register("disabled", new QTestDisabledHandler());
 
     String scriptsDir = getScriptsDir();
 

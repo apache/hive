@@ -155,30 +155,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
-                    columns.comments 
                     columns.types int:string:string:int:int
 #### A masked pattern was here ####
                     name default.orderpayment_small
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 36
-                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 37
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
@@ -186,14 +176,8 @@ STAGE PLANS:
                       columns.types int:string:string:int:int
 #### A masked pattern was here ####
                       name default.orderpayment_small
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 36
-                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 37
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.orderpayment_small
                   name: default.orderpayment_small
@@ -235,30 +219,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
-                    columns.comments 
                     columns.types int:string:string:int:int
 #### A masked pattern was here ####
                     name default.orderpayment_small
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 36
-                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 37
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
@@ -266,14 +240,8 @@ STAGE PLANS:
                       columns.types int:string:string:int:int
 #### A masked pattern was here ####
                       name default.orderpayment_small
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 36
-                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 37
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.orderpayment_small
                   name: default.orderpayment_small
@@ -315,30 +283,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
-                    columns.comments 
                     columns.types int:string:string:int:int
 #### A masked pattern was here ####
                     name default.orderpayment_small
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 36
-                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 37
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
@@ -346,14 +304,8 @@ STAGE PLANS:
                       columns.types int:string:string:int:int
 #### A masked pattern was here ####
                       name default.orderpayment_small
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 36
-                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 37
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.orderpayment_small
                   name: default.orderpayment_small
@@ -395,30 +347,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
-                    columns.comments 
                     columns.types int:string:string:int:int
 #### A masked pattern was here ####
                     name default.orderpayment_small
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 36
-                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 37
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
@@ -426,14 +368,8 @@ STAGE PLANS:
                       columns.types int:string:string:int:int
 #### A masked pattern was here ####
                       name default.orderpayment_small
-                      numFiles 1
-                      numRows 1
-                      rawDataSize 36
-                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 37
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.orderpayment_small
                   name: default.orderpayment_small
@@ -475,30 +411,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"userid":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns userid
-                    columns.comments 
                     columns.types int
 #### A masked pattern was here ####
                     name default.user_small
-                    numFiles 1
-                    numRows 100
-                    rawDataSize 288
-                    serialization.ddl struct user_small { i32 userid}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 388
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"userid":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns userid
@@ -506,14 +432,8 @@ STAGE PLANS:
                       columns.types int
 #### A masked pattern was here ####
                       name default.user_small
-                      numFiles 1
-                      numRows 100
-                      rawDataSize 288
-                      serialization.ddl struct user_small { i32 userid}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 388
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.user_small
                   name: default.user_small
