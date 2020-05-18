@@ -104,6 +104,7 @@ import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.dag.TaskAttempt;
 import org.apache.tez.dag.app.dag.Vertex;
 import org.apache.tez.dag.app.dag.impl.Edge;
+import org.apache.tez.dag.app.rm.node.ExtendedNodeId;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.dag.records.TezVertexID;
@@ -844,11 +845,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     @Override
     public void onRemove(LlapServiceInstance serviceInstance, int ephSeqVersion) {
       NodeReport nodeReport = constructNodeReport(serviceInstance, false);
-      LOG.info("Sending out nodeReport for onRemove: {}", nodeReport);
+      LOG.info("Sending out nodeReport for onRemove: {} workerIdentity: {}", nodeReport, serviceInstance.getWorkerIdentity());
       getContext().nodesUpdated(Collections.singletonList(nodeReport));
       instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
-      LOG.info("Removed node with identity: {} due to RegistryNotification. currentActiveInstances={}",
-          serviceInstance.getWorkerIdentity(), activeInstances.size());
+      Set<LlapServiceInstance> activeInstancesInHost = activeInstances.getByHost(serviceInstance.getHost());
+      final int activeInstancesInHostSize = activeInstancesInHost == null ? 0 : activeInstancesInHost.size();
+      LOG.info("Removed node with identity: {} host: {} due to RegistryNotification. currentActiveInstances={} " +
+          "activeInstancesInHost: {}", serviceInstance.getWorkerIdentity(), serviceInstance.getHost(),
+        activeInstances.size(), activeInstancesInHostSize);
       if (metrics != null) {
         metrics.setClusterNodeCount(activeInstances.size());
       }
@@ -1594,8 +1598,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       metrics.setClusterNodeCount(activeInstances.size());
     }
     // Trigger scheduling since a new node became available.
-    LOG.info("Adding new node: {}. TotalNodeCount={}. activeInstances.size={}",
-        node, instanceToNodeMap.size(), activeInstances.size());
+    Set<LlapServiceInstance> activeInstancesInHost = activeInstances.getByHost(node.getHost());
+    final int activeInstancesInHostSize = activeInstancesInHost == null ? 0 : activeInstancesInHost.size();
+    LOG.info("Adding new node: {}. TotalNodeCount={}. activeInstances.size={} activeInstancesInHost.size={}",
+        node, instanceToNodeMap.size(), activeInstances.size(), activeInstancesInHostSize);
     trySchedulingPendingTasks();
   }
 
@@ -1663,8 +1669,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private static NodeReport constructNodeReport(LlapServiceInstance serviceInstance,
                                          boolean healthy) {
-    NodeReport nodeReport = NodeReport.newInstance(NodeId
-            .newInstance(serviceInstance.getHost(), serviceInstance.getRpcPort()),
+    NodeId nodeId = new ExtendedNodeId(NodeId
+      .newInstance(serviceInstance.getHost(), serviceInstance.getRpcPort()), serviceInstance.getWorkerIdentity());
+    NodeReport nodeReport = NodeReport.newInstance(nodeId,
         healthy ? NodeState.RUNNING : NodeState.LOST,
         serviceInstance.getServicesAddress(), null, null,
         null, 0, "", 0l);
@@ -2021,7 +2028,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         containerFactory.createContainer(nodeInfo.getResourcePerExecutor(), taskInfo.priority,
             nodeInfo.getHost(),
             nodeInfo.getRpcPort(),
-            nodeInfo.getServiceAddress());
+            nodeInfo.getServiceAddress(),
+          nodeInfo.getNodeIdentity());
     writeLock.lock(); // While updating local structures
     // Note: this is actually called under the epic writeLock in schedulePendingTasks
     try {

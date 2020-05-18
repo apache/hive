@@ -448,42 +448,58 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private void addToCache(String path, String host, InstanceType instance) {
     instanceCacheLock.lock();
     try {
-      putInInstanceCache(path, pathToInstanceCache, instance);
-      putInNodeCache(host, nodeToInstanceCache, instance);
+      pathToInstanceCache.put(path, instance);
+      addToNodeCache(host, instance);
+      // to avoid stale size() value, logging it under the lock
+      LOG.info("Added path={}, host={} instance={} to cache."
+          + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
+        path, host, instance, pathToInstanceCache.size(), nodeToInstanceCache.size());
     } finally {
       instanceCacheLock.unlock();
     }
-    LOG.debug("Added path={}, host={} instance={} to cache."
-            + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
-        path, host, instance, pathToInstanceCache.size(), nodeToInstanceCache.size());
   }
 
-  private void removeFromCache(String path, String host) {
+  private void removeFromCache(String path, String host, final InstanceType instance) {
     instanceCacheLock.lock();
     try {
       pathToInstanceCache.remove(path);
-      nodeToInstanceCache.remove(host);
+      removeFromNodeCache(host, instance);
+      // to avoid stale size() value, logging it under the lock
+      LOG.info("Removed path={}, host={} from cache."
+          + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
+        path, host, pathToInstanceCache.size(), nodeToInstanceCache.size());
     } finally {
       instanceCacheLock.unlock();
     }
-    LOG.debug("Removed path={}, host={} from cache."
-            + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
-        path, host, pathToInstanceCache.size(), nodeToInstanceCache.size());
   }
 
-  private void putInInstanceCache(String key, Map<String, InstanceType> cache,
-      InstanceType instance) {
-    cache.put(key, instance);
-  }
-
-  private void putInNodeCache(String key, Map<String, Set<InstanceType>> cache,
-    InstanceType instance) {
-    Set<InstanceType> instanceSet = cache.get(key);
+  private void addToNodeCache(String key, InstanceType instance) {
+    Set<InstanceType> instanceSet = nodeToInstanceCache.get(key);
     if (instanceSet == null) {
       instanceSet = new HashSet<>();
-      instanceSet.add(instance);
     }
-    cache.put(key, instanceSet);
+    // there can be multiple instances in same host (in case of kubernetes, same hostname pods are possible, one new
+    // pod and one old stale pod which will be removed after ZK session timeout)
+    instanceSet.add(instance);
+    nodeToInstanceCache.put(key, instanceSet);
+  }
+
+  private void removeFromNodeCache(String key, InstanceType instance) {
+    // there could be multiple instances in the set matching the same hostname, we only remove the ones that matches
+    // the InstanceType object which contains the workerIdentity/UUID.
+    Set<InstanceType> instanceSet = nodeToInstanceCache.get(key);
+    boolean removeKey = true;
+    if (instanceSet != null) {
+      if (instanceSet.remove(instance)) {
+        LOG.info("Removed instance: {} from cache for host: {}", instance, key);
+      }
+      if (!instanceSet.isEmpty()) {
+        removeKey = false;
+      }
+    }
+    if (removeKey) {
+      nodeToInstanceCache.remove(key);
+    }
   }
 
   protected final void populateCache(TreeCache instancesCache, boolean doInvokeListeners) {
@@ -619,7 +635,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
               }
               break;
             case NODE_REMOVED:
-              removeFromCache(childData.getPath(), instance.getHost());
+              removeFromCache(childData.getPath(), instance.getHost(), instance);
               for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
                 listener.onRemove(instance, ephSeqVersion);
               }

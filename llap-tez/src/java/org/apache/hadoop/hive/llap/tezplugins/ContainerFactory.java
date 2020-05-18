@@ -23,6 +23,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.tez.dag.app.rm.node.ExtendedNodeId;
 
 class ContainerFactory {
   final ApplicationAttemptId customAppAttemptId;
@@ -37,13 +38,14 @@ class ContainerFactory {
   }
 
   public Container createContainer(Resource capability, Priority priority, String hostname,
-      int port, String nodeHttpAddress) {
+    int port, String nodeHttpAddress, final String nodeIdentity) {
     ContainerId containerId =
         ContainerId.newContainerId(customAppAttemptId, nextId.getAndIncrement());
     NodeId nodeId = NodeId.newInstance(hostname, port);
+    NodeId extendedNodeId = new ExtendedNodeId(nodeId, nodeIdentity);
 
     Container container =
-        Container.newInstance(containerId, nodeId, nodeHttpAddress, capability, priority, null);
+        Container.newInstance(containerId, extendedNodeId, nodeHttpAddress, capability, priority, null);
 
     return container;
   }
