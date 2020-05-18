@@ -35,52 +35,52 @@ import org.apache.hadoop.mapreduce.MRJobConfig;
 
 public class TezTotalOrderPartitioner implements Partitioner<HiveKey, Object>, Configurable {
 
-	private static final Logger LOG = LoggerFactory.getLogger(TezTotalOrderPartitioner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TezTotalOrderPartitioner.class);
 
-	private Partitioner<HiveKey, Object> partitioner;
+  private Partitioner<HiveKey, Object> partitioner;
 
-	private static final String TEZ_RUNTIME_FRAMEWORK_PREFIX = "tez.runtime.framework.";
-	public static final String TEZ_RUNTIME_NUM_EXPECTED_PARTITIONS = TEZ_RUNTIME_FRAMEWORK_PREFIX
-			+ "num.expected.partitions";
+  private static final String TEZ_RUNTIME_FRAMEWORK_PREFIX = "tez.runtime.framework.";
+  public static final String TEZ_RUNTIME_NUM_EXPECTED_PARTITIONS =
+      TEZ_RUNTIME_FRAMEWORK_PREFIX + "num.expected.partitions";
 
-	@Override
-	public void configure(JobConf job) {
-		if (partitioner == null) {
-			configurePartitioner(new JobConf(job));
-		}
-	}
+  @Override
+  public void configure(JobConf job) {
+    if (partitioner == null) {
+      configurePartitioner(new JobConf(job));
+    }
+  }
 
-	@Override
-	public void setConf(Configuration conf) {
-		// walk-around of TEZ-1403
-		if (partitioner == null) {
-			configurePartitioner(new JobConf(conf));
-		}
-	}
+  @Override
+  public void setConf(Configuration conf) {
+    // walk-around of TEZ-1403
+    if (partitioner == null) {
+      configurePartitioner(new JobConf(conf));
+    }
+  }
 
-	public int getPartition(HiveKey key, Object value, int numPartitions) {
-		return partitioner.getPartition(key, value, numPartitions);
-	}
+  public int getPartition(HiveKey key, Object value, int numPartitions) {
+    return partitioner.getPartition(key, value, numPartitions);
+  }
 
-	@Override
-	public Configuration getConf() {
-		return null;
-	}
+  @Override
+  public Configuration getConf() {
+    return null;
+  }
 
-	private void configurePartitioner(JobConf conf) {
-		LOG.info(TotalOrderPartitioner.getPartitionFile(conf));
-		// make the HiveKey assumption
-		conf.setMapOutputKeyClass(HiveKey.class);
-		LOG.info(conf.get(CommonConfigurationKeys.IO_SERIALIZATIONS_KEY));
-		// remove the Tez fast serialization factory (TEZ-1288)
-		// this one skips the len prefix, so that the sorter can assume byte-order ==
-		// sort-order
-		conf.setStrings(CommonConfigurationKeys.IO_SERIALIZATIONS_KEY, JavaSerialization.class.getName(),
-				WritableSerialization.class.getName());
-		int partitions = conf.getInt(TEZ_RUNTIME_NUM_EXPECTED_PARTITIONS, -1);
-		// get the tez partitioning and feed it into the MR config
-		conf.setInt(MRJobConfig.NUM_REDUCES, partitions);
-		partitioner = new TotalOrderPartitioner<HiveKey, Object>();
-		partitioner.configure(conf);
-	}
+  private void configurePartitioner(JobConf conf) {
+    LOG.info(TotalOrderPartitioner.getPartitionFile(conf));
+    // make the HiveKey assumption
+    conf.setMapOutputKeyClass(HiveKey.class);
+    LOG.info(conf.get(CommonConfigurationKeys.IO_SERIALIZATIONS_KEY));
+    // remove the Tez fast serialization factory (TEZ-1288)
+    // this one skips the len prefix, so that the sorter can assume byte-order ==
+    // sort-order
+    conf.setStrings(CommonConfigurationKeys.IO_SERIALIZATIONS_KEY,
+        JavaSerialization.class.getName(), WritableSerialization.class.getName());
+    int partitions = conf.getInt(TEZ_RUNTIME_NUM_EXPECTED_PARTITIONS, -1);
+    // get the tez partitioning and feed it into the MR config
+    conf.setInt(MRJobConfig.NUM_REDUCES, partitions);
+    partitioner = new TotalOrderPartitioner<HiveKey, Object>();
+    partitioner.configure(conf);
+  }
 }
