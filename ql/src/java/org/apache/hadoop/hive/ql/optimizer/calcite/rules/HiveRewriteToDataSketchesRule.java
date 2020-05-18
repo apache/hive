@@ -109,7 +109,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
     VBuilder vb = new VBuilder(aggregate);
 
     if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
-      // rule didn't made any changes
+      // rule didn't make any changes
       return;
     }
 
