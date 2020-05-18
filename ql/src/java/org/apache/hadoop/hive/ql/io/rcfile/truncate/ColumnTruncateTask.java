@@ -105,6 +105,9 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     // zero reducers
     job.setNumReduceTasks(0);
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+    job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
     if (work.getMinSplitSize() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work

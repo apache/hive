@@ -98,6 +98,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       job.setOutputKeyClass(NullWritable.class);
       job.setOutputValueClass(NullWritable.class);
       job.setNumReduceTasks(0);
+      // HIVE-23354 enforces that MR speculative execution is disabled
+      job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+      job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
       // create the temp directories
       Path outputPath = work.getOutputDir();
