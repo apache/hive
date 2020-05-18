@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database switching commands.
  */
-@DDLType(type=HiveParser.TOK_SWITCHDATABASE)
+@DDLType(types = HiveParser.TOK_SWITCHDATABASE)
 public class SwitchDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public SwitchDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

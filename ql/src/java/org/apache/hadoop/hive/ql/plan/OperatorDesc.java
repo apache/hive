@@ -40,4 +40,8 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
 
   void fillSignature(Map<String, Object> ret);
+
+  public void setBucketingVersion(int bucketingVersion);
+
+  public int getBucketingVersion();
 }

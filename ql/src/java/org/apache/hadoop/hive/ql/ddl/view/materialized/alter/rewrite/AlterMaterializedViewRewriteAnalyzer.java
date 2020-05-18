@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter materialized view rewrite commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE)
+@DDLType(types = HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE)
 public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
   public AlterMaterializedViewRewriteAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -69,8 +69,8 @@ public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
     // One last test: if we are enabling the rewrite, we need to check that query
     // only uses transactional (MM and ACID) tables
     if (rewriteEnable) {
-      for (String tName : materializedViewTable.getCreationMetadata().getTablesUsed()) {
-        Table table = getTable(tName, true);
+      for (String sourceTableName : materializedViewTable.getCreationMetadata().getTablesUsed()) {
+        Table table = getTable(sourceTableName, true);
         if (!AcidUtils.isTransactionalTable(table)) {
           throw new SemanticException("Automatic rewriting for materialized view cannot be enabled if the " +
               "materialized view uses non-transactional tables");

@@ -23,6 +23,11 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * ReplState.
+ *
+ * Logger class for Repl Events.
+ **/
 public abstract class ReplState {
   @JsonIgnoreProperties
   private static final Logger REPL_LOG = LoggerFactory.getLogger("ReplState");
@@ -41,9 +46,13 @@ public abstract class ReplState {
     TABLE_DUMP,
     FUNCTION_DUMP,
     EVENT_DUMP,
+    RANGER_DUMP_START,
+    RANGER_DUMP_END,
     TABLE_LOAD,
     FUNCTION_LOAD,
     EVENT_LOAD,
+    RANGER_LOAD_START,
+    RANGER_LOAD_END,
     END
   }
 

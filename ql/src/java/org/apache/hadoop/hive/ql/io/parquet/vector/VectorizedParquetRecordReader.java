@@ -86,6 +86,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.range;
@@ -110,6 +111,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Path cacheFsPath;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
   private Map<Path, PartitionDesc> parts;
+  private final boolean isReadCacheOnly;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -151,6 +153,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       //initialize the rowbatchContext
       jobConf = conf;
+      isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
       ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
       if (inputSplit != null) {
@@ -316,6 +319,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       } finally {
         metadataCache.decRefBuffer(footerData);
       }
+    } else {
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     final FileSystem fs = file.getFileSystem(configuration);
     final FileStatus stat = fs.getFileStatus(file);
@@ -456,13 +461,13 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         for (int i = 0; i < types.size(); ++i) {
           columnReaders[i] =
               buildVectorizedParquetReader(columnTypesList.get(colsToInclude.get(i)), types.get(i),
-                  pages, requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, 0);
+                  pages, requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, skipProlepticConversion, 0);
         }
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
         columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
-          requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, 0);
+          requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, skipProlepticConversion, 0);
       }
     }
 
@@ -494,8 +499,15 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       throw new RuntimeException(
           "Current Parquet Vectorization reader doesn't support nested type");
     }
-    return type.asGroupType().getFields().get(0).asGroupType().getFields().get(0)
-        .asPrimitiveType();
+
+    Type childType = type.asGroupType().getFields().get(0);
+
+    // Parquet file generated using thrift may have child type as PrimitiveType
+    if (childType.isPrimitive()) {
+      return childType.asPrimitiveType();
+    } else {
+      return childType.asGroupType().getFields().get(0).asPrimitiveType();
+    }
   }
 
   // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
@@ -506,6 +518,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columnDescriptors,
     boolean skipTimestampConversion,
     ZoneId writerTimezone,
+    boolean skipProlepticConversion,
     int depth) throws IOException {
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
@@ -517,8 +530,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       if (fileSchema.getColumns().contains(descriptors.get(0))) {
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
-            pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, type,
-            typeInfo);
+            pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
+            type, typeInfo);
       } else {
         // Support for schema evolution
         return new VectorizedDummyColumnReader();
@@ -531,7 +544,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       for (int i = 0; i < fieldTypes.size(); i++) {
         VectorizedColumnReader r =
           buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
-            skipTimestampConversion, writerTimezone, depth + 1);
+            skipTimestampConversion, writerTimezone, skipProlepticConversion, depth + 1);
         if (r != null) {
           fieldReaders.add(r);
         } else {
@@ -549,9 +562,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
 
       return new VectorizedListColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone,
-          getElementType(type),
-          typeInfo);
+          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
+          getElementType(type), typeInfo);
     case MAP:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
         throw new RuntimeException(
@@ -583,10 +595,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       List<Type> kvTypes = groupType.getFields();
       VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
           descriptors.get(0), pages.getPageReader(descriptors.get(0)), skipTimestampConversion,
-          writerTimezone, kvTypes.get(0), typeInfo);
+          writerTimezone, skipProlepticConversion, kvTypes.get(0), typeInfo);
       VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
           descriptors.get(1), pages.getPageReader(descriptors.get(1)), skipTimestampConversion,
-          writerTimezone, kvTypes.get(1), typeInfo);
+          writerTimezone, skipProlepticConversion, kvTypes.get(1), typeInfo);
       return new VectorizedMapColumnReader(keyListColumnReader, valueListColumnReader);
     case UNION:
     default:

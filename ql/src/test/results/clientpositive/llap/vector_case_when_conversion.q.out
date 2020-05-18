@@ -217,8 +217,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 2, 4, 1, 29]
-                            selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (CAST( cint AS STRING)) WHEN (cfloat is not null) THEN (CAST( cfloat AS STRING)) WHEN (csmallint is not null) THEN (CAST( csmallint AS STRING)) ELSE ('none') END)(children: VectorUDFAdaptor(cstring1 is not null) -> 22:boolean, VectorUDFAdaptor(cint is not null) -> 23:boolean, VectorUDFAdaptor(CAST( cint AS STRING)) -> 24:string, VectorUDFAdaptor(cfloat is not null) -> 25:boolean, VectorUDFAdaptor(CAST( cfloat AS STRING)) -> 26:string, VectorUDFAdaptor(csmallint is not null) -> 27:boolean, VectorUDFAdaptor(CAST( csmallint AS STRING)) -> 28:string) -> 29:string
+                            projectedOutputColumnNums: [6, 2, 4, 1, 22]
+                            selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (CAST( cint AS STRING)) WHEN (cfloat is not null) THEN (CAST( cfloat AS STRING)) WHEN (csmallint is not null) THEN (CAST( csmallint AS STRING)) ELSE ('none') END)(children: VectorUDFAdaptor(cstring1 is not null) -> 14:boolean, VectorUDFAdaptor(cint is not null) -> 15:boolean, VectorUDFAdaptor(CAST( cint AS STRING)) -> 16:string, VectorUDFAdaptor(cfloat is not null) -> 17:boolean, VectorUDFAdaptor(CAST( cfloat AS STRING)) -> 18:string, VectorUDFAdaptor(csmallint is not null) -> 19:boolean, VectorUDFAdaptor(CAST( csmallint AS STRING)) -> 20:string) -> 22:string
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
@@ -533,8 +533,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 2, 4, 1, 29]
-                            selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (CAST( cint AS STRING)) WHEN (cfloat is not null) THEN (CAST( cfloat AS STRING)) WHEN (csmallint is not null) THEN (CAST( csmallint AS STRING)) ELSE (null) END)(children: VectorUDFAdaptor(cstring1 is not null) -> 22:boolean, VectorUDFAdaptor(cint is not null) -> 23:boolean, VectorUDFAdaptor(CAST( cint AS STRING)) -> 24:string, VectorUDFAdaptor(cfloat is not null) -> 25:boolean, VectorUDFAdaptor(CAST( cfloat AS STRING)) -> 26:string, VectorUDFAdaptor(csmallint is not null) -> 27:boolean, VectorUDFAdaptor(CAST( csmallint AS STRING)) -> 28:string) -> 29:string
+                            projectedOutputColumnNums: [6, 2, 4, 1, 22]
+                            selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (CAST( cint AS STRING)) WHEN (cfloat is not null) THEN (CAST( cfloat AS STRING)) WHEN (csmallint is not null) THEN (CAST( csmallint AS STRING)) ELSE (null) END)(children: VectorUDFAdaptor(cstring1 is not null) -> 14:boolean, VectorUDFAdaptor(cint is not null) -> 15:boolean, VectorUDFAdaptor(CAST( cint AS STRING)) -> 16:string, VectorUDFAdaptor(cfloat is not null) -> 17:boolean, VectorUDFAdaptor(CAST( cfloat AS STRING)) -> 18:string, VectorUDFAdaptor(csmallint is not null) -> 19:boolean, VectorUDFAdaptor(CAST( csmallint AS STRING)) -> 20:string) -> 22:string
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true

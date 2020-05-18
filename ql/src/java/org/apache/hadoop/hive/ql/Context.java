@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,7 +121,7 @@ public class Context {
   // Some statements, e.g., UPDATE, DELETE, or MERGE, get rewritten into different
   // subqueries that create new contexts. We keep them here so we can clean them
   // up when we are done.
-  private final Set<Context> rewrittenStatementContexts;
+  private final Set<Context> subContexts;
 
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
@@ -178,6 +179,10 @@ public class Context {
 
   public void setOperation(Operation operation) {
     this.operation = operation;
+  }
+
+  public Operation getOperation() {
+    return operation;
   }
 
   public WmContext getWmContext() {
@@ -320,7 +325,7 @@ public class Context {
   private Context(Configuration conf, String executionId)  {
     this.conf = conf;
     this.executionId = executionId;
-    this.rewrittenStatementContexts = new HashSet<>();
+    this.subContexts = new HashSet<>();
 
     // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
@@ -338,7 +343,7 @@ public class Context {
     // hence it needs to be used carefully. In particular, following objects
     // are ignored:
     // opContext, pathToCS, cboInfo, cboSucceeded, tokenRewriteStream, viewsTokenRewriteStreams,
-    // rewrittenStatementContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
+    // subContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
     this.isHDFSCleanup = ctx.isHDFSCleanup;
     this.resFile = ctx.resFile;
     this.resDir = ctx.resDir;
@@ -373,7 +378,7 @@ public class Context {
     this.statsSource = ctx.statsSource;
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
-    this.rewrittenStatementContexts = new HashSet<>();
+    this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
   }
 
@@ -671,6 +676,10 @@ public class Context {
     for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
       try {
         Path p = entry.getValue();
+        if (p.toUri().getPath().contains(stagingDir) && subDirOf(p, fsScratchDirs.values())  ) {
+          LOG.debug("Skip deleting stagingDir: " + p);
+          continue; // staging dir is deleted when deleting the scratch dir
+        }
         if(resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {
           // delete only the paths which aren't result cache dir path
           // because that will be taken care by removeResultCacheDir
@@ -685,6 +694,15 @@ public class Context {
       }
     }
     fsScratchDirs.clear();
+  }
+
+  private boolean subDirOf(Path path, Collection<Path> parents) {
+    for (Path each : parents) {
+      if (!path.equals(each) && FileUtils.isPathWithinSubtree(path, each)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -725,6 +743,22 @@ public class Context {
   public boolean isMRTmpFileURI(String uriStr) {
     return (uriStr.indexOf(executionId) != -1) &&
         (uriStr.indexOf(MR_PREFIX) != -1);
+  }
+
+  /**
+   * Check if the path is a result cache dir for this query. This doesn't work unless the result
+   * paths have already been set in SemanticAnalyzer::getDestinationFilePath to prevent someone from
+   * overriding LOCATION in a create table command to overwrite cached results
+   *
+   * @param destinationPath
+   * @return true if the path is a result cache dir
+   */
+
+  public boolean isResultCacheDir(Path destinationPath) {
+    if (this.fsResultCacheDirs != null) {
+      return this.fsResultCacheDirs.equals(destinationPath);
+    }
+    return false;
   }
 
   public Path getMRTmpPath(URI uri) {
@@ -823,11 +857,11 @@ public class Context {
 
   public void clear(boolean deleteResultDir) throws IOException {
     // First clear the other contexts created by this query
-    for (Context subContext : rewrittenStatementContexts) {
+    for (Context subContext : subContexts) {
       subContext.clear();
     }
     // Then clear this context
-      if (resDir != null) {
+      if (resDir != null && !isInScratchDir(resDir)) { // resDir is inside the scratch dir, removeScratchDir will take care of removing it
         try {
           FileSystem fs = resDir.getFileSystem(conf);
           LOG.debug("Deleting result dir: {}", resDir);
@@ -837,7 +871,7 @@ public class Context {
         }
       }
 
-    if (resFile != null) {
+    if (resFile != null && !isInScratchDir(resFile.getParent())) { // resFile is inside the scratch dir, removeScratchDir will take care of removing it
       try {
         FileSystem fs = resFile.getFileSystem(conf);
         LOG.debug("Deleting result file: {}",  resFile);
@@ -853,6 +887,11 @@ public class Context {
     removeScratchDir();
     originalTracker = null;
     setNeedLockMgr(false);
+  }
+
+  private boolean isInScratchDir(Path path) {
+    return path.toUri().getPath().startsWith(localScratchDir)
+      || path.toUri().getPath().startsWith(nonLocalScratchPath.toUri().getPath());
   }
 
   public DataInput getStream() {
@@ -1018,8 +1057,8 @@ public class Context {
     }
   }
 
-  public void addRewrittenStatementContext(Context context) {
-    rewrittenStatementContexts.add(context);
+  public void addSubContext(Context context) {
+    subContexts.add(context);
   }
 
   public void addCS(String path, ContentSummary cs) {
@@ -1089,7 +1128,17 @@ public class Context {
   }
 
   public String getCalcitePlan() {
-    return this.calcitePlan;
+    if (this.calcitePlan != null) {
+      return this.calcitePlan;
+    }
+
+    for (Context context : subContexts) {
+      if (context.calcitePlan != null) {
+        return context.calcitePlan;
+      }
+    }
+
+    return null;
   }
 
   public void setCalcitePlan(String calcitePlan) {

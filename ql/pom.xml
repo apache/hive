@@ -29,12 +29,12 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <powermock.version>1.6.6</powermock.version>
+    <powermock.version>2.0.2</powermock.version>
     <reflections.version>0.9.10</reflections.version>
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+    <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
@@ -97,6 +97,10 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-spark-client</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-storage-api</artifactId>
     </dependency>
     <!-- inter-project -->
     <dependency>
@@ -189,7 +193,11 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -271,6 +279,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-aws</artifactId>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-tools</artifactId>
       <version>${orc.version}</version>
@@ -307,6 +320,11 @@
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.datasketches</groupId>
+       <artifactId>datasketches-hive</artifactId>
+       <version>${datasketches.version}</version>
     </dependency>
     <dependency>
       <groupId>com.lmax</groupId>
@@ -372,6 +390,10 @@
           <artifactId>jackson-core</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.calcite.avatica</groupId>
           <artifactId>avatica-core</artifactId>
         </exclusion>
@@ -384,6 +406,10 @@
         <exclusion>
           <groupId>org.apache.calcite.avatica</groupId>
           <artifactId>avatica-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -708,6 +734,10 @@
          <artifactId>commons-logging</artifactId>
        </exclusion>
        <exclusion>
+         <groupId>net.java.dev.jets3t</groupId>
+         <artifactId>jets3t</artifactId>
+       </exclusion>
+       <exclusion>
          <groupId>org.glassfish.jersey.containers</groupId>
          <artifactId>*</artifactId>
        </exclusion>
@@ -748,7 +778,7 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
@@ -774,8 +804,29 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-multipart</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>findbugs-annotations</artifactId>
+      <version>3.0.1</version>
+    </dependency>
   </dependencies>
-
   <profiles>
     <profile>
       <id>sources</id>
@@ -855,7 +906,7 @@
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifectId -->
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -877,6 +928,24 @@
             <goals>
               <goal>run</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -977,6 +1046,7 @@
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
+                  <include>org.threeten:threeten-extra</include>
                   <include>org.apache.orc:orc-core</include>
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
@@ -986,6 +1056,17 @@
                   <include>io.dropwizard.metrics:metrics-jvm</include>
                   <include>io.dropwizard.metrics:metrics-json</include>
                   <include>com.zaxxer:HikariCP</include>
+                  <include>org.apache.datasketches:*</include>
+                  <include>org.apache.calcite:*</include>
+                  <include>org.apache.calcite.avatica:avatica</include>
+                  <include>io.netty:*</include>
+                   <!-- some netty-based classes are included in arrow jars with original
+                  io.netty package name (e.g. io.netty.buffer.ArrowBuf in arrow-memory)
+                  so we should include them in the shaded jars in order to make shade plugin
+                  be triggered on them, but we should not relocate arrow (this is why arrow
+                  is not included in relocations)
+                  -->
+                  <include>org.apache.arrow:*</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1010,8 +1091,20 @@
                   <shadedPattern>org.apache.hive.com.zaxxer.hikari</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>com.google.guava</pattern>
-                  <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.thirdparty.publicsuffix</pattern>
+                  <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.datasketches</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>io.netty</pattern>
+                  <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

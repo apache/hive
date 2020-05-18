@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COMPACTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list764 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list764.size);
-                ShowCompactResponseElement _elem765;
-                for (int _i766 = 0; _i766 < _list764.size; ++_i766)
+                org.apache.thrift.protocol.TList _list772 = iprot.readListBegin();
+                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list772.size);
+                ShowCompactResponseElement _elem773;
+                for (int _i774 = 0; _i774 < _list772.size; ++_i774)
                 {
-                  _elem765 = new ShowCompactResponseElement();
-                  _elem765.read(iprot);
-                  struct.compacts.add(_elem765);
+                  _elem773 = new ShowCompactResponseElement();
+                  _elem773.read(iprot);
+                  struct.compacts.add(_elem773);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COMPACTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compacts.size()));
-          for (ShowCompactResponseElement _iter767 : struct.compacts)
+          for (ShowCompactResponseElement _iter775 : struct.compacts)
           {
-            _iter767.write(oprot);
+            _iter775.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.compacts.size());
-        for (ShowCompactResponseElement _iter768 : struct.compacts)
+        for (ShowCompactResponseElement _iter776 : struct.compacts)
         {
-          _iter768.write(oprot);
+          _iter776.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowCompactResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list769 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list769.size);
-        ShowCompactResponseElement _elem770;
-        for (int _i771 = 0; _i771 < _list769.size; ++_i771)
+        org.apache.thrift.protocol.TList _list777 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list777.size);
+        ShowCompactResponseElement _elem778;
+        for (int _i779 = 0; _i779 < _list777.size; ++_i779)
         {
-          _elem770 = new ShowCompactResponseElement();
-          _elem770.read(iprot);
-          struct.compacts.add(_elem770);
+          _elem778 = new ShowCompactResponseElement();
+          _elem778.read(iprot);
+          struct.compacts.add(_elem778);
         }
       }
       struct.setCompactsIsSet(true);

@@ -22,8 +22,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -62,23 +64,86 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
-    DataOutputStream outStream = null;
-    try {
-      FileSystem fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile);
-      for (List<String> values : listValues) {
-        outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-        for (int i = 1; i < values.size(); i++) {
-          outStream.write(Utilities.tabCode);
-          outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+    writeOutput(listValues, outputFile, hiveConf, false);
+  }
+
+  public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile, update);
+          for (List<String> values : listValues) {
+            outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+            for (int i = 1; i < values.size(); i++) {
+              outStream.write(Utilities.tabCode);
+              outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+            }
+            outStream.write(Utilities.newLineCode);
+          }
+        } finally {
+          IOUtils.closeStream(outStream);
         }
-        outStream.write(Utilities.newLineCode);
+        return null;
       }
-    } catch (IOException e) {
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
       throw new SemanticException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
     }
+  }
+
+  public static void writeOutput(String content, Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile);
+          outStream.writeBytes(content);
+          outStream.write(Utilities.newLineCode);
+        } finally {
+          IOUtils.closeStream(outStream);
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static void create(Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        FileSystem fs = outputFile.getFileSystem(hiveConf);
+        fs.create(outputFile).close();
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws IOException {
+    FileSystem fs = filePath.getFileSystem(hiveConf);
+    if (fs.exists(filePath)) {
+      return true;
+    }
+    return false;
   }
 
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
@@ -269,5 +334,15 @@ public class Utils {
     } else {
       return Collections.singletonList(fromPath);
     }
+  }
+
+  public static boolean shouldDumpMetaDataOnly(HiveConf conf) {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+  }
+
+  public static boolean shouldDumpMetaDataOnlyForExternalTables(Table table, HiveConf conf) {
+    return (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
+                    table.getTableType().equals(TableType.EXTERNAL_TABLE) &&
+                    conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE));
   }
 }

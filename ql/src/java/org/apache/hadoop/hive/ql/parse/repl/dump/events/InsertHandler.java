@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -30,9 +29,6 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,25 +76,16 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
         withinContext.hiveConf);
     Iterable<String> files = eventMessage.getFiles();
 
+    /*
+      * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple tables.
+      * But, Insert event is generated for each partition to which the data is inserted.
+      * So, qlPtns list will have only one entry.
+     */
+    Partition ptn = (null == qlPtns || qlPtns.isEmpty()) ? null : qlPtns.get(0);
     if (files != null) {
-      Path dataPath;
-      if ((null == qlPtns) || qlPtns.isEmpty()) {
-        dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      } else {
-        /*
-         * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple
-         * tables. But, Insert event is generated for each partition to which the data is inserted. So, qlPtns list
-         * will have only one entry.
-         */
-        assert(1 == qlPtns.size());
-        dataPath = new Path(withinContext.eventRoot, qlPtns.get(0).getName());
-      }
-
       // encoded filename/checksum of files, write into _files
-      try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
-        for (String file : files) {
-          fileListWriter.write(file + "\n");
-        }
+      for (String file : files) {
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
       }
     }
 
@@ -115,12 +102,6 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
   private org.apache.hadoop.hive.ql.metadata.Partition partitionObject(
           org.apache.hadoop.hive.ql.metadata.Table qlMdTable, InsertMessage insertMsg) throws Exception {
     return new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable, insertMsg.getPtnObj());
-  }
-
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
   }
 
   @Override

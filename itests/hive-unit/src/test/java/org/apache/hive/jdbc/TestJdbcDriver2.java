@@ -2850,8 +2850,6 @@ public class TestJdbcDriver2 {
       ResultSet replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
               " with ('hive.repl.rootdir' = '" + replDir + "')");
       assertTrue(replDumpRslt.next());
-      String dumpLocation = replDumpRslt.getString(1);
-      String lastReplId = replDumpRslt.getString(2);
       List<String> logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Bootstrap Dump");
@@ -2865,7 +2863,8 @@ public class TestJdbcDriver2 {
 
       // Bootstrap load
       stmt = (HiveStatement) con.createStatement();
-      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
       logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Bootstrap Load");
@@ -2886,11 +2885,9 @@ public class TestJdbcDriver2 {
       // Incremental dump
       stmt = (HiveStatement) con.createStatement();
       advanceDumpDir();
-      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb + " from " + lastReplId +
+      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
               " with ('hive.repl.rootdir' = '" + replDir + "')");
       assertTrue(replDumpRslt.next());
-      dumpLocation = replDumpRslt.getString(1);
-      lastReplId = replDumpRslt.getString(2);
       logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Incremental Dump");
@@ -2904,7 +2901,8 @@ public class TestJdbcDriver2 {
 
       // Incremental load
       stmt = (HiveStatement) con.createStatement();
-      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
       logs = stmt.getQueryLog(false, 10000);
       LOG.info("Query_Log for Incremental Load");
       verifyFetchedLog(logs, expectedIncrementalLoadLogs);
@@ -3105,7 +3103,7 @@ public class TestJdbcDriver2 {
 
     try {
       // invalid load path
-      stmt.execute("repl load default1 from '/tmp/junk'");
+      stmt.execute("repl load default into default1");
     } catch(SQLException e){
       assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
     }
@@ -3251,5 +3249,42 @@ public class TestJdbcDriver2 {
   @Test(expected = HiveSQLException.class)
   public void testConnectInvalidDatabase() throws SQLException {
     DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+  }
+
+  @Test
+  public void testStatementCloseOnCompletion() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testPreparedStatementCloseOnCompletion() throws SQLException {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testCloseOnAlreadyOpenedResultSetCompletion() throws Exception {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    stmt.closeOnCompletion();
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
   }
 }

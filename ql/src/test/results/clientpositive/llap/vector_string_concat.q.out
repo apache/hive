@@ -367,14 +367,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [37]
-                          selectExpressions: StringGroupConcatColCol(col 34:string, col 36:string)(children: StringGroupColConcatStringScalar(col 33:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 32:string)(children: CastLongToString(col 31:int)(children: CastDoubleToLong(col 30:double)(children: DoubleColAddDoubleScalar(col 29:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 28:double, val 3.0)(children: CastLongToDouble(col 27:int)(children: LongColSubtractLongScalar(col 26:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 26:int) -> 27:int) -> 28:double) -> 29:double) -> 30:double) -> 31:int) -> 32:string) -> 33:string) -> 34:string, CastLongToString(col 35:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 35:int) -> 36:string) -> 37:string
+                          projectedOutputColumnNums: [22]
+                          selectExpressions: StringGroupConcatColCol(col 20:string, col 21:string)(children: StringGroupColConcatStringScalar(col 21:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 20:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 20:string) -> 21:string) -> 20:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 21:string) -> 22:string
                       Statistics: Num rows: 2000 Data size: 106288 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 37:string
+                            keyExpressions: col 22:string
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []

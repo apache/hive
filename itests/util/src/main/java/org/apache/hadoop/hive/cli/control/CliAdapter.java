@@ -107,7 +107,7 @@ public abstract class CliAdapter {
   }
 
   // override this if e.g. a metastore dependent init logic is needed
-  protected void beforeClassSpec() {
+  protected void beforeClassSpec() throws Exception{
   }
 
   public final TestRule buildTestRule() {

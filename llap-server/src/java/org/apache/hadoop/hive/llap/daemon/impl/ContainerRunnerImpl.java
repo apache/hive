@@ -22,11 +22,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
@@ -100,6 +111,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private static final Logger LOG = LoggerFactory.getLogger(ContainerRunnerImpl.class);
   public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
 
+  private UgiPool ugiPool;
   private final AMReporter amReporter;
   private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
@@ -117,6 +129,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final DaemonId daemonId;
   private final UgiFactory fsUgiFactory;
   private final SocketFactory socketFactory;
+  private final boolean execUseFQDN;
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
@@ -127,6 +140,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
+    this.ugiPool = new UgiPool(numExecutors);
     this.localAddress = localAddress;
     this.localShufflePort = localShufflePort;
     this.amReporter = amReporter;
@@ -140,6 +154,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.queryTracker = queryTracker;
     this.executorService = executorService;
     completionListener = (SchedulerFragmentCompletingListener) executorService;
+    this.execUseFQDN = conf.getBoolean(HiveConf.ConfVars.LLAP_DAEMON_EXEC_USE_FQDN.varname, true);
 
     // Distribute the available memory between the tasks.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes / (float) numExecutors);
@@ -265,30 +280,39 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           queryIdentifier, qIdProto.getApplicationIdString(), dagId,
           vertex.getDagName(), vertex.getHiveQueryId(), dagIdentifier,
           vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber(),
-          vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo, amNodeId);
+          vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo, amNodeId, ugiPool);
 
-      String[] localDirs = fragmentInfo.getLocalDirs();
-      Preconditions.checkNotNull(localDirs);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Dirs are: " + Arrays.toString(localDirs));
-      }
       // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
 
-      Configuration callableConf = new Configuration(getConfig());
+      // Lazy create conf object, as it gets expensive in this codepath.
+      Supplier<Configuration> callableConf = () -> new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
       // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
       ConfVars tezSummary = ConfVars.TEZ_EXEC_SUMMARY;
       ConfVars llapTasks = ConfVars.LLAP_TASK_TIME_SUMMARY;
-      boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
-                             && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
+      boolean addTaskTimes = getConfig().getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
+                             && getConfig().getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
 
+      final String llapHost;
+      if (UserGroupInformation.isSecurityEnabled()) {
+        // when kerberos is enabled always use FQDN
+        llapHost = localAddress.get().getHostName();
+      } else if (execUseFQDN) {
+        // when FQDN is explicitly requested (default)
+        llapHost = localAddress.get().getHostName();
+      } else {
+        // when FQDN is not requested, use ip address
+        llapHost = localAddress.get().getAddress().getHostAddress();
+      }
+      LOG.info("Using llap host: {} for execution context. hostName: {} hostAddress: {}", llapHost,
+        localAddress.get().getHostName(), localAddress.get().getAddress().getHostAddress());
       // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
       WmFragmentCounters wmCounters = new WmFragmentCounters(addTaskTimes);
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
-          new ExecutionContextImpl(localAddress.get().getHostName()), env,
+          new ExecutionContextImpl(llapHost), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this, tezHadoopShim, attemptId, vertex, initialEvent, fsTaskUgi,
           completionListener, socketFactory, isGuaranteed, wmCounters);
@@ -577,6 +601,74 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   public int getNumActive() {
     return executorService.getNumActiveForReporting();
+  }
+
+  static class UgiPool {
+    // Pool of UGI for a given appTokenIdentifier (AM). Expires after 3 hours of last access
+    private final Cache<String, BlockingQueue<UserGroupInformation>> ugiPool =
+        CacheBuilder
+            .newBuilder().removalListener(new RemovalListener<String, BlockingQueue<UserGroupInformation>>() {
+          @Override
+          public void onRemoval(
+              RemovalNotification<String, BlockingQueue<UserGroupInformation>> notification) {
+            LOG.debug("Removing " + notification.getValue()  + " from pool.Pool size: " + ugiPool.size());
+          }
+        }).expireAfterAccess(60 * 3, TimeUnit.MINUTES).build();
+
+    private final int numExecutors;
+
+    public UgiPool(int numExecutors) {
+      this.numExecutors = numExecutors;
+    }
+
+    /**
+     * Get UGI for a given AM and appToken. It is possible to have more than one
+     * UGI per AM.
+     *
+     * @param appTokenIdentifier
+     * @param appToken
+     * @return UserGroupInformation
+     * @throws ExecutionException
+     */
+    public UserGroupInformation getUmbilicalUgi(String appTokenIdentifier,
+        Token<JobTokenIdentifier> appToken) throws ExecutionException {
+      BlockingQueue<UserGroupInformation> queue = ugiPool.get(appTokenIdentifier,
+          new Callable<BlockingQueue<UserGroupInformation>>() {
+            @Override
+            public BlockingQueue<UserGroupInformation> call() throws Exception {
+              UserGroupInformation ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
+              ugi.addToken(appToken);
+              BlockingQueue<UserGroupInformation> queue = new LinkedBlockingQueue<>(numExecutors);
+              queue.add(ugi);
+              LOG.debug("Added new ugi pool for " + appTokenIdentifier + ", Pool Size: ");
+              return queue;
+            }
+          });
+
+      //Get UGI from the queue. Possible to maintain more than one UGI per AM. Ref: HIVE-16634
+      UserGroupInformation ugi = queue.poll();
+      if (ugi == null) {
+        ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
+        ugi.addToken(appToken);
+        queue.offer(ugi);
+        LOG.info("Added new ugi for " + appTokenIdentifier + ". Pool size:" + ugiPool.size());
+      }
+      return ugi;
+    }
+
+    /**
+     * Return UGI back to pool
+     *
+     * @param appTokenIdentifier AM identifier
+     * @param ugi
+     */
+    public void returnUmbilicalUgi(String appTokenIdentifier, UserGroupInformation ugi) {
+      BlockingQueue<UserGroupInformation> ugiQueue = ugiPool.getIfPresent(appTokenIdentifier);
+      // Entry could have been removed due to expiry. Check before returning back to queue
+      if (ugiQueue != null) {
+        ugiQueue.offer(ugi);
+      }
+    }
   }
 
 }

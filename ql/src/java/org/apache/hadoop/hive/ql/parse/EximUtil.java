@@ -45,13 +45,13 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.thrift.TException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -75,6 +75,7 @@ public class EximUtil {
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
   public static final String DATA_PATH_NAME = "data";
+  public static final String METADATA_PATH_NAME = "metadata";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
@@ -157,6 +158,64 @@ public class EximUtil {
     }
   }
 
+  /**
+   * Wrapper class for mapping source and target path for copying managed table data.
+   */
+  public static class ManagedTableCopyPath {
+    private ReplicationSpec replicationSpec;
+    private static boolean nullSrcPathForTest = false;
+    private Path srcPath;
+    private Path tgtPath;
+
+    public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
+      if (srcPath == null) {
+        throw new IllegalArgumentException("Source path can not be null.");
+      }
+      this.srcPath = srcPath;
+      if (tgtPath == null) {
+        throw new IllegalArgumentException("Target path can not be null.");
+      }
+      this.tgtPath = tgtPath;
+    }
+
+    public Path getSrcPath() {
+      if (nullSrcPathForTest) {
+        return null;
+      }
+      return srcPath;
+    }
+
+    public Path getTargetPath() {
+      return tgtPath;
+    }
+
+    @Override
+    public String toString() {
+      return "ManagedTableCopyPath{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+
+    /**
+     * To be used only for testing purpose.
+     * It has been used to make repl dump operation fail.
+     */
+    public static void setNullSrcPath(HiveConf conf, boolean aNullSrcPath) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        nullSrcPathForTest = aNullSrcPath;
+      }
+    }
+  }
 
   private EximUtil() {
   }
@@ -305,6 +364,19 @@ public class EximUtil {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
       new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
+    }
+  }
+
+  public static MetaData getMetaDataFromLocation(String fromLocn, HiveConf conf)
+      throws SemanticException, IOException {
+    URI fromURI = getValidatedURI(conf, PlanUtils.stripQuotes(fromLocn));
+    Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+    FileSystem fs = FileSystem.get(fromURI, conf);
+
+    try {
+      return readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }
 

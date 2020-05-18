@@ -90,7 +90,7 @@ class UnitTestPropertiesParser {
                            File sourceDirectory, Logger logger,
                            FileListProvider fileListProvider,
                            Set<String> excludedProvided, boolean inTest) {
-    logger.info("{} created with sourceDirectory={}, testCasePropertyName={}, excludedProvide={}",
+    logger.info("{} created with sourceDirectory={}, testCasePropertyName={}, excludedProvide={}" +
         "fileListProvider={}, inTest={}",
         UnitTestPropertiesParser.class.getSimpleName(), sourceDirectory, testCasePropertyName,
         excludedProvided,

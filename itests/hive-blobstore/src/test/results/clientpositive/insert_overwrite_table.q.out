@@ -87,6 +87,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
                     directory: ### BLOBSTORE_STAGING_PATH ###
@@ -97,8 +98,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                          bucket_count -1
                           bucketing_version 2
                           column.name.delimiter ,
                           columns id
@@ -107,14 +106,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                           location ### test.blobstore.path ###/table1
                           name default.table1
-                          numFiles 1
-                          numRows 1
-                          rawDataSize 1
-                          serialization.ddl struct table1 { i32 id}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          totalSize 2
-#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.table1
                     TotalFiles: 1
@@ -131,7 +124,9 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         null sort order: 
+                        numBuckets: -1
                         sort order: 
                         Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
@@ -150,11 +145,9 @@ STAGE PLANS:
               bucketing_version 2
               column.name.delimiter ,
               columns 
-              columns.comments 
               columns.types 
 #### A masked pattern was here ####
               name _dummy_database._dummy_table
-              serialization.ddl struct _dummy_table { }
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -162,7 +155,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns 
@@ -170,7 +162,6 @@ STAGE PLANS:
                 columns.types 
 #### A masked pattern was here ####
                 name _dummy_database._dummy_table
-                serialization.ddl struct _dummy_table { }
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
               serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -186,6 +177,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
+            bucketingVersion: 2
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
@@ -196,6 +188,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  bucketing_version -1
                   columns _col0
                   columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
                   escape.delim \
@@ -220,8 +213,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id
@@ -230,14 +221,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/table1
                 name default.table1
-                numFiles 1
-                numRows 1
-                rawDataSize 1
-                serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 2
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
 
@@ -257,6 +242,7 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
               directory: ### BLOBSTORE_STAGING_PATH ###
@@ -265,8 +251,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns id
@@ -275,14 +259,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location ### test.blobstore.path ###/table1
                     name default.table1
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 1
-                    serialization.ddl struct table1 { i32 id}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 2
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.table1
               TotalFiles: 1
@@ -297,8 +275,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns id
@@ -307,21 +283,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/table1
               name default.table1
-              numFiles 1
-              numRows 1
-              rawDataSize 1
-              serialization.ddl struct table1 { i32 id}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id
@@ -330,14 +298,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/table1
                 name default.table1
-                numFiles 1
-                numRows 1
-                rawDataSize 1
-                serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 2
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
             name: default.table1
@@ -353,8 +315,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id
@@ -363,14 +323,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/table1
                 name default.table1
-                numFiles 1
-                numRows 1
-                rawDataSize 1
-                serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 2
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
 
@@ -380,6 +334,7 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
               directory: ### BLOBSTORE_STAGING_PATH ###
@@ -388,8 +343,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns id
@@ -398,14 +351,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location ### test.blobstore.path ###/table1
                     name default.table1
-                    numFiles 1
-                    numRows 1
-                    rawDataSize 1
-                    serialization.ddl struct table1 { i32 id}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 2
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.table1
               TotalFiles: 1
@@ -420,8 +367,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns id
@@ -430,21 +375,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/table1
               name default.table1
-              numFiles 1
-              numRows 1
-              rawDataSize 1
-              serialization.ddl struct table1 { i32 id}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id
@@ -453,14 +390,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/table1
                 name default.table1
-                numFiles 1
-                numRows 1
-                rawDataSize 1
-                serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 2
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
             name: default.table1

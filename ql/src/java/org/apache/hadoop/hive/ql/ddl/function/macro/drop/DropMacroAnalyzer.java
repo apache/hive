@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for macro dropping commands.
  */
-@DDLType(type=HiveParser.TOK_DROPMACRO)
+@DDLType(types = HiveParser.TOK_DROPMACRO)
 public class DropMacroAnalyzer extends BaseSemanticAnalyzer {
   public DropMacroAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

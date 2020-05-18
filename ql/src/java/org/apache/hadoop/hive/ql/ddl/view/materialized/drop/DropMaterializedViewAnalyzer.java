@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop materialized view commands.
  */
-@DDLType(type=HiveParser.TOK_DROP_MATERIALIZED_VIEW)
+@DDLType(types = HiveParser.TOK_DROP_MATERIALIZED_VIEW)
 public class DropMaterializedViewAnalyzer extends BaseSemanticAnalyzer {
   public DropMaterializedViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

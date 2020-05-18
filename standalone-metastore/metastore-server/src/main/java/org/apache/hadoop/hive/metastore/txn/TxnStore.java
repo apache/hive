@@ -23,7 +23,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,11 +42,11 @@ public interface TxnStore extends Configurable {
   /**
    * Prefix for key when committing with a key/value.
    */
-  public static final String TXN_KEY_START = "_meta";
+  String TXN_KEY_START = "_meta";
 
   enum MUTEX_KEY {
-    Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler, WriteIdAllocator, MaterializationRebuild
+    Initiator, Cleaner, HouseKeeper, CheckLock, TxnCleaner,
+    CompactionScheduler, WriteIdAllocator, MaterializationRebuild
   }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
@@ -315,14 +313,17 @@ public interface TxnStore extends Configurable {
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
    * @param abortedThreshold  number of aborted queries forming a potential compaction request.
+   * @param abortedTimeThreshold age of an aborted txn in milliseconds that will trigger a
+   *                             potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long checkInterval) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long checkInterval)
+      throws MetaException;
 
   /**
    * This updates COMPACTION_QUEUE.  Set runAs username for the case where the request was
@@ -360,16 +361,6 @@ public interface TxnStore extends Configurable {
   List<CompactionInfo> findReadyToClean() throws MetaException;
 
   /**
-   * Returns the smallest txnid that could be seen in open state across all active transactions in
-   * the system or {@code NEXT_TXN_ID.NTXN_NEXT} if there are no active transactions, i.e. the
-   * smallest txnid that can be seen as unresolved in the whole system.  Even if a transaction
-   * is opened concurrently with this call it cannot have an id less than what this method returns.
-   * @return transaction ID
-   */
-  @RetrySemantics.ReadOnly
-  long findMinOpenTxnId() throws MetaException;
-
-  /**
    * This will remove an entry from the queue after
    * it has been compacted.
    * 
@@ -390,18 +381,19 @@ public interface TxnStore extends Configurable {
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
-   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
+   * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
+   * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
+   * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry
-  void cleanEmptyAbortedTxns() throws MetaException;
+  void cleanEmptyAbortedAndCommittedTxns() throws MetaException;
 
   /**
    * This will take all entries assigned to workers
@@ -452,7 +444,7 @@ public interface TxnStore extends Configurable {
    * transaction metadata once it becomes unnecessary.  
    */
   @RetrySemantics.SafeToRetry
-  void performWriteSetGC();
+  void performWriteSetGC() throws MetaException;
 
   /**
    * Determine if there are enough consecutive failures compacting a table or partition that no
@@ -471,6 +463,12 @@ public interface TxnStore extends Configurable {
   @VisibleForTesting
   long setTimeout(long milliseconds);
 
+  @VisibleForTesting
+  long getOpenTxnTimeOutMillis();
+
+  @VisibleForTesting
+  void setOpenTxnTimeOutMillis(long openTxnTimeOutMillis);
+
   @RetrySemantics.Idempotent
   MutexAPI getMutexAPI();
 
@@ -483,7 +481,7 @@ public interface TxnStore extends Configurable {
    */
   interface MutexAPI {
     /**
-     * The {@code key} is name of the lock. Will acquire and exclusive lock or block.  It retuns
+     * The {@code key} is name of the lock. Will acquire an exclusive lock or block.  It returns
      * a handle which must be used to release the lock.  Each invocation returns a new handle.
      */
     LockHandle acquireLock(String key) throws MetaException;
@@ -517,4 +515,12 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   void addWriteNotificationLog(AcidWriteEvent acidWriteEvent) throws MetaException;
+
+  /**
+   * Return the currently seen minimum open transaction ID.
+   * @return minimum transaction ID
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  long findMinOpenTxnIdForCleaner() throws MetaException;
 }

@@ -1140,8 +1140,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9]
-                          selectExpressions: DoubleColAddDoubleColumn(col 7:double, col 8:double)(children: CastStringToDouble(col 0:string) -> 7:double, CastStringToDouble(col 1:string) -> 8:double) -> 9:double
+                          projectedOutputColumnNums: [7]
+                          selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 7:double
                       Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
@@ -1149,7 +1149,7 @@ STAGE PLANS:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 9:double
+                            keyExpressions: col 7:double
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -1188,7 +1188,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

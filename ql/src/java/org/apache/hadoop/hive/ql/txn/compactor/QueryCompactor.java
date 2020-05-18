@@ -18,18 +18,16 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -40,10 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Common interface for query based compactions.
@@ -64,7 +59,7 @@ abstract class QueryCompactor {
    * @throws IOException compaction cannot be finished.
    */
   abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException;
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException, HiveException;
 
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
@@ -93,7 +88,7 @@ abstract class QueryCompactor {
    * @param dropQueries queries which drops the temporary tables.
    * @throws IOException error during the run of the compaction.
    */
-  protected void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
+  void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<String> createQueries,
       List<String> compactionQueries, List<String> dropQueries) throws IOException {
     Util.disableLlapCaching(conf);
@@ -144,61 +139,6 @@ abstract class QueryCompactor {
    */
   static class Util {
     /**
-     * Determine if compaction can run in a specified directory.
-     * @param isMajorCompaction type of compaction.
-     * @param dir the delta directory
-     * @param sd resolved storage descriptor
-     * @return true, if compaction can run.
-     */
-    static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir, StorageDescriptor sd) {
-      int deltaCount = dir.getCurrentDirectories().size();
-      int origCount = dir.getOriginalFiles().size();
-
-      StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
-      boolean isEnoughToCompact;
-
-      if (isMajorCompaction) {
-        isEnoughToCompact = (origCount > 0 || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
-
-      } else {
-        isEnoughToCompact = (deltaCount > 1);
-
-        if (deltaCount == 2) {
-          Map<String, Long> deltaByType = dir.getCurrentDirectories().stream().collect(Collectors
-              .groupingBy(delta -> (delta.isDeleteDelta() ? AcidUtils.DELETE_DELTA_PREFIX : AcidUtils.DELTA_PREFIX),
-                  Collectors.counting()));
-
-          isEnoughToCompact = (deltaByType.size() != deltaCount);
-          deltaInfo.append(" ").append(deltaByType);
-        }
-      }
-
-      if (!isEnoughToCompact) {
-        LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}", sd.getLocation(),
-            dir.getBaseDirectory(), deltaInfo, origCount);
-      }
-      return isEnoughToCompact;
-    }
-
-    /**
-     * Check for obsolete directories, and return true if any exist and Cleaner should be
-     * run. For example if we insert overwrite into a table with only deltas, a new base file with
-     * the highest writeId is created so there will be no live delta directories, only obsolete
-     * ones. Compaction is not needed, but the cleaner should still be run.
-     *
-     * @return true if cleaning is needed
-     */
-    public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
-      int numObsoleteDirs = dir.getObsolete().size();
-      boolean needsJustCleaning = numObsoleteDirs > 0;
-      if (needsJustCleaning) {
-        LOG.debug("{} obsolete directories in {} found; marked for cleaning.",
-            numObsoleteDirs, sd.getLocation());
-      }
-      return needsJustCleaning;
-    }
-
-    /**
      * Generate a random tmp path, under the provided storage.
      * @param sd storage descriptor, must be not null.
      * @return path, always not null
@@ -208,82 +148,12 @@ abstract class QueryCompactor {
     }
 
     /**
-     * Check whether the result directory exits and contains compacted result files. If no splits are found, create
-     * an empty directory at the destination path, matching a base/delta directory naming convention.
-     * @param sourcePath the checked source location
-     * @param destPath the destination, where the new directory should be created
-     * @param isMajorCompaction is called from a major compaction
-     * @param isDeleteDelta is the output used as delete delta directory
-     * @param conf hive configuration
-     * @param validWriteIdList maximum transaction id
-     * @return true, if the check was successful
-     * @throws IOException the new directory cannot be created
-     */
-    private static boolean resultHasSplits(Path sourcePath, Path destPath, boolean isMajorCompaction,
-        boolean isDeleteDelta, HiveConf conf, ValidWriteIdList validWriteIdList) throws IOException {
-      FileSystem fs = sourcePath.getFileSystem(conf);
-      long minOpenWriteId = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
-      long highWatermark = validWriteIdList.getHighWatermark();
-      AcidOutputFormat.Options options =
-          new AcidOutputFormat.Options(conf).writingBase(isMajorCompaction).writingDeleteDelta(isDeleteDelta)
-              .isCompressed(false).minimumWriteId(minOpenWriteId)
-              .maximumWriteId(highWatermark).bucket(0).statementId(-1);
-      Path newDeltaDir = AcidUtils.createFilename(destPath, options).getParent();
-      if (!fs.exists(sourcePath)) {
-        LOG.info("{} not found. Assuming 0 splits. Creating {}", sourcePath, newDeltaDir);
-        fs.mkdirs(newDeltaDir);
-        return false;
-      }
-      return true;
-    }
-
-    /**
-     * Create the base/delta directory matching the naming conventions and move the result files of the compaction
-     * into it.
-     * @param sourcePath location of the result files
-     * @param destPath destination path of the result files, without the base/delta directory
-     * @param isMajorCompaction is this called from a major compaction
-     * @param isDeleteDelta is the destination is a delete delta directory
-     * @param conf hive configuration
-     * @param validWriteIdList list of valid write Ids
-     * @param compactorTxnId transaction Id of the compaction
-     * @throws IOException the destination directory cannot be created
-     * @throws HiveException the result files cannot be moved to the destination directory
-     */
-    static void moveContents(Path sourcePath, Path destPath, boolean isMajorCompaction, boolean isDeleteDelta,
-        HiveConf conf, ValidWriteIdList validWriteIdList, long compactorTxnId) throws IOException, HiveException {
-      if (!resultHasSplits(sourcePath, destPath, isMajorCompaction, isDeleteDelta, conf, validWriteIdList)) {
-        return;
-      }
-      LOG.info("Moving contents of {} to {}", sourcePath, destPath);
-      FileSystem fs = sourcePath.getFileSystem(conf);
-      long minOpenWriteId = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
-      long highWatermark = validWriteIdList.getHighWatermark();
-      for (FileStatus fileStatus : fs.listStatus(sourcePath)) {
-        String originalFileName = fileStatus.getPath().getName();
-        if (AcidUtils.ORIGINAL_PATTERN.matcher(originalFileName).matches()) {
-          Optional<Integer> bucketId = AcidUtils.parseBucketIdFromRow(fs, fileStatus.getPath());
-          if (bucketId.isPresent()) {
-            AcidOutputFormat.Options options =
-                new AcidOutputFormat.Options(conf).writingBase(isMajorCompaction).writingDeleteDelta(isDeleteDelta)
-                    .isCompressed(false).minimumWriteId(minOpenWriteId)
-                    .maximumWriteId(highWatermark).bucket(bucketId.get()).statementId(-1)
-                    .visibilityTxnId(compactorTxnId);
-            Path finalBucketFile = AcidUtils.createFilename(destPath, options);
-            Hive.moveFile(conf, fileStatus.getPath(), finalBucketFile, true, false, false);
-          }
-        }
-      }
-      fs.delete(sourcePath, true);
-    }
-
-    /**
      * Unless caching is explicitly required for ETL queries this method disables it.
      * LLAP cache content lookup is file based, and since compaction alters the file structure it is not beneficial to
      * cache anything here, as it won't (and actually can't) ever be looked up later.
      * @param conf the Hive configuration
      */
-    static void disableLlapCaching(HiveConf conf) {
+    private static void disableLlapCaching(HiveConf conf) {
       String llapIOETLSkipFormat = conf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT);
       if (!"none".equals(llapIOETLSkipFormat)) {
         // Unless caching is explicitly required for ETL queries - disable it.
@@ -291,5 +161,37 @@ abstract class QueryCompactor {
       }
     }
 
+    /**
+     * Remove the root directory of a table if it's empty.
+     * @param conf the Hive configuration
+     * @param tmpTableName name of the table
+     * @throws IOException the directory cannot be deleted
+     * @throws HiveException the table is not found
+     */
+    static void cleanupEmptyDir(HiveConf conf, String tmpTableName) throws IOException, HiveException {
+      org.apache.hadoop.hive.ql.metadata.Table tmpTable = Hive.get().getTable(tmpTableName);
+      if (tmpTable != null) {
+        Path path = new Path(tmpTable.getSd().getLocation());
+        FileSystem fs = path.getFileSystem(conf);
+        if (!fs.listFiles(path, false).hasNext()) {
+          fs.delete(path, true);
+        }
+      }
+    }
+    /**
+     * Remove the delta directories of aborted transactions.
+     */
+    static void removeFilesForMmTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
+      List<Path> filesToDelete = dir.getAbortedDirectories();
+      if (filesToDelete.size() < 1) {
+        return;
+      }
+      LOG.info("About to remove " + filesToDelete.size() + " aborted directories from " + dir);
+      FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+      for (Path dead : filesToDelete) {
+        LOG.debug("Going to delete path " + dead.toString());
+        fs.delete(dead, true);
+      }
+    }
   }
 }

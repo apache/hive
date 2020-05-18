@@ -56,7 +56,6 @@ import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -242,9 +241,9 @@ public class LoadPartitions {
 
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
-        sourceWarehousePartitionLocation,
+        new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
         stagingDir,
-        context.hiveConf
+        context.hiveConf, false, false
     );
 
     Task<?> movePartitionTask = null;
@@ -269,6 +268,12 @@ public class LoadPartitions {
       addPartTask.addDependentTask(ckptTask);
     }
     return ptnRootTask;
+  }
+
+  private String getPartitionName(Path partitionMetadataFullPath) {
+    //Get partition name by removing the metadata base path.
+    //Needed for getting the data path
+    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length());
   }
 
   /**

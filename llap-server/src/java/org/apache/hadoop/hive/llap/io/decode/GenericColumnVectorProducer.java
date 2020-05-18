@@ -52,6 +52,7 @@ import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.RowIndexEntry;
@@ -291,6 +292,11 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     @Override
     public OrcFile.Version getFileVersion() {
       return null;
+    }
+
+    @Override
+    public CalendarKind getCalendar() {
+      return CalendarKind.JULIAN_GREGORIAN;
     }
   }
 }

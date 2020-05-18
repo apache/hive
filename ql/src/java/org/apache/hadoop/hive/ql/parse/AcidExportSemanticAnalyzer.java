@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.drop.DropTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -121,6 +121,10 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert tableTree != null && tableTree.getType() == HiveParser.TOK_TAB;
     ASTNode tokRefOrNameExportTable = (ASTNode) tableTree.getChild(0);
     Table exportTable = getTargetTable(tokRefOrNameExportTable);
+    
+    if (exportTable != null && (exportTable.isView() || exportTable.isMaterializedView())) {
+      throw new SemanticException("Views and Materialized Views can not be exported.");
+    }
     assert AcidUtils.isFullAcidTable(exportTable);
 
     //need to create the table "manually" rather than creating a task since it has to exist to
@@ -199,7 +203,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
 
     // Now make a task to drop temp table
-    // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
+    // {@link DropTableAnalyzer#analyzeInternal(ASTNode ast)
     ReplicationSpec replicationSpec = new ReplicationSpec();
     DropTableDesc dropTblDesc = new DropTableDesc(newTableName, false, true, replicationSpec);
     Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);

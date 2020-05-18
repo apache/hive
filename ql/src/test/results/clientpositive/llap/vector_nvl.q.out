@@ -147,19 +147,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4, 14]
                         selectExpressions: VectorCoalesce(columns [4, 13])(children: col 4:float, ConstantVectorExpression(val 1.0) -> 13:float) -> 14:float
-                    Statistics: Num rows: 12288 Data size: 85848 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 10
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 10 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 10 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 10 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

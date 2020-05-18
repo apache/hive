@@ -89,6 +89,9 @@ public class Initiator extends MetaStoreCompactorThread {
 
       int abortedThreshold = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
+      long abortedTimeThreshold = HiveConf
+          .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
+              TimeUnit.MILLISECONDS);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -109,8 +112,11 @@ public class Initiator extends MetaStoreCompactorThread {
           //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold, compactionInterval)
-              .stream().filter(ci -> checkCompactionElig(ci, currentCompactions)).collect(Collectors.toSet());
+          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
+              abortedTimeThreshold, compactionInterval)
+              .stream()
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions))
+              .collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
 
@@ -149,12 +155,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
-
-          // Clean anything from the txns table that has no components left in txn_components.
-          txnHandler.cleanEmptyAbortedTxns();
-
-          // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
-          txnHandler.cleanTxnToWriteIdTable();
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
@@ -269,6 +269,16 @@ public class Initiator extends MetaStoreCompactorThread {
       LOG.debug("Found too many aborted transactions for " + ci.getFullPartitionName() + ", " +
           "initiating major compaction");
       return CompactionType.MAJOR;
+    }
+
+    if (ci.hasOldAbort) {
+      HiveConf.ConfVars oldAbortedTimeoutProp =
+          HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD;
+      LOG.debug("Found an aborted transaction for " + ci.getFullPartitionName()
+          + " with age older than threshold " + oldAbortedTimeoutProp + ": " + conf
+          .getTimeVar(oldAbortedTimeoutProp, TimeUnit.HOURS) + " hours. "
+          + "Initiating minor compaction.");
+      return CompactionType.MINOR;
     }
 
     if (runJobAsSelf(runAs)) {
@@ -423,7 +433,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean checkCompactionElig(CompactionInfo ci, ShowCompactResponse currentCompactions) {
+  private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
     LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
 
     // Check if we already have initiated or are working on a compaction for this partition

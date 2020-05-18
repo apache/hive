@@ -697,7 +697,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     // Now, add any scratch columns needed for children operators.
     int outputColumn = initialColumnCount;
     for (String typeName : vOutContext.getScratchColumnTypeNames()) {
-      allocateOverflowBatchColumnVector(overflowBatch, outputColumn++, typeName, vOutContext.getDataTypePhysicalVariation(outputColumn));
+      allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName, vOutContext.getDataTypePhysicalVariation(outputColumn++));
     }
 
     overflowBatch.projectedColumns = outputProjection;

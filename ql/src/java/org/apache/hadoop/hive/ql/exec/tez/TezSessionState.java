@@ -842,8 +842,11 @@ public class TezSessionState {
 
   private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
       LoginException {
-    final File jar =
-        new File(Utilities.jarFinderGetJar(clazz));
+    String jarPath = Utilities.jarFinderGetJar(clazz);
+    if (jarPath == null) {
+      throw new IOException("Can't find jar for: " + clazz);
+    }
+    final File jar = new File(jarPath);
     final String localJarPath = jar.toURI().toURL().toExternalForm();
     final LocalResource jarLr = createJarLocalResource(localJarPath);
     lrMap.put(DagUtils.getBaseName(jarLr), jarLr);

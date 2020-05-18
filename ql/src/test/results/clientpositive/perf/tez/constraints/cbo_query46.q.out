@@ -105,7 +105,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], dir0=[
                     HiveFilter(condition=[AND(IN($6, 1998, 1999, 2000), IN($7, 6, 0))])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
                 HiveProject(s_store_sk=[$0])
-                  HiveFilter(condition=[IN($22, _UTF-16LE'Cedar Grove', _UTF-16LE'Wildwood', _UTF-16LE'Union', _UTF-16LE'Salem', _UTF-16LE'Highland Park')])
+                  HiveFilter(condition=[IN($22, _UTF-16LE'Cedar Grove':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Wildwood':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Union':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Salem':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Highland Park':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
                     HiveTableScan(table=[[default, store]], table:alias=[store])
               HiveProject(hd_demo_sk=[$0])
                 HiveFilter(condition=[OR(=($4, 1), =($3, 2))])

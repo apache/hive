@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -46,6 +49,19 @@ public class TestLlapWebServices {
     llapWS.init(new HiveConf());
     llapWS.start();
     Thread.sleep(5000);
+    ensureUniqueInClasspath("javax/servlet/http/HttpServletRequest.class");
+    ensureUniqueInClasspath("javax/servlet/http/HttpServlet.class");
+  }
+
+  private static void ensureUniqueInClasspath(String name) throws IOException {
+    Enumeration<URL> rr = TestLlapWebServices.class.getClassLoader().getResources(name);
+    List<URL> found = new ArrayList<>();
+    while (rr.hasMoreElements()) {
+      found.add(rr.nextElement());
+    }
+    if (found.size() != 1) {
+      throw new RuntimeException(name + " unexpected number of occurences on the classpath:" + found.toString());
+    }
   }
 
   @Test

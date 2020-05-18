@@ -25,6 +25,7 @@ public class VectorTopNKeyDesc extends AbstractVectorDesc {
   private static final long serialVersionUID = 1L;
 
   private VectorExpression[] keyExpressions;
+  private VectorExpression[] partitionKeyColumns;
 
   public VectorTopNKeyDesc() {
   }
@@ -35,5 +36,13 @@ public class VectorTopNKeyDesc extends AbstractVectorDesc {
 
   public void setKeyExpressions(VectorExpression[] keyExpressions) {
     this.keyExpressions = keyExpressions;
+  }
+
+  public VectorExpression[] getPartitionKeyColumns() {
+    return partitionKeyColumns;
+  }
+
+  public void setPartitionKeyColumns(VectorExpression[] partitionKeyColumns) {
+    this.partitionKeyColumns = partitionKeyColumns;
   }
 }

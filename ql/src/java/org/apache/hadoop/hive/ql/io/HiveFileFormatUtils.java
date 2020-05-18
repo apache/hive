@@ -23,6 +23,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -306,10 +307,15 @@ public final class HiveFileFormatUtils {
     return (HiveOutputFormat<?, ?>) outputFormat;
   }
 
+  public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket, FileSinkDesc conf,
+      Path outPath, ObjectInspector inspector, Reporter reporter, int rowIdColNum) throws HiveException, IOException {
+    return getAcidRecordUpdater(jc, tableInfo, bucket, conf, outPath, inspector, reporter, rowIdColNum, null);
+  }
+
   public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
                                                    FileSinkDesc conf, Path outPath,
                                                    ObjectInspector inspector,
-                                                   Reporter reporter, int rowIdColNum)
+                                                   Reporter reporter, int rowIdColNum, String attemptId)
       throws HiveException, IOException {
     HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
     AcidOutputFormat<?, ?> acidOutputFormat = null;
@@ -323,9 +329,8 @@ public final class HiveFileFormatUtils {
     // file the way getHiveRecordWriter does, as ORC appears to read the value for itself.  Not
     // sure if this is correct or not.
     return getRecordUpdater(jc, acidOutputFormat,
-        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum, conf);
+        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum, conf, attemptId);
   }
-
 
   private static RecordUpdater getRecordUpdater(JobConf jc,
                                                 AcidOutputFormat<?, ?> acidOutputFormat,
@@ -335,7 +340,8 @@ public final class HiveFileFormatUtils {
                                                 Path outPath,
                                                 Reporter reporter,
                                                 int rowIdColNum,
-                                                FileSinkDesc conf) throws IOException {
+                                                FileSinkDesc conf,
+                                                String attemptId) throws IOException {
     return acidOutputFormat.getRecordUpdater(outPath, new AcidOutputFormat.Options(jc)
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
@@ -348,6 +354,7 @@ public final class HiveFileFormatUtils {
         .recordIdColumn(rowIdColNum)
         .statementId(conf.getStatementId())
         .finalDestination(conf.getDestPath())
+        .attemptId(attemptId)
         .temporary(conf.isTemporary()));
   }
 
@@ -475,7 +482,7 @@ public final class HiveFileFormatUtils {
    **/
   public static List<String> doGetAliasesFromPath(Map<Path, List<String>> pathToAliases, Path dir) {
     if (pathToAliases == null) {
-      return new ArrayList<String>();
+      return Collections.emptyList();
     }
     Path path = getMatchingPath(pathToAliases, dir);
     return pathToAliases.get(path);

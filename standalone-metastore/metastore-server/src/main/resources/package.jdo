@@ -69,6 +69,10 @@
         <!-- allows null is true to keep backwards compatibility with old releases -->
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="managedLocationUri">
+        <column name="DB_MANAGED_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+
     </class>
 
     <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
@@ -139,7 +143,7 @@
       </field>
     </class>
 
-    <class name="MTable" table="TBLS" identity-type="application" detachable="true">
+    <class name="MTable" table="TBLS" identity-type="application" detachable="true" objectid-class="MTable$PK">
       <field name="id" primary-key="true" value-strategy="native">
         <column name="TBL_ID" jdbc-type="BIGINT" />
       </field>
@@ -273,9 +277,9 @@
         <column name="PARENT_CD_ID"/>
       </field>
       <field name="parentIntegerIndex">
-    <column name="PARENT_INTEGER_IDX"/>
+        <column name="PARENT_INTEGER_IDX"/>
       </field>
-      <field name="parentTable">
+      <field name="parentTable" primary-key="true">
         <column name="PARENT_TBL_ID"/>
       </field>
       <field name="constraintType">
@@ -1470,6 +1474,10 @@
       </field>
       <field name="nextExecution">
         <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="activeExecution">
+        <column name="ACTIVE_EXECUTION_ID" allows-null="true"/>
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_ACTIVE" delete-action="cascade"/>
       </field>
       <field name="executions" mapped-by="scheduledQuery" dependent-element="true">
         <collection element-type="MScheduledExecution" dependent-element="true" />

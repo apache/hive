@@ -93,7 +93,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.address");
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.port");
     addToExpectedRestrictedMap("hive.spark.client.rpc.sasl.mechanisms");
-    addToExpectedRestrictedMap("bonecp.test");
+    addToExpectedRestrictedMap("hive.query.max.length");
     addToExpectedRestrictedMap("hive.druid.broker.address.default");
     addToExpectedRestrictedMap("hive.druid.coordinator.address.default");
     addToExpectedRestrictedMap("hikaricp.test");
@@ -110,6 +110,10 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("spark.home");
     addToExpectedRestrictedMap("hive.privilege.synchronizer.interval");
     addToExpectedRestrictedMap("hive.driver.parallel.compilation.global.limit");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.location");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.password");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
   }
 
   @AfterClass

@@ -77,8 +77,8 @@ import com.google.common.collect.ImmutableList;
 
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -168,12 +168,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         parsedDbName = SessionState.get().getCurrentDatabase();
       }
       // parsing statement is now done, on to logic.
+      EximUtil.SemanticAnalyzerWrapperContext x =
+          new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx);
+      MetaData rv = EximUtil.getMetaDataFromLocation(fromTree.getText(), x.getConf());
       tableExists = prepareImport(true,
               isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
               parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
-              new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
-
-              null, getTxnMgr(), 0);
+              x, null, getTxnMgr(), 0, rv);
 
     } catch (SemanticException e) {
       throw e;
@@ -237,7 +238,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                       LinkedHashMap<String, String> parsedPartSpec,
                                       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
                                       UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr,
-                                      long writeId // Initialize with 0 for non-ACID and non-MM tables.
+                                      long writeId, // Initialize with 0 for non-ACID and non-MM tables.
+                                      MetaData rv
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -246,13 +248,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     FileSystem fs = FileSystem.get(fromURI, x.getConf());
     x.getInputs().add(toReadEntity(fromPath, x.getConf()));
-
-    MetaData rv;
-    try {
-      rv = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
-    } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
-    }
 
     if (rv.getTable() == null) {
       // nothing to do here, silently return.
@@ -506,7 +501,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf(),
-              isAutoPurge, needRecycle, copyToMigratedTxnTable);
+              isAutoPurge, needRecycle, copyToMigratedTxnTable, false);
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, destPath, false));
     }
@@ -596,6 +591,18 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return addPartTask;
     } else {
       String srcLocation = partSpec.getLocation();
+      if (replicationSpec.isInReplicationScope()
+          && !ReplicationSpec.Type.IMPORT.equals(replicationSpec.getReplSpecType())) {
+        Path partLocation = new Path(partSpec.getLocation());
+        Path dataDirBase = partLocation.getParent();
+        String bucketDir = partLocation.getName();
+        for (int i=1; i<partSpec.getPartSpec().size(); i++) {
+          bucketDir =  dataDirBase.getName() + File.separator + bucketDir;
+          dataDirBase = dataDirBase.getParent();
+        }
+        String relativePartDataPath = EximUtil.DATA_PATH_NAME + File.separator + bucketDir;
+        srcLocation =  new Path(dataDirBase, relativePartDataPath).toString();
+      }
       fixLocationInPartSpec(tblDesc, table, wh, replicationSpec, partSpec, x);
       x.getLOG().debug("adding dependent CopyWork/AddPart/MoveWork for partition "
               + partSpecToString(partSpec.getPartSpec())
@@ -641,7 +648,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
         copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, new Path(srcLocation), destPath,
-                x.getConf(), isAutoPurge, needRecycle, copyToMigratedTxnTable);
+                x.getConf(), isAutoPurge, needRecycle, copyToMigratedTxnTable, false);
       } else {
         copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation), destPath, false));
       }

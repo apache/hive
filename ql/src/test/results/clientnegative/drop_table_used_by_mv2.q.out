@@ -1,0 +1,72 @@
+PREHOOK: query: create table mytable (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mytable
+POSTHOOK: query: create table mytable (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mytable
+PREHOOK: query: insert into mytable values (1, 'val1'), (2, 'val2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mytable
+POSTHOOK: query: insert into mytable values (1, 'val1'), (2, 'val2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mytable
+POSTHOOK: Lineage: mytable.key SCRIPT []
+POSTHOOK: Lineage: mytable.value SCRIPT []
+PREHOOK: query: create view myview as select * from mytable
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@mytable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@myview
+POSTHOOK: query: create view myview as select * from mytable
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@mytable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@myview
+POSTHOOK: Lineage: myview.key SIMPLE [(mytable)mytable.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: myview.value SIMPLE [(mytable)mytable.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create materialized view mv1 disable rewrite as
+select key, value from myview
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mytable
+PREHOOK: Input: default@myview
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 disable rewrite as
+select key, value from myview
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mytable
+POSTHOOK: Input: default@myview
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv2 disable rewrite as
+select count(*) from myview
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mytable
+PREHOOK: Input: default@myview
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv2
+POSTHOOK: query: create materialized view mv2 disable rewrite as
+select count(*) from myview
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mytable
+POSTHOOK: Input: default@myview
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv2
+PREHOOK: query: drop view myview
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@myview
+PREHOOK: Output: default@myview
+POSTHOOK: query: drop view myview
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@myview
+POSTHOOK: Output: default@myview
+PREHOOK: query: drop table mytable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mytable
+PREHOOK: Output: default@mytable
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Cannot drop table as it is used in the following materialized views [default.mv1, default.mv2]
+)

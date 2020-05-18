@@ -49,17 +49,17 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return org.mariadb.jdbc.Driver.class.getName();
+    return "org.mariadb.jdbc.Driver";
   }
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/" + HIVE_DB;
+    return "jdbc:mysql://localhost:3306/" + HIVE_DB + "?sessionVariables=sql_mode=ANSI_QUOTES";
   }
 
   @Override
   public String getInitialJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/";
+    return "jdbc:mysql://localhost:3306/?allowPublicKeyRetrieval=true";
   }
 
   @Override

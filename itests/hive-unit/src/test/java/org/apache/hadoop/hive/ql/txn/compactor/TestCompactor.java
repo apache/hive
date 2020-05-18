@@ -26,15 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -1306,6 +1298,57 @@ public class TestCompactor {
   }
 
   @Test
+  public void testCompactionForFileInSratchDir() throws Exception {
+    String dbName = "default";
+    String tblName = "cfs";
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "int:string";
+    String createQuery = "CREATE TABLE " + tblName + "(a INT, b STRING) " + "STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
+            + "'transactional_properties'='default')";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver(createQuery, driver);
+
+
+
+    // Insert some data -> this will generate only insert deltas
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
+
+    // Insert some data -> this will again generate only insert deltas
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(2, 'bar')", driver);
+
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+
+    Map<String, String> tblProperties = new HashMap<>();
+    tblProperties.put("compactor.hive.compactor.input.tmp.dir",table.getSd().getLocation() + "/" + "_tmp");
+
+    //Create empty file in ScratchDir under table location
+    String scratchDirPath = table.getSd().getLocation() + "/" + "_tmp";
+    Path dir = new Path(scratchDirPath + "/base_0000002_v0000005");
+    fs.mkdirs(dir);
+    Path emptyFile = AcidUtils.createBucketFile(dir, 0);
+    fs.create(emptyFile);
+
+    //Run MajorCompaction
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setConf(conf);
+    t.init(new AtomicBoolean(true), new AtomicBoolean());
+    CompactionRequest Cr = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    Cr.setProperties(tblProperties);
+    txnHandler.compact(Cr);
+    t.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompacts().size());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+  }
+
+  @Test
   public void minorCompactWhileStreamingWithSplitUpdate() throws Exception {
     minorCompactWhileStreamingWithSplitUpdate(false);
   }
@@ -1701,6 +1744,45 @@ public class TestCompactor {
 
   }
 
+  @Test
+  public void testCompactionDataLoadedWithInsertOverwrite() throws Exception {
+    String externalTableName = "test_comp_txt";
+    String tableName = "test_comp";
+    executeStatementOnDriver("DROP TABLE IF EXISTS " + externalTableName, driver);
+    executeStatementOnDriver("DROP TABLE IF EXISTS " + tableName, driver);
+    executeStatementOnDriver("CREATE EXTERNAL TABLE " + externalTableName + "(a int, b int, c int) STORED AS TEXTFILE",
+        driver);
+    executeStatementOnDriver(
+        "CREATE TABLE " + tableName + "(a int, b int, c int) STORED AS ORC TBLPROPERTIES('transactional'='true')",
+        driver);
+
+    executeStatementOnDriver("INSERT INTO " + externalTableName + " values (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4)",
+        driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tableName + " SELECT * FROM test_comp_txt", driver);
+
+    executeStatementOnDriver("UPDATE " + tableName + " SET b=55, c=66 WHERE a=2", driver);
+    executeStatementOnDriver("DELETE FROM " + tableName + " WHERE a=4", driver);
+    executeStatementOnDriver("UPDATE " + tableName + " SET b=77 WHERE a=1", driver);
+
+    executeStatementOnDriver("SELECT * FROM " + tableName + " ORDER BY a", driver);
+    ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(3, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\t77\t1", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\t3\t3", valuesReadFromHiveDriver.get(2));
+
+    runMajorCompaction("default", tableName);
+
+    // Validate after compaction.
+    executeStatementOnDriver("SELECT * FROM " + tableName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(3, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\t77\t1", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
+  }
+
   private List<ShowCompactResponseElement> getCompactionList() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
     runInitiator(conf);
@@ -1761,7 +1843,6 @@ public class TestCompactor {
       partNames.add(compact.getPartitionname());
     }
   }
-
 
   private void processStreamingAPI(String dbName, String tblName, boolean newStreamingAPI)
       throws StreamingException, ClassNotFoundException,

@@ -1850,28 +1850,27 @@ public abstract class TestHiveMetaStore {
         .addCol("bar", "string")
         .build(conf);
     table.setId(1);
-    try {
-      client.createTable(table);
-      Assert.fail("An error should happen when setting the id"
-          + " to create a table");
-    } catch (InvalidObjectException e) {
-      Assert.assertTrue(e.getMessage().contains("Id shouldn't be set"));
-      Assert.assertTrue(e.getMessage().contains(tblName));
-    }
+    client.createTable(table);
   }
 
   @Test
   public void testAlterTable() throws Exception {
     String dbName = "alterdb";
-    String invTblName = "alter-tbl";
+    String invTblName = "alter§tbl";
     String tblName = "altertbl";
 
     try {
       client.dropTable(dbName, tblName);
       silentDropDatabase(dbName);
 
+      String dbLocation =
+          "/tmp/warehouse/_testDB_table_create_";
+      String mgdLocation =
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
+          .setLocation(dbLocation)
+          .setManagedLocation(mgdLocation)
           .create(client, conf);
 
       ArrayList<FieldSchema> invCols = new ArrayList<>(2);
@@ -2106,26 +2105,32 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String dbLocation =
+          "/tmp/warehouse/_testDB_table_create_";
+      String mgdLocation =
           MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
+          .setManagedLocation(mgdLocation)
           .create(client, conf);
       Database db = client.getDatabase(dbName);
 
       Table tbl = new TableBuilder()
           .setDbName(dbName)
           .setTableName(tblName_1)
+          .setType(TableType.EXTERNAL_TABLE.name())
           .addCol("name", ColumnType.STRING_TYPE_NAME)
           .addCol("income", ColumnType.INT_TYPE_NAME)
+          .addTableParam("EXTERNAL", "TRUE")
           .create(client, conf);
 
       tbl = client.getTable(dbName, tblName_1);
 
       Path path = new Path(tbl.getSd().getLocation());
       System.err.println("Table's location " + path + ", Database's location " + db.getLocationUri());
+      assertEquals("Table type is expected to be EXTERNAL", TableType.EXTERNAL_TABLE.name(), tbl.getTableType());
       assertEquals("Table location is not a subset of the database location",
-          path.getParent().toString(), db.getLocationUri());
+          db.getLocationUri(), path.getParent().toString());
 
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -2278,8 +2283,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 < \"p12\"", 2);
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
-    checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
-    checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
+    checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2400,8 +2405,8 @@ public abstract class TestHiveMetaStore {
       checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <> \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 3);
-      checkFilter(client, dbName, tblName, "p1 like \"p.*2\"", 1);
+      checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 3);
+      checkFilter(client, dbName, tblName, "p1 like \"p%2\"", 1);
 
       client.dropTable(dbName, tblName);
       client.dropDatabase(dbName);
@@ -2451,8 +2456,6 @@ public abstract class TestHiveMetaStore {
       checkFilter(client, dbName, tblName, "p2 <= \"p21\"", 2);
       checkFilter(client, dbName, tblName, "p2 <> \"p12\"", 3);
       checkFilter(client, dbName, tblName, "p2 != \"p12\"", 3);
-      checkFilter(client, dbName, tblName, "p2 like \"p2.*\"", 3);
-      checkFilter(client, dbName, tblName, "p2 like \"p.*2\"", 1);
 
       try {
         checkFilter(client, dbName, tblName, "p2 !< 'dd'", 0);
@@ -2463,6 +2466,65 @@ public abstract class TestHiveMetaStore {
 
       cleanUp(dbName, tblName, null);
   }
+
+  /**
+   * Test "like" filtering on table with single partition.
+   */
+  @Test
+  public void testPartitionFilterLike() throws Exception {
+    String dbName = "filterdb";
+    String tblName = "filtertbl";
+
+    List<String> vals = new ArrayList<>(1);
+    vals.add("abc");
+    List <String> vals2 = new ArrayList<>(1);
+    vals2.add("d_\\\\%ae");
+    List <String> vals3 = new ArrayList<>(1);
+    vals3.add("af%");
+
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    Table tbl = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addCol("c2", ColumnType.INT_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    tbl = client.getTable(dbName, tblName);
+
+    add_partition(client, tbl, vals, "part1");
+    add_partition(client, tbl, vals2, "part2");
+    add_partition(client, tbl, vals3, "part3");
+
+    checkFilter(client, dbName, tblName, "p1 like \"a%\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"%a%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"%a\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"a%c\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%a%c%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%_b%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%b_\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%c\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%c%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"c%\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\_%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\%%\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"abc\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"_\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"___\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"%%%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\\\\\\\%\"", 1);
+
+    client.dropTable(dbName, tblName);
+    client.dropDatabase(dbName);
+  }
+
 
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount) throws TException {

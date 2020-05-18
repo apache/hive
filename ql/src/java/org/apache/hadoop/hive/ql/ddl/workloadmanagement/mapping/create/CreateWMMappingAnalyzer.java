@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for create mapping commands.
  */
-@DDLType(type=HiveParser.TOK_CREATE_MAPPING)
+@DDLType(types = HiveParser.TOK_CREATE_MAPPING)
 public class CreateWMMappingAnalyzer extends AbstractVMMappingAnalyzer {
   public CreateWMMappingAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

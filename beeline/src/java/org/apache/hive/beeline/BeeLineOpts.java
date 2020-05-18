@@ -97,6 +97,7 @@ public class BeeLineOpts implements Completer {
   private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
+  private int fetchSize = -1;
 
   //This can be set for old behavior of nulls printed as empty strings
   private boolean nullEmptyString = false;
@@ -625,6 +626,10 @@ public class BeeLineOpts implements Completer {
   }
 
   public void setHiveVariables(Map<String, String> hiveVariables) {
+    if (hiveVariables == null) {
+      this.hiveVariables.clear();
+      return;
+    }
     this.hiveVariables = hiveVariables;
   }
 
@@ -634,6 +639,14 @@ public class BeeLineOpts implements Completer {
 
   public void setAllowMultiLineCommand(boolean allowMultiLineCommand) {
     this.allowMultiLineCommand = allowMultiLineCommand;
+  }
+
+  public int getFetchSize() {
+    return fetchSize;
+  }
+
+  public void setFetchSize(int fetchSize) {
+    this.fetchSize = fetchSize;
   }
 
   /**
@@ -658,6 +671,10 @@ public class BeeLineOpts implements Completer {
   }
 
   public void setHiveConfVariables(Map<String, String> hiveConfVariables) {
+    if (hiveConfVariables == null) {
+      this.hiveConfVariables.clear();
+      return;
+    }
     this.hiveConfVariables = hiveConfVariables;
   }
 

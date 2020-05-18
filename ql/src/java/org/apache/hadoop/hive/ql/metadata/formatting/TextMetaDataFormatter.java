@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -46,7 +45,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -111,7 +110,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables.
    */
   @Override
-  public void showTables(DataOutputStream out, Set<String> tables)
+  public void showTables(DataOutputStream out, List<String> tables)
       throws HiveException {
     Iterator<String> iterTbls = tables.iterator();
 
@@ -149,7 +148,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
@@ -198,7 +196,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
@@ -622,7 +619,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     try {
       outStream.write(database.getBytes("UTF-8"));
@@ -633,6 +630,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(separator);
       if (location != null) {
         outStream.write(location.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (managedLocation != null) {
+        outStream.write(managedLocation.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (ownerName != null) {

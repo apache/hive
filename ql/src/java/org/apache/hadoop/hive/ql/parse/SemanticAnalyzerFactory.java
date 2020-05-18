@@ -83,41 +83,13 @@ public final class SemanticAnalyzerFactory {
         return new ReplicationSemanticAnalyzer(queryState);
       case HiveParser.TOK_REPL_STATUS:
         return new ReplicationSemanticAnalyzer(queryState);
-      case HiveParser.TOK_ALTERTABLE: {
-        Tree child = tree.getChild(1);
-        queryState.setCommandType(HiveOperation.operationForToken(child.getType()));
-        return new DDLSemanticAnalyzer(queryState);
-      }
       case HiveParser.TOK_ALTERVIEW: {
         Tree child = tree.getChild(1);
-        switch (child.getType()) {
-        case HiveParser.TOK_ALTERVIEW_PROPERTIES:
-        case HiveParser.TOK_ALTERVIEW_DROPPROPERTIES:
-        case HiveParser.TOK_ALTERVIEW_RENAME:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new DDLSemanticAnalyzer(queryState);
-        }
         // TOK_ALTERVIEW_AS
         assert child.getType() == HiveParser.TOK_QUERY;
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
       }
-      case HiveParser.TOK_DESCTABLE:
-      case HiveParser.TOK_MSCK:
-      case HiveParser.TOK_SHOWTABLES:
-      case HiveParser.TOK_SHOW_TABLESTATUS:
-      case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      case HiveParser.TOK_SHOWLOCKS:
-      case HiveParser.TOK_SHOWDBLOCKS:
-      case HiveParser.TOK_SHOWCONF:
-      case HiveParser.TOK_SHOWVIEWS:
-      case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
-      case HiveParser.TOK_LOCKTABLE:
-      case HiveParser.TOK_UNLOCKTABLE:
-      case HiveParser.TOK_TRUNCATETABLE:
-        return new DDLSemanticAnalyzer(queryState);
-
       case HiveParser.TOK_ANALYZE:
         return new ColumnStatsSemanticAnalyzer(queryState);
 

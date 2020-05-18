@@ -34,7 +34,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.auth.PlainSaslServer.SaslPlainProvider;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 public final class PlainSaslHelper {
   private static final Logger LOG = LoggerFactory.getLogger(PlainSaslHelper.class);
 
-  public static TProcessorFactory getPlainProcessorFactory(ThriftCLIService service) {
+  public static TProcessorFactory getPlainProcessorFactory(TCLIService.Iface service) {
     return new SQLPlainProcessorFactory(service);
   }
 
@@ -158,7 +158,12 @@ public final class PlainSaslHelper {
       }
       PasswdAuthenticationProvider provider =
         AuthenticationProviderFactory.getAuthenticationProvider(authMethod);
-      provider.Authenticate(username, password);
+      try {
+        provider.Authenticate(username, password);
+      } catch (Exception e) {
+        LOG.error("Login attempt is failed for user : " + username + ". Error Messsage : " + e.getMessage());
+        throw e;
+      }
       if (ac != null) {
         ac.setAuthorized(true);
       }
@@ -193,9 +198,9 @@ public final class PlainSaslHelper {
 
   private static final class SQLPlainProcessorFactory extends TProcessorFactory {
 
-    private final ThriftCLIService service;
+    private final TCLIService.Iface service;
 
-    SQLPlainProcessorFactory(ThriftCLIService service) {
+    SQLPlainProcessorFactory(TCLIService.Iface service) {
       super(null);
       this.service = service;
     }

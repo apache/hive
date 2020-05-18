@@ -140,8 +140,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -475,6 +473,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
     system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
+    system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
@@ -1360,6 +1359,13 @@ public final class FunctionRegistry {
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {
     return GenericUDFOPPositive.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
+   * Returns whether the exprNodeDesc is a node of "negative".
+   */
+  public static boolean isOpNegative(ExprNodeDesc desc) {
+    return GenericUDFOPNegative.class == getGenericUDFClassFromExprDesc(desc);
   }
 
   /**

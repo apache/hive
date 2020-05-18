@@ -593,20 +593,23 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     /**
      * Returns true if the memory threshold for the hash table was reached.
+     * WARN: Frequent flushing can reduce Op throughput
      */
     private boolean shouldFlush(VectorizedRowBatch batch) {
       if (batch.size == 0) {
         return false;
       }
-      //numEntriesSinceCheck is the number of entries added to the hash table
+      // numEntriesSinceCheck is the number of entries added to the hash table
       // since the last time we checked the average variable size
       if (numEntriesSinceCheck >= this.checkInterval) {
         // Were going to update the average variable row size by sampling the current batch
         updateAvgVariableSize(batch);
         numEntriesSinceCheck = 0;
       }
-      if (numEntriesHashTable > this.maxHtEntries ||
-          numEntriesHashTable * (fixedHashEntrySize + avgVariableSize) > maxHashTblMemory) {
+      long currMemUsed = numEntriesHashTable * (fixedHashEntrySize + avgVariableSize);
+      // Protect against low maxHtEntries setting: if memory usage is below 30% avoid flushing
+      if ( ((numEntriesHashTable > this.maxHtEntries) && (currMemUsed > 0.3 * maxHashTblMemory))  ||
+          currMemUsed > maxHashTblMemory) {
         return true;
       }
       if (gcCanary.get() == null) {
@@ -642,9 +645,26 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           LOG.debug(String.format("checkHashModeEfficiency: HT:%d RC:%d MIN:%d",
               numEntriesHashTable, sumBatchSize, (long)(sumBatchSize * minReductionHashAggr)));
         }
-        if (numEntriesHashTable > sumBatchSize * minReductionHashAggr) {
+        /*
+         * The grouping sets expand the hash sizes by producing intermediate keys. 3 grouping sets
+         * of (),(col1),(col1,col2), will turn 10 rows into 30 rows. If the col1 has an nDV of 2 and
+         * col2 has nDV of 5, then this turns into a maximum of 1+3+(2*5) or 14 keys into the
+         * hashtable.
+         * 
+         * So you get 10 rows in and 14 rows out, which is a reduction of ~2x vs Streaming mode,
+         * but it is an increase if the grouping-set is not accounted for.
+         * 
+         * For performance, it is definitely better to send 14 rows out to shuffle and not 30.
+         * 
+         * Particularly if the same nDVs are repeated for a thousand rows, this would send a
+         * thousand rows via streaming to a single reducer which owns the empty grouping set,
+         * instead of sending 1 from the hash.
+         * 
+         */
+        final int groupingExpansion = (groupingSets != null) ? groupingSets.length : 1;
+        final long intermediateKeyCount = sumBatchSize * groupingExpansion;
+        if (numEntriesHashTable > intermediateKeyCount * minReductionHashAggr) {
           flush(true);
-
           changeToStreamingMode();
         }
       }

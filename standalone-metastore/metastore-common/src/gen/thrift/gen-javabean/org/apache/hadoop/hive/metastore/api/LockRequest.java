@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField ZERO_WAIT_READ_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("zeroWaitReadEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private String user; // required
   private String hostname; // required
   private String agentInfo; // optional
+  private boolean zeroWaitReadEnabled; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TXNID((short)2, "txnid"),
     USER((short)3, "user"),
     HOSTNAME((short)4, "hostname"),
-    AGENT_INFO((short)5, "agentInfo");
+    AGENT_INFO((short)5, "agentInfo"),
+    ZERO_WAIT_READ_ENABLED((short)6, "zeroWaitReadEnabled");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return HOSTNAME;
         case 5: // AGENT_INFO
           return AGENT_INFO;
+        case 6: // ZERO_WAIT_READ_ENABLED
+          return ZERO_WAIT_READ_ENABLED;
         default:
           return null;
       }
@@ -128,8 +133,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
+  private static final int __ZEROWAITREADENABLED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO};
+  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO,_Fields.ZERO_WAIT_READ_ENABLED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -144,12 +150,16 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.AGENT_INFO, new org.apache.thrift.meta_data.FieldMetaData("agentInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ZERO_WAIT_READ_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("zeroWaitReadEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockRequest.class, metaDataMap);
   }
 
   public LockRequest() {
     this.agentInfo = "Unknown";
+
+    this.zeroWaitReadEnabled = false;
 
   }
 
@@ -186,6 +196,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetAgentInfo()) {
       this.agentInfo = other.agentInfo;
     }
+    this.zeroWaitReadEnabled = other.zeroWaitReadEnabled;
   }
 
   public LockRequest deepCopy() {
@@ -200,6 +211,8 @@ import org.slf4j.LoggerFactory;
     this.user = null;
     this.hostname = null;
     this.agentInfo = "Unknown";
+
+    this.zeroWaitReadEnabled = false;
 
   }
 
@@ -332,6 +345,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public boolean isZeroWaitReadEnabled() {
+    return this.zeroWaitReadEnabled;
+  }
+
+  public void setZeroWaitReadEnabled(boolean zeroWaitReadEnabled) {
+    this.zeroWaitReadEnabled = zeroWaitReadEnabled;
+    setZeroWaitReadEnabledIsSet(true);
+  }
+
+  public void unsetZeroWaitReadEnabled() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ZEROWAITREADENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field zeroWaitReadEnabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetZeroWaitReadEnabled() {
+    return EncodingUtils.testBit(__isset_bitfield, __ZEROWAITREADENABLED_ISSET_ID);
+  }
+
+  public void setZeroWaitReadEnabledIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ZEROWAITREADENABLED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COMPONENT:
@@ -374,6 +409,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ZERO_WAIT_READ_ENABLED:
+      if (value == null) {
+        unsetZeroWaitReadEnabled();
+      } else {
+        setZeroWaitReadEnabled((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -393,6 +436,9 @@ import org.slf4j.LoggerFactory;
 
     case AGENT_INFO:
       return getAgentInfo();
+
+    case ZERO_WAIT_READ_ENABLED:
+      return isZeroWaitReadEnabled();
 
     }
     throw new IllegalStateException();
@@ -415,6 +461,8 @@ import org.slf4j.LoggerFactory;
       return isSetHostname();
     case AGENT_INFO:
       return isSetAgentInfo();
+    case ZERO_WAIT_READ_ENABLED:
+      return isSetZeroWaitReadEnabled();
     }
     throw new IllegalStateException();
   }
@@ -477,6 +525,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_zeroWaitReadEnabled = true && this.isSetZeroWaitReadEnabled();
+    boolean that_present_zeroWaitReadEnabled = true && that.isSetZeroWaitReadEnabled();
+    if (this_present_zeroWaitReadEnabled || that_present_zeroWaitReadEnabled) {
+      if (!(this_present_zeroWaitReadEnabled && that_present_zeroWaitReadEnabled))
+        return false;
+      if (this.zeroWaitReadEnabled != that.zeroWaitReadEnabled)
+        return false;
+    }
+
     return true;
   }
 
@@ -508,6 +565,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_agentInfo);
     if (present_agentInfo)
       list.add(agentInfo);
+
+    boolean present_zeroWaitReadEnabled = true && (isSetZeroWaitReadEnabled());
+    list.add(present_zeroWaitReadEnabled);
+    if (present_zeroWaitReadEnabled)
+      list.add(zeroWaitReadEnabled);
 
     return list.hashCode();
   }
@@ -566,6 +628,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetAgentInfo()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.agentInfo, other.agentInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetZeroWaitReadEnabled()).compareTo(other.isSetZeroWaitReadEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetZeroWaitReadEnabled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.zeroWaitReadEnabled, other.zeroWaitReadEnabled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -629,6 +701,12 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetZeroWaitReadEnabled()) {
+      if (!first) sb.append(", ");
+      sb.append("zeroWaitReadEnabled:");
+      sb.append(this.zeroWaitReadEnabled);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -689,14 +767,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COMPONENT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list722 = iprot.readListBegin();
-                struct.component = new ArrayList<LockComponent>(_list722.size);
-                LockComponent _elem723;
-                for (int _i724 = 0; _i724 < _list722.size; ++_i724)
+                org.apache.thrift.protocol.TList _list730 = iprot.readListBegin();
+                struct.component = new ArrayList<LockComponent>(_list730.size);
+                LockComponent _elem731;
+                for (int _i732 = 0; _i732 < _list730.size; ++_i732)
                 {
-                  _elem723 = new LockComponent();
-                  _elem723.read(iprot);
-                  struct.component.add(_elem723);
+                  _elem731 = new LockComponent();
+                  _elem731.read(iprot);
+                  struct.component.add(_elem731);
                 }
                 iprot.readListEnd();
               }
@@ -737,6 +815,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // ZERO_WAIT_READ_ENABLED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.zeroWaitReadEnabled = iprot.readBool();
+              struct.setZeroWaitReadEnabledIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -754,9 +840,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COMPONENT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
-          for (LockComponent _iter725 : struct.component)
+          for (LockComponent _iter733 : struct.component)
           {
-            _iter725.write(oprot);
+            _iter733.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -784,6 +870,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetZeroWaitReadEnabled()) {
+        oprot.writeFieldBegin(ZERO_WAIT_READ_ENABLED_FIELD_DESC);
+        oprot.writeBool(struct.zeroWaitReadEnabled);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -803,9 +894,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
-        for (LockComponent _iter726 : struct.component)
+        for (LockComponent _iter734 : struct.component)
         {
-          _iter726.write(oprot);
+          _iter734.write(oprot);
         }
       }
       oprot.writeString(struct.user);
@@ -817,12 +908,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetAgentInfo()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetZeroWaitReadEnabled()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetTxnid()) {
         oprot.writeI64(struct.txnid);
       }
       if (struct.isSetAgentInfo()) {
         oprot.writeString(struct.agentInfo);
+      }
+      if (struct.isSetZeroWaitReadEnabled()) {
+        oprot.writeBool(struct.zeroWaitReadEnabled);
       }
     }
 
@@ -830,14 +927,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, LockRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list727 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.component = new ArrayList<LockComponent>(_list727.size);
-        LockComponent _elem728;
-        for (int _i729 = 0; _i729 < _list727.size; ++_i729)
+        org.apache.thrift.protocol.TList _list735 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.component = new ArrayList<LockComponent>(_list735.size);
+        LockComponent _elem736;
+        for (int _i737 = 0; _i737 < _list735.size; ++_i737)
         {
-          _elem728 = new LockComponent();
-          _elem728.read(iprot);
-          struct.component.add(_elem728);
+          _elem736 = new LockComponent();
+          _elem736.read(iprot);
+          struct.component.add(_elem736);
         }
       }
       struct.setComponentIsSet(true);
@@ -845,7 +942,7 @@ import org.slf4j.LoggerFactory;
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.txnid = iprot.readI64();
         struct.setTxnidIsSet(true);
@@ -853,6 +950,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(1)) {
         struct.agentInfo = iprot.readString();
         struct.setAgentInfoIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.zeroWaitReadEnabled = iprot.readBool();
+        struct.setZeroWaitReadEnabledIsSet(true);
       }
     }
   }

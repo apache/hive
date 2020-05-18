@@ -109,6 +109,7 @@ class MetastoreHousekeepingLeaderTestBase {
     MetastoreConf.setBoolVar(conf, ConfVars.REPLCMENABLED, true);
     String cmroot = "hdfs://" + miniDFS.getNameNode().getHostAndPort() + "/cmroot";
     MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, cmroot);
+    MetastoreConf.setVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR, cmroot);
     threadNames.put(ReplChangeManager.CM_THREAD_NAME_PREFIX,  false);
   }
 
@@ -126,6 +127,7 @@ class MetastoreHousekeepingLeaderTestBase {
             RemoteMetastoreTaskThreadTestImpl1.class.getCanonicalName() + "," +
                     RemoteMetastoreTaskThreadTestImpl2.class.getCanonicalName();
 
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON, true);
     MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_REMOTE_ONLY, remoteTaskClassPaths);
 
     threadNames.put(RemoteMetastoreTaskThreadTestImpl1.TASK_NAME, false);

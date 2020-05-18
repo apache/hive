@@ -100,8 +100,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 30, 32, 35, 36, 37, 38, 42]
-                            selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 30:double, DoubleColAddDoubleColumn(col 31:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 31:float) -> 32:float, DoubleColAddDoubleColumn(col 33:double, col 34:double)(children: DoubleColUnaryMinus(col 5:double) -> 33:double, CastLongToDouble(col 3:bigint) -> 34:double) -> 35:double, DoubleColUnaryMinus(col 5:double) -> 36:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 37:float, DoubleColUnaryMinus(col 4:float) -> 38:float, DoubleColAddDoubleColumn(col 39:double, col 41:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 39:double, DoubleColAddDoubleColumn(col 40:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 40:float) -> 41:float) -> 42:double
+                            projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 18, 21, 27, 20, 26, 28, 33]
+                            selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 18:double, DoubleColAddDoubleColumn(col 20:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 20:float) -> 21:float, DoubleColAddDoubleColumn(col 20:double, col 26:double)(children: DoubleColUnaryMinus(col 5:double) -> 20:double, CastLongToDouble(col 3:bigint) -> 26:double) -> 27:double, DoubleColUnaryMinus(col 5:double) -> 20:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 26:float, DoubleColUnaryMinus(col 4:float) -> 28:float, DoubleColAddDoubleColumn(col 30:double, col 32:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 30:double, DoubleColAddDoubleColumn(col 31:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 31:float) -> 32:float) -> 33:double
                         Statistics: Num rows: 3059 Data size: 410040 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
@@ -109,7 +109,7 @@ STAGE PLANS:
                           sort order: ++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
-                              keyColumns: 8:timestamp, 5:double, 10:boolean, 6:string, 4:float, 13:double, 14:double, 30:double, 32:float, 35:double, 36:double, 37:float, 38:float, 42:double
+                              keyColumns: 8:timestamp, 5:double, 10:boolean, 6:string, 4:float, 13:double, 14:double, 18:double, 21:float, 27:double, 20:double, 26:float, 28:float, 33:double
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 3059 Data size: 410040 Basic stats: COMPLETE Column stats: COMPLETE
@@ -130,7 +130,7 @@ STAGE PLANS:
                     includeColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -351,8 +351,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 30, 32, 35, 36, 37, 38, 42]
-                            selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 30:double, DoubleColAddDoubleColumn(col 31:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 31:float) -> 32:float, DoubleColAddDoubleColumn(col 33:double, col 34:double)(children: DoubleColUnaryMinus(col 5:double) -> 33:double, CastLongToDouble(col 3:bigint) -> 34:double) -> 35:double, DoubleColUnaryMinus(col 5:double) -> 36:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 37:float, DoubleColUnaryMinus(col 4:float) -> 38:float, DoubleColAddDoubleColumn(col 39:double, col 41:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 39:double, DoubleColAddDoubleColumn(col 40:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 40:float) -> 41:float) -> 42:double
+                            projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 18, 21, 27, 20, 26, 28, 33]
+                            selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 18:double, DoubleColAddDoubleColumn(col 20:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 20:float) -> 21:float, DoubleColAddDoubleColumn(col 20:double, col 26:double)(children: DoubleColUnaryMinus(col 5:double) -> 20:double, CastLongToDouble(col 3:bigint) -> 26:double) -> 27:double, DoubleColUnaryMinus(col 5:double) -> 20:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 26:float, DoubleColUnaryMinus(col 4:float) -> 28:float, DoubleColAddDoubleColumn(col 30:double, col 32:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 30:double, DoubleColAddDoubleColumn(col 31:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 31:float) -> 32:float) -> 33:double
                         Statistics: Num rows: 3059 Data size: 410040 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)

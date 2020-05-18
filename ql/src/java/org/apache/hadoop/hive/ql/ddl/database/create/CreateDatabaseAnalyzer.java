@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database creation commands.
  */
-@DDLType(type=HiveParser.TOK_CREATEDATABASE)
+@DDLType(types = HiveParser.TOK_CREATEDATABASE)
 public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public CreateDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -47,6 +47,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
     boolean ifNotExists = false;
     String comment = null;
     String locationUri = null;
+    String managedLocationUri = null;
     Map<String, String> props = null;
 
     for (int i = 1; i < root.getChildCount(); i++) {
@@ -65,15 +66,23 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         locationUri = unescapeSQLString(childNode.getChild(0).getText());
         outputs.add(toWriteEntity(locationUri));
         break;
+      case HiveParser.TOK_DATABASE_MANAGEDLOCATION:
+        managedLocationUri = unescapeSQLString(childNode.getChild(0).getText());
+        outputs.add(toWriteEntity(managedLocationUri));
+        break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
 
-    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, ifNotExists, props);
+    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, managedLocationUri,
+        ifNotExists, props);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Database database = new Database(databaseName, comment, locationUri, props);
+    if (managedLocationUri != null) {
+      database.setManagedLocationUri(managedLocationUri);
+    }
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

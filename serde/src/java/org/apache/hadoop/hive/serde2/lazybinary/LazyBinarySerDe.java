@@ -354,12 +354,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * @param dec
    * @param scratchLongs
    * @param scratchBytes
+   * @param scratchLongBytes
    */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
       HiveDecimal dec,
-      long[] scratchLongs, byte[] scratchBytes) {
-    LazyBinaryUtils.writeVInt(byteStream, dec.scale());
+      long[] scratchLongs, byte[] scratchBytes, byte[] scratchLongBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, dec.scale(), scratchLongBytes);
 
     // Convert decimal into the scratch buffer without allocating a byte[] each time
     // for better performance.
@@ -369,7 +370,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     if (byteLength == 0) {
       throw new RuntimeException("Decimal to binary conversion failed");
     }
-    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    LazyBinaryUtils.writeVInt(byteStream, byteLength, scratchLongBytes);
     byteStream.write(scratchBytes, 0, byteLength);
   }
 
@@ -392,6 +393,18 @@ public class LazyBinarySerDe extends AbstractSerDe {
         decWritable.bigIntegerBytes(
             scratchLongs, scratchBytes);
     LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(scratchBytes, 0, byteLength);
+  }
+
+  public static void writeToByteStream(
+      RandomAccessOutput byteStream,
+      HiveDecimalWritable decWritable,
+      long[] scratchLongs, byte[] scratchBytes, byte[] scratchLongBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, decWritable.scale(), scratchLongBytes);
+    int byteLength =
+        decWritable.bigIntegerBytes(
+            scratchLongs, scratchBytes);
+    LazyBinaryUtils.writeVInt(byteStream, byteLength, scratchLongBytes);
     byteStream.write(scratchBytes, 0, byteLength);
   }
 

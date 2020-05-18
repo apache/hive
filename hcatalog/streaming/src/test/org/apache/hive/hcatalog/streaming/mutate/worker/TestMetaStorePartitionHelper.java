@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.streaming.mutate.worker;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestMetaStorePartitionHelper {
@@ -95,7 +95,7 @@ public class TestMetaStorePartitionHelper {
   public void getPathForUnpartitionedTable() throws Exception {
     Path path = helper.getPathForPartition(UNPARTITIONED_VALUES);
     assertThat(path, is(TABLE_PATH));
-    verifyZeroInteractions(mockClient);
+    verifyNoInteractions(mockClient);
   }
 
   @Test
@@ -107,7 +107,7 @@ public class TestMetaStorePartitionHelper {
   @Test
   public void createOnUnpartitionTableDoesNothing() throws Exception {
     helper.createPartitionIfNotExists(UNPARTITIONED_VALUES);
-    verifyZeroInteractions(mockClient);
+    verifyNoInteractions(mockClient);
   }
 
   @Test

@@ -104,8 +104,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 27, 28, 29, 30, 32, 34, 35, 36, 38]
-                            selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 27:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 28:int, LongColUnaryMinus(col 1:smallint) -> 29:smallint, LongColUnaryMinus(col 0:tinyint) -> 30:tinyint, LongColAddLongScalar(col 31:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 31:tinyint) -> 32:int, LongColMultiplyLongColumn(col 3:bigint, col 33:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 33:smallint) -> 34:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 35:int, LongColUnaryMinus(col 0:tinyint) -> 36:tinyint, LongColModuloLongColumn(col 37:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 37:tinyint) -> 38:tinyint
+                            projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 19, 21, 25, 27, 29, 31, 32, 33, 35]
+                            selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 19:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 21:int, LongColUnaryMinus(col 1:smallint) -> 25:smallint, LongColUnaryMinus(col 0:tinyint) -> 27:tinyint, LongColAddLongScalar(col 28:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 28:tinyint) -> 29:int, LongColMultiplyLongColumn(col 3:bigint, col 30:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 30:smallint) -> 31:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 32:int, LongColUnaryMinus(col 0:tinyint) -> 33:tinyint, LongColModuloLongColumn(col 34:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 34:tinyint) -> 35:tinyint
                         Statistics: Num rows: 11033 Data size: 1323416 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)
@@ -113,7 +113,7 @@ STAGE PLANS:
                           sort order: +++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
-                              keyColumns: 10:boolean, 3:bigint, 1:smallint, 0:tinyint, 8:timestamp, 6:string, 27:bigint, 28:int, 29:smallint, 30:tinyint, 32:int, 34:bigint, 35:int, 36:tinyint, 38:tinyint
+                              keyColumns: 10:boolean, 3:bigint, 1:smallint, 0:tinyint, 8:timestamp, 6:string, 19:bigint, 21:int, 25:smallint, 27:tinyint, 29:int, 31:bigint, 32:int, 33:tinyint, 35:tinyint
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 11033 Data size: 1323416 Basic stats: COMPLETE Column stats: COMPLETE
@@ -134,7 +134,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -368,8 +368,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 27, 28, 29, 30, 32, 34, 35, 36, 38]
-                            selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 27:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 28:int, LongColUnaryMinus(col 1:smallint) -> 29:smallint, LongColUnaryMinus(col 0:tinyint) -> 30:tinyint, LongColAddLongScalar(col 31:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 31:tinyint) -> 32:int, LongColMultiplyLongColumn(col 3:bigint, col 33:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 33:smallint) -> 34:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 35:int, LongColUnaryMinus(col 0:tinyint) -> 36:tinyint, LongColModuloLongColumn(col 37:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 37:tinyint) -> 38:tinyint
+                            projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 19, 21, 25, 27, 29, 31, 32, 33, 35]
+                            selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 19:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 21:int, LongColUnaryMinus(col 1:smallint) -> 25:smallint, LongColUnaryMinus(col 0:tinyint) -> 27:tinyint, LongColAddLongScalar(col 28:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 28:tinyint) -> 29:int, LongColMultiplyLongColumn(col 3:bigint, col 30:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 30:smallint) -> 31:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 32:int, LongColUnaryMinus(col 0:tinyint) -> 33:tinyint, LongColModuloLongColumn(col 34:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 34:tinyint) -> 35:tinyint
                         Statistics: Num rows: 11033 Data size: 1323416 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)

@@ -47,25 +47,22 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         excludesFrom(testConfigProps, "minillap.query.files");
+        excludesFrom(testConfigProps, "minillap.shared.query.files");
         excludesFrom(testConfigProps, "minillaplocal.query.files");
+        excludesFrom(testConfigProps, "minillaplocal.shared.query.files");
         excludesFrom(testConfigProps, "minimr.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
+        excludesFrom(testConfigProps, "minitez.query.files.shared");
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
-        excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
         excludesFrom(testConfigProps, "druid.kafka.query.files");
         excludesFrom(testConfigProps, "hive.kafka.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
-
-        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
-        excludeQuery("udaf_context_ngrams.q"); // disabled in HIVE-20741
-        excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
-        excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
-        excludeQuery("stat_estimate_related_col.q"); // disabled in HIVE-20727
-        excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
+        excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
+        excludesFrom(testConfigProps, "beeline.positive.include");
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -142,7 +139,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/tez");
         setClusterType(MiniClusterType.TEZ);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -179,10 +175,6 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.query.files");
-        excludeQuery("druid_timestamptz.q"); // Disabled in HIVE-20322
-        excludeQuery("druidmini_joins.q"); // Disabled in HIVE-20322
-        excludeQuery("druidmini_masking.q"); // Disabled in HIVE-20322
-        //excludeQuery("druidmini_test1.q"); // Disabled in HIVE-20322
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
@@ -191,7 +183,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -211,7 +202,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_KAFKA);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -228,7 +218,6 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/tmp/log");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.KAFKA);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -244,14 +233,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
-        excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
-        excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
-        excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
-        excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
-        excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
-        excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -261,7 +242,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -284,7 +264,7 @@ public class CliConfigs {
 
 
         setClusterType(MiniClusterType.MR);
-        setFsType(QTestMiniClusters.FsType.ENCRYPTED_HDFS);
+        setFsType(QTestMiniClusters.FsType.ENCRYPTED_HDFS); // override default FsType.HDFS
         if (getClusterType() == MiniClusterType.TEZ) {
           setHiveConfDir("data/conf/tez");
         } else {
@@ -332,12 +312,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
-
-        excludeQuery("cbo_query44.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query45.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query67.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query70.q"); // TODO: Enable when we move to Calcite 1.18
-        excludeQuery("cbo_query86.q"); // TODO: Enable when we move to Calcite 1.18
 
         setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
@@ -408,7 +382,6 @@ public class CliConfigs {
 
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludesFrom(testConfigProps, "spark.only.query.negative.files");
-        excludeQuery("authorization_uri_import.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
@@ -553,7 +526,6 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
-        excludeQuery("accumulo_joins.q");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");
@@ -719,7 +691,7 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_src.sql");
 
         setClusterType(MiniClusterType.MR);
-        setFsType(QTestMiniClusters.FsType.ERASURE_CODED_HDFS);
+        setFsType(QTestMiniClusters.FsType.ERASURE_CODED_HDFS); // override default FsType.HDFS
         setHiveConfDir(getClusterType());
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -762,7 +734,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -786,7 +757,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -807,7 +777,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

@@ -58,9 +58,11 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCallback;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -70,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -104,6 +107,8 @@ import org.apache.tez.common.counters.TezCounters;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<OrcEncodedColumnBatch>, TezCounterSource {
@@ -165,6 +170,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
+  private final boolean isReadCacheOnly;
 
   /**
    * Data from cache currently being processed. We store it here so that we could decref
@@ -232,6 +238,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     SchemaEvolution evolution = new SchemaEvolution(schema, null,
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
+    isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
   }
 
   private static int determineAllocSize(BufferUsageManager bufferManager, Configuration conf) {
@@ -769,6 +776,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // Note that we cache each slice separately. We could cache them together at the end, but
       // then we won't be able to pass them to users without inc-refing explicitly.
       ColumnEncoding[] encodings = sd.getEncodings();
+      // Force creation of cache data entry for root (struct) column if not present.
+      if (encodings[0] != null && sd.getData()[0] == null) {
+        createArrayToCache(sd, 0, null);
+      }
       for (int i = 0; i < encodings.length; ++i) {
         // Make data consistent with encodings, don't store useless information.
         if (sd.getData()[i] == null) {
@@ -810,6 +821,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     long endOfSplit = split.getStart() + split.getLength();
     this.cachedData = cache.getFileData(fileKey, split.getStart(),
         endOfSplit, writerIncludes, CC_FACTORY, counters, gotAllData);
+    if (!gotAllData.value) {
+      throwIfCacheOnlyRead(isReadCacheOnly);
+    }
     if (cachedData == null) {
       if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
         LlapIoImpl.CACHE_LOGGER.trace("No data for the split found in cache");
@@ -1413,8 +1427,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     ReaderWithOffsets offsetReader = null;
     @SuppressWarnings("rawtypes")
     RecordReader sourceReader = sourceInputFormat.getRecordReader(split, jobConf, reporter);
+    Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
+    PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     try {
-      offsetReader = createOffsetReader(sourceReader);
+      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc());
       sourceReader = null;
     } finally {
       if (sourceReader != null) {
@@ -1622,16 +1638,20 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader) {
+  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader, TableDesc tableDesc)
+      throws IOException {
+    int headerCount = Utilities.getHeaderCount(tableDesc);
+    int footerCount = Utilities.getFooterCount(tableDesc, jobConf);
     if (LlapIoImpl.LOG.isDebugEnabled()) {
-      LlapIoImpl.LOG.debug("Using " + sourceReader.getClass().getSimpleName() + " to read data");
+      LlapIoImpl.LOG.debug("Using {} to read data with skip.header.line.count {} and skip.footer.line.count {}",
+          sourceReader.getClass().getSimpleName(), headerCount, footerCount);
     }
     // Handle the special cases here. Perhaps we could have a more general structure, or even
     // a configurable set (like storage handlers), but for now we only have one.
     if (isLrrEnabled && sourceReader instanceof LineRecordReader) {
-      return LineRrOffsetReader.create((LineRecordReader)sourceReader);
+      return LineRrOffsetReader.create((LineRecordReader)sourceReader, jobConf, headerCount, footerCount);
     }
-    return new PassThruOffsetReader(sourceReader);
+    return new PassThruOffsetReader(sourceReader, jobConf, headerCount, footerCount);
   }
 
   private static String[] extractHosts(FileSplit split, boolean isInMemory) throws IOException {

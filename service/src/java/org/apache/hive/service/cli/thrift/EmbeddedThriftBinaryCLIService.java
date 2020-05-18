@@ -18,8 +18,6 @@
 
 package org.apache.hive.service.cli.thrift;
 
-import java.util.Map;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.ICLIService;
@@ -40,26 +38,6 @@ public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    init(hiveConf, null);
-  }
-
-  public synchronized void init(HiveConf hiveConf, Map<String, String> confOverlay) {
-    // Null HiveConf is passed in jdbc driver side code since driver side is supposed to be
-    // independent of conf object. Create new HiveConf object here in this case.
-    if (hiveConf == null) {
-      hiveConf = new HiveConf();
-    }
-    // Set the specific parameters if needed
-    if (confOverlay != null && !confOverlay.isEmpty()) {
-      // apply overlay query specific settings, if any
-      for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {
-        try {
-          hiveConf.set(confEntry.getKey(), confEntry.getValue());
-        } catch (IllegalArgumentException e) {
-          throw new RuntimeException("Error applying statement specific settings", e);
-        }
-      }
-    }
     cliService.init(hiveConf);
     cliService.start();
     super.init(hiveConf);

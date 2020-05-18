@@ -70,7 +70,7 @@ public class TestCBORuleFiredOnlyOnce {
     RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
 
     // Create MD provider
-    HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
+    HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, null);
     List<RelMetadataProvider> list = Lists.newArrayList();
     list.add(mdProvider.getMetadataProvider());
     planner.registerMetadataProviders(list);

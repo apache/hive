@@ -21,13 +21,12 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +36,8 @@ import java.util.List;
  */
 final class MajorQueryCompactor extends QueryCompactor {
 
-  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+  @Override
+  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
@@ -53,25 +53,26 @@ final class MajorQueryCompactor extends QueryCompactor {
 
     String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
-    List<String> createQueries = getCreateQueries(tmpTableName, table);
+
+    long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+    long highWaterMark = writeIds.getHighWatermark();
+    long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(true)
+        .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
+        .maximumWriteId(highWaterMark).statementId(-1).visibilityTxnId(compactorTxnId);
+    Path tmpTablePath = AcidUtils.baseOrDeltaSubdirPath(new Path(storageDescriptor.getLocation()), options);
+
+    List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo, createQueries,
         compactionQueries, dropQueries);
   }
 
-  /**
-   * Move and rename bucket files from the temp table (tmpTableName), to the new base path under the source table/ptn.
-   * Since the temp table is a non-transactional table, it has file names in the "original" format.
-   * Also, due to split grouping in
-   * {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[],
-   * Configuration, boolean)}, we will end up with one file per bucket.
-   */
-  @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
+  @Override
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    org.apache.hadoop.hive.ql.metadata.Table tempTable = Hive.get().getTable(tmpTableName);
-    Util.moveContents(new Path(tempTable.getSd().getLocation()), new Path(dest), true, false, conf, actualWriteIds,
-        compactorTxnId);
+    Util.cleanupEmptyDir(conf, tmpTableName);
   }
 
   /**
@@ -80,56 +81,33 @@ final class MajorQueryCompactor extends QueryCompactor {
    * (current write id will be the same as original write id).
    * We will be achieving the ordering via a custom split grouper for compactor.
    * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
-   * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)}
-   *  for details on the mechanism.
    */
-  private List<String> getCreateQueries(String fullName, Table t) {
-    StringBuilder query = new StringBuilder("create temporary table ").append(fullName).append(" (");
-    // Acid virtual columns
-    query.append(
-        "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint, "
-            + "`row` struct<");
-    List<FieldSchema> cols = t.getSd().getCols();
-    boolean isFirst = true;
-    // Actual columns
-    for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ").append(":").append(col.getType());
-    }
-    query.append(">)");
-    query.append(" stored as orc");
-    query.append(" tblproperties ('transactional'='false')");
-    return Lists.newArrayList(query.toString());
+  private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
+    return Lists.newArrayList(new CompactionQueryBuilder(
+        CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+        CompactionQueryBuilder.Operation.CREATE,
+        fullName)
+        .setSourceTab(t)
+        .setLocation(tmpTableLocation)
+        .build());
   }
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
-    String fullName = t.getDbName() + "." + t.getTableName();
-    StringBuilder query = new StringBuilder("insert into table " + tmpName + " ");
-    StringBuilder filter = new StringBuilder();
-    if (p != null) {
-      filter.append(" where ");
-      List<String> vals = p.getValues();
-      List<FieldSchema> keys = t.getPartitionKeys();
-      assert keys.size() == vals.size();
-      for (int i = 0; i < keys.size(); ++i) {
-        filter.append(i == 0 ? "`" : " and `").append(keys.get(i).getName()).append("`='").append(vals.get(i))
-            .append("'");
-      }
-    }
-    query.append(" select validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), ROW__ID.writeId, "
-        + "ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, NAMED_STRUCT(");
-    List<FieldSchema> cols = t.getSd().getCols();
-    for (int i = 0; i < cols.size(); ++i) {
-      query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ").append(cols.get(i).getName());
-    }
-    query.append(") from ").append(fullName).append(filter);
-    return Lists.newArrayList(query.toString());
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+            CompactionQueryBuilder.Operation.INSERT,
+            tmpName)
+            .setSourceTab(t)
+            .setSourcePartition(p)
+        .build());
   }
 
   private List<String> getDropQueries(String tmpTableName) {
-    return Lists.newArrayList("drop table if exists " + tmpTableName);
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+            CompactionQueryBuilder.Operation.DROP,
+            tmpTableName).build());
   }
 }

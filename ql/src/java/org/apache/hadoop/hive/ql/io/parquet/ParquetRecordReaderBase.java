@@ -54,6 +54,7 @@ public class ParquetRecordReaderBase {
   protected Path file;
   protected ProjectionPusher projectionPusher;
   protected boolean skipTimestampConversion = false;
+  protected Boolean skipProlepticConversion;
   protected SerDeStats serDeStats;
   protected JobConf jobConf;
 
@@ -130,6 +131,13 @@ public class ParquetRecordReaderBase {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
         skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
       }
+      skipProlepticConversion = DataWritableReadSupport
+          .getWriterDateProleptic(fileMetaData.getKeyValueMetaData());
+      if (skipProlepticConversion == null) {
+        skipProlepticConversion = HiveConf.getBoolVar(
+            conf, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
+      }
+
       split = new ParquetInputSplit(finalPath,
         splitStart,
         splitLength,

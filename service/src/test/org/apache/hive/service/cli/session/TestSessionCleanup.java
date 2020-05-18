@@ -23,12 +23,12 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
-
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
@@ -41,6 +41,11 @@ import org.junit.Test;
  * TestSessionCleanup.
  */
 public class TestSessionCleanup {
+
+  private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
+  private final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator +
+      TestSessionCleanup.class.getCanonicalName() + "-" + System.currentTimeMillis() + "_" + salt.getAndIncrement();
+
   // Create subclass of EmbeddedThriftBinaryCLIService, just so we can get an accessor to the CLIService.
   // Needed for access to the OperationManager.
   private class MyEmbeddedThriftBinaryCLIService extends EmbeddedThriftBinaryCLIService {
@@ -61,10 +66,14 @@ public class TestSessionCleanup {
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    //NOTES: Apply a random tmp directory to avoid default location conflicting with other tests
+    hiveConf
+        .setVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION,
+            TEST_DATA_DIR + File.separator + "operation_logs");
     service.init(hiveConf);
     ThriftCLIServiceClient client = new ThriftCLIServiceClient(service);
 
-    Set<String> existingPipeoutFiles = new HashSet<String>(Arrays.asList(getPipeoutFiles()));
+    Set<String> existingPipeoutFiles = new HashSet<String>(Arrays.asList(getPipeoutFiles(hiveConf)));
     SessionHandle sessionHandle = client.openSession("user1", "foobar",
           Collections.<String, String>emptyMap());
     OperationHandle opHandle1 = client.executeStatement(sessionHandle, "set a=b", null);
@@ -74,15 +83,15 @@ public class TestSessionCleanup {
     String queryId2 = service.getCliService().getQueryId(opHandle2.toTOperationHandle());
     Assert.assertNotNull(queryId2);
     File operationLogRootDir = new File(
-        new HiveConf().getVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
-    Assert.assertNotEquals(operationLogRootDir.list().length, 0);
+        hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
+    Assert.assertNotEquals(0, operationLogRootDir.list().length);
     client.closeSession(sessionHandle);
 
     // Check if session files are removed
-    Assert.assertEquals(operationLogRootDir.list().length, 0);
+    Assert.assertEquals(0, operationLogRootDir.list().length);
 
     // Check if the pipeout files are removed
-    Set<String> finalPipeoutFiles = new HashSet<String>(Arrays.asList(getPipeoutFiles()));
+    Set<String> finalPipeoutFiles = new HashSet<String>(Arrays.asList(getPipeoutFiles(hiveConf)));
     finalPipeoutFiles.removeAll(existingPipeoutFiles);
     Assert.assertTrue(finalPipeoutFiles.isEmpty());
 
@@ -94,9 +103,9 @@ public class TestSessionCleanup {
     Assert.assertNull(service.getCliService().getSessionManager().getOperationManager().getOperationByQueryId(queryId1));
   }
 
-  private String[] getPipeoutFiles() {
+  private String[] getPipeoutFiles(HiveConf hiveConf) {
     File localScratchDir = new File(
-        new HiveConf().getVar(HiveConf.ConfVars.LOCALSCRATCHDIR));
+        hiveConf.getVar(HiveConf.ConfVars.LOCALSCRATCHDIR));
     String[] pipeoutFiles = localScratchDir.list(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {

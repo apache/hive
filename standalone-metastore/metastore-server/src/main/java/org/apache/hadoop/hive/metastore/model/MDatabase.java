@@ -35,6 +35,7 @@ import java.util.Set;
 public class MDatabase {
   private String name;
   private String locationUri;
+  private String managedLocationUri;
   private String description;
   private Map<String, String> parameters;
   private String ownerName;
@@ -49,14 +50,31 @@ public class MDatabase {
 
   /**
    * To create a database object
+   * @param catalogName Name of the catalog, the database belongs to.
    * @param name of the database
    * @param locationUri Location of the database in the warehouse
    * @param description Comment describing the database
+   * @param parameters Parameters for the database
    */
   public MDatabase(String catalogName, String name, String locationUri, String description,
       Map<String, String> parameters) {
+    this(catalogName, name, locationUri, description, parameters, null);
+  }
+
+  /**
+   * To create a database object
+   * @param catalogName Name of the catalog, the database belongs to.
+   * @param name of the database
+   * @param locationUri Default external Location of the database
+   * @param description Comment describing the database
+   * @param parameters Parameters for the database
+   * @param managedLocationUri Default location for managed tables in database in the warehouse
+   */
+  public MDatabase(String catalogName, String name, String locationUri, String description,
+      Map<String, String> parameters, String managedLocationUri) {
     this.name = name;
     this.locationUri = locationUri;
+    this.managedLocationUri = managedLocationUri;
     this.description = description;
     this.parameters = parameters;
     this.catalogName = catalogName;
@@ -88,6 +106,20 @@ public class MDatabase {
    */
   public void setLocationUri(String locationUri) {
     this.locationUri = locationUri;
+  }
+
+  /**
+   * @return the managedLocationUri
+   */
+  public String getManagedLocationUri() {
+    return managedLocationUri;
+  }
+
+  /**
+   * @param managedLocationUri the locationUri to set for managed tables.
+   */
+  public void setManagedLocationUri(String managedLocationUri) {
+    this.managedLocationUri = managedLocationUri;
   }
 
   /**

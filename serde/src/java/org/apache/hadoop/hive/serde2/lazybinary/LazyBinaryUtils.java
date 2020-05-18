@@ -343,6 +343,11 @@ public final class LazyBinaryUtils {
     writeVLong(byteStream, i);
   }
 
+  public static void writeVInt(RandomAccessOutput byteStream, int i,
+      byte[] scratchBytes) {
+    writeVLong(byteStream, i, scratchBytes);
+  }
+
   /**
    * Read a zero-compressed encoded long from a byte array.
    *
@@ -420,6 +425,12 @@ public final class LazyBinaryUtils {
     byte[] vLongBytes = vLongBytesThreadLocal.get();
     int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
     byteStream.write(vLongBytes, 0, len);
+  }
+
+  public static void writeVLong(RandomAccessOutput byteStream, long l,
+      byte[] scratchBytes) {
+    int len = LazyBinaryUtils.writeVLongToByteArray(scratchBytes, l);
+    byteStream.write(scratchBytes, 0, len);
   }
 
   public static void writeDouble(RandomAccessOutput byteStream, double d) {

@@ -18,44 +18,76 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.primitives.Ints;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @Explain(displayName = "Replication Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
+  private static final long serialVersionUID = 1L;
+  private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
   final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
-  final Long eventFrom;
   Long eventTo;
+  Long eventFrom;
+  private static String testInjectDumpDir = null;
+  private static boolean testInjectDumpDirAutoIncrement = false;
+  static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
-  static String testInjectDumpDir = null;
+  private transient Iterator<DirCopyWork> dirCopyIterator;
+  private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
+  private Path currentDumpPath;
+  private List<String> resultValues;
+  private boolean shouldOverwrite;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
+    injectNextDumpDirForTest(dumpDir, false);
+  }
+  public static void injectNextDumpDirForTest(String dumpDir, boolean autoIncr) {
     testInjectDumpDir = dumpDir;
+    testInjectDumpDirAutoIncrement = autoIncr;
+  }
+
+  public static synchronized String getTestInjectDumpDir() {
+    return testInjectDumpDir;
+  }
+
+  public static synchronized String getInjectNextDumpDirForTest() {
+    if (testInjectDumpDirAutoIncrement) {
+      testInjectDumpDir = String.valueOf(Integer.parseInt(testInjectDumpDir) + 1);
+    }
+    return testInjectDumpDir;
+  }
+
+  public static void testDeletePreviousDumpMetaPath(boolean failDeleteDumpMeta) {
+    testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
   }
 
   public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
-                      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
+                      String astRepresentationForErrorMsg,
                       String resultTempPath) {
     this.replScope = replScope;
     this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
-    this.eventFrom = eventFrom;
-    this.eventTo = eventTo;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
-    this.maxEventLimit = maxEventLimit;
     this.resultTempPath = resultTempPath;
-  }
-
-  boolean isBootStrapDump() {
-    return eventFrom == null;
   }
 
   int maxEventLimit() throws Exception {
@@ -69,6 +101,10 @@ public class ReplDumpWork implements Serializable {
     return maxEventLimit;
   }
 
+  void setEventFrom(long eventId) {
+    eventFrom = eventId;
+  }
+
   // Override any user specification that changes the last event to be dumped.
   void overrideLastEventToDump(Hive fromDb, long bootstrapLastId) throws Exception {
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
@@ -77,7 +113,6 @@ public class ReplDumpWork implements Serializable {
     // bootstrampDump() for more details.
     if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
-      maxEventLimit = null;
       LoggerFactory.getLogger(this.getClass())
               .debug("eventTo restricted to event id : {} because of bootstrap of ACID tables",
                       eventTo);
@@ -90,5 +125,69 @@ public class ReplDumpWork implements Serializable {
       LoggerFactory.getLogger(this.getClass())
           .debug("eventTo not specified, using current event id : {}", eventTo);
     }
+  }
+
+  public void setDirCopyIterator(Iterator<DirCopyWork> dirCopyIterator) {
+    if (this.dirCopyIterator != null) {
+      throw new IllegalStateException("Dir Copy iterator has already been initialized");
+    }
+    this.dirCopyIterator = dirCopyIterator;
+  }
+
+  public void setManagedTableCopyPathIterator(Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator) {
+    if (this.managedTableCopyPathIterator != null) {
+      throw new IllegalStateException("Managed table copy path iterator has already been initialized");
+    }
+    this.managedTableCopyPathIterator = managedTableCopyPathIterator;
+  }
+
+  public boolean tableDataCopyIteratorsInitialized() {
+    return dirCopyIterator != null || managedTableCopyPathIterator != null;
+  }
+
+  public Path getCurrentDumpPath() {
+    return currentDumpPath;
+  }
+
+  public void setCurrentDumpPath(Path currentDumpPath) {
+    this.currentDumpPath = currentDumpPath;
+  }
+
+  public List<String> getResultValues() {
+    return resultValues;
+  }
+
+  public void setResultValues(List<String> resultValues) {
+    this.resultValues = resultValues;
+  }
+
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    List<Task<?>> tasks = new ArrayList<>();
+    while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
+      DirCopyWork dirCopyWork = dirCopyIterator.next();
+      Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+      tasks.add(task);
+      tracker.addTask(task);
+      LOG.debug("added task for {}", dirCopyWork);
+    }
+    return tasks;
+  }
+
+  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    List<Task<?>> tasks = new ArrayList<>();
+    while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+      EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+              managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
+      tasks.add(copyTask);
+      tracker.addTask(copyTask);
+      LOG.debug("added task for {}", managedTableCopyPath);
+    }
+    return tasks;
+  }
+
+  public void setShouldOverwrite(boolean shouldOverwrite) {
+    this.shouldOverwrite = shouldOverwrite;
   }
 }

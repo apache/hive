@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -122,7 +121,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables.
    */
   @Override
-  public void showTables(DataOutputStream out, Set<String> tables)
+  public void showTables(DataOutputStream out, List<String> tables)
       throws HiveException {
     asJson(out, MapBuilder.create().put("tables", tables).build());
   }
@@ -616,10 +615,13 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
+    if (null != managedLocation) {
+      builder.put("managedLocation", managedLocation);
+    }
     if (null != ownerName) {
       builder.put("owner", ownerName);
     }

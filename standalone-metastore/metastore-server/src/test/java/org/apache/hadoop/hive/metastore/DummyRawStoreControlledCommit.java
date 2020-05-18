@@ -1291,6 +1291,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+
+      return objectStore.isPartOfMaterializedView(catName, dbName, tblName);
+  }
+
+  @Override
   public Map<String, List<String>> getPartitionColsWithStats(String catName,
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {

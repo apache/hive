@@ -64,6 +64,7 @@ public class AvroGenericRecordReader implements
   final private long start;
   final private long stop;
   private ZoneId writerTimezone;
+  private Boolean writerProleptic;
   protected JobConf jobConf;
   final private boolean isEmptyInput;
   /**
@@ -102,6 +103,7 @@ public class AvroGenericRecordReader implements
     this.recordReaderID = new UID();
 
     this.writerTimezone = extractWriterTimezoneFromMetadata(job, split, gdr);
+    this.writerProleptic = extractWriterProlepticFromMetadata(job, split, gdr);
   }
 
   /**
@@ -150,6 +152,28 @@ public class AvroGenericRecordReader implements
   }
 
   private ZoneId extractWriterTimezoneFromMetadata(JobConf job, FileSplit split,
+      GenericDatumReader<GenericRecord> gdr) {
+    if (job == null || gdr == null || split == null || split.getPath() == null) {
+      return null;
+    }
+    try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(
+        new FsInput(split.getPath(), job), gdr)) {
+      if (dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE) != null) {
+        try {
+          return ZoneId.of(new String(dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE),
+              StandardCharsets.UTF_8));
+        } catch (DateTimeException e) {
+          throw new RuntimeException("Can't parse writer time zone stored in file metadata", e);
+        }
+      }
+    } catch (IOException e) {
+      // Can't access metadata, carry on.
+      LOG.debug(e.getMessage(), e);
+    }
+    return null;
+  }
+
+  private Boolean extractWriterProlepticFromMetadata(JobConf job, FileSplit split,
       GenericDatumReader<GenericRecord> gdr) throws IOException {
     if (job == null || gdr == null || split == null || split.getPath() == null) {
       return null;
@@ -157,12 +181,12 @@ public class AvroGenericRecordReader implements
     try {
       DataFileReader<GenericRecord> dataFileReader =
           new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
-      if (dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE) != null) {
+      if (dataFileReader.getMeta(AvroSerDe.WRITER_PROLEPTIC) != null) {
         try {
-          return ZoneId.of(new String(dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE),
+          return Boolean.valueOf(new String(dataFileReader.getMeta(AvroSerDe.WRITER_PROLEPTIC),
               StandardCharsets.UTF_8));
         } catch (DateTimeException e) {
-          throw new RuntimeException("Can't parse writer time zone stored in file metadata", e);
+          throw new RuntimeException("Can't parse writer proleptic property stored in file metadata", e);
         }
       }
     } catch (IOException e) {
@@ -203,7 +227,7 @@ public class AvroGenericRecordReader implements
 
   @Override
   public AvroGenericRecordWritable createValue() {
-    return new AvroGenericRecordWritable(writerTimezone);
+    return new AvroGenericRecordWritable(writerTimezone, writerProleptic);
   }
 
   @Override

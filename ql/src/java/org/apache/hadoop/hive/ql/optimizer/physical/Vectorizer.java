@@ -43,6 +43,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
@@ -2314,6 +2315,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ArrayList<String> reduceColumnNames = new ArrayList<String>();
       ArrayList<TypeInfo> reduceTypeInfos = new ArrayList<TypeInfo>();
+      ArrayList<DataTypePhysicalVariation> reduceDataTypePhysicalVariations = new ArrayList<DataTypePhysicalVariation>();
 
       if (reduceWork.getNeedsTagging()) {
         setNodeIssue("Tagging not supported");
@@ -2349,6 +2351,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (StructField field: keyFields) {
           reduceColumnNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
           reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+          reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
         }
 
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -2369,7 +2372,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           for (StructField field: valueFields) {
             reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+            TypeInfo reduceTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+                field.getFieldObjectInspector().getTypeName());
+            reduceTypeInfos.add(reduceTypeInfo);
+            if (reduceTypeInfo instanceof DecimalTypeInfo &&
+                HiveDecimalWritable.isPrecisionDecimal64(((DecimalTypeInfo)reduceTypeInfo).getPrecision())) {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.DECIMAL_64);
+            }
+            else {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
+            }
           }
         }
       } catch (Exception e) {
@@ -2378,6 +2390,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       vectorTaskColumnInfo.setAllColumnNames(reduceColumnNames);
       vectorTaskColumnInfo.setAllTypeInfos(reduceTypeInfos);
+      vectorTaskColumnInfo.setAlldataTypePhysicalVariations(reduceDataTypePhysicalVariations);
 
       vectorTaskColumnInfo.setReduceColumnSortOrder(columnSortOrder);
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
@@ -2748,7 +2761,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    if (!validateAggregationDescs(desc.getAggregators(), desc.getMode(), hasKeys)) {
+    //TODO: isGroupingSetsPresent() is returning false, even though
+    // ListGroupingSets is present. Need to check if there is hidden bug.
+    boolean isGroupingSetsPresent = (desc.getListGroupingSets() != null && !desc.getListGroupingSets().isEmpty());
+    if (!validateAggregationDescs(desc.getAggregators(), desc.getMode(),
+        isGroupingSetsPresent, hasKeys)) {
       return false;
     }
 
@@ -3002,10 +3019,12 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDescs(List<AggregationDesc> descs,
-      GroupByDesc.Mode groupByMode, boolean hasKeys) {
+      GroupByDesc.Mode groupByMode, boolean isGroupingSetsPresent,
+      boolean hasKeys) {
 
     for (AggregationDesc d : descs) {
-      if (!validateAggregationDesc(d, groupByMode, hasKeys)) {
+      if (!validateAggregationDesc(d, groupByMode, isGroupingSetsPresent,
+          hasKeys)) {
         return false;
       }
     }
@@ -3162,7 +3181,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDesc(AggregationDesc aggDesc, GroupByDesc.Mode groupByMode,
-      boolean hasKeys) {
+      boolean isGroupingSetsPresent, boolean hasKeys) {
 
     String udfName = aggDesc.getGenericUDAFName().toLowerCase();
     if (!supportedAggregationUdfs.contains(udfName)) {
@@ -3171,8 +3190,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     // The planner seems to pull this one out.
-    if (aggDesc.getDistinct()) {
+    if (groupByMode != GroupByDesc.Mode.HASH && aggDesc.getDistinct()) {
       setExpressionIssue("Aggregation Function", "DISTINCT not supported");
+      return false;
+    }
+
+    if (isGroupingSetsPresent && aggDesc.getDistinct()) {
+      setExpressionIssue("Aggregation Function", "DISTINCT with Groupingsets not supported");
       return false;
     }
 
@@ -3998,9 +4022,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     LOG.info("Vectorizer vectorizeOperator reduce sink class " + opClass.getSimpleName());
 
-    // Get the bucketing version
-    int bucketingVersion = ((ReduceSinkOperator)op).getBucketingVersion();
-
     Operator<? extends OperatorDesc> vectorOp = null;
     try {
       vectorOp = OperatorFactory.getVectorOperator(
@@ -4012,9 +4033,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       throw new HiveException(e);
     }
 
-    // Set the bucketing version
     Preconditions.checkArgument(vectorOp instanceof VectorReduceSinkCommonOperator);
-    vectorOp.setBucketingVersion(bucketingVersion);
 
     return vectorOp;
   }
@@ -4332,21 +4351,26 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
 
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
+    VectorExpression[] keyExpressions = getVectorExpressions(vContext, topNKeyDesc.getKeyColumns());
+    VectorExpression[] partitionKeyExpressions = getVectorExpressions(vContext, topNKeyDesc.getPartitionKeyColumns());
+
+    vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
+    vectorTopNKeyDesc.setPartitionKeyColumns(partitionKeyExpressions);
+    return OperatorFactory.getVectorOperator(
+        topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
+        vContext, vectorTopNKeyDesc);
+  }
+
+  private static VectorExpression[] getVectorExpressions(VectorizationContext vContext, List<ExprNodeDesc> keyColumns) throws HiveException {
     VectorExpression[] keyExpressions;
-    // this will mark all actual computed columns
     vContext.markActualScratchColumns();
     try {
-      List<ExprNodeDesc> keyColumns = topNKeyDesc.getKeyColumns();
       keyExpressions = vContext.getVectorExpressionsUpConvertDecimal64(keyColumns);
       fixDecimalDataTypePhysicalVariations(vContext, keyExpressions);
     } finally {
       vContext.freeMarkedScratchColumns();
     }
-
-    vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
-    return OperatorFactory.getVectorOperator(
-        topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
-        vContext, vectorTopNKeyDesc);
+    return keyExpressions;
   }
 
   private static Class<? extends VectorAggregateExpression> findVecAggrClass(
@@ -4739,15 +4763,27 @@ public class Vectorizer implements PhysicalPlanResolver {
         } else {
           Object[] arguments;
           int argumentCount = children.length + (parent.getOutputColumnNum() == -1 ? 0 : 1);
-          if (parent instanceof DecimalColDivideDecimalScalar) {
-            arguments = new Object[argumentCount + 1];
-            arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+          // VectorCoalesce receives arguments as an array.
+          // Need to handle it as a special case to avoid instantiation failure.
+          if (parent instanceof VectorCoalesce) {
+            arguments = new Object[2];
+            arguments[0] = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              ((int[]) arguments[0])[i] = vce.getOutputColumnNum();
+            }
+            arguments[1] = parent.getOutputColumnNum();
           } else {
-            arguments = new Object[argumentCount];
-          }
-          for (int i = 0; i < children.length; i++) {
-            VectorExpression vce = children[i];
-            arguments[i] = vce.getOutputColumnNum();
+            if (parent instanceof DecimalColDivideDecimalScalar) {
+              arguments = new Object[argumentCount + 1];
+              arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+            } else {
+              arguments = new Object[argumentCount];
+            }
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              arguments[i] = vce.getOutputColumnNum();
+            }
           }
           // retain output column number from parent
           if (parent.getOutputColumnNum() != -1) {
@@ -5041,6 +5077,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // Determine input vector expression using the VectorizationContext.
         inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+
+        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+          inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+        }
 
         TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
         columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);

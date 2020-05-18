@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database description commands.
  */
-@DDLType(type=HiveParser.TOK_DESCDATABASE)
+@DDLType(types = HiveParser.TOK_DESCDATABASE)
 public class DescDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public DescDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for rename partition commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_RENAMEPART)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_RENAMEPART)
 public  class AlterTableRenamePartitionAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableRenamePartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

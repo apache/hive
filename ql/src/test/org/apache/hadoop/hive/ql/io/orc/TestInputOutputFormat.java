@@ -526,7 +526,7 @@ public class TestInputOutputFormat {
           final OrcInputFormat.Context context = new OrcInputFormat.Context(
               conf, n);
           OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
-              context, fs, new MockPath(fs, "mock:/a/b"), false, null);
+              context, () -> fs, new MockPath(fs, "mock:/a/b"), false, null);
           List<SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
           assertEquals(1, splitStrategies.size());
           final SplitStrategy splitStrategy = splitStrategies.get(0);
@@ -549,7 +549,7 @@ public class TestInputOutputFormat {
           final OrcInputFormat.Context context = new OrcInputFormat.Context(
               conf, n);
           OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
-              context, fs, new MockPath(fs, "mock:/a/b"), false, null);
+              context, () -> fs, new MockPath(fs, "mock:/a/b"), false, null);
           List<SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
           assertEquals(1, splitStrategies.size());
           final SplitStrategy splitStrategy = splitStrategies.get(0);
@@ -567,14 +567,14 @@ public class TestInputOutputFormat {
   @Test
   public void testFileGenerator() throws Exception {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
-    MockFileSystem fs = new MockFileSystem(conf,
+    final MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[1]),
         new MockFile("mock:/a/b/part-01", 1000, new byte[1]),
         new MockFile("mock:/a/b/_part-02", 1000, new byte[1]),
         new MockFile("mock:/a/b/.part-03", 1000, new byte[1]),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1]));
     OrcInputFormat.FileGenerator gen =
-      new OrcInputFormat.FileGenerator(context, fs,
+      new OrcInputFormat.FileGenerator(context, () -> fs,
           new MockPath(fs, "mock:/a/b"), false, null);
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
@@ -582,13 +582,13 @@ public class TestInputOutputFormat {
 
     conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
     context = new OrcInputFormat.Context(conf);
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs1 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[1000]),
         new MockFile("mock:/a/b/part-01", 1000, new byte[1000]),
         new MockFile("mock:/a/b/_part-02", 1000, new byte[1000]),
         new MockFile("mock:/a/b/.part-03", 1000, new byte[1000]),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1000]));
-    gen = new OrcInputFormat.FileGenerator(context, fs,
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs1,
             new MockPath(fs, "mock:/a/b"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
@@ -608,7 +608,7 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/delta_001_002/bucket_000000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delta_001_002/bucket_000001", 1000, new byte[1], new MockBlock("host1")));
     OrcInputFormat.FileGenerator gen =
-        new OrcInputFormat.FileGenerator(context, fs,
+        new OrcInputFormat.FileGenerator(context, () -> fs,
             new MockPath(fs, "mock:/a"), false, null);
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
@@ -630,11 +630,11 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
 
     // Case 1: Test with just originals => Single split strategy with two splits.
-    MockFileSystem fs = new MockFileSystem(conf,
+    final MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/b/000000_0", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/b/000000_1", 1000, new byte[1], new MockBlock("host1")));
     OrcInputFormat.FileGenerator gen =
-        new OrcInputFormat.FileGenerator(context, fs,
+        new OrcInputFormat.FileGenerator(context, () -> fs,
             new MockPath(fs, "mock:/a"), false, null);
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
@@ -648,12 +648,13 @@ public class TestInputOutputFormat {
 
     // Case 2: Test with originals and base => Single split strategy with two splits on compacted
     // base since the presence of a base will make the originals obsolete.
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs1 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/000000_0", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/b/000000_1", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/base_0000001/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/base_0000001/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
-    gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs1, new MockPath(fs1,
+        "mock:/a"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
@@ -665,14 +666,15 @@ public class TestInputOutputFormat {
     assertFalse(splits.get(1).isOriginal());
 
     // Case 3: Test with originals and deltas => Two split strategies with two splits for each.
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs3 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/000000_0", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/b/000000_1", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000001_0000001_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
-    gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs3,
+        new MockPath(fs3, "mock:/a"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(2, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
@@ -697,12 +699,13 @@ public class TestInputOutputFormat {
     // The reason why we are able to do so is because the valid user data has already been considered
     // as base for the covered buckets. Hence, the uncovered buckets do not have any relevant
     // data and we can just ignore them.
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs4 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/000000_0", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000001_0000001_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
-    gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs4, new MockPath(fs4,
+        "mock:/a"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(2, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
@@ -718,7 +721,7 @@ public class TestInputOutputFormat {
 
     // Case 5: Test with originals, compacted_base, insert_deltas, delete_deltas (exhaustive test)
     // This should just generate one strategy with splits for base and insert_deltas.
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs5 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/000000_0", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/b/000000_1", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/base_0000001/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
@@ -727,7 +730,8 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000002_0000002_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delete_delta_0000002_0000002_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
-    gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs5, new MockPath(fs5,
+        "mock:/a"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
@@ -789,7 +793,9 @@ public class TestInputOutputFormat {
       conf.set("fs.mock.impl", MockFileSystem.class.getName());
       OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
 
-      OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"),
+      OrcInputFormat.FileGenerator gen =
+          new OrcInputFormat.FileGenerator(context, () -> fs, new MockPath(fs,
+              "mock:/a"),
         false, null);
       List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
       assertEquals(1, splitStrategies.size());
@@ -821,14 +827,14 @@ public class TestInputOutputFormat {
   public void testBIStrategySplitBlockBoundary() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
-    MockFileSystem fs = new MockFileSystem(conf,
+    final MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[1], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-01", 1000, new byte[1], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-02", 1000, new byte[1], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-03", 1000, new byte[1], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1], new MockBlock("host1", "host2")));
     OrcInputFormat.FileGenerator gen =
-        new OrcInputFormat.FileGenerator(context, fs,
+        new OrcInputFormat.FileGenerator(context, () -> fs,
             new MockPath(fs, "mock:/a/b"), false, null);
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
@@ -838,14 +844,14 @@ public class TestInputOutputFormat {
     assertEquals(5, numSplits);
 
     context = new OrcInputFormat.Context(conf);
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs0 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[1000], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-01", 1000, new byte[1000], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-02", 1000, new byte[1000], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-03", 1000, new byte[1000], new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1000], new MockBlock("host1", "host2")));
-    gen = new OrcInputFormat.FileGenerator(context, fs,
-        new MockPath(fs, "mock:/a/b"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs0,
+        new MockPath(fs0, "mock:/a/b"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.BISplitStrategy);
@@ -854,7 +860,7 @@ public class TestInputOutputFormat {
     assertEquals(5, numSplits);
 
     context = new OrcInputFormat.Context(conf);
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs1 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[1100], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-01", 1000, new byte[1100], new MockBlock("host1", "host2"),
@@ -865,8 +871,8 @@ public class TestInputOutputFormat {
             new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1100], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2")));
-    gen = new OrcInputFormat.FileGenerator(context, fs,
-        new MockPath(fs, "mock:/a/b"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs1,
+        new MockPath(fs1, "mock:/a/b"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.BISplitStrategy);
@@ -875,7 +881,7 @@ public class TestInputOutputFormat {
     assertEquals(10, numSplits);
 
     context = new OrcInputFormat.Context(conf);
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs2 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[2000], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-01", 1000, new byte[2000], new MockBlock("host1", "host2"),
@@ -886,8 +892,8 @@ public class TestInputOutputFormat {
             new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-04", 1000, new byte[2000], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2")));
-    gen = new OrcInputFormat.FileGenerator(context, fs,
-        new MockPath(fs, "mock:/a/b"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs2,
+        new MockPath(fs2, "mock:/a/b"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.BISplitStrategy);
@@ -896,7 +902,7 @@ public class TestInputOutputFormat {
     assertEquals(10, numSplits);
 
     context = new OrcInputFormat.Context(conf);
-    fs = new MockFileSystem(conf,
+    final MockFileSystem fs3 = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[2200], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-01", 1000, new byte[2200], new MockBlock("host1", "host2"),
@@ -907,8 +913,8 @@ public class TestInputOutputFormat {
             new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
         new MockFile("mock:/a/b/part-04", 1000, new byte[2200], new MockBlock("host1", "host2"),
             new MockBlock("host1", "host2"), new MockBlock("host1", "host2")));
-    gen = new OrcInputFormat.FileGenerator(context, fs,
-        new MockPath(fs, "mock:/a/b"), false, null);
+    gen = new OrcInputFormat.FileGenerator(context, () -> fs3,
+        new MockPath(fs3, "mock:/a/b"), false, null);
     splitStrategies = createSplitStrategies(context, gen);
     assertEquals(1, splitStrategies.size());
     assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.BISplitStrategy);
@@ -1009,9 +1015,9 @@ public class TestInputOutputFormat {
   }
 
   public OrcInputFormat.AcidDirInfo createAdi(
-      OrcInputFormat.Context context, MockFileSystem fs, String path) throws IOException {
+      OrcInputFormat.Context context, final MockFileSystem fs, String path) throws IOException {
     return new OrcInputFormat.FileGenerator(
-        context, fs, new MockPath(fs, path), false, null).call();
+        context, () -> fs, new MockPath(fs, path), false, null).call();
   }
 
   private List<OrcInputFormat.SplitStrategy<?>> createSplitStrategies(
@@ -2150,13 +2156,13 @@ public class TestInputOutputFormat {
    * @throws IOException
    * @throws HiveException
    */
-  JobConf createMockExecutionEnvironment(Path workDir,
+  static JobConf createMockExecutionEnvironment(Path workDir,
                                          Path warehouseDir,
                                          String tableName,
                                          ObjectInspector objectInspector,
                                          boolean isVectorized,
-                                         int partitions
-                                         ) throws IOException, HiveException {
+                                         int partitions,
+                                         String currFileSystemName) throws IOException, HiveException {
     JobConf conf = new JobConf();
     Utilities.clearWorkMap(conf);
     conf.set("hive.exec.plan", workDir.toString());
@@ -2165,7 +2171,7 @@ public class TestInputOutputFormat {
     conf.set("hive.vectorized.execution.enabled", isVectorizedString);
     conf.set(Utilities.VECTOR_MODE, isVectorizedString);
     conf.set(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, isVectorizedString);
-    conf.set("fs.mock.impl", MockFileSystem.class.getName());
+    conf.set("fs.mock.impl", currFileSystemName);
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     Path root = new Path(warehouseDir, tableName);
     // clean out previous contents
@@ -2284,7 +2290,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorization", inspector, true, 1);
+        "vectorization", inspector, true, 1, MockFileSystem.class.getName());
 
     // write the orc file to the mock file system
     Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
@@ -2331,7 +2337,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorBuckets", inspector, true, 1);
+        "vectorBuckets", inspector, true, 1, MockFileSystem.class.getName());
 
     // write the orc file to the mock file system
     Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
@@ -2370,7 +2376,7 @@ public class TestInputOutputFormat {
   public void testVectorizationWithAcid() throws Exception {
     StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorizationAcid", inspector, true, 1);
+        "vectorizationAcid", inspector, true, 1, MockFileSystem.class.getName());
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
@@ -2451,7 +2457,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combination", inspector, false, 1);
+        "combination", inspector, false, 1, MockFileSystem.class.getName());
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -2523,7 +2529,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combinationAcid", inspector, false, PARTITIONS);
+        "combinationAcid", inspector, false, PARTITIONS, MockFileSystem.class.getName());
 
     // write the orc file to the mock file system
     Path[] partDir = new Path[PARTITIONS];
@@ -2585,14 +2591,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(700, split.getLength());
+    assertEquals(702, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(724, split.getLength());
+    assertEquals(726, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -2600,7 +2606,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(251, combineSplit.getLength(bucket));
+      assertEquals(253, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -3334,7 +3340,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf jobConf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "mocktable3", inspector, true, 0);
+        "mocktable3", inspector, true, 0, MockFileSystem.class.getName());
     Writer writer =
         OrcFile.createWriter(new Path(mockPath + "/0_0"),
             OrcFile.writerOptions(conf).blockPadding(false)
@@ -3407,7 +3413,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf jobConf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "mocktable4", inspector, true, 0);
+        "mocktable4", inspector, true, 0, MockFileSystem.class.getName());
     Writer writer =
         OrcFile.createWriter(new Path(mockPath + "/0_0"),
             OrcFile.writerOptions(conf).blockPadding(false)

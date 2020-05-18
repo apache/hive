@@ -251,6 +251,8 @@ public class TestHiveSqlDateTimeFormatter {
     checkParseTimestamp("YYYY DDD", "2000 60", "2000-02-29 00:00:00");
     checkParseTimestamp("YYYY DDD", "2000 61", "2000-03-01 00:00:00");
     checkParseTimestamp("YYYY DDD", "2000 366", "2000-12-31 00:00:00");
+    //Leap day, parse day first
+    checkParseTimestamp("dd mm yyyy", "29 02 2000", "2000-02-29 00:00:00");
     //Test timezone offset parsing without separators
     checkParseTimestamp("YYYYMMDDHH12MIA.M.TZHTZM", "201812310800AM+0515", "2018-12-31 08:00:00");
     checkParseTimestamp("YYYYMMDDHH12MIA.M.TZHTZM", "201812310800AM0515", "2018-12-31 08:00:00");
@@ -367,6 +369,7 @@ public class TestHiveSqlDateTimeFormatter {
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +16:00"); //tzh out of range
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +14:60"); //tzm out of range
     verifyBadParseString("YYYY DDD", "2000 367"); //ddd out of range
+    verifyBadParseString("yyyy-mm-dd hh12 p.m. ss", "2020-01-01 0 am 00"); //hh12 range is 1-12
     verifyBadParseString("yyyy-month-dd", "2019-merch-23"); //invalid month of year
     verifyBadParseString("yyyy-mon-dd", "2019-mer-23"); //invalid month of year
     verifyBadParseString("yyyy-MON-dd", "2018-FEBRUARY-28"); // can't mix and match mon and month
@@ -533,8 +536,8 @@ public class TestHiveSqlDateTimeFormatter {
       fail("Parse string to timestamp should have failed.\nString: " + string + "\nPattern: "
           + pattern + ", output = " + output);
     } catch (Exception e) {
-      assertEquals("Expected IllegalArgumentException, got another exception.",
-          e.getClass().getName(), IllegalArgumentException.class.getName());
+      assertEquals("Expected IllegalArgumentException, got another exception:" + e,
+          IllegalArgumentException.class.getName(), e.getClass().getName());
     }
   }
 }

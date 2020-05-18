@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -83,7 +83,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -99,8 +98,13 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.security.alias.AbstractJavaKeyStoreProvider;
 import org.apache.hadoop.security.alias.CredentialProvider;
@@ -461,12 +465,26 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
     assert node.getChildCount() <= 2;
+    assert node.getType() == HiveParser.TOK_TABNAME;
 
     if (node.getChildCount() == 2) {
       node = (ASTNode) node.getChild(1);
     }
 
     return getUnescapedName(node);
+  }
+
+  public static String getTableAlias(ASTNode node) throws SemanticException {
+    // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
+    // partitionTableFunctionSource partitioningSpec? expression*)
+    // guranteed to have an alias here: check done in processJoin
+    if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
+      return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
+    }
+    if (node.getChildCount() == 1) {
+      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
+    }
+    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
   }
 
 
@@ -864,8 +882,64 @@ public abstract class BaseSemanticAnalyzer {
     case HiveParser.TOK_UNIONTYPE:
       return getUnionTypeStringFromAST(typeNode);
     default:
-      return DDLSemanticAnalyzer.getTypeName(typeNode);
+      return getTypeName(typeNode);
     }
+  }
+
+  private static final Map<Integer, String> TOKEN_TO_TYPE = new HashMap<Integer, String>();
+
+  static {
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TINYINT, serdeConstants.TINYINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_SMALLINT, serdeConstants.SMALLINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INT, serdeConstants.INT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BIGINT, serdeConstants.BIGINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_FLOAT, serdeConstants.FLOAT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DOUBLE, serdeConstants.DOUBLE_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_STRING, serdeConstants.STRING_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_CHAR, serdeConstants.CHAR_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_VARCHAR, serdeConstants.VARCHAR_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BINARY, serdeConstants.BINARY_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DATETIME, serdeConstants.DATETIME_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TIMESTAMPLOCALTZ, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
+  }
+
+  private static String getTypeName(ASTNode node) throws SemanticException {
+    int token = node.getType();
+    String typeName;
+
+    // datetime type isn't currently supported
+    if (token == HiveParser.TOK_DATETIME) {
+      throw new SemanticException(ErrorMsg.UNSUPPORTED_TYPE.getMsg());
+    }
+
+    switch (token) {
+    case HiveParser.TOK_CHAR:
+      CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(node);
+      typeName = charTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_VARCHAR:
+      VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(node);
+      typeName = varcharTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_TIMESTAMPLOCALTZ:
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
+          TypeInfoFactory.getTimestampTZTypeInfo(null);
+      typeName = timestampLocalTZTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_DECIMAL:
+      DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
+      typeName = decTypeInfo.getQualifiedName();
+      break;
+    default:
+      typeName = TOKEN_TO_TYPE.get(token);
+    }
+    return typeName;
   }
 
   private static String getStructTypeStringFromAST(ASTNode typeNode)
@@ -1358,113 +1432,6 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * Given a ASTNode, return list of values.
-   *
-   * use case:
-   *   create table xyz list bucketed (col1) with skew (1,2,5)
-   *   AST Node is for (1,2,5)
-   * @param ast
-   * @return
-   */
-  protected List<String> getSkewedValueFromASTNode(ASTNode ast) {
-    List<String> colList = new ArrayList<String>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(stripQuotes(child.getText()).toLowerCase());
-    }
-    return colList;
-  }
-
-  /**
-   * Retrieve skewed values from ASTNode.
-   *
-   * @param node
-   * @return
-   * @throws SemanticException
-   */
-  protected List<String> getSkewedValuesFromASTNode(Node node) throws SemanticException {
-    List<String> result = null;
-    Tree leafVNode = ((ASTNode) node).getChild(0);
-    if (leafVNode == null) {
-      throw new SemanticException(
-          ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-    } else {
-      ASTNode lVAstNode = (ASTNode) leafVNode;
-      if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
-        throw new SemanticException(
-            ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-      } else {
-        result = new ArrayList<String>(getSkewedValueFromASTNode(lVAstNode));
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Analyze list bucket column names
-   *
-   * @param skewedColNames
-   * @param child
-   * @return
-   * @throws SemanticException
-   */
-  protected List<String> analyzeSkewedTablDDLColNames(List<String> skewedColNames, ASTNode child)
-      throws SemanticException {
-  Tree nNode = child.getChild(0);
-    if (nNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-    } else {
-      ASTNode nAstNode = (ASTNode) nNode;
-      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
-        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-      } else {
-        skewedColNames = getColumnNames(nAstNode);
-      }
-    }
-    return skewedColNames;
-  }
-
-  /**
-   * Handle skewed values in DDL.
-   *
-   * It can be used by both skewed by ... on () and set skewed location ().
-   *
-   * @param skewedValues
-   * @param child
-   * @throws SemanticException
-   */
-  protected void analyzeDDLSkewedValues(List<List<String>> skewedValues, ASTNode child)
-      throws SemanticException {
-  Tree vNode = child.getChild(1);
-    if (vNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-    }
-    ASTNode vAstNode = (ASTNode) vNode;
-    switch (vAstNode.getToken().getType()) {
-      case HiveParser.TOK_TABCOLVALUE:
-        for (String str : getSkewedValueFromASTNode(vAstNode)) {
-          List<String> sList = new ArrayList<String>(Arrays.asList(str));
-          skewedValues.add(sList);
-        }
-        break;
-      case HiveParser.TOK_TABCOLVALUE_PAIR:
-        List<Node> vLNodes = vAstNode.getChildren();
-        for (Node node : vLNodes) {
-          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
-            throw new SemanticException(
-                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-          } else {
-            skewedValues.add(getSkewedValuesFromASTNode(node));
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  /**
    * process stored as directories
    *
    * @param child
@@ -1792,6 +1759,7 @@ public abstract class BaseSemanticAnalyzer {
     prop.setProperty("columns", colTypes[0]);
     prop.setProperty("columns.types", colTypes[1]);
     prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
+    prop.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     FetchWork fetch =
         new FetchWork(ctx.getResFile(), new TableDesc(TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class, prop), -1);

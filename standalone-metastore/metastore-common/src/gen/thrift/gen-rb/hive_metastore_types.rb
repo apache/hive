@@ -61,8 +61,9 @@ module LockType
   SHARED_READ = 1
   SHARED_WRITE = 2
   EXCLUSIVE = 3
-  VALUE_MAP = {1 => "SHARED_READ", 2 => "SHARED_WRITE", 3 => "EXCLUSIVE"}
-  VALID_VALUES = Set.new([SHARED_READ, SHARED_WRITE, EXCLUSIVE]).freeze
+  EXCL_WRITE = 4
+  VALUE_MAP = {1 => "SHARED_READ", 2 => "SHARED_WRITE", 3 => "EXCLUSIVE", 4 => "EXCL_WRITE"}
+  VALID_VALUES = Set.new([SHARED_READ, SHARED_WRITE, EXCLUSIVE, EXCL_WRITE]).freeze
 end
 
 module CompactionType
@@ -160,8 +161,9 @@ module TxnType
   REPL_CREATED = 1
   READ_ONLY = 2
   COMPACTION = 3
-  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION"}
-  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION]).freeze
+  MATER_VIEW_REBUILD = 4
+  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD"}
+  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD]).freeze
 end
 
 module GetTablesExtRequestFields
@@ -999,6 +1001,7 @@ class Database
   OWNERTYPE = 7
   CATALOGNAME = 8
   CREATETIME = 9
+  MANAGEDLOCATIONURI = 10
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -1009,7 +1012,8 @@ class Database
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType},
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    MANAGEDLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'managedLocationUri', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2244,6 +2248,26 @@ class PartitionsByExprResult
   ::Thrift::Struct.generate_accessors self
 end
 
+class PartitionsSpecByExprResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONSSPEC = 1
+  HASUNKNOWNPARTITIONS = 2
+
+  FIELDS = {
+    PARTITIONSSPEC => {:type => ::Thrift::Types::LIST, :name => 'partitionsSpec', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}},
+    HASUNKNOWNPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'hasUnknownPartitions'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionsSpec is unset!') unless @partitionsSpec
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hasUnknownPartitions is unset!') if @hasUnknownPartitions.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class PartitionsByExprRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -3184,13 +3208,15 @@ class LockRequest
   USER = 3
   HOSTNAME = 4
   AGENTINFO = 5
+  ZEROWAITREADENABLED = 6
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
-    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
+    ZEROWAITREADENABLED => {:type => ::Thrift::Types::BOOL, :name => 'zeroWaitReadEnabled', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3208,10 +3234,12 @@ class LockResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   LOCKID = 1
   STATE = 2
+  ERRORMESSAGE = 3
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
-    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::LockState}
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::LockState},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3467,6 +3495,7 @@ class CompactionInfoStruct
   START = 11
   HIGHESTWRITEID = 12
   ERRORMESSAGE = 13
+  HASOLDABORT = 14
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3481,7 +3510,8 @@ class CompactionInfoStruct
     WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId', :optional => true},
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
     HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
-    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
+    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3818,12 +3848,14 @@ class InsertEventRequestData
   FILESADDED = 2
   FILESADDEDCHECKSUM = 3
   SUBDIRECTORYLIST = 4
+  PARTITIONVAL = 5
 
   FIELDS = {
     REPLACE => {:type => ::Thrift::Types::BOOL, :name => 'replace', :optional => true},
     FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
     FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    SUBDIRECTORYLIST => {:type => ::Thrift::Types::LIST, :name => 'subDirectoryList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    SUBDIRECTORYLIST => {:type => ::Thrift::Types::LIST, :name => 'subDirectoryList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PARTITIONVAL => {:type => ::Thrift::Types::LIST, :name => 'partitionVal', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3841,12 +3873,18 @@ class FireEventRequestData < ::Thrift::Union
     def insertData(val)
       FireEventRequestData.new(:insertData, val)
     end
+
+    def insertDatas(val)
+      FireEventRequestData.new(:insertDatas, val)
+    end
   end
 
   INSERTDATA = 1
+  INSERTDATAS = 2
 
   FIELDS = {
-    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData}
+    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData},
+    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}}
   }
 
   def struct_fields; FIELDS; end
@@ -3888,9 +3926,10 @@ end
 
 class FireEventResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTIDS = 1
 
   FIELDS = {
-
+    EVENTIDS => {:type => ::Thrift::Types::LIST, :name => 'eventIds', :element => {:type => ::Thrift::Types::I64}}
   }
 
   def struct_fields; FIELDS; end

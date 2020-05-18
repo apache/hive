@@ -78,7 +78,7 @@ public class TestParseUtils {
           {"LOAD DATA LOCAL INPATH './examples/files/kv.txt' " +
              "  OVERWRITE INTO TABLE a", TxnType.DEFAULT},
 
-          {"REPL LOAD a from './examples/files/kv.txt'", TxnType.DEFAULT},
+          {"REPL LOAD a INTO a", TxnType.DEFAULT},
           {"REPL DUMP a", TxnType.DEFAULT},
           {"REPL STATUS a", TxnType.DEFAULT},
 
@@ -89,6 +89,10 @@ public class TestParseUtils {
              "WHEN NOT MATCHED THEN " +
              "  INSERT VALUES (src.col_a, src.col_b)",
            TxnType.DEFAULT},
+
+          {"CREATE MATERIALIZED VIEW matview AS SELECT * FROM b", TxnType.DEFAULT},
+          {"ALTER MATERIALIZED VIEW matview REBUILD", TxnType.MATER_VIEW_REBUILD},
+          {"ALTER MATERIALIZED VIEW matview DISABLE REWRITE", TxnType.DEFAULT}
       });
   }
 
@@ -101,7 +105,8 @@ public class TestParseUtils {
   @Test
   public void testTxnTypeWithDisabledReadOnlyFeature() throws ParseException {
     enableReadOnlyTxnFeature(false);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), TxnType.DEFAULT);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)),
+        txnType == TxnType.READ_ONLY ? TxnType.DEFAULT : txnType);
   }
 
   private void enableReadOnlyTxnFeature(boolean featureFlag) {

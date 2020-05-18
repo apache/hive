@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -61,9 +62,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,16 +72,147 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.*;
+import org.apache.hadoop.hive.common.DatabaseName;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.QueryState;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
+import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
+import org.apache.hadoop.hive.metastore.api.SchemaType;
+import org.apache.hadoop.hive.metastore.api.SchemaValidation;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SerdeType;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.model.*;
+import org.apache.hadoop.hive.metastore.model.FetchGroups;
+import org.apache.hadoop.hive.metastore.model.MCatalog;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
+import org.apache.hadoop.hive.metastore.model.MConstraint;
+import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
+import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MDatabase;
+import org.apache.hadoop.hive.metastore.model.MDelegationToken;
+import org.apache.hadoop.hive.metastore.model.MFieldSchema;
+import org.apache.hadoop.hive.metastore.model.MFunction;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MISchema;
+import org.apache.hadoop.hive.metastore.model.MMasterKey;
+import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
+import org.apache.hadoop.hive.metastore.model.MNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MOrder;
+import org.apache.hadoop.hive.metastore.model.MPartition;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MResourceUri;
+import org.apache.hadoop.hive.metastore.model.MRole;
+import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
+import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
+import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
+import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
+import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
+import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStringList;
+import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
 import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
+import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -106,7 +235,9 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -657,6 +788,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert mdb.getCatalogName() != null;
     mdb.setName(db.getName().toLowerCase());
     mdb.setLocationUri(db.getLocationUri());
+    mdb.setManagedLocationUri(db.getManagedLocationUri());
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
@@ -751,6 +883,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
+    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
@@ -785,6 +918,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getLocationUri())) {
         mdb.setLocationUri(db.getLocationUri());
+      }
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getManagedLocationUri())) {
+        mdb.setManagedLocationUri(db.getManagedLocationUri());
       }
       openTransaction();
       pm.makePersistent(mdb);
@@ -1159,6 +1295,44 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
+
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+
+    boolean committed = false;
+    Query query = null;
+    List<String> mViewList = new ArrayList<>();
+
+    try {
+      openTransaction();
+
+      query = pm.newQuery("select from org.apache.hadoop.hive.metastore.model.MCreationMetadata");
+
+      List<MCreationMetadata> creationMetadata = (List<MCreationMetadata>)query.execute();
+      Iterator<MCreationMetadata> iter = creationMetadata.iterator();
+
+      while (iter.hasNext())
+      {
+        MCreationMetadata p = iter.next();
+        Set<MTable> tables = p.getTables();
+        for (MTable table : tables) {
+          if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
+            LOG.info("Cannot drop table " + table.getTableName() +
+                    " as it is being used by MView " + p.getTblName());
+            mViewList.add(p.getDbName() + "." + p.getTblName());
+          }
+        }
+      }
+
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return mViewList;
+  }
+
+
+
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
       String catName, String dbName, String tableName, String constraintname) {
@@ -3289,20 +3463,29 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr,
                                                     getDefaultPartitionName(defaultPartitionName));
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
     result.addAll(new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         // If we have some sort of expression tree, try SQL filter pushdown.
         if (exprTree != null) {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
-          if (directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, defaultPartitionName, filter)) {
-            return directSql.getPartitionsViaSqlFilter(filter, null);
+          if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+              exprTree, defaultPartitionName, filter)) {
+            String catalogName = (catName != null) ? catName : DEFAULT_CATALOG_NAME;
+            return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter, null);
           }
         }
         // We couldn't do SQL filter pushdown. Get names via normal means.
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-            ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
+                catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
         return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
       }
 
@@ -3312,18 +3495,18 @@ public class ObjectStore implements RawStore, Configurable {
         // If we have some sort of expression tree, try JDOQL filter pushdown.
         List<Partition> result = null;
         if (exprTree != null) {
-          result = getPartitionsViaOrmFilter(ctx.getTable(), exprTree, maxParts, false);
+          result = getPartitionsViaOrmFilter(catName, dbName, tblName, exprTree, maxParts, false, partitionKeys);
         }
         if (result == null) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
           List<String> partNames = new ArrayList<>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-              ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
+                  catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
           result = getPartitionsViaOrmFilter(catName, dbName, tblName, partNames);
         }
         return result;
       }
-    }.run(true));
+    }.run(false));
     return hasUnknownPartitions.get();
   }
 
@@ -3340,19 +3523,27 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Gets the partition names from a table, pruned using an expression.
-   * @param table Table.
+   * @param catName
+   * @param dbName
+   * @param tblName
    * @param expr Expression.
    * @param defaultPartName Default partition name from job config, if any.
    * @param maxParts Maximum number of partition names to return.
    * @param result The resulting names.
    * @return Whether the result contains any unknown partitions.
    */
-  private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
-      String defaultPartName, short maxParts, List<String> result) throws MetaException {
-    result.addAll(getPartitionNamesNoTxn(table.getCatName(),
-        table.getDbName(), table.getTableName(), maxParts));
-    return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr,
-            getDefaultPartitionName(defaultPartName), result);
+  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName, List<FieldSchema> partColumns, byte[] expr,
+                                                     String defaultPartName, short maxParts, List<String> result) throws MetaException {
+    result.addAll(getPartitionNamesNoTxn(
+            catName,
+            dbName,
+            tblName,
+            maxParts));
+    return expressionProxy.filterPartitionsByExpr(
+            partColumns,
+            expr,
+            getDefaultPartitionName(defaultPartName),
+            result);
   }
 
   /**
@@ -3365,11 +3556,11 @@ public class ObjectStore implements RawStore, Configurable {
    * @return Resulting partitions. Can be null if isValidatedFilter is false, and
    *         there was error deriving the JDO filter.
    */
-  private List<Partition> getPartitionsViaOrmFilter(Table table, ExpressionTree tree,
-      short maxParts, boolean isValidatedFilter) throws MetaException {
+  private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
+      short maxParts, boolean isValidatedFilter, List<FieldSchema> partitionKeys) throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter =
-        makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree, params, isValidatedFilter);
+        makeQueryFilterString(catName, dbName, tblName, tree, params, isValidatedFilter, partitionKeys);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
       return null;
@@ -3391,11 +3582,11 @@ public class ObjectStore implements RawStore, Configurable {
     return results;
   }
 
-  private Integer getNumPartitionsViaOrmFilter(Table table, ExpressionTree tree, boolean isValidatedFilter)
-    throws MetaException {
+  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree, boolean isValidatedFilter, List<FieldSchema> partitionKeys)
+          throws MetaException {
     Map<String, Object> params = new HashMap<>();
-    String jdoFilter = makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree,
-        params, isValidatedFilter);
+    String jdoFilter = makeQueryFilterString(catName, dbName, tblName, tree,
+            params, isValidatedFilter, partitionKeys);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
       return null;
@@ -3783,6 +3974,12 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
+
     return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
@@ -3793,7 +3990,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
       }
 
       @Override
@@ -3803,9 +4000,9 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected Integer getJdoResult(
           GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
-        return getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+        return getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
       }
-    }.run(true);
+    }.run(false);
   }
 
   @Override
@@ -3814,6 +4011,11 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null);
     final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
 
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
 
     return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
@@ -3825,7 +4027,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
       }
 
       @Override
@@ -3839,7 +4041,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         if (exprTree != null) {
           try {
-            numPartitions = getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+            numPartitions = getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
           } catch (MetaException e) {
             numPartitions = null;
           }
@@ -3848,19 +4050,26 @@ public class ObjectStore implements RawStore, Configurable {
         // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
         if (numPartitions == null) {
           List<String> filteredPartNames = new ArrayList<>();
-          getPartitionNamesPrunedByExprNoTxn(ctx.getTable(), tempExpr, "", (short) -1, filteredPartNames);
+          getPartitionNamesPrunedByExprNoTxn(catName, dbName, tblName, partitionKeys, tempExpr, "", (short) -1, filteredPartNames);
           numPartitions = filteredPartNames.size();
         }
 
         return numPartitions;
       }
-    }.run(true);
+    }.run(false);
   }
 
   protected List<Partition> getPartitionsByFilterInternal(
       String catName, String dbName, String tblName, String filter, final short maxParts,
       boolean allowSql, boolean allowJdo)
       throws MetaException, NoSuchObjectException {
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
@@ -3868,20 +4077,20 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
       }
 
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(filter, (maxParts < 0) ? null : (int)maxParts);
+        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, filter, (maxParts < 0) ? null : (int)maxParts);
       }
 
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(ctx.getTable(), tree, maxParts, true);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, maxParts, true, partitionKeys);
       }
-    }.run(true);
+    }.run(false);
   }
 
   @Override
@@ -3921,7 +4130,8 @@ public class ObjectStore implements RawStore, Configurable {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
-          return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+          return directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
+                  table.getPartitionKeys(), tree, null, filter);
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;
@@ -4065,10 +4275,30 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("catName", catName);
     }
 
-    tree.generateJDOFilterFragment(getConf(), table, params, queryBuilder);
+    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, table != null ? table.getPartitionKeys() : null);
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
-      LOG.info("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
+      LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
+      return null;
+    }
+    String jdoFilter = queryBuilder.getFilter();
+    LOG.debug("jdoFilter = {}", jdoFilter);
+    return jdoFilter;
+  }
+
+  private String makeQueryFilterString(String catName, String dbName, String tblName,
+                                       ExpressionTree tree, Map<String, Object> params,
+                                       boolean isValidatedFilter, List<FieldSchema> partitionKeys) throws MetaException {
+    assert tree != null;
+    FilterBuilder queryBuilder = new FilterBuilder(isValidatedFilter);
+    queryBuilder.append("table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
+    params.put("t1", tblName);
+    params.put("t2", dbName);
+    params.put("t3", catName);
+    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, partitionKeys);
+    if (queryBuilder.hasError()) {
+      assert !isValidatedFilter;
+      LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
       return null;
     }
     String jdoFilter = queryBuilder.getFilter();
@@ -4596,18 +4826,19 @@ public class ObjectStore implements RawStore, Configurable {
     return -1;
   }
 
-  private  boolean constraintNameAlreadyExists(String name) {
+  private  boolean constraintNameAlreadyExists(MTable table, String constraintName) {
     boolean commited = false;
-    Query constraintExistsQuery = null;
+    Query<MConstraint> constraintExistsQuery = null;
     String constraintNameIfExists = null;
     try {
       openTransaction();
-      name = normalizeIdentifier(name);
-      constraintExistsQuery = pm.newQuery(MConstraint.class, "constraintName == name");
-      constraintExistsQuery.declareParameters("java.lang.String name");
+      constraintName = normalizeIdentifier(constraintName);
+      constraintExistsQuery = pm.newQuery(MConstraint.class,
+          "parentTable == parentTableP && constraintName == constraintNameP");
+      constraintExistsQuery.declareParameters("MTable parentTableP, java.lang.String constraintNameP");
       constraintExistsQuery.setUnique(true);
-      constraintExistsQuery.setResult("name");
-      constraintNameIfExists = (String) constraintExistsQuery.execute(name);
+      constraintExistsQuery.setResult("constraintName");
+      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table, constraintName);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, constraintExistsQuery);
@@ -4615,14 +4846,14 @@ public class ObjectStore implements RawStore, Configurable {
     return constraintNameIfExists != null && !constraintNameIfExists.isEmpty();
   }
 
-  private String generateConstraintName(String... parameters) throws MetaException {
+  private String generateConstraintName(MTable table, String... parameters) throws MetaException {
     int hashcode = ArrayUtils.toString(parameters).hashCode() & 0xfffffff;
     int counter = 0;
     final int MAX_RETRIES = 10;
     while (counter < MAX_RETRIES) {
       String currName = (parameters.length == 0 ? "constraint_" : parameters[parameters.length-1]) +
         "_" + hashcode + "_" + System.currentTimeMillis() + "_" + (counter++);
-      if (!constraintNameAlreadyExists(currName)) {
+      if (!constraintNameAlreadyExists(table, currName)) {
         return currName;
       }
     }
@@ -4828,13 +5059,15 @@ public class ObjectStore implements RawStore, Configurable {
             // However, this scenario can be ignored for practical purposes because of
             // the uniqueness of the generated constraint name.
             if (foreignKey.getKey_seq() == 1) {
-              currentConstraintName = generateConstraintName(
-                fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
+              currentConstraintName = generateConstraintName(parentTable, fkTableDB, fkTableName, pkTableDB,
+                  pkTableName, pkColumnName, fkColumnName, "fk");
             }
           } else {
             currentConstraintName = normalizeIdentifier(foreignKey.getFk_name());
-            if(constraintNameAlreadyExists(currentConstraintName)) {
-              throw new InvalidObjectException("Constraint name already exists: " + currentConstraintName);
+            if (constraintNameAlreadyExists(parentTable, currentConstraintName)) {
+              String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+                  parentTable.getTableName(), currentConstraintName);
+              throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
             }
           }
           fkNames.add(currentConstraintName);
@@ -4842,19 +5075,20 @@ public class ObjectStore implements RawStore, Configurable {
           Integer deleteRule = foreignKey.getDelete_rule();
           int enableValidateRely = (foreignKey.isEnable_cstr() ? 4 : 0) +
                   (foreignKey.isValidate_cstr() ? 2 : 0) + (foreignKey.isRely_cstr() ? 1 : 0);
+
           MConstraint mpkfk = new MConstraint(
-            currentConstraintName,
-            MConstraint.FOREIGN_KEY_CONSTRAINT,
-            foreignKey.getKey_seq(),
-            deleteRule,
-            updateRule,
-            enableValidateRely,
-            parentTable,
-            childTable,
-            parentCD,
-            childCD,
-            childIntegerIndex,
-            parentIntegerIndex
+              currentConstraintName,
+              foreignKey.getKey_seq(),
+              MConstraint.FOREIGN_KEY_CONSTRAINT,
+              deleteRule,
+              updateRule,
+              enableValidateRely,
+              parentTable,
+              childTable,
+              parentCD,
+              childCD,
+              childIntegerIndex,
+              parentIntegerIndex
           );
           mpkfks.add(mpkfk);
 
@@ -4982,29 +5216,31 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
-          constraintName = generateConstraintName(tableDB, tableName, columnName, "pk");
+          constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "pk");
         }
       } else {
         constraintName = normalizeIdentifier(pks.get(i).getPk_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       pkNames.add(constraintName);
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
       (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
-        constraintName,
-        MConstraint.PRIMARY_KEY_CONSTRAINT,
-        pks.get(i).getKey_seq(),
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
+          constraintName,
+          pks.get(i).getKey_seq(),
+          MConstraint.PRIMARY_KEY_CONSTRAINT,
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
         parentIntegerIndex);
       mpks.add(mpk);
     }
@@ -5051,12 +5287,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (uks.get(i).getUk_name() == null) {
         if (uks.get(i).getKey_seq() == 1) {
-            constraintName = generateConstraintName(tableDB, tableName, columnName, "uk");
+          constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "uk");
         }
       } else {
         constraintName = normalizeIdentifier(uks.get(i).getUk_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       ukNames.add(constraintName);
@@ -5064,18 +5302,18 @@ public class ObjectStore implements RawStore, Configurable {
       int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
           (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
-        constraintName,
-        MConstraint.UNIQUE_CONSTRAINT,
-        uks.get(i).getKey_seq(),
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
-        parentIntegerIndex);
+          constraintName,
+          uks.get(i).getKey_seq(),
+          MConstraint.UNIQUE_CONSTRAINT,
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
+          parentIntegerIndex);
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
@@ -5146,11 +5384,13 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     if (ccName == null) {
-      constraintName = generateConstraintName(tableDB, tableName, columnName, "dc");
+      constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "dc");
     } else {
       constraintName = normalizeIdentifier(ccName);
-      if(constraintNameAlreadyExists(constraintName)) {
-        throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+      if (constraintNameAlreadyExists(parentTable, constraintName)) {
+        String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+            parentTable.getTableName(), constraintName);
+        throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
       }
     }
     nnNames.add(constraintName);
@@ -5159,8 +5399,8 @@ public class ObjectStore implements RawStore, Configurable {
         (isValidate ? 2 : 0) + (isRely ? 1 : 0);
     MConstraint muk = new MConstraint(
         constraintName,
-        constraintType,
-        1, // Not null constraint should reference a single column
+        1,
+        constraintType, // Not null constraint should reference a single column
         null,
         null,
         enableValidateRely,
@@ -5228,11 +5468,13 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (nns.get(i).getNn_name() == null) {
-        constraintName = generateConstraintName(tableDB, tableName, columnName, "nn");
+        constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "nn");
       } else {
         constraintName = normalizeIdentifier(nns.get(i).getNn_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       nnNames.add(constraintName);
@@ -5240,18 +5482,18 @@ public class ObjectStore implements RawStore, Configurable {
       int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
           (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
-        constraintName,
-        MConstraint.NOT_NULL_CONSTRAINT,
-        1, // Not null constraint should reference a single column
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
-        parentIntegerIndex);
+          constraintName,
+          1,
+          MConstraint.NOT_NULL_CONSTRAINT, // Not null constraint should reference a single column
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
+          parentIntegerIndex);
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
@@ -5701,7 +5943,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
 
@@ -5936,7 +6178,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   private List<PrivilegeGrantInfo> getColumnPrivilege(String catName, String dbName,
@@ -5979,7 +6221,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   @Override
@@ -10731,7 +10973,7 @@ public class ObjectStore implements RawStore, Configurable {
         boolean rely = (enableValidateRely & 1) != 0;
         checkConstraints.add(new SQLCheckConstraint(catName, dbName, tblName,
                                                         cols.get(currConstraint.getParentIntegerIndex()).getName(),
-                                                        currConstraint.getDefaultOrCheckValue(),
+                                                        currConstraint.getDefaultValue(),
                                                     currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
@@ -10770,7 +11012,7 @@ public class ObjectStore implements RawStore, Configurable {
         boolean validate = (enableValidateRely & 2) != 0;
         boolean rely = (enableValidateRely & 1) != 0;
         defaultConstraints.add(new SQLDefaultConstraint(catName, dbName, tblName,
-            cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getDefaultOrCheckValue(),
+            cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getDefaultValue(),
             currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
@@ -12655,7 +12897,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       Query q = pm.newQuery(MScheduledQuery.class,
-          "nextExecution <= now && enabled && clusterNamespace == ns");
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -12673,6 +12915,7 @@ public class ObjectStore implements RawStore, Configurable {
       execution.setState(QueryState.INITED);
       execution.setStartTime(now);
       execution.setLastUpdateTime(now);
+      schq.setActiveExecution(execution);
       pm.makePersistent(execution);
       pm.makePersistent(schq);
       ObjectStoreTestHook.onScheduledQueryPoll();
@@ -12723,6 +12966,7 @@ public class ObjectStore implements RawStore, Configurable {
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setLastUpdateTime(null);
+        execution.getScheduledQuery().setActiveExecution(null);
         break;
       default:
         throw new InvalidOperationException("invalid state: " + info.getState());
@@ -12955,11 +13199,30 @@ public class ObjectStore implements RawStore, Configurable {
         //        info.set
         scheduledQueryProgress(info);
       }
+
+      recoverInvalidScheduledQueryState(timeoutSecs);
       committed = commitTransaction();
       return results.size();
     } finally {
       if (!committed) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  private void recoverInvalidScheduledQueryState(int timeoutSecs) {
+    int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
+    Query q = pm.newQuery(MScheduledQuery.class);
+    q.setFilter("activeExecution != null");
+
+    List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
+    for (MScheduledQuery e : results) {
+      Integer lastUpdateTime = e.getActiveExecution().getLastUpdateTime();
+      if (lastUpdateTime == null || lastUpdateTime < maxLastUpdateTime) {
+        LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
+            scheduledQueryKeyRef(e.getScheduleKey()));
+        e.setActiveExecution(null);
+        pm.makePersistent(e);
       }
     }
   }

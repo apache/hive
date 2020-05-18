@@ -35,6 +35,8 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,24 +198,11 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
         return expression;
       }
 
-      final List<RexNode> disjuncts = new ArrayList<>(expression.getOperands().size() - 2);
-      final RexCall columnExpressions = (RexCall) expression.getOperands().get(0);
-      for (int i = 1; i < expression.getOperands().size(); i++) {
-        List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
-        RexCall valueExpressions = (RexCall) expression.getOperands().get(i);
-        for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
-          conjuncts.add(rexBuilder.makeCall(
-              SqlStdOperatorTable.EQUALS,
-              columnExpressions.getOperands().get(j),
-              valueExpressions.getOperands().get(j)));
-        }
-        if (conjuncts.size() > 1) {
-          disjuncts.add(rexBuilder.makeCall(
-              SqlStdOperatorTable.AND,
-              conjuncts));
-        } else {
-          disjuncts.add(conjuncts.get(0));
-        }
+      final List<RexNode> disjuncts = RexNodeConverter.transformInToOrOperands(
+          expression.getOperands(), rexBuilder);
+      if (disjuncts == null) {
+        // We could not execute transformation, return expression
+        return expression;
       }
 
       if (disjuncts.size() > 1) {

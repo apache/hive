@@ -1,15 +1,12 @@
+--! qt:dataset::ONLY
+
 CREATE TABLE shtb_test1_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
 CREATE TABLE shtb_test2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
 
 EXPLAIN
-SHOW TABLES 'shtb_*';
+SHOW TABLES 'shtb_%';
 
-SHOW TABLES 'shtb_*';
-
-EXPLAIN
-SHOW TABLES LIKE 'shtb_test1_n0|shtb_test2_n0';
-
-SHOW TABLES LIKE 'shtb_test1_n0|shtb_test2_n0';
+SHOW TABLES 'shtb_%';
 
 -- SHOW TABLES FROM/IN database
 CREATE DATABASE test_db;
@@ -21,23 +18,34 @@ CREATE VIEW test_view_n100 AS SELECT * FROM foo_n4;
 
 -- SHOW TABLES basic syntax tests
 USE default;
+EXPLAIN SHOW TABLES FROM test_db;
 SHOW TABLES FROM test_db;
+EXPLAIN SHOW EXTENDED TABLES FROM test_db;
 SHOW EXTENDED TABLES FROM test_db;
+EXPLAIN SHOW TABLES IN test_db;
 SHOW TABLES IN test_db;
+EXPLAIN SHOW EXTENDED TABLES IN test_db;
 SHOW EXTENDED TABLES IN test_db;
-SHOW TABLES IN test_db "test*";
+EXPLAIN SHOW TABLES IN test_db "test%";
+SHOW TABLES IN test_db "test%";
+EXPLAIN SHOW TABLES IN test_db LIKE "nomatch";
 SHOW TABLES IN test_db LIKE "nomatch";
+EXPLAIN SHOW TABLES IN test_db WHERE `table_type` = "MANAGED_TABLE";
 SHOW TABLES IN test_db WHERE `table_type` = "MANAGED_TABLE";
+EXPLAIN SHOW EXTENDED TABLES IN test_db WHERE `table_type` = "VIRTUAL_VIEW";
 SHOW EXTENDED TABLES IN test_db WHERE `table_type` = "VIRTUAL_VIEW";
 
 -- SHOW TABLE EXTENDED basic syntax tests and wildcard
 SHOW TABLE EXTENDED IN test_db LIKE foo_n4;
+SHOW TABLE EXTENDED IN test_db LIKE "foo\_n4";
+SHOW TABLE EXTENDED IN test_db LIKE foo_n_;
 SHOW TABLE EXTENDED IN test_db LIKE "foo_n4";
 SHOW TABLE EXTENDED IN test_db LIKE 'foo_n4';
 SHOW TABLE EXTENDED IN test_db LIKE `foo_n4`;
-SHOW TABLE EXTENDED IN test_db LIKE 'ba*';
-SHOW TABLE EXTENDED IN test_db LIKE "ba*";
-SHOW TABLE EXTENDED IN test_db LIKE `ba*`;
+SHOW TABLE EXTENDED IN test_db LIKE 'ba%';
+SHOW TABLE EXTENDED IN test_db LIKE "ba%";
+SHOW TABLE EXTENDED IN test_db LIKE `ba%`;
+SHOW TABLE EXTENDED IN test_db LIKE `ba_`;
 
 -- SHOW TABLES from a database with a name that requires escaping
 CREATE DATABASE `database`;

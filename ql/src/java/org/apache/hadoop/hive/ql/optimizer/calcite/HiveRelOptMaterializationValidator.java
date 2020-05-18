@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
@@ -123,7 +124,6 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(RelNode node) {
-    setAutomaticRewritingInvalidReason(node);
     // There are several Hive RelNode types which do not have their own visit() method
     // defined in the HiveRelShuttle interface, which need to be handled appropriately here.
     // Per jcamachorodriguez we should not encounter HiveMultiJoin/HiveSortExchange
@@ -132,6 +132,8 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
       return visit((HiveUnion) node);
     } else if (node instanceof HiveSortLimit) {
       return visit((HiveSortLimit) node);
+    } else if (node instanceof HiveSortExchange) {
+      return visit((HiveSortExchange) node);
     } else if (node instanceof HiveSemiJoin) {
       return visit((HiveSemiJoin) node);
     } else if (node instanceof HiveExcept) {
@@ -225,18 +227,27 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveUnion union) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: union.");
     return visitChildren(union);
   }
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveSortLimit sort) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported clause: order by.");
     checkExpr(sort.getFetchExpr());
     checkExpr(sort.getOffsetExpr());
     return visitChildren(sort);
   }
 
   // Note: Not currently part of the HiveRelNode interface
+  private RelNode visit(HiveSortExchange sort) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported clause: sort by.");
+    return visitChildren(sort);
+  }
+
+  // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveSemiJoin semiJoin) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported join type: semi join.");
     checkExpr(semiJoin.getCondition());
     checkExpr(semiJoin.getJoinFilter());
     return visitChildren(semiJoin);
@@ -244,11 +255,13 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveExcept except) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: except.");
     return visitChildren(except);
   }
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveIntersect intersect) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: intersect.");
     return visitChildren(intersect);
   }
 

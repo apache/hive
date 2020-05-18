@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -56,13 +57,25 @@ public class HiveParquetSchemaTestUtils {
     return columnTypes;
   }
 
+  /**
+   * Only use if Configuration/HiveConf not needed for converting schema.
+   */
   public static void testConversion(
-    final String columnNamesStr,
-    final String columnsTypeStr,
-    final String actualSchema) throws Exception {
+      final String columnNamesStr,
+      final String columnsTypeStr,
+      final String actualSchema) throws Exception {
+    testConversion(columnNamesStr, columnsTypeStr, actualSchema, null);
+  }
+
+  public static void testConversion(
+      final String columnNamesStr,
+      final String columnsTypeStr,
+      final String actualSchema,
+      final Configuration conf) throws Exception {
     final List<String> columnNames = createHiveColumnsFrom(columnNamesStr);
     final List<TypeInfo> columnTypes = createHiveTypeInfoFrom(columnsTypeStr);
-    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
+    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes,
+        conf);
     final MessageType expectedMT = MessageTypeParser.parseMessageType(actualSchema);
     assertEquals("converting " + columnNamesStr + ": " + columnsTypeStr + " to " + actualSchema,
       expectedMT, messageTypeFound);
@@ -79,18 +92,19 @@ public class HiveParquetSchemaTestUtils {
   }
 
   public static void testLogicalTypeAnnotation(String hiveColumnType, String hiveColumnName,
-      LogicalTypeAnnotation expectedLogicalType) throws Exception {
+      LogicalTypeAnnotation expectedLogicalType, Configuration conf) throws Exception {
     Map<String, LogicalTypeAnnotation> expectedLogicalTypeForColumn = new HashMap<>();
     expectedLogicalTypeForColumn.put(hiveColumnName, expectedLogicalType);
-    testLogicalTypeAnnotations(hiveColumnName, hiveColumnType, expectedLogicalTypeForColumn);
+    testLogicalTypeAnnotations(hiveColumnName, hiveColumnType, expectedLogicalTypeForColumn, conf);
   }
 
   public static void testLogicalTypeAnnotations(final String hiveColumnNames,
-      final String hiveColumnTypes, final Map<String, LogicalTypeAnnotation> expectedLogicalTypes)
-      throws Exception {
+      final String hiveColumnTypes, final Map<String, LogicalTypeAnnotation> expectedLogicalTypes,
+      Configuration conf) throws Exception {
     final List<String> columnNames = createHiveColumnsFrom(hiveColumnNames);
     final List<TypeInfo> columnTypes = createHiveTypeInfoFrom(hiveColumnTypes);
-    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
+    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes,
+        conf);
     List<Type> actualFields = messageTypeFound.getFields();
     for (Type actualField : actualFields) {
       LogicalTypeAnnotation expectedLogicalType = expectedLogicalTypes.get(actualField.getName());

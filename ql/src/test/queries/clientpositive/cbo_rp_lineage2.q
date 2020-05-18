@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 6eaef86ea736 in 2018
 --! qt_n16:dataset_n16:src1
 --! qt_n16:dataset_n16:src
 set_n16 hive.mapred.mode=nonstrict_n16;

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTableAlias;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -365,15 +367,7 @@ public class SubQueryUtils {
     if ((joinNode.getToken().getType() == HiveParser.TOK_TABREF)
         || (joinNode.getToken().getType() == HiveParser.TOK_SUBQUERY)
         || (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-      String tableName = SemanticAnalyzer.getUnescapedUnqualifiedTableName((ASTNode) joinNode.getChild(0))
-          .toLowerCase();
-      String alias = joinNode.getChildCount() == 1 ? tableName
-          : SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(joinNode.getChildCount() - 1)
-          .getText().toLowerCase());
-      alias = (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ?
-          SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(1).getText().toLowerCase()) :
-          alias;
-      aliases.add(alias);
+      aliases.add(getTableAlias(joinNode));
     } else {
       ASTNode left = (ASTNode) joinNode.getChild(0);
       ASTNode right = (ASTNode) joinNode.getChild(1);

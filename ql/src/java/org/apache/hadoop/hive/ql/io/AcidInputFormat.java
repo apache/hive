@@ -34,6 +34,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface required for input formats that what to support ACID
@@ -258,7 +259,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
                              int bucket,
                              ValidWriteIdList validWriteIdList,
                              Path baseDirectory,
-                             Path[] deltaDirectory
+                             Path[] deltaDirectory,
+                             Map<String, String> deltasToAttemptId
                              ) throws IOException;
 
   /**

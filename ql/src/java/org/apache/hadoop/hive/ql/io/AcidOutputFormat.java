@@ -51,6 +51,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private Reporter reporter;
     private long minimumWriteId;
     private long maximumWriteId;
+    private String attemptId;
     /**
      * actual bucketId (as opposed to bucket property via BucketCodec)
      */
@@ -240,6 +241,11 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return this;
     }
 
+    public Options attemptId(String attemptId) {
+      this.attemptId = attemptId;
+      return this;
+    }
+
     /**
      * @since 1.3.0
      * This can be set to -1 to make the system generate old style (delta_xxxx_yyyy) file names.
@@ -311,6 +317,10 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
 
     public int getBucketId() {
       return bucketId;
+    }
+
+    public String getAttemptId() {
+      return attemptId;
     }
 
     public int getRecordIdColumn() {

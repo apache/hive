@@ -120,7 +120,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState {
+public class SessionState implements ISessionAuthState{
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   public static final String TMP_PREFIX = "_tmp_space.db";
@@ -325,6 +325,7 @@ public class SessionState {
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  @Override
   public HiveConf getConf() {
     return sessionConf;
   }
@@ -415,7 +416,6 @@ public class SessionState {
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
-    overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
@@ -1909,6 +1909,7 @@ public class SessionState {
     }
   }
 
+  @Override
   public String getUserName() {
     return userName;
   }

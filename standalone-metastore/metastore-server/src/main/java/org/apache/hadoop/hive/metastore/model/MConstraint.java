@@ -19,21 +19,22 @@ package org.apache.hadoop.hive.metastore.model;
 
 import java.io.Serializable;
 
+/** Representing a row in the KEY_CONSTARINTS table. */
 public class MConstraint
 {
-  String constraintName;
-  int constraintType;
-  int position;
-  Integer deleteRule;
-  Integer updateRule;
-  MTable parentTable;
-  MTable childTable;
-  MColumnDescriptor parentColumn;
-  MColumnDescriptor childColumn;
-  Integer childIntegerIndex;
-  Integer parentIntegerIndex;
-  int enableValidateRely;
-  String defaultValue;
+  private String constraintName; // Primary key of KEY_CONSTARINTS
+  private int position; // Primary key of KEY_CONSTARINTS
+  private int constraintType;
+  private Integer deleteRule;
+  private Integer updateRule;
+  private MTable parentTable; // Primary key of KEY_CONSTARINTS
+  private MTable childTable;
+  private MColumnDescriptor parentColumn;
+  private MColumnDescriptor childColumn;
+  private Integer childIntegerIndex;
+  private Integer parentIntegerIndex;
+  private int enableValidateRely;
+  private String defaultValue;
 
   // 0 - Primary Key
   // 1 - PK-FK relationship
@@ -48,18 +49,20 @@ public class MConstraint
 
   @SuppressWarnings("serial")
   public static class PK implements Serializable {
+    public MTable.PK parentTable;
     public String constraintName;
     public int position;
 
     public PK() {}
 
-    public PK(String constraintName, int position) {
+    public PK(MTable.PK parentTable, String constraintName, int position) {
+      this.parentTable = parentTable;
       this.constraintName = constraintName;
       this.position = position;
     }
 
     public String toString() {
-      return constraintName+":"+position;
+      return String.format("%s:%s:%d", parentTable.id, constraintName, position);
     }
 
     public int hashCode() {
@@ -69,7 +72,10 @@ public class MConstraint
     public boolean equals(Object other) {
       if (other != null && (other instanceof PK)) {
         PK otherPK = (PK) other;
-        return otherPK.constraintName.equals(constraintName) && otherPK.position == position;
+        return
+            otherPK.parentTable.id == parentTable.id &&
+            otherPK.constraintName.equals(constraintName) &&
+            otherPK.position == position;
       }
       return false;
     }
@@ -77,25 +83,26 @@ public class MConstraint
 
   public MConstraint() {}
 
-  public MConstraint(String constraintName, int constraintType, int position, Integer deleteRule, Integer updateRule, int enableRelyValidate, MTable parentTable,
-    MTable childTable, MColumnDescriptor parentColumn, MColumnDescriptor childColumn, Integer childIntegerIndex, Integer parentIntegerIndex) {
-   this.constraintName = constraintName;
-   this.constraintType = constraintType;
-   this.parentTable = parentTable;
-   this.childTable = childTable;
-   this.parentColumn = parentColumn;
-   this.childColumn = childColumn;
-   this.position = position;
-   this.deleteRule = deleteRule;
-   this.updateRule = updateRule;
-   this.enableValidateRely = enableRelyValidate;
-   this.childIntegerIndex = childIntegerIndex;
-   this.parentIntegerIndex = parentIntegerIndex;
+  public MConstraint(String constraintName, int position, int constraintType, Integer deleteRule, Integer updateRule,
+      int enableRelyValidate, MTable parentTable, MTable childTable, MColumnDescriptor parentColumn,
+      MColumnDescriptor childColumn, Integer childIntegerIndex, Integer parentIntegerIndex) {
+    this.constraintName = constraintName;
+    this.constraintType = constraintType;
+    this.parentTable = parentTable;
+    this.childTable = childTable;
+    this.parentColumn = parentColumn;
+    this.childColumn = childColumn;
+    this.position = position;
+    this.deleteRule = deleteRule;
+    this.updateRule = updateRule;
+    this.enableValidateRely = enableRelyValidate;
+    this.childIntegerIndex = childIntegerIndex;
+    this.parentIntegerIndex = parentIntegerIndex;
   }
 
-  public MConstraint(String constraintName, int constraintType, int position, Integer deleteRule, Integer updateRule,
-          int enableRelyValidate, MTable parentTable, MTable childTable, MColumnDescriptor parentColumn,
-          MColumnDescriptor childColumn, Integer childIntegerIndex, Integer parentIntegerIndex, String defaultValue) {
+  public MConstraint(String constraintName, int position, int constraintType, Integer deleteRule, Integer updateRule,
+      int enableRelyValidate, MTable parentTable, MTable childTable, MColumnDescriptor parentColumn,
+      MColumnDescriptor childColumn, Integer childIntegerIndex, Integer parentIntegerIndex, String defaultValue) {
     this.constraintName = constraintName;
     this.constraintType = constraintType;
     this.parentTable = parentTable;
@@ -111,49 +118,76 @@ public class MConstraint
     this.defaultValue = defaultValue;
   }
 
-  public String getDefaultOrCheckValue() { return defaultValue; }
-
-  public void setDefaultOrCheckValue(String defaultOrCheckValue) {
-    this.defaultValue= defaultOrCheckValue;
-  }
   public String getConstraintName() {
     return constraintName;
   }
 
-  public void setConstraintName(String fkName) {
-    this.constraintName = fkName;
-  }
-
-  public int getConstraintType() {
-    return constraintType;
-  }
-
-  public void setConstraintType(int ct) {
-    this.constraintType = ct;
+  public void setConstraintName(String constraintName) {
+    this.constraintName = constraintName;
   }
 
   public int getPosition() {
     return position;
   }
 
-  public void setPosition(int po) {
-    this.position = po;
+  public void setPosition(int position) {
+    this.position = position;
+  }
+
+  public int getConstraintType() {
+    return constraintType;
+  }
+
+  public void setConstraintType(int constraintType) {
+    this.constraintType = constraintType;
   }
 
   public Integer getDeleteRule() {
     return deleteRule;
   }
 
-  public void setDeleteRule(Integer de) {
-    this.deleteRule = de;
+  public void setDeleteRule(Integer deleteRule) {
+    this.deleteRule = deleteRule;
   }
 
-  public int getEnableValidateRely() {
-    return enableValidateRely;
+  public Integer getUpdateRule() {
+    return updateRule;
   }
 
-  public void setEnableValidateRely(int enableValidateRely) {
-    this.enableValidateRely = enableValidateRely;
+  public void setUpdateRule(Integer updateRule) {
+    this.updateRule = updateRule;
+  }
+
+  public MTable getParentTable() {
+    return parentTable;
+  }
+
+  public void setParentTable(MTable parentTable) {
+    this.parentTable = parentTable;
+  }
+
+  public MTable getChildTable() {
+    return childTable;
+  }
+
+  public void setChildTable(MTable childTable) {
+    this.childTable = childTable;
+  }
+
+  public MColumnDescriptor getParentColumn() {
+    return parentColumn;
+  }
+
+  public void setParentColumn(MColumnDescriptor parentColumn) {
+    this.parentColumn = parentColumn;
+  }
+
+  public MColumnDescriptor getChildColumn() {
+    return childColumn;
+  }
+
+  public void setChildColumn(MColumnDescriptor childColumn) {
+    this.childColumn = childColumn;
   }
 
   public Integer getChildIntegerIndex() {
@@ -172,43 +206,19 @@ public class MConstraint
     this.parentIntegerIndex = parentIntegerIndex;
   }
 
-  public Integer getUpdateRule() {
-    return updateRule;
+  public int getEnableValidateRely() {
+    return enableValidateRely;
   }
 
-  public void setUpdateRule(Integer ur) {
-    this.updateRule = ur;
+  public void setEnableValidateRely(int enableValidateRely) {
+    this.enableValidateRely = enableValidateRely;
   }
 
-  public MTable getChildTable() {
-    return childTable;
+  public String getDefaultValue() {
+    return defaultValue;
   }
 
-  public void setChildTable(MTable ft) {
-    this.childTable = ft;
-  }
-
-  public MTable getParentTable() {
-    return parentTable;
-  }
-
-  public void setParentTable(MTable pt) {
-    this.parentTable = pt;
-  }
-
-  public MColumnDescriptor getParentColumn() {
-    return parentColumn;
-  }
-
-  public void setParentColumn(MColumnDescriptor name) {
-    this.parentColumn = name;
-  }
-
-  public MColumnDescriptor getChildColumn() {
-    return childColumn;
-  }
-
-  public void setChildColumn(MColumnDescriptor name) {
-    this.childColumn = name;
+  public void setDefaultValue(String defaultValue) {
+    this.defaultValue = defaultValue;
   }
 }

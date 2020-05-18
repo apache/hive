@@ -487,6 +487,15 @@ public class SharedWorkOptimizer extends Transform {
             }
             LOG.debug("Input operator removed: {}", op);
           }
+
+          // A shared TSop across branches can not have probeContext that utilizes single branch info
+          // Filtered-out rows from one branch might be needed by another branch sharing a TSop
+          if (retainableTsOp.getProbeDecodeContext() != null) {
+            LOG.debug("Removing probeDecodeCntx for merged TS op {}", retainableTsOp);
+            retainableTsOp.setProbeDecodeContext(null);
+            retainableTsOp.getConf().setProbeDecodeContext(null);
+          }
+
           // Then we merge the operators of the works we are going to merge
           optimizerCache.removeOpAndCombineWork(discardableTsOp, retainableTsOp);
           removedOps.add(discardableTsOp);

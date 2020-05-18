@@ -3,7 +3,6 @@
 --! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.optimize.topnkey=false;
 
 -- SORT_QUERY_RESULTS
 

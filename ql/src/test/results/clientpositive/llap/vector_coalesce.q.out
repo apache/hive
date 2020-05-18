@@ -159,8 +159,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5, 2, 28]
-                            selectExpressions: IfExprCondExprColumn(col 24:boolean, col 26:double, col 27:double)(children: ColAndCol(col 21:boolean, col 23:boolean)(children: IsNotNull(col 5:double) -> 21:boolean, IsNotNull(col 22:double)(children: FuncLog2LongToDouble(col 2:int) -> 22:double) -> 23:boolean) -> 24:boolean, DoubleColAddDoubleColumn(col 5:double, col 25:double)(children: FuncLog2LongToDouble(col 2:int) -> 25:double) -> 26:double, ConstantVectorExpression(val 0.0) -> 27:double) -> 28:double
+                            projectedOutputColumnNums: [5, 2, 22]
+                            selectExpressions: IfExprCondExprColumn(col 21:boolean, col 17:double, col 14:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 21:boolean, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 17:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 22:double
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
@@ -363,8 +363,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [8, 9, 16]
-                            selectExpressions: IfExprTimestampColumnColumn(col 15:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 15:boolean) -> 16:timestamp
+                            projectedOutputColumnNums: [8, 9, 15]
+                            selectExpressions: IfExprTimestampColumnColumn(col 13:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 13:boolean) -> 15:timestamp
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true

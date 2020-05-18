@@ -63,7 +63,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     this.policy = policy;
     this.metrics = metrics;
     this.estimateErrors = useEstimateCache
-        ? new ConcurrentHashMap<Object, OrcFileEstimateErrors>() : null;
+        ? new ConcurrentHashMap<>() : null;
   }
 
   public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset, AtomicBoolean isStopped) {
@@ -235,7 +235,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     if (maxAlloc < length) {
       largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
       for (int i = 0; i < largeBuffers.length; ++i) {
-        largeBuffers[i] = new LlapMetadataBuffer<Object>(fileKey, tag);
+        largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
       }
       allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
       for (int i = 0; i < largeBuffers.length; ++i) {
@@ -256,7 +256,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
         LlapMetadataBuffer<Object>[] cacheData = new LlapMetadataBuffer[largeBuffers.length + 1];
         System.arraycopy(largeBuffers, 0, cacheData, 0, largeBuffers.length);
         cacheData[largeBuffers.length] = smallBuffer[0];
-        return new LlapMetadataBuffers<Object>(cacheData);
+        return new LlapMetadataBuffers<>(cacheData);
       }
     }
   }
@@ -340,16 +340,16 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     if (result != null) return result;
     if (tailBuffer.remaining() <= allocator.getMaxAllocation()) {
       // The common case by far.
-      return wrapSmallBb(new LlapMetadataBuffer<T>(key, tag), tailBuffer, isStopped);
+      return wrapSmallBb(new LlapMetadataBuffer<>(key, tag), tailBuffer, isStopped);
     } else {
       int allocCount = determineAllocCount(tailBuffer);
       @SuppressWarnings("unchecked")
       LlapMetadataBuffer<T>[] results = new LlapMetadataBuffer[allocCount];
       for (int i = 0; i < allocCount; ++i) {
-        results[i] = new LlapMetadataBuffer<T>(key, tag);
+        results[i] = new LlapMetadataBuffer<>(key, tag);
       }
       wrapLargeBb(results, tailBuffer, isStopped);
-      return new LlapMetadataBuffers<T>(results);
+      return new LlapMetadataBuffers<>(results);
     }
   }
 
@@ -406,7 +406,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     for (int i = 0; i < bufferArray.length; ++i) {
       if (lockOneBuffer(bufferArray[i], doNotifyPolicy)) continue;
       for (int j = 0; j < i; ++j) {
-        unlockSingleBuffer(buffer, true);
+        unlockSingleBuffer(bufferArray[j], true);
       }
       discardMultiBuffer(buffers);
       return false;
@@ -497,7 +497,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     }
   }
 
-  public static interface LlapBufferOrBuffers extends MemoryBufferOrBuffers {
+  public interface LlapBufferOrBuffers extends MemoryBufferOrBuffers {
     LlapAllocatorBuffer getSingleLlapBuffer();
     LlapAllocatorBuffer[] getMultipleLlapBuffers();
   }

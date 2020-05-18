@@ -117,7 +117,7 @@ public final class LocalMapJoinProcFactory {
       try {
         hasGroupBy(mapJoinOp, context);
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.warn("Failed to determine if has group-by", e);
       }
 
       MapJoinDesc mapJoinDesc = mapJoinOp.getConf();

@@ -175,6 +175,7 @@ enum LockType {
     SHARED_READ = 1,
     SHARED_WRITE = 2,
     EXCLUSIVE = 3,
+    EXCL_WRITE = 4,
 }
 
 enum CompactionType {
@@ -386,6 +387,7 @@ struct Database {
   7: optional PrincipalType ownerType,
   8: optional string catalogName,
   9: optional i32 createTime               // creation time of database in seconds since epoch
+  10: optional string managedLocationUri // directory for managed tables
 }
 
 // This object holds the information needed by SerDes
@@ -757,6 +759,13 @@ struct PartitionsByExprResult {
   2: required bool hasUnknownPartitions
 }
 
+// Return type for get_partitions_spec_by_expr
+struct PartitionsSpecByExprResult {
+1: required list<PartitionSpec> partitionsSpec,
+// Whether the results has any (currently, all) partitions which may or may not match
+2: required bool hasUnknownPartitions
+}
+
 struct PartitionsByExprRequest {
   1: required string dbName,
   2: required string tblName,
@@ -889,7 +898,8 @@ enum TxnType {
     DEFAULT      = 0,
     REPL_CREATED = 1,
     READ_ONLY    = 2,
-    COMPACTION   = 3
+    COMPACTION   = 3,
+    MATER_VIEW_REBUILD = 4
 }
 
 // specifies which info to return with GetTablesExtRequest
@@ -1071,11 +1081,13 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
+    6: optional bool zeroWaitReadEnabled = false
 }
 
 struct LockResponse {
     1: required i64 lockid,
     2: required LockState state,
+    3: optional string errorMessage
 }
 
 struct CheckLockRequest {
@@ -1156,6 +1168,7 @@ struct CompactionInfoStruct {
     11: optional i64 start
     12: optional i64 highestWriteId
     13: optional string errorMessage
+    14: optional bool hasoldabort
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1255,10 +1268,14 @@ struct InsertEventRequestData {
     3: optional list<string> filesAddedChecksum,
     // Used by acid operation to create the sub directory
     4: optional list<string> subDirectoryList,
+    // partition value which was inserted (used in case of bulk insert events)
+    5: optional list<string> partitionVal
 }
 
 union FireEventRequestData {
     1: InsertEventRequestData insertData
+    // used to fire insert events on multiple partitions
+    2: list<InsertEventRequestData> insertDatas
 }
 
 struct FireEventRequest {
@@ -1268,12 +1285,13 @@ struct FireEventRequest {
     // subevent as I assume they'll be used across most event types.
     3: optional string dbName,
     4: optional string tableName,
+    // ignored if event request data contains multiple insert event datas
     5: optional list<string> partitionVals,
     6: optional string catName,
 }
 
 struct FireEventResponse {
-    // NOP for now, this is just a place holder for future responses
+    1: list<i64> eventIds
 }
 
 struct WriteNotificationLogRequest {
@@ -2249,6 +2267,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter
+  // unlike get_partitions_by_expr, this returns PartitionSpec which contains deduplicated
+  // storage descriptor
+  PartitionsSpecByExprResult get_partitions_spec_by_expr(1:PartitionsByExprRequest req)
+  throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+    // get the partitions matching the given partition filter
   i32 get_num_partitions_by_filter(1:string db_name 2:string tbl_name 3:string filter)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
