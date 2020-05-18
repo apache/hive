@@ -34,11 +34,10 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.ImmutableBitSet.Builder;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -183,16 +182,10 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
     private void addProjectedFields() {
       for (int i = 0; i < aggregate.getGroupCount(); i++) {
-        newProjectsAbove.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
+        newProjectsAbove.add(rexBuilder.makeInputRef(aggregate, i));
       }
-      Builder b = ImmutableBitSet.builder();
-      b.addAll(aggregate.getGroupSet());
-      for (AggregateCall aggCall : aggregate.getAggCallList()) {
-        b.addAll(aggCall.getArgList());
-      }
-      ImmutableBitSet inputs = b.build();
-      Integer maxIdx = Collections.max(inputs.asSet());
-      for (int i = 0; i < maxIdx; i++) {
+      int numInputFields = aggregate.getInput().getRowType().getFieldCount();
+      for (int i = 0; i < numInputFields; i++) {
         newProjectsBelow.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
       }
     }
@@ -245,7 +238,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       @Override
       boolean isApplicable(AggregateCall aggCall) {
         return aggCall.isDistinct() && aggCall.getArgList().size() == 1
-            && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
+            && aggCall.getAggregation().getKind() == SqlKind.COUNT && !aggCall.hasFilter();
       }
 
       @Override
@@ -256,13 +249,11 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
         newProjectsBelow.add(call);
 
-        ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
-
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
         boolean approximate = true;
         boolean ignoreNulls = true;
-        List<Integer> argList = newArgList;
+        List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
         RelCollation collation = aggCall.getCollation();
         RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
@@ -307,13 +298,11 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         call = rexBuilder.makeCast(floatType, call);
         newProjectsBelow.add(call);
 
-        ArrayList<Integer> newArgList = Lists.newArrayList(newProjectsBelow.size() - 1);
-
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
         boolean approximate = true;
         boolean ignoreNulls = true;
-        List<Integer> argList = newArgList;
+        List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
         RelCollation collation = aggCall.getCollation();
         RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
