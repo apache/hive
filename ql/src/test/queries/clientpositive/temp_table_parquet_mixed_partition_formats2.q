@@ -17,17 +17,17 @@ OUTPUTFORMAT
 
 LOAD DATA LOCAL INPATH '../../data/files/sample2.json' INTO TABLE parquet_table_json_partition_temp PARTITION(ts='20150101');
 
-SELECT * FROM parquet_table_json_partition_temp LIMIT 100;
+SELECT * FROM parquet_table_json_partition_temp ORDER BY id, address, reports LIMIT 100;
 
 ALTER TABLE parquet_table_json_partition_temp
 SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe';
 
-SELECT * FROM parquet_table_json_partition_temp LIMIT 100;
+SELECT * FROM parquet_table_json_partition_temp ORDER BY id, address, reports LIMIT 100;
 
-CREATE TEMPORARY TABLE new_table_temp AS SELECT * FROM parquet_table_json_partition_temp LIMIT 100;
+CREATE TEMPORARY TABLE new_table_temp AS SELECT * FROM parquet_table_json_partition_temp ORDER BY id, address, reports LIMIT 100;
 
-SELECT * FROM new_table_temp;
+SELECT * FROM new_table_temp ORDER by id, address, reports;
 
 

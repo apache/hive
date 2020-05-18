@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 create table url_t (key string, fullurl string);
 

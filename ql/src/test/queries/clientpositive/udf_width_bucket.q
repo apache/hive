@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 describe function width_bucket;
 desc function extended width_bucket;
 
