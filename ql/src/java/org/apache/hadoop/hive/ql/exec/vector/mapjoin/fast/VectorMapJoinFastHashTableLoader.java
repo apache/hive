@@ -58,6 +58,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   private TezContext tezContext;
   private String cacheKey;
   private TezCounter htLoadCounter;
+  private TezCounter htUsageCounter;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext,
@@ -70,6 +71,8 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
+    counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_BYTES.name(), vertexName);
+    this.htUsageCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
   @Override
@@ -158,6 +161,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         }
         long delta = System.currentTimeMillis() - startTime;
         htLoadCounter.increment(delta);
+        htUsageCounter.increment(vectorMapJoinFastTableContainer.getEstimatedMemorySize());
 
         vectorMapJoinFastTableContainer.seal();
         mapJoinTables[pos] = vectorMapJoinFastTableContainer;

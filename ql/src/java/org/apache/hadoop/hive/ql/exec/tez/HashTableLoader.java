@@ -70,6 +70,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private TezContext tezContext;
   private String cacheKey;
   private TezCounter htLoadCounter;
+  private TezCounter htUsageCounter;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
@@ -82,6 +83,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
+    counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_BYTES.name(), vertexName);
+    this.htUsageCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
   @Override
@@ -269,6 +272,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         long delta = System.currentTimeMillis() - startTime;
         htLoadCounter.increment(delta);
+        htUsageCounter.increment(tableContainer.getEstimatedMemorySize());
+
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
         if (doMemCheck) {

@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public interface HashTableLoader {
 
   enum HashTableLoaderCounters {
-    HASHTABLE_LOAD_TIME_MS
+    HASHTABLE_LOAD_TIME_MS,
+    HASHTABLE_LOAD_BYTES
   };
 
   void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
