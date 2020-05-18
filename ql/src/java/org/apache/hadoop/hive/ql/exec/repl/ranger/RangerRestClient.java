@@ -49,5 +49,5 @@ public interface RangerRestClient {
   boolean checkConnection(String url) throws Exception;
 
   List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                     String sourceDb, String targetDb);
+                                     String sourceDb, String targetDb) throws SemanticException;
 }

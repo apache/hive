@@ -71,7 +71,7 @@ public class NoOpRangerRestClient implements RangerRestClient {
 
   @Override
   public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                            String sourceDb, String targetDb) {
+                                            String sourceDb, String targetDb) throws SemanticException {
     return rangerPolicies;
   }
 
