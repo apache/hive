@@ -1,0 +1,106 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION rot13 as 'hive.it.custom.udfs.GenericUDFRot13'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: rot13
+POSTHOOK: query: CREATE TEMPORARY FUNCTION rot13 as 'hive.it.custom.udfs.GenericUDFRot13'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: rot13
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: Rot13(cstring1) (type: string)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [13]
+                        selectExpressions: VectorStringRot13(col 6:string) -> 13:string
+                    Statistics: Num rows: 12288 Data size: 2260992 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 2260992 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstring1 desc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstring1 desc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstring1 desc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstring1 desc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized

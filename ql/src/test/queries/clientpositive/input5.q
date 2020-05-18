@@ -1,4 +1,6 @@
 --! qt:dataset:src_thrift
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest1_n94(key STRING, value STRING) STORED AS TEXTFILE;
 
 EXPLAIN
