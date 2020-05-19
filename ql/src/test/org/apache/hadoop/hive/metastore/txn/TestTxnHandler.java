@@ -77,6 +77,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1740,6 +1741,60 @@ public class TestTxnHandler {
       failed = true;
     }
     assertFalse(failed);
+  }
+
+  @Test
+  public void allocateNextWriteIdRetriesAfterDetectingConflictingConcurrentInsert() throws Exception {
+    String dbName = "abc";
+    String tableName = "def";
+    int numTxns = 2;
+    try (Connection dbConn = ((TxnHandler) txnHandler).getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+         Statement stmt = dbConn.createStatement()) {
+      // run this multiple times to get write-write conflicts with relatively high chance
+      for (int i = 0; i < 20; ++i) {
+        // make sure these 2 tables have no records of our dbName.tableName
+        // this ensures that allocateTableWriteIds() will try to insert into next_write_id (instead of update)
+        stmt.executeUpdate("TRUNCATE TABLE \"NEXT_WRITE_ID\"");
+        stmt.executeUpdate("TRUNCATE TABLE \"TXN_TO_WRITE_ID\"");
+        dbConn.commit();
+
+        OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(numTxns, "me", "localhost"));
+        AllocateTableWriteIdsRequest request = new AllocateTableWriteIdsRequest(dbName, tableName);
+        resp.getTxn_ids().forEach(request::addToTxnIds);
+
+        // thread 1: allocating write ids for dbName.tableName
+        CompletableFuture<AllocateTableWriteIdsResponse> future1 = CompletableFuture.supplyAsync(() -> {
+          try {
+            return txnHandler.allocateTableWriteIds(request);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+        // thread 2: simulating another thread allocating write ids for the same dbName.tableName
+        // (using direct DB insert as a workaround)
+        CompletableFuture<Void> future2 = CompletableFuture.runAsync(() -> {
+          try {
+            Thread.sleep(10);
+            stmt.executeUpdate(String.format("INSERT INTO \"NEXT_WRITE_ID\" " +
+                "VALUES ('%s', '%s', 1)", dbName, tableName));
+            dbConn.commit();
+          } catch (Exception e) {
+            LOG.warn("Inserting next_write_id directly into DB failed: " + e.getMessage());
+          }
+        });
+
+        CompletableFuture.allOf(future1, future2).join();
+
+        // validate that all write ids allocation attempts have (eventually) succeeded
+        AllocateTableWriteIdsResponse result = future1.get();
+        assertEquals(2, result.getTxnToWriteIds().size());
+        assertEquals(i * numTxns + 1, result.getTxnToWriteIds().get(0).getTxnId());
+        assertEquals(1, result.getTxnToWriteIds().get(0).getWriteId());
+        assertEquals(i * numTxns + 2, result.getTxnToWriteIds().get(1).getTxnId());
+        assertEquals(2, result.getTxnToWriteIds().get(1).getWriteId());
+      }
+    }
   }
 
   private void updateTxns(Connection conn) throws SQLException {
