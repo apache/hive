@@ -137,7 +137,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
-      Describe Database{"database:":"newDB"}
+      Describe Database{"database:":"newDB","extended:":"true"}
 
 PREHOOK: query: describe database extended newDB
 PREHOOK: type: DESCDATABASE
