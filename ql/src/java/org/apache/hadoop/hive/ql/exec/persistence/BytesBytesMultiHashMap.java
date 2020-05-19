@@ -608,7 +608,7 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
     int newRefsCount = oldRefsCount + estimateNewRowCount;
     if (resizeThreshold <= newRefsCount) {
       newRefsCount =
-          (Long.bitCount(newRefsCount) == 1) ? estimateNewRowCount : nextHighestPowerOfTwo(newRefsCount);
+          (Long.bitCount(newRefsCount) == 1) ? newRefsCount : nextHighestPowerOfTwo(newRefsCount);
       expandAndRehashImpl(newRefsCount);
       LOG.info("Expand and rehash to " + newRefsCount + " from " + oldRefsCount);
     }
@@ -616,7 +616,7 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
 
   private static void validateCapacity(long capacity) {
     if (Long.bitCount(capacity) != 1) {
-      throw new AssertionError("Capacity must be a power of two");
+      throw new AssertionError("Capacity must be a power of two but got " + capacity);
     }
     if (capacity <= 0) {
       throw new AssertionError("Invalid capacity " + capacity);
