@@ -88,7 +88,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
   public HiveRewriteToDataSketchesRule(Optional<String> countDistinctSketchType,
       Optional<String> percentileContSketchType) {
-    super(operand(HiveAggregate.class, any()));
+    super(operand(HiveAggregate.class, operand(RelNode.class, any())));
     this.countDistinctSketchType = countDistinctSketchType;
     this.percentileContSketchType = percentileContSketchType;
     projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
@@ -97,6 +97,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
+    final RelNode aggInput = call.rel(1);
 
     if (aggregate.getGroupSets().size() != 1) {
       // not yet supported
@@ -105,7 +106,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
     List<AggregateCall> newAggCalls = new ArrayList<AggregateCall>();
 
-    VBuilder vb = new VBuilder(aggregate);
+    VBuilder vb = new VBuilder(aggregate, aggInput);
 
     if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
       // rule didn't make any changes
@@ -157,8 +158,11 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
     /** Internally the rewrites are implemented in a subclass; all enabled rewrites are added to this list */
     private final List<RewriteProcedure> rewrites;
 
-    public VBuilder(Aggregate aggregate) {
+    private final RelNode aggInput;
+
+    public VBuilder(Aggregate aggregate, RelNode aggInput) {
       this.aggregate = aggregate;
+      this.aggInput = aggInput;
       newAggCalls = new ArrayList<AggregateCall>();
       newProjectsAbove = new ArrayList<RexNode>();
       newProjectsBelow = new ArrayList<RexNode>();
@@ -283,6 +287,9 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       @Override
       boolean isApplicable(AggregateCall aggCall) {
         // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
+        if (!(aggInput instanceof Project)) {
+          return false;
+        }
         return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
             && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
       }
@@ -312,7 +319,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
             collation, type, name);
 
         Integer origFractionIdx = aggCall.getArgList().get(0);
-        RexNode fraction = getProject(aggregate.getInput()).getChildExps().get(origFractionIdx);
+        RexNode fraction = aggInput.getChildExps().get(origFractionIdx);
         fraction = rexBuilder.makeCast(floatType, fraction);
 
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
