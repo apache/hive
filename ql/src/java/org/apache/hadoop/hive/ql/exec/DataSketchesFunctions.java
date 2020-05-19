@@ -37,6 +37,7 @@ import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
@@ -319,6 +320,23 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sketchClasses.put("cpc", sd);
   }
 
+  public static void main(String[] args) {
+
+    KllFloatsSketch sketch = new KllFloatsSketch();
+    for (int s = 1; s < 16; s++) {
+      int n = 1 << s;
+      for (int i = 0; i < n; i++) {
+        float d = i;
+        d /= 1.0;
+        sketch.update(d);
+      }
+    }
+    double rankOf1000 = sketch.getRank(1000);
+    for (float f = 0.0f; f < 1.0f; f += 0.001) {
+      System.out.println(sketch.getQuantile(f));
+    }
+    System.out.println(rankOf1000);
+  }
   private void registerKll() {
     SketchDescriptor sd = new SketchDescriptor("kll");
     sd.register(DATA_TO_SKETCH, org.apache.datasketches.hive.kll.DataToSketchUDAF.class);
