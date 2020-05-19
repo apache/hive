@@ -1,0 +1,171 @@
+PREHOOK: query: create table if not exists customer
+(
+    c_customer_sk             int,
+    c_customer_id             int,
+    c_first_name              string,
+    c_last_name               string,
+    c_birth_country           string,
+    c_num                     int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer
+POSTHOOK: query: create table if not exists customer
+(
+    c_customer_sk             int,
+    c_customer_id             int,
+    c_first_name              string,
+    c_last_name               string,
+    c_birth_country           string,
+    c_num                     int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer
+PREHOOK: query: create table store_sales
+(
+    ss_customer_sk            int,
+    ss_customer_id            int,
+    ss_quantity               int,
+    ss_list_price             float
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales
+(
+    ss_customer_sk            int,
+    ss_customer_id            int,
+    ss_quantity               int,
+    ss_list_price             float
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk, c_customer_id) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk, c_customer_id) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: insert into customer(c_customer_sk, c_customer_id, c_first_name, c_last_name, c_birth_country, c_num)
+values (1, 11, 'John', 'Doe', 'Unknown', 100)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@customer
+POSTHOOK: query: insert into customer(c_customer_sk, c_customer_id, c_first_name, c_last_name, c_birth_country, c_num)
+values (1, 11, 'John', 'Doe', 'Unknown', 100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@customer
+POSTHOOK: Lineage: customer.c_birth_country SCRIPT []
+POSTHOOK: Lineage: customer.c_customer_id SCRIPT []
+POSTHOOK: Lineage: customer.c_customer_sk SCRIPT []
+POSTHOOK: Lineage: customer.c_first_name SCRIPT []
+POSTHOOK: Lineage: customer.c_last_name SCRIPT []
+POSTHOOK: Lineage: customer.c_num SCRIPT []
+PREHOOK: query: insert into store_sales(ss_customer_sk, ss_customer_id, ss_quantity, ss_list_price)
+values (1, 11, 132, 10.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: insert into store_sales(ss_customer_sk, ss_customer_id, ss_quantity, ss_list_price)
+values (1, 11, 132, 10.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales
+POSTHOOK: Lineage: store_sales.ss_customer_id SCRIPT []
+POSTHOOK: Lineage: store_sales.ss_customer_sk SCRIPT []
+POSTHOOK: Lineage: store_sales.ss_list_price SCRIPT []
+POSTHOOK: Lineage: store_sales.ss_quantity SCRIPT []
+PREHOOK: query: explain cbo
+select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c_num=[$7], ss_quantity=[$2], c_customer_sk=[$3], c_customer_id=[$4], ss_customer_sk=[$0], ss_customer_id=[$1])
+  HiveJoin(condition=[AND(=($3, $5), =($4, $6))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(ss_customer_sk=[$0], ss_customer_id=[$1], ss_quantity=[$2])
+        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+          HiveProject(ss_customer_sk=[$0], ss_customer_id=[$1], ss_quantity=[$2])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_num=[$5])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PREHOOK: query: select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales ss
+join customer c on ss.ss_customer_sk = c.c_customer_sk and ss_customer_id = c_customer_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales ss
+join customer c on ss.ss_customer_sk = c.c_customer_sk and ss_customer_id = c_customer_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+100	132	1	11	1	11
+PREHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk, ss_customer_id) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table store_sales add constraint pk_c primary key (ss_customer_sk, ss_customer_id) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain cbo
+select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c_num=[$9], ss_quantity=[$6], c_customer_sk=[$2], c_customer_id=[$3], ss_customer_sk=[$0], ss_customer_id=[$1])
+  HiveJoin(condition=[AND(=($2, $7), =($3, $8))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(=($0, $4), =($1, $5))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ss_customer_sk=[$0], ss_customer_id=[$1])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+        HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
+          HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject(ss_customer_sk=[$0], ss_customer_id=[$1], ss_quantity=[$2])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_num=[$5])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PREHOOK: query: select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select c_num, ss_quantity, c_customer_sk, c_customer_id, ss_customer_sk, ss_customer_id
+from store_sales
+join customer on ss_customer_sk = c_customer_sk and ss_customer_id = c_customer_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+100	132	1	11	1	11
