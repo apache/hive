@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * PrivilegeSynchronizer defines a thread to synchronize privileges from.
+ * PrivilegeSynchronizer defines a thread to synchronize privileges from
  * external authorizer to Hive metastore.
  */
 public class PrivilegeSynchronizer implements Runnable {
