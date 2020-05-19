@@ -31,6 +31,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -309,7 +310,10 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         Integer argIndex = aggCall.getArgList().get(1);
         RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
 
-        RelDataType floatType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT);
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+
         call = rexBuilder.makeCast(floatType, call);
         newProjectsBelow.add(call);
 

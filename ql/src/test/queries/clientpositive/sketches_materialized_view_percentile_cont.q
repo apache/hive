@@ -12,7 +12,7 @@ insert into table sketch_input values
 
 -- create an mv for the intermediate results
 create  materialized view mv_1 as
-  select category, ds_kll_sketch(cast(id as float)),count(id) from sketch_input group by category;
+  select category, ds_kll_sketch(cast(id as float)) from sketch_input group by category;
 
 -- bi mode on
 set hive.optimize.bi.enabled=true;
