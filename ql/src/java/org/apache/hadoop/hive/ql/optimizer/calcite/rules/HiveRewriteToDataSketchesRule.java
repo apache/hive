@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.Optional;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
@@ -32,6 +32,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
@@ -286,12 +287,19 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
-        // FIXME: also check that args are: ?,?,1,0 - other cases are not supported
-        if (!(aggInput instanceof Project)) {
-          return false;
+        if ((aggInput instanceof Project)
+            && !aggCall.isDistinct()
+            && aggCall.getArgList().size() == 4
+            && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont")
+            && !aggCall.hasFilter()) {
+          List<Integer> argList = aggCall.getArgList();
+          RexNode orderLiteral = aggInput.getChildExps().get(argList.get(2));
+          if (orderLiteral.isA(SqlKind.LITERAL)) {
+            RexLiteral lit = (RexLiteral) orderLiteral;
+            return BigDecimal.valueOf(1).equals(lit.getValue());
+          }
         }
-        return !aggCall.isDistinct() && aggCall.getArgList().size() == 4
-            && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont") && !aggCall.hasFilter();
+        return false;
       }
 
       @Override
@@ -331,18 +339,6 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         newProjectsAbove.add(projRex);
 
       }
-
-    }
-
-    private Project getProject(RelNode input) {
-      if (input instanceof Project) {
-        return (Project) input;
-      }
-      if (input instanceof HepRelVertex) {
-        HepRelVertex hepRelVertex = (HepRelVertex) input;
-        return (Project) hepRelVertex.getCurrentRel();
-      }
-      throw new RuntimeException("unexpected");
     }
   }
 }
