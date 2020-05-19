@@ -1570,11 +1570,6 @@ PREHOOK: Input: default@testpart@v=val_97
 PREHOOK: Input: default@testpart@v=val_98
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 0
-   HDFS_BYTES_WRITTEN: 0
-   HDFS_READ_OPS: 0
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 0
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -1609,11 +1604,6 @@ PREHOOK: Input: default@testpart@v=val_0
 PREHOOK: Input: default@testpart@v=val_10
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 0
-   HDFS_BYTES_WRITTEN: 0
-   HDFS_READ_OPS: 0
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 0
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -1720,11 +1710,6 @@ PREHOOK: Input: default@testpart@v=val_2
 PREHOOK: Input: default@testpart@v=val_20
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 0
-   HDFS_BYTES_WRITTEN: 0
-   HDFS_READ_OPS: 0
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 0
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -1835,11 +1820,6 @@ PREHOOK: Input: default@testpart@v=val_2
 PREHOOK: Input: default@testpart@v=val_20
 PREHOOK: Output: default@testpart1
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 0
-   HDFS_BYTES_WRITTEN: 0
-   HDFS_READ_OPS: 0
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 0
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 74
    CREATED_FILES: 76
@@ -2750,11 +2730,6 @@ PREHOOK: Input: default@testpart@v=val_97
 PREHOOK: Input: default@testpart@v=val_98
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 0
-   HDFS_BYTES_WRITTEN: 0
-   HDFS_READ_OPS: 0
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 0
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0

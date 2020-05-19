@@ -100,7 +100,6 @@ dayofmonth
 dayofweek
 decode
 default.qtest_get_java_boolean
-default.test_udf3
 degrees
 dense_rank
 div
@@ -601,7 +600,6 @@ dayofmonth
 dayofweek
 decode
 default.qtest_get_java_boolean
-default.test_udf3
 degrees
 dense_rank
 div

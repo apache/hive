@@ -130,7 +130,7 @@ GROUP BY t1.bigint_col
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
+12
 NULL
 1
 11
-12

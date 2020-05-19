@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 54b4b2d428bb in 2018
 --! qt:dataset:srcbucket
 set hive.mapred.mode=nonstrict;
 
