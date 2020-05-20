@@ -36,9 +36,9 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
 
 /**
  * Unit test class for testing Ranger Dump.
@@ -70,14 +70,14 @@ public class TestRangerLoadTask {
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn(null);
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn(null);
     int status = task.execute();
     Assert.assertEquals(40000, status);
   }
 
   @Test
   public void testSuccessValidAuthProviderEndpoint() {
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     int status = task.execute();
@@ -98,7 +98,7 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
@@ -124,7 +124,7 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
@@ -163,10 +163,10 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(true);
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
@@ -226,10 +226,10 @@ public class TestRangerLoadTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);

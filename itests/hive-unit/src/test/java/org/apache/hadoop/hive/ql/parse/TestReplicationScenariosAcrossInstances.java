@@ -1501,8 +1501,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testRangerReplication() throws Throwable {
     List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'",
-        "'hive.repl.authorization.provider.service.endpoint'='http://localhost:6080/ranger'");
+        "'hive.in.test'='true'");
     primary.run("use " + primaryDbName)
         .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
@@ -1536,8 +1535,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       primary.dump(primaryDbName, clause);
     } catch (Exception e) {
-      assertEquals("Ranger endpoint is not valid. Please pass a valid config "
-          + "hive.repl.authorization.provider.service.endpoint", e.getMessage());
+      assertEquals("Ranger endpoint is not valid.", e.getMessage());
     }
   }
 

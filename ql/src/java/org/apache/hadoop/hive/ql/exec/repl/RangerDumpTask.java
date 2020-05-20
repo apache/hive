@@ -36,11 +36,9 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
 
 /**
  * RangerDumpTask.
@@ -81,12 +79,16 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
-      String rangerEndpoint = conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT);
-      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
-        throw new Exception("Ranger endpoint is not valid. "
-                + "Please pass a valid config hive.repl.authorization.provider.service.endpoint");
+      InputStream inputStream = RangerDumpTask.class.getClassLoader()
+          .getResourceAsStream(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+      if (inputStream != null) {
+        conf.addResource(inputStream);
       }
-      String rangerHiveServiceName = conf.getVar(REPL_RANGER_SERVICE_NAME);
+      String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
+      String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
+      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
+        throw new Exception("Ranger endpoint is not valid.");
+      }
       replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
       replLogger.startLog();
       RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,

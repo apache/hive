@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 
 /**
  * Unit test class for testing Ranger Dump.
@@ -71,7 +71,7 @@ public class TestRangerDumpTask {
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() throws Exception {
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn(null);
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn(null);
     int status = task.execute();
     Assert.assertEquals(40000, status);
   }
@@ -82,8 +82,8 @@ public class TestRangerDumpTask {
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     int status = task.execute();
@@ -106,8 +106,8 @@ public class TestRangerDumpTask {
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
@@ -126,8 +126,8 @@ public class TestRangerDumpTask {
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     int status = task.execute();

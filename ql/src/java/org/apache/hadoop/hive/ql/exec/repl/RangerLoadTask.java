@@ -36,14 +36,12 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
-
 /**
  * RangerLoadTask.
  *
@@ -83,10 +81,15 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
-      String rangerEndpoint = conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT);
+      InputStream inputStream = RangerDumpTask.class.getClassLoader()
+          .getResourceAsStream(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+      if (inputStream != null) {
+        conf.addResource(inputStream);
+      }
+      String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
+      String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
       if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
-        throw new Exception("Ranger endpoint is not valid. "
-                + "Please pass a valid config hive.repl.authorization.provider.service.endpoint");
+        throw new Exception("Ranger endpoint is not valid.");
       }
       if (work.getCurrentDumpPath() != null) {
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());
@@ -108,7 +111,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       List<RangerPolicy> rangerPoliciesWithDenyPolicy = rangerPolicies;
       if (conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)) {
         rangerPoliciesWithDenyPolicy = rangerRestClient.addDenyPolicies(rangerPolicies,
-          conf.getVar(REPL_RANGER_SERVICE_NAME), work.getSourceDbName(), work.getTargetDbName());
+          rangerHiveServiceName, work.getSourceDbName(), work.getTargetDbName());
       }
 
       List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPoliciesWithDenyPolicy,
@@ -121,7 +124,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         }
         rangerExportPolicyList.setPolicies(updatedRangerPolicies);
         rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
-                conf.getVar(REPL_RANGER_SERVICE_NAME));
+                rangerHiveServiceName);
         LOG.info("Number of ranger policies imported {}", rangerExportPolicyList.getListSize());
         importCount = rangerExportPolicyList.getListSize();
         replLogger.endLog(importCount);

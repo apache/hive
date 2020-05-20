@@ -107,6 +107,12 @@ public class ReplUtils {
   public static final String RANGER_AUTHORIZER = "ranger";
 
   public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies.json";
+
+  public static final String RANGER_REST_URL = "ranger.plugin.hive.policy.rest.url";
+
+  public static final String RANGER_HIVE_SERVICE_NAME = "ranger.plugin.hive.service.name";
+
+  public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
