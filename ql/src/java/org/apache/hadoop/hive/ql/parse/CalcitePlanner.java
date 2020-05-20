@@ -1983,6 +1983,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RelOptRule rule = new HiveRewriteToDataSketchesRules.PercentileDiscRewrite(percentileDiscSketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
+
+        RelOptRule rule = new HiveRewriteToDataSketchesRules.AggregateToProjectJoinAggregateProject();
+        generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
       }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&

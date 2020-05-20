@@ -371,13 +371,15 @@ public final class HiveRewriteToDataSketchesRules {
   /**
    * Generic support for rewriting an Aggregate into a chain of Project->Aggregate->Project.
    */
-  private static class AggregateToProjectJoinAggregateProject extends RelOptRule {
+  //FIXME
+  public static class AggregateToProjectJoinAggregateProject extends RelOptRule {
 
     private final ProjectFactory projectFactory;
     private String sketchType;
 
-    public AggregateToProjectJoinAggregateProject(RelOptRuleOperand operand) {
+    public AggregateToProjectJoinAggregateProject() {
       super(operand(HiveAggregate.class, any()));
+      // FIXME
       this.sketchType = "kll";
 
       projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
