@@ -204,12 +204,11 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-      abstract void rewrite(AggregateCall aggCall);
-
       abstract boolean isApplicable(AggregateCall aggCall);
 
-    }
+      abstract void rewrite(AggregateCall aggCall);
 
+    }
   };
 
   public static class CountDistinctRewrite extends AggregateToProjectAggregateProject {
@@ -368,4 +367,201 @@ public final class HiveRewriteToDataSketchesRules {
       }
     }
   }
+
+  /**
+   * Generic support for rewriting an Aggregate into a chain of Project->Aggregate->Project.
+   */
+  private static class AggregateToProjectJoinAggregateProject extends RelOptRule {
+
+    private final ProjectFactory projectFactory;
+    private String sketchType;
+
+    public AggregateToProjectJoinAggregateProject(RelOptRuleOperand operand) {
+      super(operand(HiveAggregate.class, any()));
+      this.sketchType = "kll";
+
+      projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      VbuilderPAP vb = processCall(call);
+      if (vb == null) {
+        return;
+      }
+
+      Aggregate aggregate = vb.aggregate;
+      if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
+        // rule didn't make any changes
+        return;
+      }
+
+      List<AggregateCall> newAggCalls = vb.newAggCalls;
+      List<String> fieldNames = new ArrayList<String>();
+      for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
+        fieldNames.add("ff_" + i);
+      }
+      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
+
+      RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
+          aggregate.getGroupSets(), newAggCalls);
+
+      RelNode newProject =
+          projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
+
+      call.transformTo(newProject);
+      return;
+
+    }
+
+    protected VbuilderPAP processCall(RelOptRuleCall call) {
+      final Aggregate aggregate = call.rel(0);
+
+      if (aggregate.getGroupSets().size() != 1) {
+        // not yet supported
+        return null;
+      }
+
+      return new VB(aggregate, sketchType);
+    }
+
+    private static class VB extends VbuilderPAP {
+
+        protected VB(Aggregate aggregate, String sketchClass) {
+          super(aggregate, sketchClass);
+          processAggregate();
+        }
+
+        @Override
+        boolean isApplicable(AggregateCall aggCall) {
+          if (   !aggCall.isDistinct()
+              && aggCall.getAggregation().getName().equalsIgnoreCase("cume_dist")
+              && !aggCall.hasFilter()) {
+            return true;
+          }
+          return false;
+        }
+
+        @Override
+        void rewrite(AggregateCall aggCall) {
+          RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
+
+          Integer argIndex = aggCall.getArgList().get(1);
+          RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+
+          RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+          RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+          RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+
+          call = rexBuilder.makeCast(floatType, call);
+          newProjectsBelow.add(call);
+
+          SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+          boolean distinct = false;
+          boolean approximate = true;
+          boolean ignoreNulls = true;
+          List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
+          int filterArg = aggCall.filterArg;
+          RelCollation collation = aggCall.getCollation();
+          RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+          String name = aggFunction.getName();
+
+          AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+              collation, type, name);
+
+          Integer origFractionIdx = aggCall.getArgList().get(0);
+
+          SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
+          RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
+          projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+          projRex = rexBuilder.makeCast(origType, projRex);
+
+          newAggCalls.add(newAgg);
+          newProjectsAbove.add(projRex);
+        }
+      }
+    }
+
+    private static abstract class VbuilderPAP {
+      protected final RexBuilder rexBuilder;
+
+      /** The original aggregate RelNode */
+      protected final Aggregate aggregate;
+      /** The list of the new aggregations */
+      protected final List<AggregateCall> newAggCalls;
+      /**
+       * The new projections expressions inserted above the aggregate
+       *
+       *  These projections should do the neccessary conversions to behave like the original aggregate.
+       *  Most important here is to CAST the final result to the same type as the original aggregate was producing.
+       */
+      protected final List<RexNode> newProjectsAbove;
+      /** The new projections expressions inserted belove the aggregate
+       *
+       * These projections could be used to prepocess the incoming datastream.
+       * For example a CAST might need to be injected.
+       */
+      protected final List<RexNode> newProjectsBelow;
+
+      private final String sketchClass;
+
+      protected VbuilderPAP(Aggregate aggregate, String sketchClass) {
+        this.aggregate = aggregate;
+        this.sketchClass = sketchClass;
+        newAggCalls = new ArrayList<AggregateCall>();
+        newProjectsAbove = new ArrayList<RexNode>();
+        newProjectsBelow = new ArrayList<RexNode>();
+        rexBuilder = aggregate.getCluster().getRexBuilder();
+
+      }
+
+      protected final void processAggregate() {
+        // add identity projections
+        addProjectedFields();
+
+        for (AggregateCall aggCall : aggregate.getAggCallList()) {
+          processAggCall(aggCall);
+        }
+      }
+
+      private final void addProjectedFields() {
+        for (int i = 0; i < aggregate.getGroupCount(); i++) {
+          newProjectsAbove.add(rexBuilder.makeInputRef(aggregate, i));
+        }
+        int numInputFields = aggregate.getInput().getRowType().getFieldCount();
+        for (int i = 0; i < numInputFields; i++) {
+          newProjectsBelow.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
+        }
+      }
+
+      private final void processAggCall(AggregateCall aggCall) {
+        if (isApplicable(aggCall)) {
+          rewrite(aggCall);
+        } else {
+          appendAggCall(aggCall);
+        }
+      }
+
+      private final void appendAggCall(AggregateCall aggCall) {
+        RexNode projRex = rexBuilder.makeInputRef(aggCall.getType(), newProjectsAbove.size());
+
+        newAggCalls.add(aggCall);
+        newProjectsAbove.add(projRex);
+      }
+
+      protected final SqlOperator getSqlOperator(String fnName) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        return fn.getCalciteFunction().get();
+      }
+
+      abstract void rewrite(AggregateCall aggCall);
+
+      abstract boolean isApplicable(AggregateCall aggCall);
+
+    }
+
+
 }
