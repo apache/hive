@@ -13,6 +13,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Partitions
+      limit: -1
       table: srcpart
 
   Stage: Stage-1
