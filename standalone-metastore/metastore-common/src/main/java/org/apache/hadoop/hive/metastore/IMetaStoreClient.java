@@ -1213,6 +1213,24 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param defaultPartName default partition name.
+   * @param exprBytes expression, serialized from ExprNodeDesc.
+   * @param order ordered the resulting list.
+   * @param maxParts maximum number of partition names to return, or -1 to return all that are
+   *                  found.
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException no such table.
+   */
+  List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order, short maxParts)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values
    * @param request request
    * @return reponse

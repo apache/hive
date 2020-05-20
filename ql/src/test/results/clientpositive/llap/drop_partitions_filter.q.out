@@ -155,6 +155,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Partitions
+      limit: -1
       table: ptestfilter_n1
 
   Stage: Stage-1
