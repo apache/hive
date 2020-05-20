@@ -10,11 +10,13 @@ insert into table sketch_input values
   (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
 ; 
 
+select percentile_disc(0.3) within group(order by id) from sketch_input;
+
 set hive.optimize.bi.enabled=true;
 
 -- see if rewrite happens
 explain
-select percentile_disc(0.2) within group(order by id) from sketch_input;
+select percentile_disc(0.3) within group(order by id) from sketch_input;
 
-select percentile_disc(0.2) within group(order by id) from sketch_input;
+select percentile_disc(0.3) within group(order by id) from sketch_input;
 

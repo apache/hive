@@ -24,13 +24,22 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
+PREHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+6.0
 PREHOOK: query: explain
-select percentile_disc(0.2) within group(order by id) from sketch_input
+select percentile_disc(0.3) within group(order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select percentile_disc(0.2) within group(order by id) from sketch_input
+select percentile_disc(0.3) within group(order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -77,7 +86,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: UDFToDouble(ds_kll_quantile(_col0, 0.2)) (type: double)
+                  expressions: UDFToDouble(ds_kll_quantile(_col0, 0.3)) (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -94,12 +103,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select percentile_disc(0.2) within group(order by id) from sketch_input
+PREHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select percentile_disc(0.2) within group(order by id) from sketch_input
+POSTHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-4.0
+6.0
