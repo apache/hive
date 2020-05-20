@@ -1986,7 +1986,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RelOptRule rule = new HiveRewriteToDataSketchesRule(countDistinctSketchType, percentileDiscSketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
-        RelOptRule rule = new HiveRewriteToDataSketchesRule2(countDistinctSketchType, percentileContSketchType);
+        RelOptRule rule = new HiveRewriteToDataSketchesRule2(countDistinctSketchType, percentileDiscSketchType);
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
       }
       // Run this optimization early, since it is expanding the operator pipeline.
