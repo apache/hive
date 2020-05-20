@@ -1,0 +1,129 @@
+PREHOOK: query: CREATE external TABLE IF NOT EXISTS sessions_cloudera
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sessions_cloudera
+POSTHOOK: query: CREATE external TABLE IF NOT EXISTS sessions_cloudera
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sessions_cloudera
+PREHOOK: query: CREATE TABLE IF NOT EXISTS sessions_cloudera_orc
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sessions_cloudera_orc
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS sessions_cloudera_orc
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sessions_cloudera_orc
+PREHOOK: query: describe formatted sessions_cloudera_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sessions_cloudera_orc
+POSTHOOK: query: describe formatted sessions_cloudera_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sessions_cloudera_orc
+# col_name            	data_type           	comment             
+session_id          	string              	                    
+uid                 	bigint              	                    
+uids                	array<bigint>       	                    
+search_ids          	array<string>       	                    
+total_views         	int                 	                    
+datestamp           	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"datestamp\":\"true\",\"search_ids\":\"true\",\"session_id\":\"true\",\"total_views\":\"true\",\"uid\":\"true\",\"uids\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT OVERWRITE TABLE sessions_cloudera_orc
+SELECT * FROM sessions_cloudera
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions_cloudera
+PREHOOK: Output: default@sessions_cloudera_orc
+POSTHOOK: query: INSERT OVERWRITE TABLE sessions_cloudera_orc
+SELECT * FROM sessions_cloudera
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions_cloudera
+POSTHOOK: Output: default@sessions_cloudera_orc
+POSTHOOK: Lineage: sessions_cloudera_orc.datestamp SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:datestamp, type:date, comment:null), ]
+POSTHOOK: Lineage: sessions_cloudera_orc.search_ids SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:search_ids, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: sessions_cloudera_orc.session_id SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:session_id, type:string, comment:null), ]
+POSTHOOK: Lineage: sessions_cloudera_orc.total_views SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:total_views, type:int, comment:null), ]
+POSTHOOK: Lineage: sessions_cloudera_orc.uid SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: sessions_cloudera_orc.uids SIMPLE [(sessions_cloudera)sessions_cloudera.FieldSchema(name:uids, type:array<bigint>, comment:null), ]
+PREHOOK: query: select count(1) from sessions_cloudera_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions_cloudera_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from sessions_cloudera_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions_cloudera_orc
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(1) from sessions_cloudera
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions_cloudera
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from sessions_cloudera
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions_cloudera
+#### A masked pattern was here ####
+1
