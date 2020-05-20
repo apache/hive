@@ -168,30 +168,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_20":"true","col_3":"true","col_7":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_3,col_7,col_20
-                    columns.comments 
                     columns.types string:timestamp:string:string
 #### A masked pattern was here ####
                     name default.my_table_0001
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct my_table_0001 { string col_1, timestamp col_3, string col_7, string col_20}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_20":"true","col_3":"true","col_7":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_1,col_3,col_7,col_20
@@ -199,14 +189,8 @@ STAGE PLANS:
                       columns.types string:timestamp:string:string
 #### A masked pattern was here ####
                       name default.my_table_0001
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct my_table_0001 { string col_1, timestamp col_3, string col_7, string col_20}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.my_table_0001
                   name: default.my_table_0001
@@ -268,30 +252,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_21":"true","col_24":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_24,col_21
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.my_table_0003
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct my_table_0003 { string col_24, string col_21}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_21":"true","col_24":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_24,col_21
@@ -299,14 +273,8 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.my_table_0003
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct my_table_0003 { string col_24, string col_21}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.my_table_0003
                   name: default.my_table_0003
@@ -349,30 +317,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_22":"true","col_23":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_22,col_23
-                    columns.comments 
                     columns.types string:string:int
 #### A masked pattern was here ####
                     name default.my_table_0001_00
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct my_table_0001_00 { string col_1, string col_22, i32 col_23}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_22":"true","col_23":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_1,col_22,col_23
@@ -380,14 +338,8 @@ STAGE PLANS:
                       columns.types string:string:int
 #### A masked pattern was here ####
                       name default.my_table_0001_00
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct my_table_0001_00 { string col_1, string col_22, i32 col_23}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.my_table_0001_00
                   name: default.my_table_0001_00
@@ -429,30 +381,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_100":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns col_1,col_100
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.my_table_0001_01
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct my_table_0001_01 { string col_1, string col_100}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_100":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns col_1,col_100
@@ -460,14 +402,8 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.my_table_0001_01
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct my_table_0001_01 { string col_1, string col_100}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.my_table_0001_01
                   name: default.my_table_0001_01
@@ -722,30 +658,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 3147
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 3173
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
@@ -753,14 +679,8 @@ STAGE PLANS:
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 3147
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 3173
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.part
                   name: default.part
@@ -834,30 +754,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 3147
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 3173
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
@@ -865,14 +775,8 @@ STAGE PLANS:
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 3147
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 3173
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.part
                   name: default.part
@@ -930,30 +834,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 3147
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 3173
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"p_brand":"true","p_comment":"true","p_container":"true","p_mfgr":"true","p_name":"true","p_partkey":"true","p_retailprice":"true","p_size":"true","p_type":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
@@ -961,14 +855,8 @@ STAGE PLANS:
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 3147
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 3173
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.part
                   name: default.part

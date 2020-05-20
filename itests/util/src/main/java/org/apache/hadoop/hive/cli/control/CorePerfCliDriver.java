@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.internal.AssumptionViolatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,6 +149,8 @@ public class CorePerfCliDriver extends CliAdapter {
           : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
+    } catch (AssumptionViolatedException e) {
+      throw e;
     } catch (Exception e) {
       qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }

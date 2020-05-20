@@ -1,0 +1,414 @@
+PREHOOK: query: create temporary table daysales_temp (customer int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@daysales_temp
+POSTHOOK: query: create temporary table daysales_temp (customer int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@daysales_temp
+PREHOOK: query: insert into daysales_temp partition(dt='2001-01-01') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales_temp@dt=2001-01-01
+POSTHOOK: query: insert into daysales_temp partition(dt='2001-01-01') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Lineage: daysales_temp PARTITION(dt=2001-01-01).customer SCRIPT []
+PREHOOK: query: insert into daysales_temp partition(dt='2001-01-03') values(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales_temp@dt=2001-01-03
+POSTHOOK: query: insert into daysales_temp partition(dt='2001-01-03') values(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales_temp@dt=2001-01-03
+POSTHOOK: Lineage: daysales_temp PARTITION(dt=2001-01-03).customer SCRIPT []
+PREHOOK: query: select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+1	2001-01-01
+PREHOOK: query: select * from daysales_temp where nvl(dt='2001-01-02' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where nvl(dt='2001-01-02' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+PREHOOK: query: select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+1	2001-01-01
+PREHOOK: query: select * from daysales_temp where (dt='2001-01-01' and customer=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where (dt='2001-01-01' and customer=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+#### A masked pattern was here ####
+1	2001-01-01
+PREHOOK: query: select * from daysales_temp where (dt='2001-01-01' or customer=3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where (dt='2001-01-01' or customer=3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+1	2001-01-01
+3	2001-01-03
+PREHOOK: query: select * from daysales_temp where (dt='2001-01-03' or customer=100)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: select * from daysales_temp where (dt='2001-01-03' or customer=100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+3	2001-01-03
+PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales_temp`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-03
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+      Processor Tree:
+        TableScan
+          alias: daysales_temp
+          filterExpr: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales_temp`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-03
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+      Processor Tree:
+        TableScan
+          alias: daysales_temp
+          filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales_temp
+PREHOOK: Input: default@daysales_temp@dt=2001-01-01
+PREHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales_temp
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
+POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales_temp`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-03
+            properties:
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              name default.daysales_temp
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.daysales_temp
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.daysales_temp
+            name: default.daysales_temp
+      Processor Tree:
+        TableScan
+          alias: daysales_temp
+          filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+

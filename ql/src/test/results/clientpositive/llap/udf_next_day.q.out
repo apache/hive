@@ -1,0 +1,142 @@
+PREHOOK: query: DESCRIBE FUNCTION next_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION next_day
+POSTHOOK: type: DESCFUNCTION
+next_day(start_date, day_of_week) - Returns the first date which is later than start_date and named as indicated.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED next_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED next_day
+POSTHOOK: type: DESCFUNCTION
+next_day(start_date, day_of_week) - Returns the first date which is later than start_date and named as indicated.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. day_of_week is day of the week (e.g. Mo, tue, FRIDAY).Example:
+  > SELECT next_day('2015-01-14', 'TU') FROM src LIMIT 1;
+ '2015-01-20'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN SELECT next_day('2014-01-14', 'MO')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT next_day('2014-01-14', 'MO')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '2014-01-20' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT next_day('2015-01-11', 'su'),
+       next_day('2015-01-11', 'MO'),
+       next_day('2015-01-11', 'Tu'),
+       next_day('2015-01-11', 'wE'),
+       next_day('2015-01-11', 'th'),
+       next_day('2015-01-11', 'FR'),
+       next_day('2015-01-11', 'Sa')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT next_day('2015-01-11', 'su'),
+       next_day('2015-01-11', 'MO'),
+       next_day('2015-01-11', 'Tu'),
+       next_day('2015-01-11', 'wE'),
+       next_day('2015-01-11', 'th'),
+       next_day('2015-01-11', 'FR'),
+       next_day('2015-01-11', 'Sa')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2015-01-18	2015-01-12	2015-01-13	2015-01-14	2015-01-15	2015-01-16	2015-01-17
+PREHOOK: query: SELECT next_day('2015-01-17 00:02:30', 'sun'),
+       next_day('2015-01-17 00:02:30', 'MON'),
+       next_day('2015-01-17 00:02:30', 'Tue'),
+       next_day('2015-01-17 00:02:30', 'weD'),
+       next_day('2015-01-17 00:02:30', 'tHu'),
+       next_day('2015-01-17 00:02:30', 'FrI'),
+       next_day('2015-01-17 00:02:30', 'SAt')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT next_day('2015-01-17 00:02:30', 'sun'),
+       next_day('2015-01-17 00:02:30', 'MON'),
+       next_day('2015-01-17 00:02:30', 'Tue'),
+       next_day('2015-01-17 00:02:30', 'weD'),
+       next_day('2015-01-17 00:02:30', 'tHu'),
+       next_day('2015-01-17 00:02:30', 'FrI'),
+       next_day('2015-01-17 00:02:30', 'SAt')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2015-01-18	2015-01-19	2015-01-20	2015-01-21	2015-01-22	2015-01-23	2015-01-24
+PREHOOK: query: SELECT next_day(cast('2015-01-14 14:04:34' as timestamp), 'sunday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'Monday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'Tuesday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'wednesday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'thursDAY'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'FRIDAY'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'SATurday')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT next_day(cast('2015-01-14 14:04:34' as timestamp), 'sunday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'Monday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'Tuesday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'wednesday'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'thursDAY'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'FRIDAY'),
+       next_day(cast('2015-01-14 14:04:34' as timestamp), 'SATurday')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2015-01-18	2015-01-19	2015-01-20	2015-01-21	2015-01-15	2015-01-16	2015-01-17
+PREHOOK: query: SELECT next_day(cast(null as string), 'MO'),
+       next_day(cast(null as timestamp), 'MO'),
+       next_day('2015-01-11', cast(null as string)),
+       next_day(cast(null as string), cast(null as string)),
+       next_day(cast(null as timestamp), cast(null as string))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT next_day(cast(null as string), 'MO'),
+       next_day(cast(null as timestamp), 'MO'),
+       next_day('2015-01-11', cast(null as string)),
+       next_day(cast(null as string), cast(null as string)),
+       next_day(cast(null as timestamp), cast(null as string))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT next_day('2015-02-02', 'VT'),
+       next_day('2015-02-15', 'WE')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT next_day('2015-02-02', 'VT'),
+       next_day('2015-02-15', 'WE')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	2015-02-18

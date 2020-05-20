@@ -1,36 +1,38 @@
 --! qt:dataset:srcpart
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 create temporary table partition_test_multilevel_temp (key string, value string) partitioned by (level1 string, level2 string, level3 string);
 
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='11') select key, value from srcpart tablesample (11 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='22') select key, value from srcpart tablesample (12 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='33') select key, value from srcpart tablesample (13 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='44') select key, value from srcpart tablesample (14 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='11') select key, value from srcpart tablesample (11 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='22') select key, value from srcpart tablesample (12 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='33') select key, value from srcpart tablesample (13 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='111', level3='44') select key, value from srcpart tablesample (14 rows) order by key, value;
 
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='11') select key, value from srcpart tablesample (15 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='22') select key, value from srcpart tablesample (16 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='33') select key, value from srcpart tablesample (17 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='44') select key, value from srcpart tablesample (18 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='11') select key, value from srcpart tablesample (15 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='22') select key, value from srcpart tablesample (16 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='33') select key, value from srcpart tablesample (17 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='222', level3='44') select key, value from srcpart tablesample (18 rows) order by key, value;
 
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='11') select key, value from srcpart tablesample (19 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='22') select key, value from srcpart tablesample (20 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='33') select key, value from srcpart tablesample (21 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='44') select key, value from srcpart tablesample (22 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='11') select key, value from srcpart tablesample (19 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='22') select key, value from srcpart tablesample (20 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='33') select key, value from srcpart tablesample (21 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='1111', level2='333', level3='44') select key, value from srcpart tablesample (22 rows) order by key, value;
 
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='11') select key, value from srcpart tablesample (11 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='22') select key, value from srcpart tablesample (12 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='33') select key, value from srcpart tablesample (13 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='44') select key, value from srcpart tablesample (14 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='11') select key, value from srcpart tablesample (11 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='22') select key, value from srcpart tablesample (12 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='33') select key, value from srcpart tablesample (13 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='111', level3='44') select key, value from srcpart tablesample (14 rows) order by key, value;
 
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='11') select key, value from srcpart tablesample (15 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='22') select key, value from srcpart tablesample (16 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='33') select key, value from srcpart tablesample (17 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='44') select key, value from srcpart tablesample (18 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='11') select key, value from srcpart tablesample (15 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='22') select key, value from srcpart tablesample (16 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='33') select key, value from srcpart tablesample (17 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='222', level3='44') select key, value from srcpart tablesample (18 rows) order by key, value;
 
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='11') select key, value from srcpart tablesample (19 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='22') select key, value from srcpart tablesample (20 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='33') select key, value from srcpart tablesample (21 rows);
-insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='44') select key, value from srcpart tablesample (22 rows);
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='11') select key, value from srcpart tablesample (19 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='22') select key, value from srcpart tablesample (20 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='33') select key, value from srcpart tablesample (21 rows) order by key, value;
+insert overwrite table partition_test_multilevel_temp partition(level1='2222', level2='333', level3='44') select key, value from srcpart tablesample (22 rows) order by key, value;
 
 set metaconf:hive.metastore.try.direct.sql=false;
 

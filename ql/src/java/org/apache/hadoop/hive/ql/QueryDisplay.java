@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 import org.apache.hadoop.mapred.Counters;
@@ -54,7 +53,7 @@ public class QueryDisplay {
 
   private final LinkedHashMap<String, TaskDisplay> tasks = new LinkedHashMap<String, TaskDisplay>();
 
-  public void updateTaskStatus(Task<?> tTask) {
+  public synchronized void updateTaskStatus(Task<?> tTask) {
     if (!tasks.containsKey(tTask.getId())) {
       tasks.put(tTask.getId(), new TaskDisplay(tTask));
     }
@@ -374,11 +373,11 @@ public class QueryDisplay {
     this.queryId = queryId;
   }
 
-  private String returnStringOrUnknown(String s) {
+  private static String returnStringOrUnknown(String s) {
     return s == null ? "UNKNOWN" : s;
   }
 
-  public long getQueryStartTime() {
+  public synchronized long getQueryStartTime() {
     return queryStartTime;
   }
 }

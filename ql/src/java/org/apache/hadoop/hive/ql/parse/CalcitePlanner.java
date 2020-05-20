@@ -1975,15 +1975,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         Optional<String> countDistinctSketchType = Optional.empty();
-        Optional<String> percentileContSketchType = Optional.empty();
+        Optional<String> percentileDiscSketchType = Optional.empty();
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
           countDistinctSketchType= Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH));
         }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_ENABLED)) {
-          percentileContSketchType = Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILECONT_SKETCH));
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED)) {
+          percentileDiscSketchType = Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH));
         }
-        if (countDistinctSketchType.isPresent() || percentileContSketchType.isPresent()) {
-          RelOptRule rule = new HiveRewriteToDataSketchesRule(countDistinctSketchType, percentileContSketchType);
+        if (countDistinctSketchType.isPresent() || percentileDiscSketchType.isPresent()) {
+          RelOptRule rule = new HiveRewriteToDataSketchesRule(countDistinctSketchType, percentileDiscSketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
         RelOptRule rule = new HiveRewriteToDataSketchesRule2(countDistinctSketchType, percentileContSketchType);

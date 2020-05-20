@@ -215,7 +215,7 @@ public final class BuddyAllocator
     for (int i = 0; i < maxArenas; ++i) {
       arenas[i] = new Arena();
     }
-    int initCount = doPreallocate && !isMapped ? maxArenas : 1;
+    int initCount = doPreallocate ? maxArenas : 1;
     for (int i = 0; i < initCount; ++i) {
       arenas[i].init(i);
       metrics.incrAllocatedArena();

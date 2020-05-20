@@ -174,7 +174,9 @@ public class TestContainerRunnerImpl {
     containerRunner.submitWork(sRequest);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    if (ShuffleHandler.get().isDirWatcherEnabled()) {
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    }
   }
 }

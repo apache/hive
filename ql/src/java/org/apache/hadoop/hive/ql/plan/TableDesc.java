@@ -45,8 +45,6 @@ import java.util.Properties;
  */
 public class TableDesc implements Serializable, Cloneable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TableDesc.class);
-
   private static final long serialVersionUID = 1L;
   private Class<? extends InputFormat> inputFileFormatClass;
   private Class<? extends OutputFormat> outputFileFormatClass;

@@ -116,7 +116,7 @@ public class GetCrossReferenceOperation extends MetadataOperation {
     this.foreignSchemaName = foreignSchema;
     this.foreignTableName = foreignTable;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
-    LOG.info("Starting GetCrossReferenceOperation with the following parameters:"
+    log.info("Starting GetCrossReferenceOperation with the following parameters:"
         + " parentCatalogName={}, parentSchemaName={}, parentTableName={}, foreignCatalog={}, "
         + "foreignSchema={}, foreignTable={}", parentCatalogName, parentSchemaName,
         parentTableName, foreignCatalog, foreignSchema, foreignTable);
@@ -125,7 +125,7 @@ public class GetCrossReferenceOperation extends MetadataOperation {
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
-    LOG.info("Fetching cross reference metadata");
+    log.info("Fetching cross reference metadata");
     try {
        IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
      ForeignKeysRequest fkReq = new ForeignKeysRequest(parentSchemaName, parentTableName, foreignSchemaName, foreignTableName);
@@ -141,16 +141,16 @@ public class GetCrossReferenceOperation extends MetadataOperation {
             fk.getKey_seq(), fk.getUpdate_rule(), fk.getDelete_rule(), fk.getFk_name(),
             fk.getPk_name(), 0};
         rowSet.addRow(rowData);
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
           String debugMessage = getDebugMessage("cross reference", RESULT_SET_SCHEMA);
-          LOG.debug(debugMessage, rowData);
+          log.debug(debugMessage, rowData);
         }
       }
-      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
-        LOG.debug("No cross reference metadata has been returned.");
+      if (log.isDebugEnabled() && rowSet.numRows() == 0) {
+        log.debug("No cross reference metadata has been returned.");
       }
       setState(OperationState.FINISHED);
-      LOG.info("Fetching cross reference metadata has been successfully finished");
+      log.info("Fetching cross reference metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);

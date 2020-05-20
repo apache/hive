@@ -165,7 +165,7 @@ FROM DECIMAL_UDF2_n0) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_n0
 #### A masked pattern was here ####
--3806952922
+-3806982713
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -291,7 +291,7 @@ FROM DECIMAL_UDF2_n0) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_n0
 #### A masked pattern was here ####
-1514360349
+-1970715434
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
@@ -399,7 +399,7 @@ FROM DECIMAL_UDF2_txt) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
--3806952922
+-3806982713
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -525,7 +525,7 @@ FROM DECIMAL_UDF2_txt) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
-1514360349
+-1970715434
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_txt
