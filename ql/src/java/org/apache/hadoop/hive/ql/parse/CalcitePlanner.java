@@ -238,7 +238,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRule2;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -1974,20 +1973,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
-        Optional<String> countDistinctSketchType = Optional.empty();
-        Optional<String> percentileDiscSketchType = Optional.empty();
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
-          countDistinctSketchType= Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH));
-        }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED)) {
-          percentileDiscSketchType = Optional.of(conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH));
-        }
-        if (countDistinctSketchType.isPresent() || percentileDiscSketchType.isPresent()) {
-          RelOptRule rule = new HiveRewriteToDataSketchesRule(countDistinctSketchType, percentileDiscSketchType);
+          String countDistinctSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRule.CountDistinctRewrite(countDistinctSketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
-        RelOptRule rule = new HiveRewriteToDataSketchesRule2(countDistinctSketchType, percentileDiscSketchType);
-        generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED)) {
+          String percentileDiscSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRule.PercentileDiscRewrite(percentileDiscSketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
       }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&

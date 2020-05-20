@@ -210,7 +210,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
   };
 
-  private static class CountDistinctRewrite extends AggregateToProjectAggregateProject {
+  public static class CountDistinctRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
 
@@ -278,7 +278,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
   }
 
-  private static class PercentileDiscRewrite extends AggregateToProjectAggregateProject {
+  public static class PercentileDiscRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
 
