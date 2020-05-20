@@ -2156,13 +2156,13 @@ public class TestInputOutputFormat {
    * @throws IOException
    * @throws HiveException
    */
-  static JobConf createMockExecutionEnvironment(Path workDir,
+  JobConf createMockExecutionEnvironment(Path workDir,
                                          Path warehouseDir,
                                          String tableName,
                                          ObjectInspector objectInspector,
                                          boolean isVectorized,
-                                         int partitions,
-                                         String currFileSystemName) throws IOException, HiveException {
+                                         int partitions
+                                         ) throws IOException, HiveException {
     JobConf conf = new JobConf();
     Utilities.clearWorkMap(conf);
     conf.set("hive.exec.plan", workDir.toString());
@@ -2171,7 +2171,7 @@ public class TestInputOutputFormat {
     conf.set("hive.vectorized.execution.enabled", isVectorizedString);
     conf.set(Utilities.VECTOR_MODE, isVectorizedString);
     conf.set(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, isVectorizedString);
-    conf.set("fs.mock.impl", currFileSystemName);
+    conf.set("fs.mock.impl", MockFileSystem.class.getName());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     Path root = new Path(warehouseDir, tableName);
     // clean out previous contents
@@ -2290,7 +2290,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorization", inspector, true, 1, MockFileSystem.class.getName());
+        "vectorization", inspector, true, 1);
 
     // write the orc file to the mock file system
     Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
@@ -2337,7 +2337,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorBuckets", inspector, true, 1, MockFileSystem.class.getName());
+        "vectorBuckets", inspector, true, 1);
 
     // write the orc file to the mock file system
     Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
@@ -2376,7 +2376,7 @@ public class TestInputOutputFormat {
   public void testVectorizationWithAcid() throws Exception {
     StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorizationAcid", inspector, true, 1, MockFileSystem.class.getName());
+        "vectorizationAcid", inspector, true, 1);
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
@@ -2457,7 +2457,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combination", inspector, false, 1, MockFileSystem.class.getName());
+        "combination", inspector, false, 1);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -2529,7 +2529,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combinationAcid", inspector, false, PARTITIONS, MockFileSystem.class.getName());
+        "combinationAcid", inspector, false, PARTITIONS);
 
     // write the orc file to the mock file system
     Path[] partDir = new Path[PARTITIONS];
@@ -3342,7 +3342,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf jobConf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "mocktable3", inspector, true, 0, MockFileSystem.class.getName());
+        "mocktable3", inspector, true, 0);
     Writer writer =
         OrcFile.createWriter(new Path(mockPath + "/0_0"),
             OrcFile.writerOptions(conf).blockPadding(false)
@@ -3417,7 +3417,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf jobConf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "mocktable4", inspector, true, 0, MockFileSystem.class.getName());
+        "mocktable4", inspector, true, 0);
     Writer writer =
         OrcFile.createWriter(new Path(mockPath + "/0_0"),
             OrcFile.writerOptions(conf).blockPadding(false)
