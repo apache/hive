@@ -14,7 +14,7 @@ set hive.optimize.bi.enabled=true;
 
 -- see if rewrite happens
 explain
-select percentile_cont(0.2) within group(order by id) from sketch_input;
+select percentile_disc(0.2) within group(order by id) from sketch_input;
 
-select percentile_cont(0.2) within group(order by id) from sketch_input;
+select percentile_disc(0.2) within group(order by id) from sketch_input;
 

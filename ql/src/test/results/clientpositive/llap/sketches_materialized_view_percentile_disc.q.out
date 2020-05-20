@@ -37,13 +37,13 @@ POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_1
 PREHOOK: query: explain
-select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
@@ -82,12 +82,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+PREHOOK: query: select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+POSTHOOK: query: select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
@@ -95,12 +95,12 @@ POSTHOOK: Input: default@sketch_input
 rewrite; mv matching	a	2.0
 rewrite; mv matching	b	7.0
 PREHOOK: query: explain
-select 'no rewrite; no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select 'no rewrite; no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -126,7 +126,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col2
                     Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: percentile_cont(0.2, _col2, 1, 0)
+                      aggregations: percentile_disc(0.2, _col2, 1, 0)
                       keys: _col0 (type: char(1))
                       minReductionHashAggr: 0.9090909
                       mode: hash
@@ -145,7 +145,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: percentile_cont(VALUE._col0)
+                aggregations: percentile_disc(VALUE._col0)
                 keys: KEY._col0 (type: char(1))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -168,11 +168,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'no rewrite; no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+PREHOOK: query: select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select 'no rewrite; no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+POSTHOOK: query: select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -193,12 +193,12 @@ POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
-select 'rewrite; but no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select 'rewrite; but no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -266,11 +266,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'rewrite; but no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+PREHOOK: query: select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select 'rewrite; but no mv usage', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+POSTHOOK: query: select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -472,13 +472,13 @@ POSTHOOK: Output: default@mv_1
 POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), (mv_1)default.mv_1.FieldSchema(name:_c1, type:binary, comment:null), ]
 POSTHOOK: Lineage: mv_1.category EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), (mv_1)default.mv_1.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
-select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
@@ -517,12 +517,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+PREHOOK: query: select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select 'rewrite; mv matching', category, percentile_cont(0.2) within group (order by id) from sketch_input group by category
+POSTHOOK: query: select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
@@ -530,13 +530,13 @@ POSTHOOK: Input: default@sketch_input
 rewrite; mv matching	a	2.0
 rewrite; mv matching	b	7.0
 PREHOOK: query: explain
-select 'rewrite;mv matching with rollup',percentile_cont(0.2) within group (order by id) from sketch_input
+select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select 'rewrite;mv matching with rollup',percentile_cont(0.2) within group (order by id) from sketch_input
+select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
@@ -601,12 +601,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'rewrite;mv matching with rollup',percentile_cont(0.2) within group (order by id) from sketch_input
+PREHOOK: query: select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select 'rewrite;mv matching with rollup',percentile_cont(0.2) within group (order by id) from sketch_input
+POSTHOOK: query: select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input

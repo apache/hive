@@ -25,12 +25,12 @@ POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
-select percentile_cont(0.2) within group(order by id) from sketch_input
+select percentile_disc(0.2) within group(order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select percentile_cont(0.2) within group(order by id) from sketch_input
+select percentile_disc(0.2) within group(order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -94,11 +94,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select percentile_cont(0.2) within group(order by id) from sketch_input
+PREHOOK: query: select percentile_disc(0.2) within group(order by id) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select percentile_cont(0.2) within group(order by id) from sketch_input
+POSTHOOK: query: select percentile_disc(0.2) within group(order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

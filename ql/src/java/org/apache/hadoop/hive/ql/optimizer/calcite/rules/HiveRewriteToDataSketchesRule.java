@@ -62,9 +62,9 @@ import com.google.common.collect.Lists;
  *       ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
  *    </pre>
  *  </li>
- *  <li>{@code percentile_cont(0.2) within group (order by id)}
+ *  <li>{@code percentile_disc(0.2) within group (order by id)}
  *    <pre>
- *     SELECT PERCENTILE_CONT(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
+ *     SELECT PERCENTILE_DISC(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
  *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
  *    </pre>
  *  </li>
@@ -85,14 +85,14 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteToDataSketchesRule.class);
   private final Optional<String> countDistinctSketchType;
-  private final Optional<String> percentileContSketchType;
+  private final Optional<String> percentileDiscSketchType;
   private final ProjectFactory projectFactory;
 
   public HiveRewriteToDataSketchesRule(Optional<String> countDistinctSketchType,
-      Optional<String> percentileContSketchType) {
+      Optional<String> percentileDiscSketchType) {
     super(operand(HiveAggregate.class, operand(RelNode.class, any())));
     this.countDistinctSketchType = countDistinctSketchType;
-    this.percentileContSketchType = percentileContSketchType;
+    this.percentileDiscSketchType = percentileDiscSketchType;
     projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
 
@@ -177,8 +177,8 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
       if (countDistinctSketchType.isPresent()) {
         rewrites.add(new CountDistinctRewrite(countDistinctSketchType.get()));
       }
-      if (percentileContSketchType.isPresent()) {
-        rewrites.add(new PercentileContRewrite(percentileContSketchType.get()));
+      if (percentileDiscSketchType.isPresent()) {
+        rewrites.add(new PercentileDiscRewrite(percentileDiscSketchType.get()));
       }
 
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
@@ -280,9 +280,9 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
 
     }
 
-    class PercentileContRewrite extends RewriteProcedure {
+    class PercentileDiscRewrite extends RewriteProcedure {
 
-      public PercentileContRewrite(String sketchClass) {
+      public PercentileDiscRewrite(String sketchClass) {
         super(sketchClass);
       }
 
@@ -291,7 +291,7 @@ public final class HiveRewriteToDataSketchesRule extends RelOptRule {
         if ((aggInput instanceof Project)
             && !aggCall.isDistinct()
             && aggCall.getArgList().size() == 4
-            && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_cont")
+            && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_disc")
             && !aggCall.hasFilter()) {
           List<Integer> argList = aggCall.getArgList();
           RexNode orderLiteral = aggInput.getChildExps().get(argList.get(2));
