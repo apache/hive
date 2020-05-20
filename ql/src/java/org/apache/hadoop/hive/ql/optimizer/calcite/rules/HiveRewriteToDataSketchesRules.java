@@ -34,6 +34,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -369,16 +371,17 @@ public final class HiveRewriteToDataSketchesRules {
   }
 
   /**
-   * Generic support for rewriting an Aggregate into a chain of Project->Aggregate->Project.
+   * Generic support for rewriting an Windowing expression into a join Project->Aggregate->Project.
+   *
    */
   //FIXME
-  public static class AggregateToProjectJoinAggregateProject extends RelOptRule {
+  public static class WindowingToProjectAggregateJoinProject extends RelOptRule {
 
     private final ProjectFactory projectFactory;
     private String sketchType;
 
-    public AggregateToProjectJoinAggregateProject() {
-      super(operand(HiveAggregate.class, any()));
+    public WindowingToProjectAggregateJoinProject() {
+      super(operand(HiveProject.class, any()));
       // FIXME
       this.sketchType = "kll";
 
@@ -392,112 +395,103 @@ public final class HiveRewriteToDataSketchesRules {
         return;
       }
 
-      Aggregate aggregate = vb.aggregate;
-      if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
-        // rule didn't make any changes
-        return;
-      }
-
-      List<AggregateCall> newAggCalls = vb.newAggCalls;
-      List<String> fieldNames = new ArrayList<String>();
-      for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
-        fieldNames.add("ff_" + i);
-      }
-      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
-
-      RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
-          aggregate.getGroupSets(), newAggCalls);
-
-      RelNode newProject =
-          projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
-
-      call.transformTo(newProject);
+      //      Project aggregate = vb.aggregate;
+      //      if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
+      //        // rule didn't make any changes
+      //        return;
+      //      }
+      //
+      //      List<AggregateCall> newAggCalls = vb.newAggCalls;
+      //      List<String> fieldNames = new ArrayList<String>();
+      //      for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
+      //        fieldNames.add("ff_" + i);
+      //      }
+      //      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
+      //
+      //      RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
+      //          aggregate.getGroupSets(), newAggCalls);
+      //
+      //      RelNode newProject =
+      //          projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
+      //
+      //      call.transformTo(newProject);
       return;
 
     }
 
     protected VbuilderPAP processCall(RelOptRuleCall call) {
-      final Aggregate aggregate = call.rel(0);
+      final Project project = call.rel(0);
 
-      if (aggregate.getGroupSets().size() != 1) {
-        // not yet supported
-        return null;
-      }
-
-      return new VB(aggregate, sketchType);
+      return new VB(project, sketchType);
     }
 
     private static class VB extends VbuilderPAP {
 
-        protected VB(Aggregate aggregate, String sketchClass) {
-          super(aggregate, sketchClass);
+      protected VB(Project project, String sketchClass) {
+        super(project, sketchClass);
           processAggregate();
         }
 
-        @Override
-        boolean isApplicable(AggregateCall aggCall) {
-          if (   !aggCall.isDistinct()
-              && aggCall.getAggregation().getName().equalsIgnoreCase("cume_dist")
-              && !aggCall.hasFilter()) {
-            return true;
-          }
-          return false;
+      @Override
+      boolean isApplicable(RexOver over) {
+        if (true) {
+          SqlAggFunction aggOp = over.getAggOperator();
+          RexWindow window = over.getWindow();
+
+          return true;
+        }
+        return false;
         }
 
-        @Override
-        void rewrite(AggregateCall aggCall) {
-          RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
-
-          Integer argIndex = aggCall.getArgList().get(1);
-          RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
-
-          RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-          RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
-          RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
-
-          call = rexBuilder.makeCast(floatType, call);
-          newProjectsBelow.add(call);
-
-          SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
-          boolean distinct = false;
-          boolean approximate = true;
-          boolean ignoreNulls = true;
-          List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
-          int filterArg = aggCall.filterArg;
-          RelCollation collation = aggCall.getCollation();
-          RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-          String name = aggFunction.getName();
-
-          AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-              collation, type, name);
-
-          Integer origFractionIdx = aggCall.getArgList().get(0);
-
-          SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
-          RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
-          projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
-          projRex = rexBuilder.makeCast(origType, projRex);
-
-          newAggCalls.add(newAgg);
-          newProjectsAbove.add(projRex);
+      @Override
+      RexNode rewrite(RexOver over) {
+        return over;
+        //          RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
+        //
+        //          Integer argIndex = aggCall.getArgList().get(1);
+        //          RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
+        //
+        //          RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        //          RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        //          RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+        //
+        //          call = rexBuilder.makeCast(floatType, call);
+        //          newProjectsBelow.add(call);
+        //
+        //          SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        //          boolean distinct = false;
+        //          boolean approximate = true;
+        //          boolean ignoreNulls = true;
+        //          List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
+        //          int filterArg = aggCall.filterArg;
+        //          RelCollation collation = aggCall.getCollation();
+        //          RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+        //          String name = aggFunction.getName();
+        //
+        //          AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+        //              collation, type, name);
+        //
+        //          Integer origFractionIdx = aggCall.getArgList().get(0);
+        //
+        //          SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
+        //          RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
+        //          projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+        //          projRex = rexBuilder.makeCast(origType, projRex);
+        //
+        //          newAggCalls.add(newAgg);
+        //          newProjectsAbove.add(projRex);
         }
+
       }
     }
 
     private static abstract class VbuilderPAP {
       protected final RexBuilder rexBuilder;
 
-      /** The original aggregate RelNode */
-      protected final Aggregate aggregate;
+    /** The original project RelNode */
+    protected final Project project;
       /** The list of the new aggregations */
-      protected final List<AggregateCall> newAggCalls;
-      /**
-       * The new projections expressions inserted above the aggregate
-       *
-       *  These projections should do the neccessary conversions to behave like the original aggregate.
-       *  Most important here is to CAST the final result to the same type as the original aggregate was producing.
-       */
-      protected final List<RexNode> newProjectsAbove;
+    protected final List<RexNode> newProjects;
       /** The new projections expressions inserted belove the aggregate
        *
        * These projections could be used to prepocess the incoming datastream.
@@ -507,49 +501,37 @@ public final class HiveRewriteToDataSketchesRules {
 
       private final String sketchClass;
 
-      protected VbuilderPAP(Aggregate aggregate, String sketchClass) {
-        this.aggregate = aggregate;
+    protected VbuilderPAP(Project project, String sketchClass) {
+      this.project = project;
         this.sketchClass = sketchClass;
-        newAggCalls = new ArrayList<AggregateCall>();
-        newProjectsAbove = new ArrayList<RexNode>();
+      newProjects = new ArrayList<>();
         newProjectsBelow = new ArrayList<RexNode>();
-        rexBuilder = aggregate.getCluster().getRexBuilder();
+      rexBuilder = project.getCluster().getRexBuilder();
 
       }
+
 
       protected final void processAggregate() {
-        // add identity projections
-        addProjectedFields();
 
-        for (AggregateCall aggCall : aggregate.getAggCallList()) {
-          processAggCall(aggCall);
-        }
+      // FIXME later use shuttle
+      for (RexNode expr : project.getChildExps()) {
+        newProjects.add(processAggCall(expr));
       }
 
-      private final void addProjectedFields() {
-        for (int i = 0; i < aggregate.getGroupCount(); i++) {
-          newProjectsAbove.add(rexBuilder.makeInputRef(aggregate, i));
-        }
-        int numInputFields = aggregate.getInput().getRowType().getFieldCount();
-        for (int i = 0; i < numInputFields; i++) {
-          newProjectsBelow.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
-        }
       }
 
-      private final void processAggCall(AggregateCall aggCall) {
-        if (isApplicable(aggCall)) {
-          rewrite(aggCall);
-        } else {
-          appendAggCall(aggCall);
+
+    // FIXME rname
+    private final RexNode processAggCall(RexNode expr) {
+      if(expr.isA(SqlKind.OVER)) {
+        RexOver over=(RexOver) expr;
+        if (isApplicable(over)) {
+          return rewrite(over);
         }
       }
-
-      private final void appendAggCall(AggregateCall aggCall) {
-        RexNode projRex = rexBuilder.makeInputRef(aggCall.getType(), newProjectsAbove.size());
-
-        newAggCalls.add(aggCall);
-        newProjectsAbove.add(projRex);
+      return expr;
       }
+
 
       protected final SqlOperator getSqlOperator(String fnName) {
         UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
@@ -559,9 +541,9 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-      abstract void rewrite(AggregateCall aggCall);
+    abstract RexNode rewrite(RexOver expr);
 
-      abstract boolean isApplicable(AggregateCall aggCall);
+    abstract boolean isApplicable(RexOver expr);
 
     }
 

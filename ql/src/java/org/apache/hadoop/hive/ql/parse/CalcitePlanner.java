@@ -1984,7 +1984,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
 
-        RelOptRule rule = new HiveRewriteToDataSketchesRules.AggregateToProjectJoinAggregateProject();
+        RelOptRule rule = new HiveRewriteToDataSketchesRules.WindowingToProjectAggregateJoinProject();
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
       }
       // Run this optimization early, since it is expanding the operator pipeline.
