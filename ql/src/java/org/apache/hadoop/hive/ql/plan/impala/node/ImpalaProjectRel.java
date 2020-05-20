@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -95,7 +98,7 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("single input union");
     tupleDesc.setIsMaterialized(true);
 
-    for (RelDataTypeField relDataTypeField : hiveProject.getRowType().getFieldList()) {
+    for (RelDataTypeField relDataTypeField : project.getRowType().getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
       slotDesc.setLabel(relDataTypeField.getName());
@@ -103,5 +106,17 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     }
     tupleDesc.computeMemLayout();
     return tupleDesc;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(project);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(project);
   }
 }

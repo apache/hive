@@ -104,10 +104,8 @@ public enum VirtualColumn {
   public static List<VirtualColumn> getRegistry(HiveConf conf) {
     // Virtual columns are dependent on the engine too
     ArrayList<VirtualColumn> l = new ArrayList<>();
-    switch (conf.getExecutionEngine()) {
-    case TEZ:
-    case SPARK:
-    case MR:
+    switch (conf.getEngine()) {
+    case HIVE:
       l.add(BLOCKOFFSET);
       l.add(FILENAME);
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {

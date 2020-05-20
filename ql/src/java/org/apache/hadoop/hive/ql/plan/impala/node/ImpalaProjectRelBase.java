@@ -86,12 +86,11 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
   protected static final Logger LOG = LoggerFactory.getLogger(ImpalaProjectRelBase.class);
 
   protected PlanNode planNode = null;
-
-  protected final HiveProject hiveProject;
+  protected final HiveProject project;
 
   public ImpalaProjectRelBase(HiveProject project) {
     super(project.getCluster(), project.getTraitSet(), project.getInputs(), project.getRowType());
-    this.hiveProject = project;
+    this.project = project;
   }
 
   /**
@@ -101,14 +100,14 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
       throws HiveException, ImpalaException, MetaException {
     ImpalaPlanRel inputRel = getImpalaRelInput(0);
 
-    List<RexOver> overExprs = gatherRexOver(hiveProject.getChildExps());
+    List<RexOver> overExprs = gatherRexOver(project.getChildExps());
     ImpalaRexVisitor visitor = overExprs.isEmpty()
         ? generateVisitor(ctx, inputRel)
         : generateAnalyticVisitor(ctx, inputRel, overExprs);
 
     Map<Integer, Expr> projectExprs = new LinkedHashMap<>();
     int index = 0;
-    for (RexNode rexNode : hiveProject.getProjects()) {
+    for (RexNode rexNode : project.getProjects()) {
       projectExprs.put(index++, rexNode.accept(visitor));
     }
     return ImmutableMap.copyOf(projectExprs);
@@ -147,7 +146,7 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     ExprSubstitutionMap logicalToPhysical = planNode.getOutputSmap();
     // We populate the outputs from the expressions
     Map<RexNode, Expr> mapping = new LinkedHashMap<>();
-    for (int pos : HiveCalciteUtil.getInputRefs(hiveProject.getChildExps())) {
+    for (int pos : HiveCalciteUtil.getInputRefs(project.getChildExps())) {
       mapping.put(RexInputRef.of(pos, inputRel.getRowType()),
           logicalToPhysical.get(inputRel.getExpr(pos)));
     }
@@ -167,16 +166,16 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
   public RelWriter explainTerms(RelWriter pw) {
     RelWriter rw = super.explainTerms(pw);
     if (rw.nest()) {
-      rw.item("fields", hiveProject.getRowType().getFieldNames());
-      rw.item("exprs", hiveProject.getChildExps());
+      rw.item("fields", project.getRowType().getFieldNames());
+      rw.item("exprs", project.getChildExps());
     } else {
       int i = 0;
-      for (RelDataTypeField e : hiveProject.getRowType().getFieldList()) {
+      for (RelDataTypeField e : project.getRowType().getFieldList()) {
         String fieldName = e.getName();
         if (fieldName == null) {
           fieldName = "field#" + i;
         }
-        rw.item(fieldName, hiveProject.getChildExps().get(i));
+        rw.item(fieldName, project.getChildExps().get(i));
         i++;
       }
     }
@@ -187,7 +186,7 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     // planner equivalence set.
     if ((rw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
         && false) {//Always false?
-      rw.item("type", hiveProject.getRowType());
+      rw.item("type", project.getRowType());
     }
 
     return rw;

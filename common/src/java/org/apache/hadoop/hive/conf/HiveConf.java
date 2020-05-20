@@ -119,13 +119,51 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * Supported execution engines for Hive
+   * Supported execution engines for FENG.
+   * HIVE, IMPALA
    */
-  public enum ExecutionEngine {
+  public enum Engine {
     INVALID_ENGINE {
       @Override
       public String toString() {
         return "invalid engine";
+      }
+    },
+    HIVE {
+      @Override
+      public String toString() {
+        return "hive";
+      }
+    },
+    IMPALA {
+      @Override
+      public String toString() {
+        return "impala";
+      }
+    };
+
+    public String getStatsField() {
+      switch (this) {
+      case HIVE:
+        return Constants.HIVE_ENGINE;
+      case IMPALA:
+        return Constants.IMPALA_ENGINE;
+      }
+      throw new RuntimeException("Cannot store statistics for " + toString());
+    }
+  }
+
+  /**
+   * Supported runtimes for engines in FENG.
+   * Currently, they are compatible as follows:
+   * HIVE -> MR, TEZ, SPARK
+   * IMPALA -> IMPALA
+   */
+  public enum Runtime {
+    INVALID_RUNTIME {
+      @Override
+      public String toString() {
+        return "invalid runtime";
       }
     },
     MR  {
@@ -4043,9 +4081,9 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", ExecutionEngine.TEZ.toString(),
-            new StringSet(true,  ExecutionEngine.MR.toString(), ExecutionEngine.TEZ.toString(),
-                    ExecutionEngine.SPARK.toString(), ExecutionEngine.IMPALA.toString()),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", Runtime.TEZ.toString(),
+            new StringSet(true,  Runtime.MR.toString(), Runtime.TEZ.toString(),
+                Runtime.SPARK.toString(), Runtime.IMPALA.toString()),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark, and impala. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
         "and is deprecated in Hive 2 line. It may be removed without further warning."),
@@ -6146,16 +6184,37 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * @return Currently configured hive execution engine.
+   * @return Currently configured execution engine.
    */
-  public ExecutionEngine getExecutionEngine() {
-    ExecutionEngine engine;
-    try {
-      engine = ExecutionEngine.valueOf(this.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).toUpperCase());
-    } catch (Exception e) {
-      return ExecutionEngine.INVALID_ENGINE;
+  public Engine getEngine() {
+    Runtime runtime = getRuntime();
+    Engine engine = Engine.INVALID_ENGINE;
+    switch (runtime) {
+    case MR:
+    case TEZ:
+    case SPARK:
+      engine = Engine.HIVE;
+      break;
+    case IMPALA:
+      engine = Engine.IMPALA;
+      break;
+    case INVALID_RUNTIME:
+      throw new RuntimeException(Runtime.INVALID_RUNTIME.toString());
     }
     return engine;
+  }
+
+  /**
+   * @return Currently configured runtime.
+   */
+  public Runtime getRuntime() {
+    Runtime runtime;
+    try {
+      runtime = Runtime.valueOf(this.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).toUpperCase());
+    } catch (Exception e) {
+      return Runtime.INVALID_RUNTIME;
+    }
+    return runtime;
   }
 
   /**

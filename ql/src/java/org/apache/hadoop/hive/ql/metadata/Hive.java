@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -5246,10 +5247,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (checkTransactional) {
         Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE,
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
+            conf.getEngine().getStatsField(),
             tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       } else {
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
+            conf.getEngine().getStatsField());
       }
       return retv;
     } catch (Exception e) {
@@ -5271,7 +5274,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       return getMSC().getPartitionColumnStatistics(
-          dbName, tableName, partNames, colNames, Constants.HIVE_ENGINE, writeIdList);
+          dbName, tableName, partNames, colNames,
+          conf.getEngine().getStatsField(),
+          writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -5279,18 +5284,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
-     List<String> colNames, List<String> partName, boolean checkTransactional) {
+     List<String> colNames, List<String> partNames, boolean checkTransactional) {
     String writeIdList = null;
     try {
       if (checkTransactional) {
         Table tbl = getTable(dbName, tblName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
+        return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partNames,
+            conf.getEngine().getStatsField(), writeIdList);
       }
-      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, Constants.HIVE_ENGINE, writeIdList);
+      if (conf.getEngine() == Engine.IMPALA) {
+        // TODO: This code needs to be removed when the fallback mechanism is in
+        //       catalogd / HMS (CDPD-10678) so we do not need any special handling
+        //       and using stats for different engines is completely transparent
+        //       for FENG
+        List<ColumnStatisticsObj> colStats = getMSC().getTableColumnStatistics(
+            dbName, tblName, colNames, conf.getEngine().getStatsField());
+        return new AggrStats(colStats, partNames.size());
+      }
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partNames,
+          conf.getEngine().getStatsField(), null);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
-      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+      return new AggrStats(new ArrayList<>(),0);
     }
   }
 

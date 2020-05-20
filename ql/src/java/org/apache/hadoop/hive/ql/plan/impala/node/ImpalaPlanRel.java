@@ -22,11 +22,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
@@ -58,7 +61,7 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
   protected ImmutableList<RelNode> inputs;
   protected ImpalaNodeInfo nodeInfo; // initialized in concrete derived classes
   protected ImmutableMap<Integer, Expr> outputExprs;
-  protected Pair<Integer, Integer> maxIndexInfo = null;
+  protected Pair<Integer, Integer> maxIndexInfo;
 
   /**
    * Creates a <code>ImpalaPlanRel</code>.
@@ -214,4 +217,11 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     }
     return rexCallConjuncts.getOperands();
   }
+
+  @Override
+  public abstract RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq);
+
+  @Override
+  public abstract double estimateRowCount(RelMetadataQuery mq);
+
 }

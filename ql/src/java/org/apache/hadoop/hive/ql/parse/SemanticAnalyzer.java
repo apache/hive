@@ -22,7 +22,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
@@ -54,7 +53,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -68,7 +66,6 @@ import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -90,7 +87,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveConf.ExecutionEngine;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
@@ -12843,7 +12840,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.setResDir(null);
         ctx.setResFile(null);
 
-        if (conf.getExecutionEngine() != ExecutionEngine.IMPALA) {
+        if (conf.getEngine() != Engine.IMPALA) {
           try {
             PlanUtils.addInputsForView(pCtx);
           } catch (HiveException e) {
@@ -12880,7 +12877,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
     }
 
-    if (conf.getExecutionEngine() != ExecutionEngine.IMPALA) {
+    if (conf.getEngine() != Engine.IMPALA) {
       // 7. Perform Logical optimization
       if (LOG.isDebugEnabled()) {
         LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
@@ -15806,6 +15803,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public static boolean isImpalaPlan(HiveConf conf) {
-    return conf.getExecutionEngine() == HiveConf.ExecutionEngine.IMPALA;
+    return conf.getEngine() == Engine.IMPALA;
   }
 }

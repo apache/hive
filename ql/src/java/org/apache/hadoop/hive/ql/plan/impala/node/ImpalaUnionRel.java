@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.collect.Lists;
-import org.apache.calcite.linq4j.Ord;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.Pair;
@@ -152,13 +154,24 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
       break;
       case UNION: {
         RelWriter rw = super.explainTerms(pw);
-        for (Ord<RelNode> ord : Ord.zip(getInputs())) {
-          rw.input("input#" + ord.i, ord.e);
+        for (int i = 0; i < getInputs().size(); i++) {
+          RelNode e = getInput(i);
+          rw.input("input#" + i, e);
         }
         retWriter = rw.item("all", ((HiveUnion)relNode).all);
       }
       break;
     }
     return retWriter;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(relNode);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return mq.getRowCount(relNode);
   }
 }

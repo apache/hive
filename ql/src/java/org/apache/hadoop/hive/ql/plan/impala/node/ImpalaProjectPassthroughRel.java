@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -57,6 +60,16 @@ public class ImpalaProjectPassthroughRel extends ImpalaProjectRelBase {
     Preconditions.checkState(this.outputExprs == null);
     this.outputExprs = createProjectExprs(ctx);
     return planNode;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(project);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return mq.getRowCount(project);
   }
 
 }

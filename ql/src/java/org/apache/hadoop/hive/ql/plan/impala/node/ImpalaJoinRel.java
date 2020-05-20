@@ -21,9 +21,12 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -52,17 +55,17 @@ import java.util.Map;
 public class ImpalaJoinRel extends ImpalaPlanRel {
 
   private JoinNode joinNode = null;
-  private final Join hiveJoin;
-  private final HiveFilter hiveFilter;
+  private final Join join;
+  private final HiveFilter filter;
 
-  public ImpalaJoinRel(Join hiveJoin) {
-    this(hiveJoin, null);
+  public ImpalaJoinRel(Join join) {
+    this(join, null);
   }
 
-  public ImpalaJoinRel(Join hiveJoin, HiveFilter hiveFilter) {
-    super(hiveJoin.getCluster(), hiveJoin.getTraitSet(), hiveJoin.getInputs(), hiveJoin.getRowType());
-    this.hiveJoin = hiveJoin;
-    this.hiveFilter = hiveFilter;
+  public ImpalaJoinRel(Join join, HiveFilter filter) {
+    super(join.getCluster(), join.getTraitSet(), join.getInputs(), join.getRowType());
+    this.join = join;
+    this.filter = filter;
   }
 
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
@@ -86,7 +89,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     ImpalaInferMappingRexVisitor rexVisitor = new ImpalaInferMappingRexVisitor(
         ctx.getRootAnalyzer(), inputRels);
 
-    JoinOperator joinOp = getImpalaJoinOp(hiveJoin);
+    JoinOperator joinOp = getImpalaJoinOp(join);
 
     // CDPD-8688: Impala allows forcing hints for the distribution mode
     // - e.g force broadcast or hash partition join.  However, we are not
@@ -105,7 +108,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     }
 
     // For (left) semi joins don't project the right input's output exprs
-    if (!(hiveJoin instanceof HiveSemiJoin)) {
+    if (!(join instanceof HiveSemiJoin)) {
       int sizeLeft = leftInputRel.numOutputExprs();
       for (Map.Entry<Integer, Expr> e : rightInputRel.getOutputExprsMap().entrySet()) {
         int newKey = e.getKey() + sizeLeft;
@@ -118,8 +121,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     int numEquiJoins = 0;
 
     // check for equijoin and non-equijoins
-    if (!hiveJoin.getCondition().isAlwaysTrue()) {
-      List<RexNode> conjuncts = RelOptUtil.conjunctions(hiveJoin.getCondition());
+    if (!join.getCondition().isAlwaysTrue()) {
+      List<RexNode> conjuncts = RelOptUtil.conjunctions(join.getCondition());
       // convert the conjuncts to Impala Expr
       for (RexNode conj : conjuncts) {
         // canonicalize the equijoin condition such that it is
@@ -133,7 +136,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
           if (n0 instanceof RexInputRef && n1 instanceof RexInputRef &&
               ((RexInputRef) n0).getIndex() > ((RexInputRef) n1).getIndex()) {
             // swap the left and right
-            RexNode newConj = hiveJoin.getCluster().getRexBuilder().
+            RexNode newConj = join.getCluster().getRexBuilder().
                 makeCall(SqlStdOperatorTable.EQUALS, n1, n0);
             conj = newConj;
           }
@@ -176,7 +179,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       tupleIds.addAll(rightInputNode.getTupleIds());
     }
 
-    List<Expr> assignedConjuncts = getConjuncts(hiveFilter, ctx.getRootAnalyzer(), this, tupleIds);
+    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this, tupleIds);
     nodeInfo.setAssignedConjuncts(assignedConjuncts);
     joinNode.init(ctx.getRootAnalyzer());
 
@@ -205,12 +208,24 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     RelWriter rw = super.explainTerms(pw);
-    return rw.item("condition", hiveJoin.getCondition())
-        .item("joinType", hiveJoin.getJoinType().lowerName)
+    return rw.item("condition", join.getCondition())
+        .item("joinType", join.getJoinType().lowerName)
         .itemIf(
             "systemFields",
-            hiveJoin.getSystemFieldList(),
-            !hiveJoin.getSystemFieldList().isEmpty());
+            join.getSystemFieldList(),
+            !join.getSystemFieldList().isEmpty());
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(join);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(join);
   }
 
 }

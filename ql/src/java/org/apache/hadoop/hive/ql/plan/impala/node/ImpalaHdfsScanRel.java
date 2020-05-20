@@ -22,7 +22,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -229,5 +232,17 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       rw = rw.item("condition", filter.getCondition());
     }
     return rw;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(scan);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(scan);
   }
 }

@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
-import org.apache.calcite.linq4j.Ord;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -47,9 +49,7 @@ import java.util.Map;
 public class ImpalaSortRel extends ImpalaPlanRel {
 
   private PlanNode retNode = null;
-
   private final HiveSortLimit sortLimit;
-
   public final HiveFilter filter;
 
   public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs, HiveFilter filter) {
@@ -121,16 +121,29 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     if (rw.nest()) {
       rw.item("collation", sortLimit.getCollation());
     } else {
-      for (Ord<RexNode> ord : Ord.zip(sortLimit.getChildExps())) {
-        rw.item("sort" + ord.i, ord.e);
+      for (int i = 0; i < sortLimit.getChildExps().size(); i++) {
+        RexNode e = sortLimit.getChildExps().get(i);
+        rw.item("sort" + i, e);
       }
-      for (Ord<RelFieldCollation> ord
-          : Ord.zip(sortLimit.getCollation().getFieldCollations())) {
-        rw.item("dir" + ord.i, ord.e.shortString());
+      for (int i = 0; i < sortLimit.getCollation().getFieldCollations().size(); i++) {
+        RelFieldCollation e = sortLimit.getCollation().getFieldCollations().get(i);
+        rw.item("dir" + i, e.shortString());
       }
     }
     rw.itemIf("offset", sortLimit.getOffsetExpr(), sortLimit.getOffsetExpr() != null);
     rw.itemIf("fetch", sortLimit.getFetchExpr(), sortLimit.getFetchExpr() != null);
     return rw;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(sortLimit);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(sortLimit);
   }
 }

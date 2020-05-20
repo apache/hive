@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.apache.calcite.linq4j.Ord;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -59,11 +61,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ImpalaAggregateRel extends ImpalaPlanRel {
-  public final HiveAggregate aggregate;
-
-  public final HiveFilter filter;
 
   public PlanNode aggNode;
+  public final HiveAggregate aggregate;
+  public final HiveFilter filter;
 
   public ImpalaAggregateRel(HiveAggregate aggregate) {
     this(aggregate, null);
@@ -284,13 +285,26 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
         .itemIf("indicator", !Aggregate.noIndicator(aggregate), !Aggregate.noIndicator(aggregate))
         .itemIf("aggs", aggregate.getAggCallList(), rw.nest());
     if (!rw.nest()) {
-      for (Ord<AggregateCall> ord : Ord.zip(aggregate.getAggCallList())) {
-        rw.item(Util.first(ord.e.name, "agg#" + ord.i), ord.e);
+      for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
+        AggregateCall e = aggregate.getAggCallList().get(i);
+        rw.item(Util.first(e.name, "agg#" + i), e);
       }
     }
     if (filter != null) {
       rw = rw.item("condition", filter.getCondition());
     }
     return rw;
+  }
+
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(aggregate);
+  }
+
+  @Override
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(aggregate);
   }
 }

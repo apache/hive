@@ -36,7 +36,7 @@ public class TaskCompilerFactory {
    * into executable units.
    */
   public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    switch (conf.getExecutionEngine()) {
+    switch (conf.getRuntime()) {
       case MR:
         return new MapReduceCompiler();
       case TEZ:
@@ -47,7 +47,7 @@ public class TaskCompilerFactory {
         return new ImpalaCompiler(
                 conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_EXECUTION_MODE).equals("plan"),
                 conf.getLongVar(HiveConf.ConfVars.HIVE_IMPALA_FETCH_SIZE));
-      case INVALID_ENGINE:
+      case INVALID_RUNTIME:
         throw new UnsupportedOperationException("Invalid execution engine specified.");
     }
 
