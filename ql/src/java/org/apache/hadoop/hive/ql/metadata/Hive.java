@@ -3592,6 +3592,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return names;
   }
 
+  public List<String> getPartitionNames(Table tbl, ExprNodeGenericFuncDesc expr, String order,
+       short maxParts) throws HiveException {
+    List<String> names = null;
+    // the exprBytes should not be null by thrift definition
+    byte[] exprBytes = {(byte)-1};
+    if (expr != null) {
+      exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+    }
+    try {
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      names = getMSC().listPartitionNames(tbl.getCatalogName(), tbl.getDbName(),
+          tbl.getTableName(), defaultPartitionName, exprBytes, order, maxParts);
+    } catch (NoSuchObjectException nsoe) {
+      return Lists.newArrayList();
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    return names;
+  }
+
   /**
    * get all the partitions that the table has
    *

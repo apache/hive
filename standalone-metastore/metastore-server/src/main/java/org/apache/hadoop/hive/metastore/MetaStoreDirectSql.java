@@ -497,6 +497,133 @@ class MetaStoreDirectSql {
   }
 
   /**
+   * Get partition names by using direct SQL queries.
+   * @param filter filter to use with direct sql
+   * @param partitionKeys partition columns
+   * @param defaultPartName default partition name
+   * @param order the specification for ordering partition names
+   * @param max maximum number of partition names to return
+   * @return list of partition names
+   */
+  public List<String> getPartitionNamesViaSql(SqlFilterForPushdown filter, List<FieldSchema> partitionKeys,
+      String defaultPartName, String order, Integer max) throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
+    List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
+    String catName = filter.catName.toLowerCase(), dbName = filter.dbName.toLowerCase(),
+        tblName = filter.tableName.toLowerCase(), sqlFilter = filter.filter;
+    List<Object> paramsForFilter = filter.params;
+    List<String> joins =  filter.joins;
+    if (joins.isEmpty()) {
+      for (int i = 0; i < partitionKeys.size(); i++) {
+        joins.add(null);
+      }
+    }
+
+    StringBuilder orderColumns = new StringBuilder(), orderClause = new StringBuilder();
+    int i = 0;
+    List<Object> paramsForOrder = new ArrayList<Object>();
+    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    for (Object[] orderSpec: orderSpecs) {
+      int partColIndex = (int)orderSpec[0];
+      String orderAlias = "ODR" + (i++);
+      String tableValue, tableAlias;
+      if (joins.get(partColIndex) == null) {
+        tableAlias = "ORDER"  + partColIndex;
+        joins.set(partColIndex, "inner join " + PARTITION_KEY_VALS + " \"" + tableAlias
+            + "\" on \""  + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + " and \"" + tableAlias + "\".\"INTEGER_IDX\" = " + partColIndex);
+        tableValue = " \"" + tableAlias + "\".\"PART_KEY_VAL\" ";
+      } else {
+        tableAlias = "FILTER" + partColIndex;
+        tableValue = " \"" + tableAlias + "\".\"PART_KEY_VAL\" ";
+      }
+
+      String tableColumn = tableValue;
+      String colType = partitionKeys.get(partColIndex).getType();
+      PartitionFilterGenerator.FilterType type =
+          PartitionFilterGenerator.FilterType.fromType(colType);
+      if (type == PartitionFilterGenerator.FilterType.Date) {
+        if (dbType == DatabaseProduct.ORACLE) {
+          tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
+        } else {
+          tableValue = "cast(" + tableValue + " as date)";
+        }
+      } else if (type == PartitionFilterGenerator.FilterType.Integral) {
+        tableValue = "CAST(" + tableColumn + " AS decimal(21,0))";
+      }
+      String tableValue0 = tableValue;
+      tableValue = " (case when " + tableColumn + " <> ?";
+      paramsForOrder.add(defaultPartName);
+      if (dbHasJoinCastBug) {
+        tableValue += (" and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and "
+            + DBS + ".\"CTLG_NAME\" = ? and "
+            + "\"" + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\" and "
+            + "\"" + tableAlias + "\".\"INTEGER_IDX\" = " + partColIndex);
+        paramsForOrder.add(tblName);
+        paramsForOrder.add(dbName);
+        paramsForOrder.add(catName);
+      }
+      tableValue += " then " + tableValue0 + " else null end) AS \"" + orderAlias + "\" ";
+      orderColumns.append(tableValue).append(",");
+      orderClause.append(" \"").append(orderAlias).append("\" ")
+          .append((String)orderSpec[1]).append(",");
+    }
+
+    for (int j = 0; j < joins.size(); j++) {
+      if (joins.get(j) == null) {
+        joins.remove(j--);
+      }
+    }
+    if (orderClause.length() > 0) {
+      orderClause.setLength(orderClause.length() - 1);
+      orderColumns.setLength(orderColumns.length() - 1);
+    }
+
+    String orderCls = " order by " +
+        (orderClause.length() > 0 ? orderClause.toString() : "\"PART_NAME\" asc");
+    String columns = orderColumns.length() > 0 ? (", " + orderColumns.toString()) : "";
+    String queryText =
+        "select " + PARTITIONS + ".\"PART_NAME\"" + columns + " from " + PARTITIONS + " "
+            + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+            + "  and " + TBLS + ".\"TBL_NAME\" = ? "
+            + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+            + "  and " + DBS + ".\"NAME\" = ? "
+            + join(joins, ' ')
+            + " where " + DBS + ".\"CTLG_NAME\" = ? "
+            + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderCls;
+
+    Object[] params = new Object[paramsForFilter.size() + paramsForOrder.size() + 3];
+    i = 0;
+    for (; i < paramsForOrder.size(); i++) {
+      params[i] = paramsForOrder.get(i);
+    }
+    params[i] = tblName;
+    params[i+1] = dbName;
+    params[i+2] = catName;
+    for (int j = 0; j < paramsForFilter.size(); j++) {
+      params[i + j + 3] = paramsForFilter.get(j);
+    }
+
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<String> partNames = new LinkedList<String>();
+    int limit = (max == null ? -1 : max);
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      List<Object> sqlResult = executeWithArray(query, params, queryText, limit);
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      for (Object result : sqlResult) {
+        Object obj = !columns.isEmpty() ? ((Object[]) result)[0] : result;
+        partNames.add((String)obj);
+      }
+    } finally {
+      query.closeAll();
+    }
+    return partNames;
+  }
+
+
+  /**
    * Gets partitions by using direct SQL queries.
    * @param catName Metastore catalog name.
    * @param dbName Metastore db name.
@@ -647,6 +774,17 @@ class MetaStoreDirectSql {
     private String catName;
     private String dbName;
     private String tableName;
+    // whether should compact null elements in joins when generating sql filter.
+    private boolean compactJoins = true;
+    SqlFilterForPushdown() {
+
+    }
+    SqlFilterForPushdown(Table table, boolean compactJoins) {
+      this.catName = table.getCatName();
+      this.dbName = table.getDbName();
+      this.tableName = table.getTableName();
+      this.compactJoins = compactJoins;
+    }
   }
 
   public boolean generateSqlFilterForPushdown(String catName, String dbName, String tableName,
@@ -661,7 +799,7 @@ class MetaStoreDirectSql {
     result.filter = PartitionFilterGenerator.generateSqlFilter(catName, dbName, tableName,
         partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug,
         ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
-        dbType, schema);
+        dbType, schema, result.compactJoins);
     return result.filter != null;
   }
 
@@ -1031,7 +1169,7 @@ class MetaStoreDirectSql {
     private static String generateSqlFilter(String catName, String dbName, String tableName,
         List<FieldSchema> partitionKeys, ExpressionTree tree, List<Object> params,
         List<String> joins, boolean dbHasJoinCastBug, String defaultPartName,
-        DatabaseProduct dbType, String schema) throws MetaException {
+        DatabaseProduct dbType, String schema, boolean compactJoins) throws MetaException {
       if (tree == null) {
         // consistent with other APIs like makeExpressionTree, null is returned to indicate that
         // the filter could not pushed down due to parsing issue etc
@@ -1050,9 +1188,13 @@ class MetaStoreDirectSql {
       }
 
       // Some joins might be null (see processNode for LeafNode), clean them up.
-      for (int i = 0; i < joins.size(); ++i) {
-        if (joins.get(i) != null) continue;
-        joins.remove(i--);
+      if (compactJoins) {
+        for (int i = 0; i < joins.size(); ++i) {
+          if (joins.get(i) != null) {
+            continue;
+          }
+          joins.remove(i--);
+        }
       }
       return "(" + visitor.filterBuffer.getFilter() + ")";
     }
