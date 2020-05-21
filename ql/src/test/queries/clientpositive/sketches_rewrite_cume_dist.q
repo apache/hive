@@ -21,12 +21,9 @@ SELECT id,CUME_DIST() OVER (ORDER BY id),
     ) q
 order by id;
 
-
-
-
 -- see if rewrite happens
 explain
-select id,cume_dist() over (order by id) from sketch_input;
+select id,'rewrite',cume_dist() over (order by id) from sketch_input order by id;
 
-select id,cume_dist() over (order by id) from sketch_input;
+select id,'rewrite',cume_dist() over (order by id) from sketch_input order by id;
 
