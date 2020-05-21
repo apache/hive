@@ -1985,12 +1985,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED)) {
           String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.PercentileDiscRewrite(sketchType);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.CumeDistRewrite(sketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
-
-        RelOptRule rule = new HiveRewriteToDataSketchesRules.WindowingToProjectAggregateJoinProject();
-        generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
       }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&

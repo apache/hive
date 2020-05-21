@@ -377,13 +377,11 @@ public final class HiveRewriteToDataSketchesRules {
   }
 
   /**
-   * Generic support for rewriting an Windowing expression into a join Project->Aggregate->Project.
-   *
+   * Generic support for rewriting Windowing expression into a different form usually using joins.
    */
-  //FIXME
-  public static class WindowingToProjectAggregateJoinProject extends RelOptRule {
+  private static abstract class WindowingToProjectAggregateJoinProject extends RelOptRule {
 
-    private final String sketchType;
+    protected final String sketchType;
 
     public WindowingToProjectAggregateJoinProject(String sketchType) {
       super(operand(HiveProject.class, any()));
@@ -395,7 +393,7 @@ public final class HiveRewriteToDataSketchesRules {
 
       final Project project = call.rel(0);
 
-      VB vb = new VB(sketchType, call.builder());
+      VbuilderPAP vb = buildProcessor(call);
       RelNode newProject = vb.processProject(project);
 
       if (newProject instanceof Project && ((Project) newProject).getChildExps().equals(project.getChildExps())) {
@@ -403,6 +401,69 @@ public final class HiveRewriteToDataSketchesRules {
       } else {
         call.transformTo(newProject);
       }
+    }
+
+    protected abstract VbuilderPAP buildProcessor(RelOptRuleCall call);
+
+
+    protected static abstract class VbuilderPAP {
+      private final String sketchClass;
+      protected final RelBuilder relBuilder;
+      protected final RexBuilder rexBuilder;
+
+      protected VbuilderPAP(String sketchClass, RelBuilder relBuilder) {
+        this.sketchClass = sketchClass;
+        this.relBuilder = relBuilder;
+        rexBuilder = relBuilder.getRexBuilder();
+      }
+
+      protected RelNode processProject(Project project) {
+        relBuilder.push(project.getInput());
+        // FIXME later use shuttle
+        List<RexNode> newProjects = new ArrayList<RexNode>();
+        for (RexNode expr : project.getChildExps()) {
+          newProjects.add(processCall(expr));
+        }
+        relBuilder.project(newProjects);
+        return relBuilder.build();
+      }
+
+      private final RexNode processCall(RexNode expr) {
+        if (expr instanceof RexOver) {
+          RexOver over = (RexOver) expr;
+          if (isApplicable(over)) {
+            return rewrite(over);
+          }
+        }
+        return expr;
+      }
+
+      protected final SqlOperator getSqlOperator(String fnName) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        return fn.getCalciteFunction().get();
+      }
+
+      abstract RexNode rewrite(RexOver expr);
+
+      abstract boolean isApplicable(RexOver expr);
+
+    }
+
+  }
+
+  public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
+
+    public CumeDistRewrite(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+
+      return new VB(sketchType, call.builder());
     }
 
     private static class VB extends VbuilderPAP {
@@ -424,7 +485,7 @@ public final class HiveRewriteToDataSketchesRules {
           }
         }
         return false;
-        }
+      }
 
       @Override
       RexNode rewrite(RexOver over) {
@@ -507,66 +568,6 @@ public final class HiveRewriteToDataSketchesRules {
         RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
         return floatType;
       }
-
     }
-
-    private static abstract class VbuilderPAP {
-      private final String sketchClass;
-      protected final RelBuilder relBuilder;
-      protected final RexBuilder rexBuilder;
-
-      protected VbuilderPAP(String sketchClass, RelBuilder relBuilder) {
-        this.sketchClass = sketchClass;
-        this.relBuilder = relBuilder;
-        rexBuilder = relBuilder.getRexBuilder();
-      }
-
-      static class P {
-        RelNode input;
-        RexNode expr;
-
-        public P(RelNode input, RexNode expr) {
-          this.input = input;
-          this.expr = expr;
-        }
-      }
-
-      protected RelNode processProject(Project project) {
-        relBuilder.push(project.getInput());
-
-        // FIXME later use shuttle
-        RelNode input = project.getInput();
-        List<RexNode> newProjects = new ArrayList<RexNode>();
-        for (RexNode expr : project.getChildExps()) {
-          newProjects.add(processCall(expr));
-        }
-        relBuilder.project(newProjects);
-        return relBuilder.build();
-      }
-
-      private final RexNode processCall(RexNode expr) {
-        if (expr instanceof RexOver) {
-          RexOver over = (RexOver) expr;
-          if (isApplicable(over)) {
-            return rewrite(over);
-          }
-        }
-        return expr;
-      }
-
-      protected final SqlOperator getSqlOperator(String fnName) {
-        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
-        if (!fn.getCalciteFunction().isPresent()) {
-          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
-        }
-        return fn.getCalciteFunction().get();
-      }
-
-      abstract RexNode rewrite(RexOver expr);
-
-      abstract boolean isApplicable(RexOver expr);
-
-    }
-
   }
 }
