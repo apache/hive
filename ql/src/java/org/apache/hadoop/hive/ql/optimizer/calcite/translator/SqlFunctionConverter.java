@@ -672,14 +672,15 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeInference,
             udfInfo.operandTypeChecker);
         break;
-      //      case "cume_dist":
-      //        calciteAggFn = new HiveSqlVarianceAggFunction(
-      //            "cume_dist",
-      //            SqlKind.CUME_DIST,
-      //            udfInfo.returnTypeInference,
-      //            udfInfo.operandTypeInference,
-      //            udfInfo.operandTypeChecker);
-      //        break;
+      case "cume_dist":
+        int asd = 1;
+        //        calciteAggFn = new HiveSqlVarianceAggFunction(
+        //            "cume_dist",
+        //            SqlKind.CUME_DIST,
+        //            udfInfo.returnTypeInference,
+        //            udfInfo.operandTypeInference,
+        //            udfInfo.operandTypeChecker);
+        //        break;
       default:
         calciteAggFn = new CalciteUDAF(
             isDistinct,

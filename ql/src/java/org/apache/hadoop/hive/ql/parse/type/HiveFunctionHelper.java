@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
@@ -387,7 +386,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       throws SemanticException {
     TypeInfo returnType = null;
 
-    if (FunctionRegistry.isRankingFunction(aggregateName)) {
+    if (false && FunctionRegistry.isRankingFunction(aggregateName)) {
       // Rank functions type is 'int'/'double'
       if (aggregateName.equalsIgnoreCase("percent_rank")) {
         returnType = TypeInfoFactory.doubleTypeInfo;
