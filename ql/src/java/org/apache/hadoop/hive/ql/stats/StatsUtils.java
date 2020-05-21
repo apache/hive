@@ -1612,6 +1612,29 @@ public class StatsUtils {
     return colStats;
   }
 
+  /**
+   * Extract column statistics from the parent operator statistics using the specified expressions.
+   *
+   * The method may not return column statistics for every expression specified in the input. Expressions that cannot
+   * be mapped to the parent operator are ignored.
+   *
+   * @param conf the specified configuration
+   * @param parentStats the statistics of the parent operator
+   * @param expressions the expressions over the parent operator for which we want to extract column statistics
+   * @return the column statistics for the specified expressions
+   */
+  public static List<ColStatistics> getColStatisticsFromExpressions(HiveConf conf, Statistics parentStats,
+      List<ExprNodeDesc> expressions) {
+    List<ColStatistics> stats = new ArrayList<>();
+    for (ExprNodeDesc exp : expressions) {
+      ColStatistics cStat = getColStatisticsFromExpression(conf, parentStats, exp);
+      if (cStat != null) {
+        stats.add(cStat);
+      }
+    }
+    return stats;
+  }
+
   private static ColStatistics buildColStatForConstant(HiveConf conf, long numRows, ExprNodeConstantDesc encd) {
 
     long numNulls = 0;
