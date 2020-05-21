@@ -568,6 +568,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            */
           LOG.error("OpenTxnTimeOut exceeded commit duration {}, deleting transactionIds: {}", elapsedMillis, txnIds);
           deleteInvalidOpenTransactions(dbConn, txnIds);
+          dbConn.commit();
           /*
            * We do not throw RetryException directly, to not circumvent the max retry limit
            */
