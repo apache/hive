@@ -499,44 +499,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         return new P(newInput, projRex);
 
-
-        //        project.getInput();
-
-        //          RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
-        //
-        //          Integer argIndex = aggCall.getArgList().get(1);
-        //          RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
-        //
-        //          RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-        //          RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
-        //          RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
-        //
-        //          call = rexBuilder.makeCast(floatType, call);
-        //          newProjectsBelow.add(call);
-        //
-        //                  SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
-        //                  boolean distinct = false;
-        //                  boolean approximate = true;
-        //                  boolean ignoreNulls = true;
-        //                  List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
-        //                  int filterArg = aggCall.filterArg;
-        //                  RelCollation collation = aggCall.getCollation();
-        //                  RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-        //                  String name = aggFunction.getName();
-        //
-        //          AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-        //              collation, type, name);
-        //
-        //          Integer origFractionIdx = aggCall.getArgList().get(0);
-        //
-        //          SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
-        //          RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
-        //          projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
-        //          projRex = rexBuilder.makeCast(origType, projRex);
-        //
-        //          newAggCalls.add(newAgg);
-        //          newProjectsAbove.add(projRex);
-        }
+      }
 
       private RexNode getItemOperator(RexNode arr, RexNode offset) {
 

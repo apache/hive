@@ -14,11 +14,12 @@ select id,cume_dist() over (order by id) from sketch_input;
 
 set hive.optimize.bi.enabled=true;
 
-SELECT id,11, CUME_DIST() OVER (ORDER BY id),
-    ds_quantile_doubles_cdf(ds, CAST(id AS DOUBLE) - 0.01)[0]
+SELECT id,CUME_DIST() OVER (ORDER BY id),
+    ds_quantile_doubles_cdf(ds, CAST(id AS DOUBLE) - 0.5/ds_quantile_doubles_n(ds))[0]
     FROM sketch_input JOIN (
       SELECT ds_quantile_doubles_sketch(CAST(id AS DOUBLE)) AS ds FROM sketch_input
-    ) q;
+    ) q
+order by id;
 
 
 
