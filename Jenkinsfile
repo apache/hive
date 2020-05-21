@@ -88,7 +88,7 @@ def hdbPodTemplate(closure) {
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1000m',
-        resourceRequestMemory: '6500Mi',
+        resourceRequestMemory: '6200Mi',
         resourceLimitMemory: '12000Mi'
     ),
   ], yaml:'''
