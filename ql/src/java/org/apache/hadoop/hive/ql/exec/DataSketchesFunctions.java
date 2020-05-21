@@ -166,8 +166,14 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private void registerAsHiveFunction(SketchFunctionDescriptor sfd) {
     if (sfd != null && sfd.getReturnRelDataType().isPresent()) {
       SqlFunction cdfFn =
-          new HiveSqlFunction(sfd.name, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(sfd.getReturnRelDataType().get()),
-              InferTypes.ANY_NULLABLE, OperandTypes.family(), SqlFunctionCategory.USER_DEFINED_FUNCTION, true, false);
+          new HiveSqlFunction(sfd.name,
+              SqlKind.OTHER_FUNCTION,
+              ReturnTypes.explicit(sfd.getReturnRelDataType().get()),
+              InferTypes.ANY_NULLABLE,
+              OperandTypes.family(),
+              SqlFunctionCategory.USER_DEFINED_FUNCTION,
+              true,
+              false);
 
       sfd.setCalciteFunction(cdfFn);
     }
