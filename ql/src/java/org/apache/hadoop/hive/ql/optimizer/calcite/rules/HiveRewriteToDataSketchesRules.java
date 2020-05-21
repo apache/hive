@@ -467,22 +467,18 @@ public final class HiveRewriteToDataSketchesRules {
 
         relBuilder.join(JoinRelType.INNER);
 
-        RelNode newInput = relBuilder.peek();
-        RexInputRef sketchInputRef = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
-        RexNode projRex;
-
+        // long story short: CAST(CDF(X-(0.5/N))[0] AS FLOAT)
+        RexInputRef sketchInputRef = relBuilder.field(relBuilder.peek().getRowType().getFieldCount() - 1);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-
         SqlOperator getN = getSqlOperator(DataSketchesFunctions.GET_N);
-        RexNode adjust = rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE,
+        RexNode projRex = rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE,
               relBuilder.literal(.5),
               rexBuilder.makeCall(getN, sketchInputRef)
             );
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, castedKey, adjust);
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, castedKey, projRex);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
-
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
