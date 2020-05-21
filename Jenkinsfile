@@ -50,7 +50,7 @@ ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-#export MAVEN_OPTS="-Xmx1333m"
+export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
