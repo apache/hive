@@ -462,7 +462,6 @@ public final class HiveRewriteToDataSketchesRules {
 
     @Override
     protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
-
       return new VB(sketchType, call.builder());
     }
 
