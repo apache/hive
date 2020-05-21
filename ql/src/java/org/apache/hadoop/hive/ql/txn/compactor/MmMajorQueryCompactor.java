@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Lists;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,9 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
@@ -53,9 +50,6 @@ final class MmMajorQueryCompactor extends QueryCompactor {
             table.getParameters(), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
-    String tmpLocation = Util.generateTmpPath(storageDescriptor);
-    Path baseLocation = new Path(tmpLocation, "_base");
-
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);
     driverConf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
@@ -64,13 +58,15 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
     String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
-    List<String> createTableQueries =
-        getCreateQueries(tmpTableName, table, partition == null ? table.getSd() : partition.getSd(),
-            baseLocation.toString());
+    Path resultBaseDir = QueryCompactor.Util.getCompactionResultDir(
+        storageDescriptor, writeIds, driverConf, true, true, false);
+
+    List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor,
+        resultBaseDir.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
-        createTableQueries, compactionQueries, dropQueries);
+        Lists.newArrayList(resultBaseDir), createTableQueries, compactionQueries, dropQueries);
   }
 
   /**
@@ -81,26 +77,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    org.apache.hadoop.hive.ql.metadata.Table tempTable = Hive.get().getTable(tmpTableName);
-    String from = tempTable.getSd().getLocation();
-    Path fromPath = new Path(from), toPath = new Path(dest);
-    FileSystem fs = fromPath.getFileSystem(conf);
-    // Assume the high watermark can be used as maximum transaction ID.
-    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
-    //getAcidState() doesn't check if X is valid in base_X_vY for compacted base dirs.
-    long maxTxn = actualWriteIds.getHighWatermark();
-    AcidOutputFormat.Options options =
-        new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn).bucket(0)
-            .statementId(-1).visibilityTxnId(compactorTxnId);
-    Path newBaseDir = AcidUtils.createFilename(toPath, options).getParent();
-    if (!fs.exists(fromPath)) {
-      LOG.info(from + " not found.  Assuming 0 splits. Creating " + newBaseDir);
-      fs.mkdirs(newBaseDir);
-      return;
-    }
-    LOG.info("Moving contents of " + from + " to " + dest);
-    fs.rename(fromPath, newBaseDir);
-    fs.delete(fromPath, true);
+    Util.cleanupEmptyDir(conf, tmpTableName);
   }
 
   private List<String> getCreateQueries(String tmpTableName, Table table,

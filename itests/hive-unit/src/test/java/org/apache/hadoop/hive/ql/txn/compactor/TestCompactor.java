@@ -818,95 +818,130 @@ public class TestCompactor {
     verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
   }
 
-  @Test
-  public void mmTableOriginalsOrc() throws Exception {
-    mmTableOriginals("ORC");
+  @Test public void mmTableOriginalsMajorOrc() throws Exception {
+    mmTableOriginalsMajor("orc", true);
   }
 
-  @Test
-  public void mmTableOriginalsText() throws Exception {
-    mmTableOriginals("TEXTFILE");
+  @Test public void mmTableOriginalsMajorText() throws Exception {
+    mmTableOriginalsMajor("textfile", false);
   }
 
-  private void mmTableOriginals(String format) throws Exception {
-    // Originals split won't work due to MAPREDUCE-7086 issue in FileInputFormat.
-    boolean isBrokenUntilMapreduce7086 = "TEXTFILE".equals(format);
+  /**
+   * Major compact an mm table that contains original files.
+   */
+  private void mmTableOriginalsMajor(String format, boolean allowOriginals) throws Exception {
+    driver.getConf().setBoolVar(ConfVars.HIVE_MM_ALLOW_ORIGINALS, allowOriginals);
     String dbName = "default";
     String tblName = "mm_nonpart";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
-    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
-        format + " TBLPROPERTIES ('transactional'='false')", driver);
-    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
+        + " TBLPROPERTIES ('transactional'='false')", driver);
     Table table = msClient.getTable(dbName, tblName);
 
     executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
-        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM " + tblName
+        + " UNION ALL SELECT a,b FROM " + tblName, driver);
 
     verifyFooBarResult(tblName, 3);
 
     FileSystem fs = FileSystem.get(conf);
     executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
-       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+        + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
 
-    verifyFooBarResult(tblName, 3);
+    if (allowOriginals) {
+      verifyDeltaCount(table.getSd(), fs, 0);
+      verifyFooBarResult(tblName, 3);
 
-    runMajorCompaction(dbName, tblName);
-    verifyFooBarResult(tblName, 3);
-    verifyHasBase(table.getSd(), fs, "base_0000001_v0000009");
+      runMajorCompaction(dbName, tblName);
+      verifyFooBarResult(tblName, 3);
+      verifyHasBase(table.getSd(), fs, "base_0000001_v0000009");
+    } else {
+      verifyDeltaCount(table.getSd(), fs, 1);
+      // 1 delta dir won't be compacted. Skip testing major compaction.
+    }
+  }
 
-    // Try with an extra delta.
+  @Test public void mmMajorOriginalsDeltasOrc() throws Exception {
+    mmMajorOriginalsDeltas("orc", true);
+  }
+
+  @Test public void mmMajorOriginalsDeltasText() throws Exception {
+    mmMajorOriginalsDeltas("textfile", false);
+  }
+
+  /**
+   * Major compact an mm table with both original and delta files.
+   */
+  private void mmMajorOriginalsDeltas(String format, boolean allowOriginals) throws Exception {
+    driver.getConf().setBoolVar(ConfVars.HIVE_MM_ALLOW_ORIGINALS, allowOriginals);
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    FileSystem fs = FileSystem.get(conf);
     executeStatementOnDriver("drop table if exists " + tblName, driver);
-    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
-        format + " TBLPROPERTIES ('transactional'='false')", driver);
-    table = msClient.getTable(dbName, tblName);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
+        + " TBLPROPERTIES ('transactional'='false')", driver);
+    Table table = msClient.getTable(dbName, tblName);
 
     executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
-        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM " + tblName
+        + " UNION ALL SELECT a,b FROM " + tblName, driver);
     verifyFooBarResult(tblName, 3);
 
     executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
-       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
-        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
-
-    // Neither select nor compaction (which is a select) wil work after this.
-    if (isBrokenUntilMapreduce7086) return;
+        + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM " + tblName
+        + " UNION ALL SELECT a,b FROM " + tblName, driver);
 
     verifyFooBarResult(tblName, 9);
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 9);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000023");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000010");
+  }
 
+  @Test public void mmMajorOriginalsBaseOrc() throws Exception {
+    mmMajorOriginalsBase("orc", true);
+  }
+
+  @Test public void mmMajorOriginalsBaseText() throws Exception {
+    mmMajorOriginalsBase("textfile", false);
+  }
+
+  /**
+   * Insert overwrite and major compact an mm table with only original files.
+   *
+   * @param format file format for table
+   * @throws Exception
+   */
+  private void mmMajorOriginalsBase(String format, boolean allowOriginals) throws Exception {
+    driver.getConf().setBoolVar(ConfVars.HIVE_MM_ALLOW_ORIGINALS, allowOriginals);
     // Try with an extra base.
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    FileSystem fs = FileSystem.get(conf);
     executeStatementOnDriver("drop table if exists " + tblName, driver);
-    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
-        format + " TBLPROPERTIES ('transactional'='false')", driver);
-    table = msClient.getTable(dbName, tblName);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
+        + " TBLPROPERTIES ('transactional'='false')", driver);
+    Table table = msClient.getTable(dbName, tblName);
 
     executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
-    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
-        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM " + tblName
+        + " UNION ALL SELECT a,b FROM " + tblName, driver);
     verifyFooBarResult(tblName, 3);
 
     executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
-       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
-    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tblName + " SELECT a,b FROM "
-        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+        + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tblName + " SELECT a,b FROM " + tblName
+        + " UNION ALL SELECT a,b FROM " + tblName, driver);
     verifyFooBarResult(tblName, 6);
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 6);
     verifyHasBase(table.getSd(), fs, "base_0000002");
-
-    msClient.close();
   }
-
 
   @Test
   public void mmTableBucketed() throws Exception {
@@ -1059,8 +1094,8 @@ public class TestCompactor {
 
   }
 
-  private void verifyFooBarResult(String tblName, int count) throws Exception, IOException {
-    List<String> valuesReadFromHiveDriver = new ArrayList<String>();
+  private void verifyFooBarResult(String tblName, int count) throws Exception {
+    List<String> valuesReadFromHiveDriver = new ArrayList<>();
     executeStatementOnDriver("SELECT a,b FROM " + tblName, driver);
     driver.getResults(valuesReadFromHiveDriver);
     Assert.assertEquals(2 * count, valuesReadFromHiveDriver.size());
