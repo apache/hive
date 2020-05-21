@@ -19,15 +19,29 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition.show;
 
 import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Operation process of showing the partitions of a table.
@@ -44,11 +58,14 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
     }
 
-    List<String> parts = null;
-    if (desc.getPartSpec() != null) {
-      parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(), desc.getPartSpec(), (short) -1);
+    List<String> parts;
+    if (desc.getCond() != null || desc.getOrder() != null) {
+      parts = getPartitionNames(tbl);
+    } else if (desc.getPartSpec() != null) {
+      parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(),
+          desc.getPartSpec(), desc.getLimit());
     } else {
-      parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short) -1);
+      parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(), desc.getLimit());
     }
 
     // write the results in the file
@@ -59,5 +76,43 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
     }
 
     return 0;
+  }
+
+  // Get partition names if order or filter is specified.
+  private List<String> getPartitionNames(Table tbl) throws HiveException {
+    List<String> partNames;
+    ExprNodeDesc predicate = desc.getCond();
+    if (desc.getPartSpec() != null) {
+      List<FieldSchema> fieldSchemas = tbl.getPartitionKeys();
+      Map<String, String> colTypes = new HashMap<String, String>();
+      for (FieldSchema fs : fieldSchemas) {
+        colTypes.put(fs.getName().toLowerCase(), fs.getType());
+      }
+      for (Map.Entry<String, String> entry : desc.getPartSpec().entrySet()) {
+        String type = colTypes.get(entry.getKey().toLowerCase());
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
+        Object val = entry.getValue();
+        if (!pti.equals(TypeInfoFactory.stringTypeInfo)) {
+          Object converted = ObjectInspectorConverters.getConverter(
+              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(TypeInfoFactory.stringTypeInfo),
+              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti))
+              .convert(val);
+          if (converted == null) {
+            throw new HiveException("Cannot convert to " + type + " from string, value: " + val);
+          }
+          val = converted;
+        }
+        List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+        children.add(new ExprNodeColumnDesc(pti, entry.getKey().toLowerCase(), null, true));
+        children.add(new ExprNodeConstantDesc(pti, val));
+        ExprNodeDesc exprNodeDesc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), children);
+        predicate = (predicate == null) ? exprNodeDesc :
+            ExprNodeDescUtils.mergePredicates(exprNodeDesc, predicate);
+      }
+    }
+
+    partNames = context.getDb().getPartitionNames(tbl, (ExprNodeGenericFuncDesc) predicate,
+        desc.getOrder(), desc.getLimit());
+    return partNames;
   }
 }

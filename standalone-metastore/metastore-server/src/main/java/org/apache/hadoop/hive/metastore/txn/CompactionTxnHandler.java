@@ -1097,12 +1097,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        try {
-          checkRetryable(dbConn, e, "markFailed(" + ci + ")");
-        }
-        catch(MetaException ex) {
-          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
-        }
+        checkRetryable(dbConn, e, "markFailed(" + ci + ")");
         LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
       } finally {
         close(rs, stmt, null);
@@ -1132,12 +1127,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("setHadoopJobId(" + hadoopJobId + "," + id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        try {
-          checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
-        }
-        catch(MetaException ex) {
-          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
-        }
+        checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
         LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ") failed: " + e.getMessage(), e);
       } finally {
         close(null, stmt, dbConn);

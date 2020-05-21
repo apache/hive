@@ -261,30 +261,20 @@ STAGE PLANS:
                   partition values:
                     ds 2011-10-13
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"keymap":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns keymap,value
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1_old
-                    numFiles 1
-                    numRows 1
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 14
-                    serialization.ddl struct t1_old { string keymap, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 15
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns keymap,value
@@ -296,10 +286,8 @@ STAGE PLANS:
                       name default.t1_old
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct t1_old { string keymap, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.t1_old
                   name: default.t1_old
@@ -346,30 +334,20 @@ STAGE PLANS:
                   partition values:
                     ds 2011-10-13
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","keymap":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,keymap
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1_mapping
-                    numFiles 1
-                    numRows 1
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 12
-                    serialization.ddl struct t1_mapping { string key, string keymap}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 13
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,keymap
@@ -381,10 +359,8 @@ STAGE PLANS:
                       name default.t1_mapping
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct t1_mapping { string key, string keymap}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.t1_mapping
                   name: default.t1_mapping
@@ -577,30 +553,20 @@ STAGE PLANS:
                   partition values:
                     ds 2011-10-15
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1_new_n0
-                    numFiles 1
-                    numRows 1
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 11
-                    serialization.ddl struct t1_new_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 12
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -612,10 +578,8 @@ STAGE PLANS:
                       name default.t1_new_n0
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct t1_new_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.t1_new_n0
                   name: default.t1_new_n0

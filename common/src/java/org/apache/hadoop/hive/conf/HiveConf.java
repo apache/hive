@@ -601,8 +601,9 @@ public class HiveConf extends Configuration {
     EXECPARALLEL("hive.exec.parallel", false, "Whether to execute jobs in parallel"),
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8,
         "How many jobs at most can be executed in parallel"),
-    HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", true,
-        "Whether speculative execution for reducers should be turned on. "),
+    @Deprecated
+    HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", false,
+        "(Deprecated) Whether speculative execution for reducers should be turned on. "),
     HIVECOUNTERSPULLINTERVAL("hive.exec.counters.pull.interval", 1000L,
         "The interval with which to poll the JobTracker for the counters the running job. \n" +
         "The smaller it is the more load there will be on the jobtracker, the higher it is the less granular the caught will be."),
@@ -2664,8 +2665,9 @@ public class HiveConf extends Configuration {
         "The default value is 1000000, since the data limit of a znode is 1MB"),
     HIVE_MM_ALLOW_ORIGINALS("hive.mm.allow.originals", false,
         "Whether to allow original files in MM tables. Conversion to MM may be expensive if\n" +
-        "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
-        "read MM tables with original files will fail. The default in Hive 3.0 is false."),
+        "this is set to false, however unless MAPREDUCE-7086 fix is present (hadoop 3.1.1+),\n" +
+        "queries that read non-orc MM tables with original files will fail. The default in\n" +
+        "Hive 3.0 is false."),
 
     // Zookeeper related configs
     HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,

@@ -9,8 +9,8 @@ set hive.support.quoted.identifiers=standard;
 
 -- SORT_QUERY_RESULTS
 
-create database "db~!@#$%^&*(),<>";
-use "db~!@#$%^&*(),<>";
+create database "db~!@@#$%^&*(),<>";
+use "db~!@@#$%^&*(),<>";
 
 create table "c/b/o_t1"(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table "//cbo_t2"(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
@@ -301,21 +301,19 @@ set hive.auto.convert.join=false;
 
 -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
 
-select key, (c_int+1)+2 as x, sum(c_int) from "c/b/o_t1" group by c_float, "c/b/o_t1".c_int, key order by x limit 1;
+select key, (c_int+1)+2 as x, sum(c_int) from "c/b/o_t1" group by c_float, "c/b/o_t1".c_int, key order by key, x limit 1;
 
 select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from "c/b/o_t1" group by c_float, "c/b/o_t1".c_int, key) R group by y, x order by x,y limit 1;
 
 select key from(select key from (select key from "c/b/o_t1" order by key limit 5)"//cbo_t2" order by key limit 5)"cbo_/t3////" order by key limit 5;
 
-select key, c_int from(select key, c_int from (select key, c_int from "c/b/o_t1" order by c_int limit 5)"c/b/o_t1"  order by c_int limit 5)"//cbo_t2"  order by c_int limit 5;
+select key, c_int from(select key, c_int from (select key, c_int from "c/b/o_t1" order by key, c_int limit 5)"c/b/o_t1"  order by key, c_int limit 5)"//cbo_t2"  order by key, c_int limit 5;
 
 
 
-select "cbo_/t3////".c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0) group by c_float, "c/b/o_t1".c_int, key order by a limit 5) "c/b/o_t1" join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key order by q/10 desc, r asc limit 5) "//cbo_t2" on "c/b/o_t1".a=p join "cbo_/t3////" on "c/b/o_t1".a=key where (b + "//cbo_t2".q >= 0) and (b > 0 or c_int >= 0) group by "cbo_/t3////".c_int, c order by "cbo_/t3////".c_int+c desc, c limit 5;
+select "cbo_/t3////".c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0) group by c_float, "c/b/o_t1".c_int, key order by a, b limit 5) "c/b/o_t1" join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key order by p, q/10 desc, r asc limit 5) "//cbo_t2" on "c/b/o_t1".a=p join "cbo_/t3////" on "c/b/o_t1".a=key where (b + "//cbo_t2".q >= 0) and (b > 0 or c_int >= 0) group by "cbo_/t3////".c_int, c order by "cbo_/t3////".c_int+c desc, c limit 5;
 
-
-
-select "cbo_/t3////".c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)  group by c_float, "c/b/o_t1".c_int, key having "c/b/o_t1".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc limit 5) "c/b/o_t1" left outer join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key  having "//cbo_t2".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 limit 5) "//cbo_t2" on "c/b/o_t1".a=p left outer join "cbo_/t3////" on "c/b/o_t1".a=key where (b + "//cbo_t2".q >= 0) and (b > 0 or c_int >= 0) group by "cbo_/t3////".c_int, c  having "cbo_/t3////".c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by "cbo_/t3////".c_int % c asc, "cbo_/t3////".c_int, c desc limit 5;
+select "cbo_/t3////".c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)  group by c_float, "c/b/o_t1".c_int, key having "c/b/o_t1".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a, b % c asc, b desc limit 5) "c/b/o_t1" left outer join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key  having "//cbo_t2".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 limit 5) "//cbo_t2" on "c/b/o_t1".a=p left outer join "cbo_/t3////" on "c/b/o_t1".a=key where (b + "//cbo_t2".q >= 0) and (b > 0 or c_int >= 0) group by "cbo_/t3////".c_int, c  having "cbo_/t3////".c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by "cbo_/t3////".c_int % c asc, "cbo_/t3////".c_int, c desc limit 5;
 
 set hive.cbo.enable=false;
 
@@ -343,10 +341,9 @@ select * from (select c_int, b, "c/b/o_t1".c from (select key as a, c_int as b, 
 
 select * from (select c_int, b, "c/b/o_t1".c from (select key as a, c_int as b, "c/b/o_t1".c_float as c from "c/b/o_t1"  where ("c/b/o_t1".c_int + 1 == 2) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)) "c/b/o_t1" left semi join (select "//cbo_t2".key as p, "//cbo_t2".c_int as q, c_float as r from "//cbo_t2"  where ("//cbo_t2".c_int + 1 == 2) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)) "//cbo_t2" on "c/b/o_t1".a=p full outer join "cbo_/t3////" on "c/b/o_t1".a=key where (b + 1 == 2) and (b > 0 or c_int >= 0)) R where  (c + 1 = 2) and (R.b > 0 or c_int >= 0);
 
-select a, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)  group by c_float, "c/b/o_t1".c_int, key having "c/b/o_t1".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a+b desc, c asc) "c/b/o_t1" left semi join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key having "//cbo_t2".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by q+r/10 desc, p) "//cbo_t2" on "c/b/o_t1".a=p left semi join "cbo_/t3////" on "c/b/o_t1".a=key where (b + 1  >= 0) and (b > 0 or a >= 0) group by a, c  having a > 0 and (a >=1 or c >= 1) and (a + c) >= 0 order by c, a;
+select a, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)  group by c_float, "c/b/o_t1".c_int, key having "c/b/o_t1".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a, a+b desc, c asc) "c/b/o_t1" left semi join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key having "//cbo_t2".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by q+r/10 desc, p) "//cbo_t2" on "c/b/o_t1".a=p left semi join "cbo_/t3////" on "c/b/o_t1".a=key where (b + 1  >= 0) and (b > 0 or a >= 0) group by a, c  having a > 0 and (a >=1 or c >= 1) and (a + c) >= 0 order by c, a;
 
 select a, c, count(*)  from (select key as a, c_int+1 as b, sum(c_int) as c from "c/b/o_t1" where ("c/b/o_t1".c_int + 1 >= 0) and ("c/b/o_t1".c_int > 0 or "c/b/o_t1".c_float >= 0)  group by c_float, "c/b/o_t1".c_int, key having "c/b/o_t1".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a+b desc, c asc limit 5) "c/b/o_t1" left semi join (select key as p, c_int+1 as q, sum(c_int) as r from "//cbo_t2" where ("//cbo_t2".c_int + 1 >= 0) and ("//cbo_t2".c_int > 0 or "//cbo_t2".c_float >= 0)  group by c_float, "//cbo_t2".c_int, key having "//cbo_t2".c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by q+r/10 desc, p limit 5) "//cbo_t2" on "c/b/o_t1".a=p left semi join "cbo_/t3////" on "c/b/o_t1".a=key where (b + 1  >= 0) and (b > 0 or a >= 0) group by a, c  having a > 0 and (a >=1 or c >= 1) and (a + c) >= 0 order by c, a;
-
 
 
 set hive.cbo.enable=false;
@@ -1073,11 +1070,11 @@ select *, rank() over(partition by key order by value) from default.src1;
 
 insert into table "src/_/cbo" select * from default.src;
 
-select * from "src/_/cbo" order by key limit 1;
+select * from "src/_/cbo" order by key, value limit 1;
 
 insert overwrite table "src/_/cbo" select * from default.src;
 
-select * from "src/_/cbo" order by key limit 1;
+select * from "src/_/cbo" order by key, value limit 1;
 
 drop table "t//";
 create table "t//" (col string);
@@ -1086,6 +1083,6 @@ insert into "t//" values(null);
 analyze table "t//" compute statistics;
 explain select * from "t//";
 
-drop database "db~!@#$%^&*(),<>" cascade;
+drop database "db~!@@#$%^&*(),<>" cascade;
 
 set hive.support.quoted.identifiers=column;

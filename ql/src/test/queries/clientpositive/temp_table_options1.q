@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 -- Delimiter test, taken from delimiter.q
 create temporary table impressions (imp string, msg string)
 row format delimited
@@ -46,7 +47,7 @@ create temporary table date_serde_lb (
 alter table date_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe';
 
 insert overwrite table date_serde_lb 
-  select fl_date, fl_num from date_serde_regex limit 1;
+  select fl_date, fl_num from date_serde_regex order by fl_date, fl_num limit 1;
 
 select * from date_serde_lb;
 select c1, sum(c2) from date_serde_lb group by c1;
@@ -61,7 +62,7 @@ create temporary table date_serde_ls (
 alter table date_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
 
 insert overwrite table date_serde_ls 
-  select c1, c2 from date_serde_lb limit 1;
+  select c1, c2 from date_serde_lb order by c1, c2 limit 1;
 
 select * from date_serde_ls;
 select c1, sum(c2) from date_serde_ls group by c1;
@@ -76,7 +77,7 @@ create temporary table date_serde_c (
 alter table date_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe';
 
 insert overwrite table date_serde_c 
-  select c1, c2 from date_serde_ls limit 1;
+  select c1, c2 from date_serde_ls order by c1, c2 limit 1;
 
 select * from date_serde_c;
 select c1, sum(c2) from date_serde_c group by c1;
@@ -91,7 +92,7 @@ create temporary table date_serde_lbc (
 alter table date_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe';
 
 insert overwrite table date_serde_lbc 
-  select c1, c2 from date_serde_c limit 1;
+  select c1, c2 from date_serde_c order by c1, c2 limit 1;
 
 select * from date_serde_lbc;
 select c1, sum(c2) from date_serde_lbc group by c1;
@@ -106,7 +107,7 @@ create temporary table date_serde_orc (
 alter table date_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde';
 
 insert overwrite table date_serde_orc 
-  select c1, c2 from date_serde_lbc limit 1;
+  select c1, c2 from date_serde_lbc order by c1, c2 limit 1;
 
 select * from date_serde_orc;
 select c1, sum(c2) from date_serde_orc group by c1;

@@ -2973,6 +2973,115 @@ public class ObjectStore implements RawStore, Configurable {
     return pns;
   }
 
+  @Override
+  public List<String> listPartitionNames(final String catName, final String dbName, final String tblName,
+      final String defaultPartName, final byte[] exprBytes,
+      final String order, final short maxParts) throws MetaException, NoSuchObjectException {
+    final String defaultPartitionName = getDefaultPartitionName(defaultPartName);
+    final boolean isEmptyFilter = exprBytes.length == 1 && exprBytes[0] == -1;
+    ExpressionTree tmp = null;
+    if (!isEmptyFilter) {
+      tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
+          getDefaultPartitionName(defaultPartName));
+    }
+    final ExpressionTree exprTree = tmp;
+    return new GetListHelper<String>(catName, dbName, tblName, true, true) {
+      private List<String> getPartNamesPrunedByExpr(Table table, boolean isJdoQuery) throws MetaException {
+        int max = isEmptyFilter ? maxParts : -1;
+        List<String> result;
+        if (isJdoQuery) {
+          result = getPartitionNamesViaOrm(table, ExpressionTree.EMPTY_TREE, order, max, true);
+        } else {
+          SqlFilterForPushdown filter = new SqlFilterForPushdown(table, false);
+          result = directSql.getPartitionNamesViaSql(filter, table.getPartitionKeys(),
+              defaultPartitionName, order, max);
+        }
+        if (!isEmptyFilter) {
+          expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), exprBytes, defaultPartitionName, result);
+          if (maxParts >= 0 && result.size() > maxParts) {
+            result = result.subList(0, maxParts);
+          }
+        }
+        return result;
+      }
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        SqlFilterForPushdown filter = new SqlFilterForPushdown(ctx.getTable(), false);
+        List<String> partNames = null;
+        Table table = ctx.getTable();
+        if (exprTree != null) {
+          if (directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
+              ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
+            partNames = directSql.getPartitionNamesViaSql(filter, table.getPartitionKeys(),
+                defaultPartitionName, order, (int)maxParts);
+          }
+        }
+        if (partNames == null) {
+          partNames = getPartNamesPrunedByExpr(table, false);
+        }
+        return partNames;
+      }
+      @Override
+      protected List<String> getJdoResult(
+          GetHelper<List<String>> ctx) throws MetaException, NoSuchObjectException {
+        List<String> result = null;
+        if (exprTree != null) {
+          try {
+            result = getPartitionNamesViaOrm(ctx.getTable(), exprTree, order, (int)maxParts, true);
+          } catch (MetaException e) {
+            result = null;
+          }
+        }
+        if (result == null) {
+          result = getPartNamesPrunedByExpr(ctx.getTable(), true);
+        }
+        return result;
+      }
+    }.run(true);
+  }
+
+  private List<String> getPartitionNamesViaOrm(Table table, ExpressionTree tree, String order,
+      Integer maxParts, boolean isValidatedFilter) throws MetaException {
+    Map<String, Object> params = new HashMap<String, Object>();
+    String jdoFilter = makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree,
+        params, isValidatedFilter);
+    if (jdoFilter == null) {
+      assert !isValidatedFilter;
+      return null;
+    }
+
+    Query query = pm.newQuery(
+        "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition"
+    );
+    query.setFilter(jdoFilter);
+    List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
+    StringBuilder builder = new StringBuilder();
+    for (Object[] spec : orderSpecs) {
+      // TODO: order by casted value if the type of partition key is not string
+      builder.append("values.get(").append(spec[0]).append(") ").append(spec[1]).append(",");
+    }
+    if (builder.length() > 0) {
+      builder.setLength(builder.length() - 1);
+      query.setOrdering(builder.toString());
+    } else {
+      query.setOrdering("partitionName ascending");
+    }
+
+    if (maxParts > -1) {
+      query.setRange(0, maxParts);
+    }
+
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    Collection jdoRes = (Collection)query.executeWithMap(params);
+    List<String> result = new LinkedList<String>();
+    for (Object partName : jdoRes) {
+      result.add((String)partName);
+    }
+    query.closeAll();
+    return result;
+  }
+
   private String extractPartitionKey(FieldSchema key, List<FieldSchema> pkeys) {
     StringBuilder buffer = new StringBuilder(256);
 

@@ -80,24 +80,16 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns claim_rec_id,claim_invoice_num,typ_c
-                    columns.comments 
                     columns.types bigint:string:int
 #### A masked pattern was here ####
                     name default.claims
-                    numFiles 0
-                    numRows 1154941534
-                    rawDataSize 1135307527922
-                    serialization.ddl struct claims { i64 claim_rec_id, string claim_invoice_num, i32 typ_c}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns claim_rec_id,claim_invoice_num,typ_c
@@ -105,14 +97,8 @@ STAGE PLANS:
                       columns.types bigint:string:int
 #### A masked pattern was here ####
                       name default.claims
-                      numFiles 0
-                      numRows 1154941534
-                      rawDataSize 1135307527922
-                      serialization.ddl struct claims { i64 claim_rec_id, string claim_invoice_num, i32 typ_c}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.claims
                   name: default.claims
@@ -224,24 +210,16 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns claim_rec_id,claim_invoice_num,typ_c
-                    columns.comments 
                     columns.types bigint:string:int
 #### A masked pattern was here ####
                     name default.claims
-                    numFiles 0
-                    numRows 1154941534
-                    rawDataSize 1135307527922
-                    serialization.ddl struct claims { i64 claim_rec_id, string claim_invoice_num, i32 typ_c}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns claim_rec_id,claim_invoice_num,typ_c
@@ -249,14 +227,8 @@ STAGE PLANS:
                       columns.types bigint:string:int
 #### A masked pattern was here ####
                       name default.claims
-                      numFiles 0
-                      numRows 1154941534
-                      rawDataSize 1135307527922
-                      serialization.ddl struct claims { i64 claim_rec_id, string claim_invoice_num, i32 typ_c}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.claims
                   name: default.claims
