@@ -12,20 +12,20 @@ insert into table sketch_input values
 
 -- create an mv for the intermediate results
 create  materialized view mv_1 as
-  select category, ds_kll_sketch(cast(id as float)) from sketch_input group by category;
+  select ds_kll_sketch(cast(id as float)) from sketch_input;
 
 -- bi mode on
 set hive.optimize.bi.enabled=true;
 
 explain
-select 'rewrite; mv matching', category, cume_dist() over (order by id) from sketch_input group by category;
-select 'rewrite; mv matching', category, cume_dist() over (order by id) from sketch_input group by category;
+select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
 
 set hive.optimize.bi.enabled=false;
 
 explain
-select 'no rewrite; no mv usage', category, cume_dist() over (order by id) from sketch_input group by category;
-select 'no rewrite; no mv usage', category, cume_dist() over (order by id) from sketch_input group by category;
+select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
 
 set hive.optimize.bi.enabled=true;
 
@@ -35,20 +35,20 @@ insert into table sketch_input values
 ;
 
 explain
-select 'rewrite; but no mv usage', category, cume_dist() over (order by id) from sketch_input group by category;
-select 'rewrite; but no mv usage', category, cume_dist() over (order by id) from sketch_input group by category;
+select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
 
 explain
 alter materialized view mv_1 rebuild;
 alter materialized view mv_1 rebuild;
 
 explain
-select 'rewrite; mv matching', category, cume_dist() over (order by id) from sketch_input group by category;
-select 'rewrite; mv matching', category, cume_dist() over (order by id) from sketch_input group by category;
+select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
 
 -- rewrite+mv matching with rollup
 explain
-select 'rewrite;mv matching with rollup', cume_dist() over (order by id) from sketch_input;
-select 'rewrite;mv matching with rollup', cume_dist() over (order by id) from sketch_input;
+select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
 
 drop materialized view mv_1;
