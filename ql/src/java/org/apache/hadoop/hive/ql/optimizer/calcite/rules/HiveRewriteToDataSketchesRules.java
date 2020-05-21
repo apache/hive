@@ -383,56 +383,39 @@ public final class HiveRewriteToDataSketchesRules {
   //FIXME
   public static class WindowingToProjectAggregateJoinProject extends RelOptRule {
 
-    private final ProjectFactory projectFactory;
     private String sketchType;
 
     public WindowingToProjectAggregateJoinProject() {
       super(operand(HiveProject.class, any()));
       // FIXME
       this.sketchType = "kll";
-
-      projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
     }
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-      VbuilderPAP vb = processCall(call);
-      if (vb == null) {
-        return;
-      }
 
-      RelBuilder builder = call.builder();
-      if (vb.newInput == vb.project.getInput()) {
-        // nothing have done
-        return;
-      }
-
-      builder.push(vb.newInput);
-      builder.project(vb.newProjects);
-
-      RelNode newProject = builder.build();
-      call.transformTo(newProject);
-
-      return;
-
-    }
-
-    protected VbuilderPAP processCall(RelOptRuleCall call) {
       final Project project = call.rel(0);
 
-      return new VB(project, sketchType, call.builder());
+      VB vb = new VB(sketchType, call.builder());
+      RelNode newProject = vb.processProject(project);
+
+      if (newProject instanceof Project && ((Project) newProject).getChildExps().equals(project.getChildExps())) {
+        return;
+      } else {
+        call.transformTo(newProject);
+      }
     }
 
     private static class VB extends VbuilderPAP {
 
-      private final RelBuilder relBuilder;
+      protected VB(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
 
-
-      protected VB(Project project, String sketchClass, RelBuilder relBuilder) {
-        super(project, sketchClass);
-        this.relBuilder = relBuilder;
-          processAggregate();
-        }
+      public boolean isApplicable(Project project) {
+        // TODO Auto-generated method stub
+        return false;
+      }
 
       @Override
       boolean isApplicable(RexOver over) {
@@ -450,7 +433,7 @@ public final class HiveRewriteToDataSketchesRules {
         }
 
       @Override
-      P rewrite(RexOver over, P st) {
+      RexNode rewrite(RexOver over) {
 
         over.getOperands();
         RexWindow w = over.getWindow();
@@ -459,7 +442,7 @@ public final class HiveRewriteToDataSketchesRules {
         // so some hack will be needed for NULLs anyway..
         RexNode orderKey = w.orderKeys.get(0).getKey();
 
-        relBuilder.push(st.input);
+        relBuilder.push(relBuilder.peek());
         RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
         relBuilder.project(castedKey);
 
@@ -480,8 +463,6 @@ public final class HiveRewriteToDataSketchesRules {
             ImmutableBitSet.of(),
             ImmutableList.of(),
             Lists.newArrayList(newAgg));
-
-        relBuilder.push(project.getInput());
         relBuilder.push(agg);
 
         relBuilder.join(JoinRelType.INNER);
@@ -490,7 +471,6 @@ public final class HiveRewriteToDataSketchesRules {
         RexInputRef sketchInputRef = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
         RexNode projRex;
 
-        RelDataType origType = st.expr.getType();
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
 
         SqlOperator getN = getSqlOperator(DataSketchesFunctions.GET_N);
@@ -503,9 +483,9 @@ public final class HiveRewriteToDataSketchesRules {
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
 
-        projRex = rexBuilder.makeCast(origType, projRex);
+        projRex = rexBuilder.makeCast(over.getType(), projRex);
 
-        return new P(newInput, projRex);
+        return projRex;
 
       }
 
@@ -541,29 +521,14 @@ public final class HiveRewriteToDataSketchesRules {
     }
 
     private static abstract class VbuilderPAP {
+      private final String sketchClass;
+      protected final RelBuilder relBuilder;
       protected final RexBuilder rexBuilder;
 
-    /** The original project RelNode */
-    protected final Project project;
-      /** The list of the new aggregations */
-    protected final List<RexNode> newProjects;
-      /** The new projections expressions inserted belove the aggregate
-       *
-       * These projections could be used to prepocess the incoming datastream.
-       * For example a CAST might need to be injected.
-       */
-      protected final List<RexNode> newProjectsBelow;
-
-      private final String sketchClass;
-
-      private RelNode newInput;
-
-      protected VbuilderPAP(Project project, String sketchClass) {
-        this.project = project;
+      protected VbuilderPAP(String sketchClass, RelBuilder relBuilder) {
         this.sketchClass = sketchClass;
-        newProjects = new ArrayList<>();
-        newProjectsBelow = new ArrayList<RexNode>();
-        rexBuilder = project.getCluster().getRexBuilder();
+        this.relBuilder = relBuilder;
+        rexBuilder = relBuilder.getRexBuilder();
       }
 
       static class P {
@@ -576,31 +541,28 @@ public final class HiveRewriteToDataSketchesRules {
         }
       }
 
-      protected final void processAggregate() {
+      protected RelNode processProject(Project project) {
+        relBuilder.push(project.getInput());
 
         // FIXME later use shuttle
         RelNode input = project.getInput();
-        P st = new P(input, null);
+        List<RexNode> newProjects = new ArrayList<RexNode>();
         for (RexNode expr : project.getChildExps()) {
-          st.expr = expr;
-          st = processAggCall(st);
-          newProjects.add(st.expr);
+          newProjects.add(processCall(expr));
         }
-        newInput = st.input;
-
+        relBuilder.project(newProjects);
+        return relBuilder.build();
       }
 
-    // FIXME rname
-    private final P processAggCall(P st) {
-      if (st.expr instanceof RexOver) {
-        RexOver over = (RexOver) st.expr;
-        if (isApplicable(over)) {
-          return rewrite(over, st);
+      private final RexNode processCall(RexNode expr) {
+        if (expr instanceof RexOver) {
+          RexOver over = (RexOver) expr;
+          if (isApplicable(over)) {
+            return rewrite(over);
+          }
         }
+        return expr;
       }
-      return st;
-      }
-
 
       protected final SqlOperator getSqlOperator(String fnName) {
         UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
@@ -610,9 +572,9 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-    abstract P rewrite(RexOver expr, P st);
+      abstract RexNode rewrite(RexOver expr);
 
-    abstract boolean isApplicable(RexOver expr);
+      abstract boolean isApplicable(RexOver expr);
 
     }
 
