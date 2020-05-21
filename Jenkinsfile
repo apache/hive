@@ -73,8 +73,8 @@ def rsyncPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'rsync', image: 'kgyrtkirk/htk-rsync:latest', ttyEnabled: true,
         alwaysPullImage: true,
-        resourceRequestCpu: '300m',
-        resourceLimitCpu: '1300m',
+        resourceRequestCpu: '100m',
+        resourceLimitCpu: '1100m',
         resourceRequestMemory: '250Mi',
     ),
   ]) {
