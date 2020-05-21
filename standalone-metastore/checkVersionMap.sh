@@ -7,7 +7,7 @@ pushd $(dirname $0)
 echo ${PWD}
 echo "Checking HMS API version"
 vfile=./versionmap.txt
-checksum=$(python3  ./checkmd5.py ./src/main/thrift/hive_metastore.thrift)
+checksum=$(command -v md5sum >/dev/null 2>&1 && (md5sum ./src/main/thrift/hive_metastore.thrift | cut -d ' ' -f 1) || python3  ./checkmd5.py ./src/main/thrift/hive_metastore.thrift)
 if [ -e $vfile ]; then 
    cat $vfile | grep $checksum
    result=$?
