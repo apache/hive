@@ -1,0 +1,144 @@
+
+properties([
+    // max 5 build/branch/day
+//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    // do not run multiple testruns on the same branch
+//    disableConcurrentBuilds(),
+    parameters([
+        string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
+    ])
+])
+
+def setPrLabel(String prLabel) {
+  if (env.CHANGE_ID) {
+   def mapping=[
+    "SUCCESS":"tests passed",
+    "UNSTABLE":"tests unstable",
+    "FAILURE":"tests failed",
+    "PENDING":"tests pending",
+   ]
+   def newLabels = []
+   for( String l : pullRequest.labels )
+     newLabels.add(l)
+   for( String l : mapping.keySet() )
+     newLabels.remove(mapping[l])
+   newLabels.add(mapping[prLabel])
+   echo ('' +newLabels)
+   pullRequest.labels=newLabels
+  }
+}
+
+setPrLabel("PENDING");
+
+def executorNode(run) {
+  hdbPodTemplate {
+      node(POD_LABEL) {
+        container('hdb') {
+          run()
+        }
+    }
+  }
+}
+
+def buildHive(args) {
+  configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
+      sh '''#!/bin/bash -e
+ls -l
+set -x
+. /etc/profile.d/confs.sh
+export USER="`whoami`"
+export MAVEN_OPTS="-Xmx2g"
+export -n HIVE_CONF_DIR
+#export HIVE_HOME="$PWD"
+OPTS=" -s $SETTINGS -q -Dtest.groups= "
+OPTS+=" -Pitests,qsplits"
+OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
+if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
+#cd hive
+mvn $OPTS install -am -DskipTests
+for((i=0;i<100;i++)); do
+	banner "try-$i"
+	mvn $OPTS install	
+done
+'''
+    }
+  }
+}
+
+def rsyncPodTemplate(closure) {
+  podTemplate(
+  containers: [
+    containerTemplate(name: 'rsync', image: 'kgyrtkirk/htk-rsync:latest', ttyEnabled: true,
+        alwaysPullImage: true,
+        resourceRequestCpu: '100m',
+        resourceLimitCpu: '1100m',
+        resourceRequestMemory: '250Mi',
+    ),
+  ]) {
+    closure();
+  }
+}
+
+def hdbPodTemplate(closure) {
+  podTemplate(
+  containers: [
+    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
+        alwaysPullImage: true,
+        resourceRequestCpu: '1000m',
+        resourceRequestMemory: '6200Mi',
+        resourceLimitMemory: '12000Mi'
+    ),
+  ], yaml:'''
+spec:
+  securityContext:
+    fsGroup: 1000
+  tolerations:
+    - key: "type"
+      operator: "Equal"
+      value: "slave"
+      effect: "PreferNoSchedule"
+    - key: "type"
+      operator: "Equal"
+      value: "slave"
+      effect: "NoSchedule"
+  nodeSelector:
+    type: slave
+''') {
+    closure();
+  }
+}
+
+def jobWrappers(closure) {
+  try {
+    // allocate 1 precommit token for the execution
+      timestamps {
+            closure()
+      }
+  } finally {
+    setPrLabel(currentBuild.currentResult)
+  }
+}
+
+jobWrappers {
+
+  executorNode {
+    container('hdb') {
+      stage('Checkout') {
+        checkout scm
+      }
+      stage('Compile') {
+        try {
+          buildHive("")
+        } finally {
+          stage('Archive') {
+            junit '**/TEST-*.xml'
+          }
+        }
+      }
+    }
+  }
+}
