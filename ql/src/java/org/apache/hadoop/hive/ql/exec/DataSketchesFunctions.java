@@ -63,7 +63,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String SKETCH_TO_STRING = "stringify";
   private static final String UNION_SKETCH = "union";
   private static final String UNION_SKETCH1 = "union_f";
-  private static final String GET_N = "n";
+  public static final String GET_N = "n";
   public static final String GET_CDF = "cdf";
   private static final String GET_PMF = "pmf";
   private static final String GET_QUANTILES = "quantiles";
@@ -125,14 +125,17 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   private void buildCalciteFns() {
     for (SketchDescriptor sd : sketchClasses.values()) {
+
+      registerAsHiveFunction(sd.fnMap.get(SKETCH_TO_ESTIMATE));
+      registerAsHiveFunction(sd.fnMap.get(GET_QUANTILE));
+      registerAsHiveFunction(sd.fnMap.get(GET_CDF));
+      registerAsHiveFunction(sd.fnMap.get(GET_N));
+
       // Mergability is exposed to Calcite; which enables to use it during rollup.
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
       SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
       SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
-      SketchFunctionDescriptor estimateSFD = sd.fnMap.get(SKETCH_TO_ESTIMATE);
-      SketchFunctionDescriptor quantileSFD = sd.fnMap.get(GET_QUANTILE);
-      SketchFunctionDescriptor cdfSFD = sd.fnMap.get(GET_CDF);
 
       if (sketchSFD == null || unionSFD == null) {
         continue;
@@ -155,49 +158,18 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
       unionSFD.setCalciteFunction(unionFn);
       sketchSFD.setCalciteFunction(sketchFn);
-      if (estimateSFD != null && estimateSFD.getReturnRelDataType().isPresent()) {
-
-        SqlFunction estimateFn = new HiveSqlFunction(estimateSFD.name,
-            SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(estimateSFD.getReturnRelDataType().get().getSqlTypeName()),
-            InferTypes.ANY_NULLABLE,
-            OperandTypes.family(),
-            SqlFunctionCategory.USER_DEFINED_FUNCTION,
-            true,
-            false);
-
-        estimateSFD.setCalciteFunction(estimateFn);
-      }
-
-      if (quantileSFD != null && quantileSFD.getReturnRelDataType().isPresent()) {
-        SqlFunction quantileFn = new HiveSqlFunction(quantileSFD.name,
-            SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(quantileSFD.getReturnRelDataType().get().getSqlTypeName()),
-            InferTypes.ANY_NULLABLE,
-            OperandTypes.family(),
-            SqlFunctionCategory.USER_DEFINED_FUNCTION,
-            true,
-            false);
-
-        quantileSFD.setCalciteFunction(quantileFn);
-      }
-
-      if (cdfSFD != null && cdfSFD.getReturnRelDataType().isPresent()) {
-        // FIXME: remove getSqlTypeName from other methods
-        SqlFunction cdfFn = new HiveSqlFunction(cdfSFD.name,
-            SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(cdfSFD.getReturnRelDataType().get()),
-            InferTypes.ANY_NULLABLE,
-            OperandTypes.family(),
-            SqlFunctionCategory.USER_DEFINED_FUNCTION,
-            true,
-            false);
-
-        cdfSFD.setCalciteFunction(cdfFn);
-      }
 
 
+    }
+  }
 
+  private void registerAsHiveFunction(SketchFunctionDescriptor sfd) {
+    if (sfd != null && sfd.getReturnRelDataType().isPresent()) {
+      SqlFunction cdfFn =
+          new HiveSqlFunction(sfd.name, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(sfd.getReturnRelDataType().get()),
+              InferTypes.ANY_NULLABLE, OperandTypes.family(), SqlFunctionCategory.USER_DEFINED_FUNCTION, true, false);
+
+      sfd.setCalciteFunction(cdfFn);
     }
   }
 

@@ -34,6 +34,7 @@ import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
@@ -44,7 +45,6 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.tools.RelBuilder.GroupKey;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -475,8 +475,6 @@ public final class HiveRewriteToDataSketchesRules {
         AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
                       collation, type, name);
 
-        GroupKey groupKey;
-
         RelNode agg = HiveRelFactories.HIVE_AGGREGATE_FACTORY.createAggregate(
             relBuilder.build(),
             ImmutableBitSet.of(),
@@ -489,12 +487,22 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.join(JoinRelType.INNER);
 
         RelNode newInput = relBuilder.build();
-        RexNode projRex = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
+        RexInputRef sketchInputRef = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
+        RexNode projRex;
 
         RelDataType origType = st.expr.getType();
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, castedKey));
+
+        SqlOperator getN = getSqlOperator(DataSketchesFunctions.GET_N);
+        RexNode adjust = rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE,
+              relBuilder.literal(.5),
+              rexBuilder.makeCall(getN, sketchInputRef)
+            );
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, castedKey, adjust);
+        projRex = rexBuilder.makeCast(getFloatType(), projRex);
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
+
         projRex = rexBuilder.makeCast(origType, projRex);
 
         return new P(newInput, projRex);
