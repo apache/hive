@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 
 import org.apache.hadoop.conf.Configuration;
@@ -132,7 +133,7 @@ public class CompactorMR {
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
     job.set(FINAL_LOCATION, sd.getLocation());
-    job.set(TMP_LOCATION, QueryCompactor.Util.generateTmpPath(sd));
+    job.set(TMP_LOCATION, generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
     job.set(OUTPUT_FORMAT_CLASS_NAME, sd.getOutputFormat());
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
@@ -230,6 +231,7 @@ public class CompactorMR {
      */
     QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
     if (queryCompactor != null) {
+      LOG.info("Will compact with  " + queryCompactor.getClass().getName());
       queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
       return;
     }
@@ -306,6 +308,15 @@ public class CompactorMR {
     if (su != null) {
       su.gatherStats();
     }
+  }
+
+  /**
+   * Generate a random tmp path, under the provided storage.
+   * @param sd storage descriptor, must be not null.
+   * @return path, always not null
+   */
+  private static String generateTmpPath(StorageDescriptor sd) {
+    return sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString();
   }
 
   /**

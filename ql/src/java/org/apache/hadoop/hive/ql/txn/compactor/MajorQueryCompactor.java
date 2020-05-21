@@ -25,9 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -53,20 +53,14 @@ final class MajorQueryCompactor extends QueryCompactor {
 
     String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
-
-    long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
-    long highWaterMark = writeIds.getHighWatermark();
-    long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(true)
-        .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
-        .maximumWriteId(highWaterMark).statementId(-1).visibilityTxnId(compactorTxnId);
-    Path tmpTablePath = AcidUtils.baseOrDeltaSubdirPath(new Path(storageDescriptor.getLocation()), options);
+    Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
+        conf, true, false, false);
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo, createQueries,
-        compactionQueries, dropQueries);
+    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries);
   }
 
   @Override
