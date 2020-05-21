@@ -24,9 +24,11 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
@@ -41,10 +43,14 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.tools.RelBuilder.GroupKey;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -395,26 +401,18 @@ public final class HiveRewriteToDataSketchesRules {
         return;
       }
 
-      //      Project aggregate = vb.aggregate;
-      //      if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
-      //        // rule didn't make any changes
-      //        return;
-      //      }
-      //
-      //      List<AggregateCall> newAggCalls = vb.newAggCalls;
-      //      List<String> fieldNames = new ArrayList<String>();
-      //      for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
-      //        fieldNames.add("ff_" + i);
-      //      }
-      //      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
-      //
-      //      RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
-      //          aggregate.getGroupSets(), newAggCalls);
-      //
-      //      RelNode newProject =
-      //          projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
-      //
-      //      call.transformTo(newProject);
+      RelBuilder builder = call.builder();
+      if (vb.newInput == vb.project.getInput()) {
+        // nothing have done
+        return;
+      }
+
+      builder.push(vb.newInput);
+      builder.project(vb.newProjects);
+
+      RelNode newProject = builder.build();
+      call.transformTo(newProject);
+
       return;
 
     }
@@ -422,30 +420,88 @@ public final class HiveRewriteToDataSketchesRules {
     protected VbuilderPAP processCall(RelOptRuleCall call) {
       final Project project = call.rel(0);
 
-      return new VB(project, sketchType);
+      return new VB(project, sketchType, call.builder());
     }
 
     private static class VB extends VbuilderPAP {
 
-      protected VB(Project project, String sketchClass) {
+      private final RelBuilder relBuilder;
+
+
+      protected VB(Project project, String sketchClass, RelBuilder relBuilder) {
         super(project, sketchClass);
+        this.relBuilder = relBuilder;
           processAggregate();
         }
 
       @Override
       boolean isApplicable(RexOver over) {
+        // FIXME PARTITION BY
         if (true) {
           SqlAggFunction aggOp = over.getAggOperator();
           RexWindow window = over.getWindow();
-
-          return true;
+          if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
+              && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
+              && window.partitionKeys.size() == 1 && window.partitionKeys.get(0).isA(SqlKind.LITERAL)) {
+            return true;
+          }
         }
         return false;
         }
 
       @Override
-      RexNode rewrite(RexOver over) {
-        return over;
+      P rewrite(RexOver over, P st) {
+
+        over.getOperands();
+        RexWindow w = over.getWindow();
+        // FIXME: NULLs first/last collation stuff
+        // we don't really support nulls in aggregate/etc...they are actually ignored
+        // so some hack will be needed for NULLs anyway..
+        RexNode orderKey = w.orderKeys.get(0).getKey();
+
+        relBuilder.push(st.input);
+        RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
+        relBuilder.project(castedKey);
+
+        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        boolean distinct = false;
+        boolean approximate = true;
+        boolean ignoreNulls = true;
+        List<Integer> argList = Lists.newArrayList(0);
+        int filterArg = -1;
+        RelCollation collation = RelCollations.EMPTY;
+        RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+        String name = aggFunction.getName();
+        AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
+                      collation, type, name);
+
+        GroupKey groupKey;
+
+        RelNode agg = HiveRelFactories.HIVE_AGGREGATE_FACTORY.createAggregate(
+            relBuilder.build(),
+            ImmutableBitSet.of(),
+            ImmutableList.of(),
+            Lists.newArrayList(newAgg));
+
+        relBuilder.push(project.getInput());
+        relBuilder.push(agg);
+
+        relBuilder.join(JoinRelType.INNER);
+
+        RelNode newInput = relBuilder.build();
+        RexNode projRex = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
+
+        RelDataType origType = st.expr.getType();
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, castedKey));
+        projRex = getItemOperator(projRex, relBuilder.literal(0));
+        projRex = rexBuilder.makeCast(origType, projRex);
+
+        return new P(newInput, projRex);
+
+
+        //        project.getInput();
+
         //          RelDataType origType = aggregate.getRowType().getFieldList().get(newProjectsAbove.size()).getType();
         //
         //          Integer argIndex = aggCall.getArgList().get(1);
@@ -458,15 +514,15 @@ public final class HiveRewriteToDataSketchesRules {
         //          call = rexBuilder.makeCast(floatType, call);
         //          newProjectsBelow.add(call);
         //
-        //          SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
-        //          boolean distinct = false;
-        //          boolean approximate = true;
-        //          boolean ignoreNulls = true;
-        //          List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
-        //          int filterArg = aggCall.filterArg;
-        //          RelCollation collation = aggCall.getCollation();
-        //          RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-        //          String name = aggFunction.getName();
+        //                  SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        //                  boolean distinct = false;
+        //                  boolean approximate = true;
+        //                  boolean ignoreNulls = true;
+        //                  List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
+        //                  int filterArg = aggCall.filterArg;
+        //                  RelCollation collation = aggCall.getCollation();
+        //                  RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
+        //                  String name = aggFunction.getName();
         //
         //          AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
         //              collation, type, name);
@@ -482,7 +538,35 @@ public final class HiveRewriteToDataSketchesRules {
         //          newProjectsAbove.add(projRex);
         }
 
+      private RexNode getItemOperator(RexNode arr, RexNode offset) {
+
+        if(getClass().desiredAssertionStatus()) {
+          try {
+            SqlKind.class.getField("ITEM");
+            throw new RuntimeException("bind SqlKind.ITEM instead of this crap - C1.23 a02155a70a");
+           } catch(NoSuchFieldException e) {
+             // ignore
+          }
+        }
+
+        try {
+        SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
+            ImmutableList.of(arr.getType(),offset.getType()),
+            arr.getType().getComponentType(), true, false);
+          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
+          return call;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       }
+
+      private RelDataType getFloatType() {
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+        return floatType;
+      }
+
     }
 
     private static abstract class VbuilderPAP {
@@ -501,35 +585,49 @@ public final class HiveRewriteToDataSketchesRules {
 
       private final String sketchClass;
 
-    protected VbuilderPAP(Project project, String sketchClass) {
-      this.project = project;
-        this.sketchClass = sketchClass;
-      newProjects = new ArrayList<>();
-        newProjectsBelow = new ArrayList<RexNode>();
-      rexBuilder = project.getCluster().getRexBuilder();
+      private RelNode newInput;
 
+      protected VbuilderPAP(Project project, String sketchClass) {
+        this.project = project;
+        this.sketchClass = sketchClass;
+        newProjects = new ArrayList<>();
+        newProjectsBelow = new ArrayList<RexNode>();
+        rexBuilder = project.getCluster().getRexBuilder();
       }
 
+      static class P {
+        RelNode input;
+        RexNode expr;
+
+        public P(RelNode input, RexNode expr) {
+          this.input = input;
+          this.expr = expr;
+        }
+      }
 
       protected final void processAggregate() {
 
-      // FIXME later use shuttle
-      for (RexNode expr : project.getChildExps()) {
-        newProjects.add(processAggCall(expr));
-      }
+        // FIXME later use shuttle
+        RelNode input = project.getInput();
+        P st = new P(input, null);
+        for (RexNode expr : project.getChildExps()) {
+          st.expr = expr;
+          st = processAggCall(st);
+          newProjects.add(st.expr);
+        }
+        newInput = st.input;
 
       }
-
 
     // FIXME rname
-    private final RexNode processAggCall(RexNode expr) {
-      if(expr.isA(SqlKind.OVER)) {
-        RexOver over=(RexOver) expr;
+    private final P processAggCall(P st) {
+      if (st.expr instanceof RexOver) {
+        RexOver over = (RexOver) st.expr;
         if (isApplicable(over)) {
-          return rewrite(over);
+          return rewrite(over, st);
         }
       }
-      return expr;
+      return st;
       }
 
 
@@ -541,11 +639,11 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-    abstract RexNode rewrite(RexOver expr);
+    abstract P rewrite(RexOver expr, P st);
 
     abstract boolean isApplicable(RexOver expr);
 
     }
 
-
+  }
 }

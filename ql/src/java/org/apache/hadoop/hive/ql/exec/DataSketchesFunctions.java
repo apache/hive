@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,7 +64,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String UNION_SKETCH = "union";
   private static final String UNION_SKETCH1 = "union_f";
   private static final String GET_N = "n";
-  private static final String GET_CDF = "cdf";
+  public static final String GET_CDF = "cdf";
   private static final String GET_PMF = "pmf";
   private static final String GET_QUANTILES = "quantiles";
   public static final String GET_QUANTILE = "quantile";
@@ -130,6 +132,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
       SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
       SketchFunctionDescriptor estimateSFD = sd.fnMap.get(SKETCH_TO_ESTIMATE);
       SketchFunctionDescriptor quantileSFD = sd.fnMap.get(GET_QUANTILE);
+      SketchFunctionDescriptor cdfSFD = sd.fnMap.get(GET_CDF);
 
       if (sketchSFD == null || unionSFD == null) {
         continue;
@@ -177,8 +180,24 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
             false);
 
         quantileSFD.setCalciteFunction(quantileFn);
-
       }
+
+      if (cdfSFD != null && cdfSFD.getReturnRelDataType().isPresent()) {
+        // FIXME: remove getSqlTypeName from other methods
+        SqlFunction cdfFn = new HiveSqlFunction(cdfSFD.name,
+            SqlKind.OTHER_FUNCTION,
+            ReturnTypes.explicit(cdfSFD.getReturnRelDataType().get()),
+            InferTypes.ANY_NULLABLE,
+            OperandTypes.family(),
+            SqlFunctionCategory.USER_DEFINED_FUNCTION,
+            true,
+            false);
+
+        cdfSFD.setCalciteFunction(cdfFn);
+      }
+
+
+
     }
   }
 
@@ -209,11 +228,11 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   }
 
-  private static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {
+  static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {
     String name;
     Class<?> udfClass;
     private SqlFunction calciteFunction;
-    private Class<?> returnType;
+    private Type returnType;
 
     public SketchFunctionDescriptor(String name, Class<?> udfClass) {
       this.name = name;
@@ -235,12 +254,44 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
         return Optional.empty();
       } else {
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
+        Type type = returnType;
+        if (type instanceof ParameterizedType) {
+
+          ParameterizedType parameterizedType = (ParameterizedType) type;
+          if (parameterizedType.getRawType() == List.class) {
+          final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
+          return Optional
+              .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
+          }
+        }
+
         return Optional.of(typeFactory.createType(returnType));
       }
     }
 
-    public void setReturnType(Class<?> returnType) {
-      this.returnType = returnType;
+
+    public Optional<RelDataType> getReturnRelDataType2() {
+      if (returnType == null) {
+        return Optional.empty();
+      } else {
+        JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
+        Type type = returnType;
+        if (type instanceof ParameterizedType) {
+
+          ParameterizedType parameterizedType = (ParameterizedType) type;
+          if (parameterizedType.getRawType() == List.class) {
+            final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
+            return Optional
+                .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
+          }
+        }
+
+        return Optional.of(typeFactory.createType(returnType));
+      }
+    }
+
+    public void setReturnType(Type type) {
+      this.returnType = type;
     }
 
     @Override
@@ -272,7 +323,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
       if (UDF.class.isAssignableFrom(clazz)) {
         Optional<Method> evaluateMethod = getEvaluateMethod(clazz);
         if (evaluateMethod.isPresent()) {
-          value.setReturnType(evaluateMethod.get().getReturnType());
+          value.setReturnType(evaluateMethod.get().getGenericReturnType());
         }
       }
       fnMap.put(name, value);
