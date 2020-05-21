@@ -38,6 +38,7 @@ import java.util.UUID;
 /**
  * TestNewGetSplitsFormat.
  */
+@Ignore("test unstable HIVE-23524")
 public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
 
   @BeforeClass public static void beforeTest() throws Exception {
