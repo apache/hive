@@ -383,12 +383,11 @@ public final class HiveRewriteToDataSketchesRules {
   //FIXME
   public static class WindowingToProjectAggregateJoinProject extends RelOptRule {
 
-    private String sketchType;
+    private final String sketchType;
 
-    public WindowingToProjectAggregateJoinProject() {
+    public WindowingToProjectAggregateJoinProject(String sketchType) {
       super(operand(HiveProject.class, any()));
-      // FIXME
-      this.sketchType = "kll";
+      this.sketchType = sketchType;
     }
 
     @Override
@@ -410,11 +409,6 @@ public final class HiveRewriteToDataSketchesRules {
 
       protected VB(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
-      }
-
-      public boolean isApplicable(Project project) {
-        // TODO Auto-generated method stub
-        return false;
       }
 
       @Override
