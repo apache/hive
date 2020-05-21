@@ -234,7 +234,6 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
         Type type = returnType;
         if (type instanceof ParameterizedType) {
-
           ParameterizedType parameterizedType = (ParameterizedType) type;
           if (parameterizedType.getRawType() == List.class) {
           final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
@@ -242,28 +241,6 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
               .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
           }
         }
-
-        return Optional.of(typeFactory.createType(returnType));
-      }
-    }
-
-
-    public Optional<RelDataType> getReturnRelDataType2() {
-      if (returnType == null) {
-        return Optional.empty();
-      } else {
-        JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
-        Type type = returnType;
-        if (type instanceof ParameterizedType) {
-
-          ParameterizedType parameterizedType = (ParameterizedType) type;
-          if (parameterizedType.getRawType() == List.class) {
-            final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
-            return Optional
-                .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
-          }
-        }
-
         return Optional.of(typeFactory.createType(returnType));
       }
     }
