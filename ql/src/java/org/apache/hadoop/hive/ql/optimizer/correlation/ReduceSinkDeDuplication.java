@@ -207,7 +207,8 @@ public class ReduceSinkDeDuplication extends Transform {
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
               pGBY, ReduceSinkOperator.class, dedupCtx.trustScript());
-      if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
+      if (pRS != null && ReduceSinkDeDuplicationUtils
+          .merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
         CorrelationUtilities.replaceReduceSinkWithSelectOperator(
             cRS, dedupCtx.getPctx(), dedupCtx);
         pRS.getConf().setDeduplicated(true);
@@ -233,7 +234,8 @@ public class ReduceSinkDeDuplication extends Transform {
       }
       ReduceSinkOperator pRS =
           CorrelationUtilities.getSingleParent(pGBY, ReduceSinkOperator.class);
-      if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
+      if (pRS != null && ReduceSinkDeDuplicationUtils
+          .merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
         CorrelationUtilities.removeReduceSinkForGroupBy(
             cRS, cGBY, dedupCtx.getPctx(), dedupCtx);
         pRS.getConf().setDeduplicated(true);
@@ -306,7 +308,7 @@ public class ReduceSinkDeDuplication extends Transform {
           return true;
         }
         // Normal deduplication
-        if (ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
+        if (ReduceSinkDeDuplicationUtils.merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
           CorrelationUtilities.replaceReduceSinkWithSelectOperator(
               cRS, dedupCtx.getPctx(), dedupCtx);
           pRS.getConf().setDeduplicated(true);
@@ -325,7 +327,8 @@ public class ReduceSinkDeDuplication extends Transform {
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
               start, ReduceSinkOperator.class, dedupCtx.trustScript());
-      if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
+      if (pRS != null && ReduceSinkDeDuplicationUtils
+          .merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
         if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
           return false;
         }
