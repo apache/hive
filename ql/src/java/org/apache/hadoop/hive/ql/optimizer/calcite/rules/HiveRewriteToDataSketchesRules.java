@@ -496,7 +496,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         relBuilder.push(relBuilder.peek());
         RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
-        relBuilder.project(castedKey);
+        relBuilder.project(castedKey,rexBuilder.makeLiteral(true));
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
@@ -510,10 +510,10 @@ public final class HiveRewriteToDataSketchesRules {
         AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
                       collation, type, name);
 
+        //        relBuilder.aggregate(groupKey, aggCalls)
         RelNode agg = HiveRelFactories.HIVE_AGGREGATE_FACTORY.createAggregate(
             relBuilder.build(),
-            ImmutableBitSet.of(),
-            ImmutableList.of(),
+            ImmutableBitSet.of(1), ImmutableList.of(ImmutableBitSet.of(1)),
             Lists.newArrayList(newAgg));
         relBuilder.push(agg);
 

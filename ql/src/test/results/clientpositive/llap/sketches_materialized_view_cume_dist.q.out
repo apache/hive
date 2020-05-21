@@ -40,11 +40,13 @@ Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -56,9 +58,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -75,23 +77,33 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: float)
-                  Select Operator
-                    expressions: UDFToFloat(id) (type: float)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: ds_kll_sketch(_col0)
-                      minReductionHashAggr: 0.95454544
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _c0 (type: binary)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_kll_union(_col0)
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -127,16 +139,17 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_kll_sketch(VALUE._col0)
+                aggregations: ds_kll_union(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), (0.5D / ds_kll_n(_col0)) (type: double)
+                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -154,10 +167,12 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 rewrite; mv matching	1	0.0
@@ -343,7 +358,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -366,15 +381,18 @@ STAGE PLANS:
                     Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: ds_kll_sketch(_col0)
+                      keys: true (type: boolean)
                       minReductionHashAggr: 0.97727275
                       mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: binary)
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -417,11 +435,12 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), (0.5D / ds_kll_n(_col0)) (type: double)
+                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -661,11 +680,13 @@ Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -677,9 +698,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -696,23 +717,33 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: float)
-                  Select Operator
-                    expressions: UDFToFloat(id) (type: float)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: ds_kll_sketch(_col0)
-                      minReductionHashAggr: 0.97727275
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _c0 (type: binary)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_kll_union(_col0)
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -748,16 +779,17 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_kll_sketch(VALUE._col0)
+                aggregations: ds_kll_union(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), (0.5D / ds_kll_n(_col0)) (type: double)
+                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -775,10 +807,12 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 rewrite; mv matching	1	0.0
@@ -829,11 +863,13 @@ Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain
 select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -845,9 +881,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -864,23 +900,33 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: float)
-                  Select Operator
-                    expressions: UDFToFloat(id) (type: float)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: ds_kll_sketch(_col0)
-                      minReductionHashAggr: 0.97727275
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _c0 (type: binary)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_kll_union(_col0)
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -916,16 +962,17 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_kll_sketch(VALUE._col0)
+                aggregations: ds_kll_union(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), (0.5D / ds_kll_n(_col0)) (type: double)
+                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -943,10 +990,12 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 FIXME rewrite; mv matching	1	0.0
