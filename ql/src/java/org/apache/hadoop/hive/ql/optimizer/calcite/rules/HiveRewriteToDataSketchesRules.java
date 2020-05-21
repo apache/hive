@@ -467,7 +467,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         relBuilder.join(JoinRelType.INNER);
 
-        RelNode newInput = relBuilder.build();
+        RelNode newInput = relBuilder.peek();
         RexInputRef sketchInputRef = rexBuilder.makeInputRef(newInput, newInput.getRowType().getFieldCount() - 1);
         RexNode projRex;
 
