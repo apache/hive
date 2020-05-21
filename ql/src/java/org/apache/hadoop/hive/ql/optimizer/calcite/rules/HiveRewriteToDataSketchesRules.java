@@ -475,14 +475,12 @@ public final class HiveRewriteToDataSketchesRules {
       @Override
       boolean isApplicable(RexOver over) {
         // FIXME PARTITION BY
-        if (true) {
-          SqlAggFunction aggOp = over.getAggOperator();
-          RexWindow window = over.getWindow();
-          if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
-              && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
-              && window.partitionKeys.size() == 1 && window.partitionKeys.get(0).isA(SqlKind.LITERAL)) {
-            return true;
-          }
+        SqlAggFunction aggOp = over.getAggOperator();
+        RexWindow window = over.getWindow();
+        if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
+            && window.partitionKeys.size() == 1 && window.partitionKeys.get(0).isA(SqlKind.LITERAL)) {
+          return true;
         }
         return false;
       }
@@ -537,7 +535,6 @@ public final class HiveRewriteToDataSketchesRules {
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
-
       }
 
       private RexNode getItemOperator(RexNode arr, RexNode offset) {
