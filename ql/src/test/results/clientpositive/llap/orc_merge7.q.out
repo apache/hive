@@ -58,11 +58,11 @@ STAGE PLANS:
                       outputColumnNames: userid, string1, subtype, decimal1, ts, st
                       Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
+                        aggregations: min(userid), max(userid), count(1), count(userid), compute_bit_vector(userid, 'hll'), max(length(string1)), avg(COALESCE(length(string1),0)), count(string1), compute_bit_vector(string1, 'hll'), min(subtype), max(subtype), count(subtype), compute_bit_vector(subtype, 'hll'), min(decimal1), max(decimal1), count(decimal1), compute_bit_vector(decimal1, 'hll'), min(ts), max(ts), count(ts), compute_bit_vector(ts, 'hll')
                         keys: st (type: double)
                         minReductionHashAggr: 0.99
                         mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                         Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: double)
@@ -70,7 +70,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: double)
                           Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:timestamp,max:timestamp,countnulls:bigint,bitvector:binary>)
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary), _col10 (type: double), _col11 (type: double), _col12 (type: bigint), _col13 (type: binary), _col14 (type: decimal(38,0)), _col15 (type: decimal(38,0)), _col16 (type: bigint), _col17 (type: binary), _col18 (type: timestamp), _col19 (type: timestamp), _col20 (type: bigint), _col21 (type: binary)
                     Reduce Output Operator
                       key expressions: _col5 (type: double)
                       null sort order: a
@@ -84,14 +84,14 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector(VALUE._col20)
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                 Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col5 (type: struct<columntype:string,min:timestamp,max:timestamp,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col6,0)) (type: bigint), COALESCE(_col7,0) (type: double), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DOUBLE' (type: string), _col10 (type: double), _col11 (type: double), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DECIMAL' (type: string), _col14 (type: decimal(38,0)), _col15 (type: decimal(38,0)), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), 'TIMESTAMP' (type: string), _col18 (type: timestamp), _col19 (type: timestamp), (_col3 - _col20) (type: bigint), COALESCE(ndv_compute_bit_vector(_col21),0) (type: bigint), _col21 (type: binary), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -295,11 +295,11 @@ STAGE PLANS:
                       outputColumnNames: userid, string1, subtype, decimal1, ts, st
                       Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
+                        aggregations: min(userid), max(userid), count(1), count(userid), compute_bit_vector(userid, 'hll'), max(length(string1)), avg(COALESCE(length(string1),0)), count(string1), compute_bit_vector(string1, 'hll'), min(subtype), max(subtype), count(subtype), compute_bit_vector(subtype, 'hll'), min(decimal1), max(decimal1), count(decimal1), compute_bit_vector(decimal1, 'hll'), min(ts), max(ts), count(ts), compute_bit_vector(ts, 'hll')
                         keys: st (type: double)
                         minReductionHashAggr: 0.99
                         mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                         Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: double)
@@ -307,7 +307,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: double)
                           Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:timestamp,max:timestamp,countnulls:bigint,bitvector:binary>)
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary), _col10 (type: double), _col11 (type: double), _col12 (type: bigint), _col13 (type: binary), _col14 (type: decimal(38,0)), _col15 (type: decimal(38,0)), _col16 (type: bigint), _col17 (type: binary), _col18 (type: timestamp), _col19 (type: timestamp), _col20 (type: bigint), _col21 (type: binary)
                     Reduce Output Operator
                       key expressions: _col5 (type: double)
                       null sort order: a
@@ -321,14 +321,14 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector(VALUE._col20)
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                 Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col5 (type: struct<columntype:string,min:timestamp,max:timestamp,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col6,0)) (type: bigint), COALESCE(_col7,0) (type: double), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DOUBLE' (type: string), _col10 (type: double), _col11 (type: double), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DECIMAL' (type: string), _col14 (type: decimal(38,0)), _col15 (type: decimal(38,0)), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), 'TIMESTAMP' (type: string), _col18 (type: timestamp), _col19 (type: timestamp), (_col3 - _col20) (type: bigint), COALESCE(ndv_compute_bit_vector(_col21),0) (type: bigint), _col21 (type: binary), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
