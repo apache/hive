@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -776,6 +778,20 @@ public class TypeCheckProcFactory<T> {
       return getDefaultExprProcessor().getFuncExprNodeDescWithUdfData(baseType, tableFieldTypeInfo, column);
     }
 
+    private boolean unSafeCompareWithBigInt(TypeInfo otherTypeInfo, TypeInfo bigintCandidate) {
+      Set<PrimitiveObjectInspector.PrimitiveCategory> unsafeConventionTyps = Sets.newHashSet(
+          PrimitiveObjectInspector.PrimitiveCategory.STRING,
+          PrimitiveObjectInspector.PrimitiveCategory.VARCHAR,
+          PrimitiveObjectInspector.PrimitiveCategory.CHAR);
+
+      if (bigintCandidate.equals(TypeInfoFactory.longTypeInfo) && otherTypeInfo instanceof PrimitiveTypeInfo) {
+        PrimitiveObjectInspector.PrimitiveCategory pCategory =
+            ((PrimitiveTypeInfo)otherTypeInfo).getPrimitiveCategory();
+        return unsafeConventionTyps.contains(pCategory);
+      }
+      return false;
+    }
+
     protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
         List<T> children, GenericUDF genericUDF) throws SemanticException {
       // Check if a bigint is implicitely cast to a double as part of a comparison
@@ -790,11 +806,13 @@ public class TypeCheckProcFactory<T> {
         LogHelper console = new LogHelper(LOG);
 
         // For now, if a bigint is going to be cast to a double throw an error or warning
-        if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-            (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
+        if (unSafeCompareWithBigInt(oiTypeInfo0, oiTypeInfo1) || unSafeCompareWithBigInt(oiTypeInfo1, oiTypeInfo0)) {
           String error = StrictChecks.checkTypeSafety(conf);
-          if (error != null) throw new UDFArgumentException(error);
-          console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
+          if (error != null) {
+            throw new UDFArgumentException(error);
+          }
+          console.printError(String.format("WARNING: Comparing a %s and a %s may result in a loss of precision.",
+              oiTypeInfo0.getTypeName(), oiTypeInfo1.getTypeName()));
         } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
             (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
           console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
