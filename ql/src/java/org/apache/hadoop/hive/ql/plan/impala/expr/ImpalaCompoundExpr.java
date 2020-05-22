@@ -20,9 +20,8 @@ package org.apache.hadoop.hive.ql.plan.impala.expr;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
-import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.CompoundPredicate;
-import org.apache.impala.analysis.CompoundPredicate.Operator;
+import org.apache.impala.analysis.Expr;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
@@ -38,6 +37,7 @@ public class ImpalaCompoundExpr extends CompoundPredicate {
       this.fn_ = fn;
       this.type_ = retType;
       this.analyze(analyzer);
+      this.computeSelectivity();
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaCompoundExpr instantiation", e);
     }

@@ -37,6 +37,7 @@ public class ImpalaBinaryCompExpr extends BinaryPredicate {
       this.fn_ = fn;
       this.type_ = retType;
       this.analyze(analyzer);
+      this.computeSelectivity();
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaBinaryCompExpr instantiation", e);
     }
