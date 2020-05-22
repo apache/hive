@@ -159,37 +159,37 @@ STAGE PLANS:
                     outputColumnNames: ctinyint, csmallint, cint
                     Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
-                      aggregations: compute_stats(ctinyint, 'hll'), compute_stats(csmallint, 'hll')
+                      aggregations: min(ctinyint), max(ctinyint), count(1), count(ctinyint), compute_bit_vector(ctinyint, 'hll'), min(csmallint), max(csmallint), count(csmallint), compute_bit_vector(csmallint, 'hll')
                       keys: cint (type: int)
                       minReductionHashAggr: 0.99
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 5 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 5 Data size: 1660 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL
-                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+                        Statistics: Num rows: 5 Data size: 1660 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col1 (type: tinyint), _col2 (type: tinyint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: smallint), _col7 (type: smallint), _col8 (type: bigint), _col9 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 5 Data size: 1660 Basic stats: COMPLETE Column stats: PARTIAL
                 Select Operator
-                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 5 Data size: 2660 Basic stats: COMPLETE Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 2660 Basic stats: COMPLETE Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
