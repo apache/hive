@@ -237,7 +237,6 @@ public class ACIDBenchmarks {
       dropManyTables(client, howMany, dbName, tblName);
     }
 
-
     @Benchmark
     public void getValidWriteIds(TestGetValidWriteIds.ThreadState state) throws TException {
       LOG.debug("executing getValidWriteIds");

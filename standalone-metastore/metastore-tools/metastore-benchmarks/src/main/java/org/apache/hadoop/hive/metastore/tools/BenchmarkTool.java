@@ -336,6 +336,7 @@ public class BenchmarkTool implements Runnable {
 
       output.print(sb.toString());
       fmt.close();
+      output.close();
 
       if (dataSaveDir != null) {
         saveData(result.getResult(), dataSaveDir, scale);
