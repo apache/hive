@@ -531,7 +531,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.20.1</version>
         <executions>
           <execution>
             <goals>
@@ -586,7 +585,6 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <version>0.10</version>
         <configuration>
           <excludes>
             <exclude>binary-package-licenses/**</exclude>

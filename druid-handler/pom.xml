@@ -79,7 +79,6 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>${joda.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -385,6 +384,7 @@
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
+                        <exclude>META-INF/versions/**</exclude>
                         <exclude>static/</exclude>
                       </excludes>
                     </filter>
