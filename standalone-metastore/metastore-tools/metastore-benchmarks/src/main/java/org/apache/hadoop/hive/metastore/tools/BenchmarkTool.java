@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.metastore.tools;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -30,18 +35,12 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.tools.Constants.HMS_DEFAULT_PORT;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartition;
@@ -61,12 +60,10 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkList
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListPartition;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListTables;
-import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkLocks;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpenTxns;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkRenameTable;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkTableCreate;
 import static org.apache.hadoop.hive.metastore.tools.Util.getServerUri;
-import static org.apache.hadoop.hive.metastore.tools.Util.throwingSupplierWrapper;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
@@ -83,7 +80,12 @@ public class BenchmarkTool implements Runnable {
   private static final TimeUnit scale = TimeUnit.MILLISECONDS;
   private static final String CSV_SEPARATOR = "\t";
   private static final String TEST_TABLE = "bench_table";
-  private static final String THREAD_NAME_FORMAT = "hms_benchmark_suite_%d";
+  private enum RunModes {
+    ACID,
+    NONACID,
+    ALL
+  }
+
 
   @Option(names = {"-H", "--host"}, description = "HMS Host", paramLabel = "URI")
   private String host;
@@ -96,7 +98,6 @@ public class BenchmarkTool implements Runnable {
 
   @Option(names = {"-t", "--table"}, description = "table name")
   private String tableName = TEST_TABLE + "_" + System.getProperty("user.name");
-
 
   @Option(names = {"-N", "--number"}, description = "number of object instances")
   private int[] instances = {100};
@@ -140,6 +141,10 @@ public class BenchmarkTool implements Runnable {
   @Option(names = {"-E", "--exclude"}, description = "test name patterns to exclude")
   private Pattern[] exclude;
 
+  @Option(names = {"--runMode"},
+      description = "flag for setting the mode for the benchmark, acceptable values are: ACID, NONACID, ALL")
+  private RunModes runMode = RunModes.ALL;
+
   public static void main(String[] args) {
     CommandLine.run(new BenchmarkTool(), args);
   }
@@ -170,49 +175,67 @@ public class BenchmarkTool implements Runnable {
     }
   }
 
-
   @Override
   public void run() {
-    LOG.info("Using warmup " + warmup +
-        " spin " + spinCount + " nparams " + Arrays.toString(nParameters) + " threads " + nThreads);
+    LOG.info("Using warmup " + warmup + " spin " + spinCount + " nparams " + Arrays.toString(nParameters) + " threads "
+        + nThreads);
+    HMSConfig.getInstance().init(host, port, confDir);
 
-    if (nThreads > 1) {
-      ThreadFactory tf = new ThreadFactoryBuilder()
-          .setNameFormat(THREAD_NAME_FORMAT)
-          .setDaemon(true)
-          .build();
-      ExecutorService executor = Executors.newFixedThreadPool(nThreads, tf);
-
-      try {
-        List<Future<BenchmarkSuite>> results = new ArrayList<>();
-        List<BenchmarkSuite> benchmarkSuites;
-
-        for (int i = 0; i < nThreads; i++) {
-          results.add(executor.submit(this::runSuite));
-        }
-
-        benchmarkSuites = results.stream().map(r -> throwingSupplierWrapper(r::get)).collect(Collectors.toList());
-        renderResults(benchmarkSuites);
-      } finally {
-        executor.shutdownNow();
-      }
-
+    if (runMode == RunModes.ALL) {
+      runAcidBenchmarks();
+      runNonAcidBenchmarks();
+    } else if (runMode == RunModes.ACID) {
+      runAcidBenchmarks();
     } else {
-      try {
-        renderResult(runSuite());
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      runNonAcidBenchmarks();
     }
   }
 
-  private BenchmarkSuite runSuite() {
-    String threadSafeDbName = this.dbName;
-    BenchData bData = new BenchData(threadSafeDbName, tableName);
+  private void runAcidBenchmarks() {
+    ChainedOptionsBuilder optsBuilder =
+        new OptionsBuilder()
+            .warmupIterations(warmup)
+            .measurementIterations(spinCount)
+            .operationsPerInvocation(1)
+            .mode(Mode.SingleShotTime)
+            .timeUnit(TimeUnit.MILLISECONDS)
+            .forks(0)
+            .threads(nThreads)
+            .syncIterations(true);
+
+    String[] candidates = new String[] {
+        ACIDBenchmarks.TestOpenTxn.class.getSimpleName(),
+        ACIDBenchmarks.TestLocking.class.getSimpleName(),
+        ACIDBenchmarks.TestGetValidWriteIds.class.getSimpleName(),
+        ACIDBenchmarks.TestAllocateTableWriteIds.class.getSimpleName()
+    };
+
+    for (String pattern : Util.filterMatches(Arrays.asList(candidates), matches, exclude)) {
+      optsBuilder = optsBuilder.include(pattern);
+    }
+
+    Options opts =
+        optsBuilder
+            .param("howMany", Arrays.stream(instances)
+            .mapToObj(String::valueOf)
+                .toArray(String[]::new))
+            .param("nPartitions", Arrays.stream(nParameters)
+                .mapToObj(String::valueOf).toArray(String[]::new))
+            .build();
+
+    try {
+      new Runner(opts).run();
+    } catch (RunnerException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
+
+  private void runNonAcidBenchmarks() {
+    StringBuilder sb = new StringBuilder();
+    BenchData bData = new BenchData(dbName, tableName);
 
     MicroBenchmark bench = new MicroBenchmark(warmup, spinCount);
     BenchmarkSuite suite = new BenchmarkSuite();
-    BenchmarkSuite result = null;
 
     suite
         .setScale(scale)
@@ -224,7 +247,7 @@ public class BenchmarkTool implements Runnable {
         .add("createTable", () -> benchmarkTableCreate(bench, bData))
         .add("dropTable", () -> benchmarkDeleteCreate(bench, bData))
         .add("dropTableWithPartitions",
-            () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters))
+            () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
         .add("addPartition", () -> benchmarkCreatePartition(bench, bData))
         .add("dropPartition", () -> benchmarkDropPartition(bench, bData))
         .add("listPartition", () -> benchmarkListPartition(bench, bData))
@@ -239,15 +262,13 @@ public class BenchmarkTool implements Runnable {
         .add("dropDatabase",
             () -> benchmarkDropDatabase(bench, bData, 1))
         .add("openTxn",
-            () -> benchmarkOpenTxns(bench, bData, 1))
-        .add("createLock",
-            () -> benchmarkLocks(bench, bData, 1, nParameters));
+            () -> benchmarkOpenTxns(bench, bData, 1));
 
     for (int howMany: instances) {
       suite.add("listTables" + '.' + howMany,
           () -> benchmarkListTables(bench, bData, howMany))
           .add("dropTableWithPartitions" + '.' + howMany,
-              () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters))
+              () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters[0]))
           .add("listPartitions" + '.' + howMany,
               () -> benchmarkListManyPartitions(bench, bData, howMany))
           .add("getPartitions" + '.' + howMany,
@@ -264,88 +285,64 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkRenameTable(bench, bData, howMany))
           .add("dropDatabase" + '.' + howMany,
               () -> benchmarkDropDatabase(bench, bData, howMany))
-          .add("createLock" + '.' + howMany,
-              () -> benchmarkLocks(bench, bData, howMany, nParameters));
+          .add("openTxns" + '.' + howMany,
+              () -> benchmarkOpenTxns(bench, bData, howMany));
     }
 
+    List<String> toRun = suite.listMatching(matches, exclude);
+    if (toRun.isEmpty()) {
+      return;
+    }
     if (doList) {
-      suite.listMatching(matches, exclude).forEach(System.out::println);
-      return suite;
+      toRun.forEach(System.out::println);
+      return;
     }
 
-    LOG.info("Using table '{}.{}", threadSafeDbName, tableName);
+    LOG.info("Using table '{}.{}", dbName, tableName);
 
     try (HMSClient client = new HMSClient(getServerUri(host, String.valueOf(port)), confDir)) {
       bData.setClient(client);
-      if (!client.dbExists(threadSafeDbName)) {
-        client.createDatabase(threadSafeDbName);
+      if (!client.dbExists(dbName)) {
+        client.createDatabase(dbName);
       }
 
-      if (client.tableExists(threadSafeDbName, tableName)) {
-        client.dropTable(threadSafeDbName, tableName);
+      if (client.tableExists(dbName, tableName)) {
+        client.dropTable(dbName, tableName);
       }
 
       // Arrange various benchmarks in a suite
-      result = suite.runMatching(matches, exclude);
+      BenchmarkSuite result = suite.runMatching(matches, exclude);
+
+      Formatter fmt = new Formatter(sb);
+      if (doCSV) {
+        result.displayCSV(fmt, csvSeparator);
+      } else {
+        result.display(fmt);
+      }
+
+      PrintStream output = System.out;
+      if (outputFile != null) {
+        output = new PrintStream(outputFile);
+      }
+
+      if (outputFile != null) {
+        // Print results to stdout as well
+        StringBuilder s = new StringBuilder();
+        Formatter f = new Formatter(s);
+        result.display(f);
+        System.out.print(s);
+        f.close();
+      }
+
+      output.print(sb.toString());
+      fmt.close();
+      output.close();
+
+      if (dataSaveDir != null) {
+        saveData(result.getResult(), dataSaveDir, scale);
+      }
     } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-
-    return result;
-  }
-
-  private void renderResults(List<BenchmarkSuite> benchmarkSuites) {
-    BenchmarkSuite summarisedBenchmarkSuite = new BenchmarkSuite();
-
-    benchmarkSuites.forEach(bs -> {
-      bs.getResult().forEach((name, stat) -> {
-        if (summarisedBenchmarkSuite.getResult().get(name) == null) {
-          summarisedBenchmarkSuite.getResult().put(name, new DescriptiveStatistics());
-        }
-        for (int i = 0; i < stat.getN(); i++) {
-          summarisedBenchmarkSuite.getResult().get(name).addValue(stat.getElement(i));
-        }
-      });
-    });
-
-    try {
-      renderResult(summarisedBenchmarkSuite);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void renderResult(BenchmarkSuite result) throws IOException {
-    StringBuilder sb = new StringBuilder();
-
-    Formatter fmt = new Formatter(sb);
-    if (doCSV) {
-      result.displayCSV(fmt, csvSeparator);
-    } else {
-      result.display(fmt);
-    }
-
-    PrintStream output = System.out;
-    if (outputFile != null) {
-      outputFile += "_" + Thread.currentThread().getName();
-      output = new PrintStream(outputFile);
-    }
-
-    if (outputFile != null) {
-      // Print results to stdout as well
-      StringBuilder s = new StringBuilder();
-      Formatter f = new Formatter(s);
-      result.display(f);
-      System.out.print(s);
-      f.close();
-    }
-
-    output.print(sb.toString());
-    fmt.close();
-
-    if (dataSaveDir != null) {
-      saveData(result.getResult(), dataSaveDir, scale);
+      LOG.error(e.getMessage(), e);
     }
   }
 }
