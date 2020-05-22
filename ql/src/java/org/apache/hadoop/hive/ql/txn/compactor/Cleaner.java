@@ -228,7 +228,7 @@ public class Cleaner extends CompactorThread {
         if ((ci.tableName == null && lock.getTablename() == null) ||
             (ci.tableName != null && ci.tableName.equalsIgnoreCase(lock.getTablename()))) {
           if ((ci.partName == null && lock.getPartname() == null) ||
-              (ci.partName != null && ci.partName.equals(lock.getPartname()))) {
+              (ci.partName != null && ci.partName.equalsIgnoreCase(lock.getPartname()))) {
             relatedLocks.add(lock.getLockid());
           }
         }
@@ -279,8 +279,8 @@ public class Cleaner extends CompactorThread {
        * We only want to clean up to the highestWriteId - otherwise we risk deleting deltas from
        * under an active reader.
        *
-       * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
-       * clean request for D2.  
+       * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a
+       * clean request for D2.
        * Cleaner checks existing locks and finds none.
        * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
        * completes which creates D4.
