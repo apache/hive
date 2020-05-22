@@ -65,7 +65,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String GET_CDF = "cdf";
   private static final String GET_PMF = "pmf";
   private static final String GET_QUANTILES = "quantiles";
-  private static final String GET_QUANTILE = "quantile";
+  public static final String GET_QUANTILE = "quantile";
   private static final String GET_RANK = "rank";
   private static final String INTERSECT_SKETCH = "intersect";
   private static final String INTERSECT_SKETCH1 = "intersect_f";
@@ -109,7 +109,8 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     }
     SketchDescriptor sc = sketchClasses.get(className);
     if (!sc.fnMap.containsKey(function)) {
-      throw new IllegalArgumentException(String.format("The Sketch-class '%s' doesn't have a '%s' method", function));
+      throw new IllegalArgumentException(
+          String.format("The Sketch-class '%s' doesn't have a '%s' method", className, function));
     }
     return sketchClasses.get(className).fnMap.get(function);
   }
@@ -128,6 +129,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
       SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
       SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
       SketchFunctionDescriptor estimateSFD = sd.fnMap.get(SKETCH_TO_ESTIMATE);
+      SketchFunctionDescriptor quantileSFD = sd.fnMap.get(GET_QUANTILE);
 
       if (sketchSFD == null || unionSFD == null) {
         continue;
@@ -162,6 +164,20 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
             false);
 
         estimateSFD.setCalciteFunction(estimateFn);
+      }
+
+      if (quantileSFD != null && quantileSFD.getReturnRelDataType().isPresent()) {
+        SqlFunction quantileFn = new HiveSqlFunction(quantileSFD.name,
+            SqlKind.OTHER_FUNCTION,
+            ReturnTypes.explicit(quantileSFD.getReturnRelDataType().get().getSqlTypeName()),
+            InferTypes.ANY_NULLABLE,
+            OperandTypes.family(),
+            SqlFunctionCategory.USER_DEFINED_FUNCTION,
+            true,
+            false);
+
+        quantileSFD.setCalciteFunction(quantileFn);
+
       }
     }
   }
