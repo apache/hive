@@ -29,7 +29,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-// Test that a bigint comparing with a string, varchar or char is not allowed by default.
+/**
+ * Test that a bigint comparing with a string, varchar or char is not allowed by default.
+ *
+ */
 public class TestBigIntCompareValidation {
 
   private ExprNodeConstantDesc constant;
@@ -44,7 +47,7 @@ public class TestBigIntCompareValidation {
     this.errorMsg = HiveConf.StrictChecks.checkTypeSafety(new HiveConf());
     this.functionInfo = FunctionRegistry.getFunctionInfo("=");
   }
-  
+
   @Test
   public void testCompareWithVarchar() {
     ExprNodeDesc nodeDesc = new ExprNodeColumnDesc(TypeInfoFactory.varcharTypeInfo, "_c0", null, false);

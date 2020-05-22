@@ -811,8 +811,12 @@ public class TypeCheckProcFactory<T> {
           if (error != null) {
             throw new UDFArgumentException(error);
           }
-          console.printError(String.format("WARNING: Comparing a %s and a %s may result in a loss of precision.",
-              oiTypeInfo0.getTypeName(), oiTypeInfo1.getTypeName()));
+          // To  make the error output be consistency, get the other side type name that comparing with biginit.
+          String type = oiTypeInfo0.getTypeName();
+          if (!oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) {
+            type = oiTypeInfo1.getTypeName();
+          }
+          console.printError("WARNING: Comparing a bigint and a " + type + " may result in a loss of precision.");
         } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
             (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
           console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
