@@ -184,7 +184,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Output: default@e011_01_n0
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: ANALYZE TABLE e011_02_n0 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_02_n0
@@ -195,7 +195,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_02_n0
 POSTHOOK: Output: default@e011_02_n0
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: ANALYZE TABLE e011_03_n0 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_03_n0
@@ -206,7 +206,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_03_n0
 POSTHOOK: Output: default@e011_03_n0
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_01_small
@@ -217,7 +217,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Output: default@e011_01_small
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_02_small
@@ -228,7 +228,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_02_small
 POSTHOOK: Output: default@e011_02_small
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_03_small
@@ -239,7 +239,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_03_small
 POSTHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####
-_c0	_c1
+columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_n0
 PREHOOK: type: QUERY
