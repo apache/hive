@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.metastore.tools;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -35,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
@@ -345,6 +348,10 @@ final class HMSClient implements AutoCloseable {
     return openTxns;
   }
 
+  List<TxnInfo> getOpenTxnsInfo() throws TException {
+    return client.get_open_txns_info().getOpen_txns();
+  }
+
   boolean commitTxn(long txnId) throws TException {
     client.commit_txn(new CommitTxnRequest(txnId));
     return true;
@@ -352,6 +359,21 @@ final class HMSClient implements AutoCloseable {
 
   boolean abortTxns(List<Long> txnIds) throws TException {
     client.abort_txns(new AbortTxnsRequest(txnIds));
+    return true;
+  }
+
+  boolean allocateTableWriteIds(String dbName, String tableName, List<Long> openTxns) throws TException {
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    openTxns.forEach(t -> {
+      awiRqst.addToTxnIds(t);
+    });
+
+    client.allocate_table_write_ids(awiRqst);
+    return true;
+  }
+
+  boolean getValidWriteIds(List<String> fullTableNames) throws TException {
+    client.get_valid_write_ids(new GetValidWriteIdsRequest(fullTableNames));
     return true;
   }
 

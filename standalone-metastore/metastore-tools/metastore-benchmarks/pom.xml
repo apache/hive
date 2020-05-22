@@ -29,6 +29,7 @@
 
   <properties>
     <standalone.metastore.path.to.root>../..</standalone.metastore.path.to.root>
+    <jmh.version>1.23</jmh.version>
   </properties>
 
   <dependencies>
@@ -73,6 +74,16 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>${jmh.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <version>${jmh.version}</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
     <dependency>
