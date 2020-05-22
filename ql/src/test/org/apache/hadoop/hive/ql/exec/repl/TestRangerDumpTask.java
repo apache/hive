@@ -39,6 +39,7 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
@@ -77,6 +78,12 @@ public class TestRangerDumpTask {
   }
 
   @Test
+  public void testFailureInvalidRangerConfig() throws Exception {
+    int status = task.execute();
+    Assert.assertEquals(40000, status);
+  }
+
+  @Test
   public void testSuccessValidAuthProviderEndpoint() throws Exception {
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
@@ -86,6 +93,7 @@ public class TestRangerDumpTask {
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -114,6 +122,7 @@ public class TestRangerDumpTask {
     Path policyFile = new Path(rangerDumpPath, ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME);
     Mockito.when(mockClient.saveRangerPoliciesToFile(rangerPolicyList, rangerDumpPath,
       ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME, conf)).thenReturn(policyFile);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -130,6 +139,7 @@ public class TestRangerDumpTask {
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);

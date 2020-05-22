@@ -30,14 +30,15 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.NoOpRangerRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,15 +82,16 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
-      InputStream inputStream = RangerDumpTask.class.getClassLoader()
-          .getResourceAsStream(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
-      if (inputStream != null) {
-        conf.addResource(inputStream);
+      URL url = work.getRangerConfigResource();
+      if (url == null) {
+        throw new SemanticException("Ranger configuration is not valid "
+          + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
       }
+      conf.addResource(url);
       String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
       String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
       if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
-        throw new Exception("Ranger endpoint is not valid.");
+        throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
       if (work.getCurrentDumpPath() != null) {
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());

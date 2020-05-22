@@ -36,6 +36,9 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
@@ -70,16 +73,16 @@ public class TestRangerLoadTask {
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
-    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn(null);
     int status = task.execute();
     Assert.assertEquals(40000, status);
   }
 
   @Test
-  public void testSuccessValidAuthProviderEndpoint() {
+  public void testSuccessValidAuthProviderEndpoint() throws MalformedURLException {
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -104,6 +107,7 @@ public class TestRangerLoadTask {
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
     Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -130,6 +134,7 @@ public class TestRangerLoadTask {
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
     Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
@@ -171,6 +176,7 @@ public class TestRangerLoadTask {
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
     Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
@@ -234,6 +240,7 @@ public class TestRangerLoadTask {
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
     Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);

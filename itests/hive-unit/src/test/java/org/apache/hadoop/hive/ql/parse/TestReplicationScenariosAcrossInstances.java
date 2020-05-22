@@ -1521,27 +1521,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   /*
   Can't test complete replication as mini ranger is not supported
   Testing just the configs and no impact on existing replication
-   */
-  @Test
-  public void testFailureRangerReplication() throws Throwable {
-    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'");
-    primary.run("use " + primaryDbName)
-        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
-            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
-        .run("create table table1 (i String)")
-        .run("insert into table1 values (1)")
-        .run("insert into table1 values (2)");
-    try {
-      primary.dump(primaryDbName, clause);
-    } catch (Exception e) {
-      assertEquals("Ranger endpoint is not valid.", e.getMessage());
-    }
-  }
-
-  /*
-  Can't test complete replication as mini ranger is not supported
-  Testing just the configs and no impact on existing replication
  */
   @Test
   public void testFailureUnsupportedAuthorizerReplication() throws Throwable {
