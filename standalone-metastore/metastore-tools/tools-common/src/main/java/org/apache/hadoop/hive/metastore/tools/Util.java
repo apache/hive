@@ -236,6 +236,7 @@ public final class Util {
     private TableBuilder() {
       dbName = null;
       tableName = null;
+      parameters.putIfAbsent("transactional", "true");
     }
 
     TableBuilder(String dbName, String tableName) {
