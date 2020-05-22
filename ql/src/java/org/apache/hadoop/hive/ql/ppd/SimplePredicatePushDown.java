@@ -102,6 +102,7 @@ public class SimplePredicatePushDown extends Transform {
     ogw.startWalking(topNodes, null);
 
     if (LOG.isDebugEnabled()) {
+      // PANOS: CAn we eliminate filters as part of this rule?
       LOG.debug("After PPD:\n" + Operator.toString(pctx.getTopOps().values()));
     }
     return pGraphContext;

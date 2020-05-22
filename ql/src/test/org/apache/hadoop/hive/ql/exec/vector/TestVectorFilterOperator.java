@@ -18,27 +18,38 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
+import org.apache.hadoop.hive.ql.io.orc.ORCRowFilter;
+import org.apache.hadoop.hive.ql.io.orc.TestOrcSplitElimination;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test cases for vectorized filter operator.
@@ -105,6 +116,88 @@ public class TestVectorFilterOperator {
     VectorizationContext vc = new VectorizationContext("name", columns);
 
     return (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc, vectorDesc);
+  }
+
+  @Test
+  public void testNonVectorUDFFilter() throws HiveException {
+    // Create an Expr for <> 100
+    ObjectInspector[] inputOIs = {
+            PrimitiveObjectInspectorFactory.writableLongObjectInspector,
+            PrimitiveObjectInspectorFactory.writableLongObjectInspector
+    };
+    GenericUDFOPNotEqual notEqual = new GenericUDFOPNotEqual();
+    notEqual.initialize(inputOIs);
+
+    // left is going to be our data and right the 100 constant
+    LongWritable left = new LongWritable(100);
+    LongWritable right = new LongWritable(100);
+    GenericUDF.DeferredObject[] args = {
+            new GenericUDF.DeferredJavaObject(left),
+            new GenericUDF.DeferredJavaObject(right),
+    };
+
+    Assert.assertFalse(((BooleanWritable) notEqual.evaluate(args)).get());
+  }
+
+  @Test
+  public void testRowLevelFilterCallback() throws Exception {
+    // PPD is originally working with ExprNodeDesc
+    List<ExprNodeDesc> childExpr = new ArrayList<>();
+    childExpr.add(new ExprNodeColumnDesc(Long.class, "key2", "T", false));
+    childExpr.add(new ExprNodeConstantDesc(50));
+
+    GenericUDF udf = new GenericUDFOPGreaterThan();
+    ObjectInspector oi =  ObjectInspectorFactory
+            .getReflectionObjectInspector(TestOrcSplitElimination.AllTypesRow.class,
+                    ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    ExprNodeDesc predicateExpr = new ExprNodeGenericFuncDesc(oi, udf, childExpr);
+//    String serExpr = SerializationUtilities.serializeExpression((ExprNodeGenericFuncDesc) predicateExpr);
+    System.out.println(predicateExpr);
+
+//    VectorExpression ve1 = new FilterLongColGreaterLongScalar(0, 50);
+//    List<String> columns = new ArrayList<String>();
+//    columns.add("col1");
+//    OrcInputFormat.RowLevelFilterCallback rb = new OrcInputFormat.RowLevelFilterCallback(ve1);
+
+    ArrayList<String> allCols = new ArrayList<>();
+    allCols.add("one");
+    allCols.add("key2");
+    allCols.add("three");
+    // For row-level filtering we NEED to convert them to VectorExpression
+    VectorizationContext vc = new VectorizationContext("row-filter", allCols);
+
+    VectorExpression vectorPredicateExpr = vc.getVectorExpression(predicateExpr, VectorExpressionDescriptor.Mode.FILTER);
+    System.out.println(vectorPredicateExpr);
+
+    FakeDataReader fdr = new FakeDataReader(1024*1, 3);
+    VectorizedRowBatch vrb = fdr.getNext();
+    Assert.assertFalse(vrb.isSelectedInUse());
+
+    // All the magic happens here..
+    ORCRowFilter rb = new ORCRowFilter(predicateExpr, allCols);
+    rb.rowFilterCallback(vrb);
+
+    //Verify
+    int rows = 0;
+    int actualSelected[] = new int[1024];
+    for (int i =0; i < 1024; i++){
+      LongColumnVector l1 = (LongColumnVector) vrb.cols[0];
+      LongColumnVector l2 = (LongColumnVector) vrb.cols[1];
+      LongColumnVector l3 = (LongColumnVector) vrb.cols[2];
+//      System.out.println("C1: "+ l1.vector[i] + " C2: "+ l2.vector[i] + " C3: "+ l3.vector[i]);
+      if (l2.vector[i] > 50) {
+        actualSelected[rows] = i;
+        rows ++;
+      }
+    }
+
+    Assert.assertTrue(vrb.isSelectedInUse());
+    Assert.assertEquals(rows, vrb.size);
+
+    // make sure selected is correct
+    for (int i = 0; i < vrb.size; i++){
+      Assert.assertEquals(vrb.selected[i], actualSelected[i]);
+    }
   }
 
   @Test

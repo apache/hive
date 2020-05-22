@@ -201,7 +201,7 @@ public class OrcEncodedDataConsumer
           ColumnVector cv = cvb.cols[idx];
           cv.reset();
           cv.ensureSize(batchSize, false);
-          reader.nextVector(cv, null, batchSize);
+          reader.nextVector(cv, null, batchSize, new VectorizedRowBatch(0));
         }
 
         // we are done reading a batch, send it to consumer for processing

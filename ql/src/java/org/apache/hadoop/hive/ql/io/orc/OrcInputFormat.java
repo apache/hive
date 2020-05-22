@@ -51,10 +51,6 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,6 +59,7 @@ import org.apache.hadoop.hive.metastore.Metastore;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -95,6 +92,8 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -340,6 +339,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
     options.include(genIncludedColumns(schema, conf));
+    setRowFilter(options, schema, conf);
     setSearchArgument(options, types, conf, isOriginal);
     return file.rowsOptions(options, conf);
   }
@@ -502,6 +502,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     }
     return columnNames;
+  }
+
+  static void setRowFilter(Reader.Options options,
+                           TypeDescription schema,
+                           Configuration conf) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)) {
+      String filterExpr = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR, "");
+      if (!filterExpr.isEmpty()) {
+        LOG.info("RowFilter ProbeDecode schema: {}", schema.getFieldNames());
+        ExprNodeGenericFuncDesc exprObj = SerializationUtilities.
+                deserializeExpression(conf.get(TableScanDesc.FILTER_EXPR_CONF_STR));
+        ORCRowFilter orcRF = new ORCRowFilter(exprObj, schema.getFieldNames());
+        options.setRowFilter(exprObj.getCols().stream().toArray(size -> new String[size]), orcRF::rowFilterCallback);
+      }
+    }
   }
 
   static void setSearchArgument(Reader.Options options,

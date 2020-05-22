@@ -1,0 +1,67 @@
+PREHOOK: query: CREATE TABLE orders (key2 int, dt timestamp) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orders
+POSTHOOK: query: CREATE TABLE orders (key2 int, dt timestamp) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orders
+PREHOOK: query: INSERT INTO orders values(104, '2002-02-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: INSERT INTO orders values(104, '2002-02-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.dt SCRIPT []
+POSTHOOK: Lineage: orders.key2 SCRIPT []
+PREHOOK: query: INSERT INTO orders values(108, '2003-03-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: INSERT INTO orders values(108, '2003-03-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.dt SCRIPT []
+POSTHOOK: Lineage: orders.key2 SCRIPT []
+PREHOOK: query: INSERT INTO orders values( 99, '2004-04-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: INSERT INTO orders values( 99, '2004-04-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.dt SCRIPT []
+POSTHOOK: Lineage: orders.key2 SCRIPT []
+PREHOOK: query: INSERT INTO orders values(109, '2005-05-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: INSERT INTO orders values(109, '2005-05-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.dt SCRIPT []
+POSTHOOK: Lineage: orders.key2 SCRIPT []
+PREHOOK: query: INSERT INTO orders values(110, '2006-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: INSERT INTO orders values(110, '2006-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.dt SCRIPT []
+POSTHOOK: Lineage: orders.key2 SCRIPT []
+PREHOOK: query: SELECT * from orders where orders.key2 < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from orders where orders.key2 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+99	2004-04-30 00:00:00

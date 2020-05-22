@@ -85,6 +85,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     if (rowInBatch >= batch.size) {
       baseRow = super.getRowNumber();
       rowInBatch = 0;
+      batch.reset();
       return super.nextBatch(batch);
     }
     return true;
@@ -133,7 +134,15 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
           result.setNumFields(numberOfChildren);
         }
       }
-      for(int i=0; i < numberOfChildren; ++i) {
+
+      // When row-level filtering is enabled
+      // we have to convert rowsIds using selected Array
+      if (batch.isSelectedInUse()) {
+        LOG.info("New rowId: "+ batch.selected[rowInBatch] + " for rowId: " + rowInBatch);
+        rowInBatch = batch.selected[rowInBatch];
+      }
+
+      for (int i=0; i < numberOfChildren; ++i) {
         result.setFieldValue(i, nextValue(batch.cols[i], rowInBatch,
             children.get(i), result.getFieldValue(i)));
       }

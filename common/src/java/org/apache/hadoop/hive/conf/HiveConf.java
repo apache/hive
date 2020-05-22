@@ -2480,7 +2480,7 @@ public class HiveConf extends Configuration {
 
     HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", false,
         "Whether to find suitable table scan operators that could reduce the number of decoded rows at runtime by probing extra available information. \n"
-            + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
+            + "The probe side for the row-level filtering is generated either statically in the case of filter expressions or dynamically for joins"
             + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
             + "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
 

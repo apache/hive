@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.io.filter.FilterContext;
 import org.apache.orc.OrcFile;
 import org.apache.orc.impl.RunLengthByteReader;
 
@@ -75,9 +76,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       // Note: we assume that batchSize will be consistent with vectors passed in.
@@ -295,9 +296,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -458,9 +459,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -587,9 +588,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -717,9 +718,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -844,9 +845,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -957,9 +958,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1091,9 +1092,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1245,9 +1246,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-      ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+      ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1383,9 +1384,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1547,9 +1548,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1745,9 +1746,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1907,9 +1908,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -2004,9 +2005,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -2168,9 +2169,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+        ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);

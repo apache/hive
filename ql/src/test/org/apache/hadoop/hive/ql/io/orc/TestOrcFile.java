@@ -1939,7 +1939,7 @@ public class TestOrcFile {
           (InnerStruct.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    MemoryManager memoryManager = new MemoryManagerImpl(poolSize);
+    MemoryManager memoryManager = new MemoryManagerImpl(conf);
     // set up 10 files that all request the full size.
     MemoryManager.Callback ignore = newScale -> false;
     for(int f=0; f < 9; ++f) {
@@ -1982,7 +1982,7 @@ public class TestOrcFile {
           (InnerStruct.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    MemoryManager memoryManager = new MemoryManagerImpl(poolSize);
+    MemoryManager memoryManager = new MemoryManagerImpl(conf);
     // set up 10 files that all request the full size.
     MemoryManager.Callback ignore = newScale -> false;
     for(int f=0; f < 9; ++f) {
