@@ -35,8 +35,8 @@ public class ImpalaFunctionUtil {
   public static ScalarFunction create(ScalarFunctionDetails sfd) {
     ScalarFunction retVal =
         new ScalarFunction(new FunctionName(sfd.dbName, sfd.impalaFnName),
-            ImpalaTypeConverter.getImpalaTypesList(sfd.argTypes),
-            ImpalaTypeConverter.getImpalaType(sfd.retType),
+            sfd.getArgTypes(),
+            sfd.getRetType(),
             sfd.hdfsUri,
             sfd.symbolName,
             sfd.prepareFnSymbol,
@@ -48,19 +48,9 @@ public class ImpalaFunctionUtil {
 
   public static AggregateFunction create(AggFunctionDetails afd) {
     FunctionName impalaFuncName = new FunctionName(BuiltinsDb.NAME, afd.fnName);
-    List<Type> impalaArgTypes = ImpalaTypeConverter.getImpalaTypesList(afd.argTypes);
-    Preconditions.checkNotNull(afd.retType);
-    Preconditions.checkNotNull(afd.intermediateType);
-    Type impalaRetType =
-        ImpalaTypeConverter.getImpalaType(afd.retType);
-    Type impalaIntermediateType =
-        (afd.intermediateType == TPrimitiveType.FIXED_UDA_INTERMEDIATE) ?
-            ImpalaTypeConverter.getImpalaType(afd.intermediateType, afd.intermediateTypeLength, 0)
-            : ImpalaTypeConverter.getImpalaType(afd.intermediateType);
-
     AggregateFunction retVal =
-        new AggregateFunction(impalaFuncName, impalaArgTypes,
-            impalaRetType, impalaIntermediateType, null,
+        new AggregateFunction(impalaFuncName, afd.getArgTypes(),
+            afd.getRetType(), afd.getIntermediateType(), null,
             afd.updateFnSymbol, afd.initFnSymbol, afd.serializeFnSymbol,
             afd.mergeFnSymbol, afd.getValueFnSymbol, afd.removeFnSymbol,
             afd.finalizeFnSymbol);

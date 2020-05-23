@@ -26,6 +26,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -55,6 +56,8 @@ import org.apache.impala.analysis.TupleId;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -64,19 +67,21 @@ import java.util.List;
  * Static Helper class that returns Exprs for RexCall nodes.
  */
 public class ImpalaRexCall {
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaRexCall.class);
 
   /*
    * Returns the Impala Expr object for ImpalaRexCall.
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
       List<Expr> params, List<TupleId> tupleIds) throws HiveException {
-    Type impalaRetType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
+    Type impalaRetType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
 
     if (rexCall.getOperator() == SqlStdOperatorTable.GROUPING) {
       return processGroupingFunction(rexCall, params, impalaRetType, analyzer);
     }
 
-    Function fn = getFunction(rexCall);
+    String funcName = rexCall.getOperator().getName().toLowerCase();
+    Function fn = getFunction(funcName, rexCall.getOperands(), rexCall.getType());
 
     // TODO: CDPD-8625: replace isBinaryComparison with rexCall.isA(SqlKind.BINARY_COMPARISON) when
     // we upgrade to calcite 1.21
@@ -112,7 +117,6 @@ public class ImpalaRexCall {
       case EXTRACT:
         // for specific extract functions (e.g.year, month), we ignore the first redundant
         // "SYMBOL" parameter
-        String funcName = rexCall.getOperator().getName().toLowerCase();
         if (!funcName.equals("extract")) {
           return new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
         }
@@ -148,22 +152,26 @@ public class ImpalaRexCall {
       // the shiftright function in Impala only accepts INT as the second parameter, whereas
       // the Calcite function has created this as a BIGINT, so convert the second parameter
       RelDataType refType = rexCall.getOperands().get(0).getType();
-      Type refImpalaType = params.get(0).getType();
       // shiftRight expr
       BigDecimal value = new BigDecimal(((NumericLiteral) params.get(1)).getIntValue());
       NumericLiteral numPositions = new NumericLiteral(value, Type.INT);
-      Function shiftRightFn = getFunction(SqlKind.OTHER_FUNCTION, "shiftright",
-          ImmutableList.of(refType.getSqlTypeName(), SqlTypeName.INTEGER),
-          refType);
+      Type impalaRefType = ImpalaTypeConverter.createImpalaType(refType);
+      List<Type> shiftRightArgs = ImmutableList.of(impalaRefType, Type.INT);
+      ScalarFunctionDetails shiftRightFuncDetails =
+          ScalarFunctionDetails.get("shiftright", shiftRightArgs, impalaRefType);
+      Preconditions.checkNotNull(shiftRightFuncDetails);
+      Function shiftRightFn = ImpalaFunctionUtil.create(shiftRightFuncDetails);
       Expr shiftRightExpr = new ImpalaFunctionCallExpr(analyzer, shiftRightFn,
-          ImmutableList.of(params.get(0), numPositions), rexCall, refImpalaType);
+          ImmutableList.of(params.get(0), numPositions), rexCall, impalaRefType);
       // bitAnd expr
-      NumericLiteral mask = new NumericLiteral(new BigDecimal(1), refImpalaType);
-      Function bitAndFn = getFunction(SqlKind.OTHER_FUNCTION, "bitand",
-          ImmutableList.of(refType.getSqlTypeName(), refType.getSqlTypeName()),
-          refType);
+      NumericLiteral mask = new NumericLiteral(new BigDecimal(1), impalaRefType);
+      List<Type> bitAndArgs = ImmutableList.of(impalaRefType, impalaRefType);
+      ScalarFunctionDetails bitAndFuncDetails =
+          ScalarFunctionDetails.get("bitand", bitAndArgs, impalaRefType);
+      Preconditions.checkNotNull(bitAndFuncDetails);
+      Function bitAndFn = ImpalaFunctionUtil.create(bitAndFuncDetails);
       Expr bitAndExpr = new ImpalaFunctionCallExpr(analyzer, bitAndFn,
-          ImmutableList.of(shiftRightExpr, mask), rexCall, refImpalaType);
+          ImmutableList.of(shiftRightExpr, mask), rexCall, impalaRefType);
       // cast expr
       Expr castExpr = new CastExpr(impalaRetType, bitAndExpr);
       castExpr.analyze(analyzer);
@@ -211,9 +219,9 @@ public class ImpalaRexCall {
     ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, Type.BOOLEAN);
     tmpArgs.add(nullLiteral);
     tmpArgs.add(expr);
-    List<SqlTypeName> typeNames = ImmutableList.of(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
+    List<Type> typeNames = ImmutableList.of(Type.BOOLEAN, Type.BOOLEAN, Type.BOOLEAN);
     ScalarFunctionDetails conditionalFuncDetails =
-        ScalarFunctionDetails.get("if", typeNames, SqlTypeName.BOOLEAN);
+        ScalarFunctionDetails.get("if", typeNames, Type.BOOLEAN);
     Preconditions.checkNotNull(conditionalFuncDetails);
     Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
     ImpalaFunctionCallExpr conditionalFuncExpr =
@@ -325,25 +333,25 @@ public class ImpalaRexCall {
     Boolean invert = invertLiteral.getValueAs(Boolean.class);
     SqlTypeName sqlRetType = SqlTypeName.BOOLEAN;
 
-    Type retType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
+    Type retType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
     List<RexNode> operands = rexCall.getOperands();
-    List<SqlTypeName> operandTypes = ImpalaTypeConverter.getSqlTypeNamesFromNodes(operands);
+    List<RelDataType> operandTypes = RexUtil.types(operands);
 
     // get all parameters to create the lower expression
     SqlKind lowerKind = invert ? SqlKind.LESS_THAN : SqlKind.GREATER_THAN_OR_EQUAL;
     String lowerName = invert ? "<" : ">=";
-    List<SqlTypeName> lowerArgs = Lists.newArrayList(operandTypes.get(1), operandTypes.get(2));
+    List<RexNode> lowerArgs = Lists.newArrayList(operands.get(1), operands.get(2));
     List<Expr> lowerParams = Lists.newArrayList(params.get(1), params.get(2));
-    Function lowerFn = getFunction(lowerKind, lowerName, lowerArgs, rexCall.getType());
+    Function lowerFn = getFunction(lowerName, lowerArgs, rexCall.getType());
     Preconditions.checkNotNull(lowerFn);
     Expr lowerExpr = createBinaryCompExpr(analyzer, lowerFn, lowerParams, lowerKind, retType);
 
     // get all parameters to create the upper expression
     SqlKind upperKind = invert ? SqlKind.GREATER_THAN : SqlKind.LESS_THAN_OR_EQUAL;
     String upperName = invert ? ">" : "<=";
-    List<SqlTypeName> upperArgs = Lists.newArrayList(operandTypes.get(1), operandTypes.get(3));
+    List<RexNode> upperArgs = Lists.newArrayList(operands.get(1), operands.get(3));
     List<Expr> upperParams = Lists.newArrayList(params.get(1), params.get(3));
-    Function upperFn = getFunction(upperKind, upperName, upperArgs, rexCall.getType());
+    Function upperFn = getFunction(upperName, upperArgs, rexCall.getType());
     Preconditions.checkNotNull(upperFn);
     Expr upperExpr = createBinaryCompExpr(analyzer, upperFn, upperParams, upperKind, retType);
 
@@ -352,9 +360,12 @@ public class ImpalaRexCall {
     SqlKind fnKind = invert ? SqlKind.OR : SqlKind.AND;
     CompoundPredicate.Operator op =
         invert ? CompoundPredicate.Operator.OR : CompoundPredicate.Operator.AND;
-    List<SqlTypeName> fnArgs = Lists.newArrayList(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
-    Function fnCompound =
-        getFunction(fnKind, fnKind.toString().toLowerCase(), fnArgs, rexCall.getType());
+
+    List<Type> fnArgs = ImmutableList.of(Type.BOOLEAN, Type.BOOLEAN);
+    ScalarFunctionDetails compoundFuncDetails =
+        ScalarFunctionDetails.get(fnKind.toString().toLowerCase(), fnArgs, Type.BOOLEAN);
+    Preconditions.checkNotNull(compoundFuncDetails);
+    Function fnCompound = ImpalaFunctionUtil.create(compoundFuncDetails);
     return createCompoundExpr(analyzer, op, fnCompound, impalaExprList, retType);
   }
 
@@ -374,21 +385,13 @@ public class ImpalaRexCall {
     }
   }
 
-  private static Function getFunction(RexCall rexCall) throws HiveException {
-    SqlKind kind = rexCall.getOperator().getKind();
-    String funcName = rexCall.getOperator().getName().toLowerCase();
-    List<SqlTypeName> args = ImpalaTypeConverter.getSqlTypeNamesFromNodes(rexCall.getOperands());
-    return getFunction(kind, funcName, args, rexCall.getType());
-  }
-
-  private static Function getFunction(SqlKind kind, String name, List<SqlTypeName> args,
+  private static Function getFunction(String name, List<RexNode> args,
       RelDataType retType) throws HiveException {
-    ScalarFunctionDetails details = ScalarFunctionDetails.get(name, args, retType.getSqlTypeName());
+    ScalarFunctionDetails details = ScalarFunctionDetails.get(name,
+        ImpalaTypeConverter.getNormalizedImpalaTypeList(args), retType);
     if (details == null) {
       throw new HiveException("Could not find function \"" + name + "\" in Impala.");
     }
-    Preconditions.checkNotNull(details);
-
     return ImpalaFunctionUtil.create(details);
   }
 }

@@ -264,7 +264,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       }
       Function fn = getFunction(aggCall);
 
-      Type impalaRetType = ImpalaTypeConverter.getImpalaType(aggCall.getType());
+      Type impalaRetType = ImpalaTypeConverter.createImpalaType(aggCall.getType());
       FunctionParams params = new FunctionParams(aggCall.isDistinct(), operands);
       FunctionCallExpr e =
           new ImpalaFunctionCallExpr(ctx.getRootAnalyzer(), fn, params, null, impalaRetType);
@@ -277,11 +277,11 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       throws HiveException {
     RelDataType retType = aggCall.getType();
     SqlAggFunction aggFunction = aggCall.getAggregation();
-    List<SqlTypeName> operandTypes = Lists.newArrayList();
+    List<RelDataType> operandTypes = Lists.newArrayList();
     ImpalaPlanRel input = getImpalaRelInput(0);
     for (int i : aggCall.getArgList()) {
       RelDataType relDataType = input.getRowType().getFieldList().get(i).getType();
-      operandTypes.add(relDataType.getSqlTypeName());
+      operandTypes.add(relDataType);
     }
     return ImpalaRelUtil.getAggregateFunction(aggFunction, retType, operandTypes);
   }

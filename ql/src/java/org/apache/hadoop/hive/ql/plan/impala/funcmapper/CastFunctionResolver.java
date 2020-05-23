@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 import java.util.List;
@@ -32,18 +32,12 @@ import java.util.Map;
  */
 public class CastFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  private final SqlTypeName retSqlType;
+  private final RelDataType returnType;
 
   CastFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-      RelDataType retType) {
-    super(helper, op, inputNodes, retType);
-    this.retSqlType = retType.getSqlTypeName();
-  }
-
-  CastFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-      SqlTypeName retSqlType) {
-    super(helper, op, inputNodes, null);
-    this.retSqlType = retSqlType;
+      RelDataType returnType) {
+    super(helper, op, inputNodes, returnType);
+    this.returnType = returnType;
   }
 
   /**
@@ -55,7 +49,7 @@ public class CastFunctionResolver extends ImpalaFunctionResolverImpl {
   @Override
   public ImpalaFunctionSignature getFunction(Map<ImpalaFunctionSignature,
       ? extends FunctionDetails> functionDetailsMap) {
-    return ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, retSqlType);
+    return ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, returnType);
   }
 
   @Override
@@ -65,10 +59,8 @@ public class CastFunctionResolver extends ImpalaFunctionResolverImpl {
 
   @Override
   public RelDataType getRetType(ImpalaFunctionSignature funcSig, List<RexNode> operands) {
-    if (retType != null) {
-      return retType;
-    }
-    return rexBuilder.getTypeFactory().createSqlType(retSqlType);
+    Preconditions.checkNotNull(returnType);
+    return returnType;
   }
 
   @Override

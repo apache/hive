@@ -66,10 +66,10 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC])
   ImpalaAggregateRel(group=[{4}], agg#0=[sum($1)], agg#1=[sum($2)])
     ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
-      ImpalaProjectPassthroughRel(o_orderkey=[$0], CAST=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT':VARCHAR(65535)), =($5, _UTF-16LE'2-HIGH':VARCHAR(65535))), 1, 0)):BIGINT], CAST2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT':VARCHAR(65535)), <>($5, _UTF-16LE'2-HIGH':VARCHAR(65535))), 1, 0)):BIGINT])
+      ImpalaProjectPassthroughRel(o_orderkey=[$0], CAST=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT'), =($5, _UTF-16LE'2-HIGH')), 1, 0)):BIGINT], CAST2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT'), <>($5, _UTF-16LE'2-HIGH')), 1, 0)):BIGINT])
         ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[IS NOT NULL($0)])
       ImpalaProjectPassthroughRel(l_orderkey=[$0], l_shipmode=[$14])
-        ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($12, _UTF-16LE'1994-01-01':VARCHAR(65535)), <($12, _UTF-16LE'1995-01-01':VARCHAR(65535)), <($11, $12), <($10, $11), IN($14, _UTF-16LE'MAIL':VARCHAR(65535), _UTF-16LE'SHIP':VARCHAR(65535)), IS NOT NULL($0))])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($12, _UTF-16LE'1994-01-01'), <($12, _UTF-16LE'1995-01-01'), <($11, $12), <($10, $11), IN($14, _UTF-16LE'MAIL', _UTF-16LE'SHIP'), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   l_shipmode,

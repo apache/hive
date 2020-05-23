@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
@@ -48,22 +47,21 @@ public class ImpalaRelUtil {
    * this could be either an aggregation or analytic function.
    */
   protected static AggregateFunction getAggregateFunction(SqlAggFunction aggFunction, RelDataType retType,
-      List<SqlTypeName> operandTypes) throws HiveException {
+      List<RelDataType> operandTypes) throws HiveException {
 
     AggFunctionDetails funcDetails = AggFunctionDetails.get(aggFunction.getName(), operandTypes,
-        retType.getSqlTypeName());
+        retType);
 
     if (funcDetails == null) {
       throw new SemanticException("Could not find function \"" + aggFunction.getName() + "\"");
     }
 
-    List<Type> argTypes = ImpalaTypeConverter.getImpalaTypesList(funcDetails.argTypes);
-    Type impalaRetType =
-        ImpalaTypeConverter.getImpalaType(funcDetails.retType, retType.getPrecision(), retType.getScale());
-    Integer intermediateTypePrecision = funcDetails.intermediateTypeLength != null
+    List<Type> argTypes = ImpalaTypeConverter.createImpalaTypes(operandTypes);
+    Type impalaRetType = ImpalaTypeConverter.createImpalaType(retType);
+    int intermediateTypePrecision = funcDetails.intermediateTypeLength != 0 
         ? funcDetails.intermediateTypeLength
         : retType.getPrecision();
-    Type intermediateType = ImpalaTypeConverter.getImpalaType(funcDetails.intermediateType,
+    Type intermediateType = ImpalaTypeConverter.createImpalaType(funcDetails.getIntermediateType(),
         intermediateTypePrecision, retType.getScale());
 
     Preconditions.checkState(funcDetails.isAgg || funcDetails.isAnalyticFn);

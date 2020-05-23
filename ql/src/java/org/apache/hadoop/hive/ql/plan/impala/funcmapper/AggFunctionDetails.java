@@ -22,16 +22,17 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
-import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.catalog.BuiltinsDb;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TFunctionBinaryType;
 import org.apache.impala.thrift.TPrimitiveType;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,16 @@ public class AggFunctionDetails implements FunctionDetails {
 
   public String fnName;
   public String impalaFnName;
-  public TPrimitiveType retType;
-  public TPrimitiveType[] argTypes;
-  public TPrimitiveType intermediateType;
-  public Integer intermediateTypeLength;
+  private TPrimitiveType retType;
+  private TPrimitiveType[] argTypes;
+  private TPrimitiveType intermediateType;
+  @Expose(serialize=false,deserialize=false)
+  private Type impalaRetType;
+  @Expose(serialize=false,deserialize=false)
+  private List<Type> impalaArgTypes;
+  @Expose(serialize=false,deserialize=false)
+  private Type impalaIntermediateType;
+  public int intermediateTypeLength;
   public boolean isAnalyticFn;
   public String updateFnSymbol;
   public String initFnSymbol;
@@ -73,25 +80,16 @@ public class AggFunctionDetails implements FunctionDetails {
     Reader reader =
         new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_aggs.json"));
     Gson gson = new Gson();
-    Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
+    java.lang.reflect.Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
     List<AggFunctionDetails> aggDetails = gson.fromJson(reader, aggFuncDetailsType);
 
-    try {
-      for (AggFunctionDetails afd : aggDetails) {
-        Preconditions.checkState(afd.isAgg || afd.isAnalyticFn);
-        List<SqlTypeName> argTypes = (afd.argTypes == null)
-            ? Lists.newArrayList()
-            : ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
-        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs =
-            ImpalaFunctionSignature.create(afd.fnName, argTypes, retType, false);
-        afd.ifs = ifs;
-        AGG_BUILTINS_INSTANCE.put(ifs, afd);
-        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
-      }
-    } catch (HiveException e) {
-      // if an exception is hit here, we have a problem in our resource file.
-      throw new RuntimeException("Problem processing resource file impala_aggs.json:" + e);
+    for (AggFunctionDetails afd : aggDetails) {
+      Preconditions.checkState(afd.isAgg || afd.isAnalyticFn);
+      ImpalaFunctionSignature ifs =
+          ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(), afd.getRetType(), false);
+      afd.ifs = ifs;
+      AGG_BUILTINS_INSTANCE.put(ifs, afd);
+      BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
     }
   }
 
@@ -117,6 +115,34 @@ public class AggFunctionDetails implements FunctionDetails {
 
   public void setIntermediateTypeLength(int intermediateTypeLength) {
     this.intermediateTypeLength = intermediateTypeLength;
+  }
+
+  public List<Type> getArgTypes() {
+    if (impalaArgTypes == null) {
+      impalaArgTypes = (argTypes != null)
+          ? ImpalaTypeConverter.getImpalaTypesList(argTypes)
+          : Lists.newArrayList();
+    }
+    return impalaArgTypes;
+  }
+
+  public Type getRetType() {
+    if (impalaRetType == null) {
+      impalaRetType = ImpalaTypeConverter.getImpalaType(retType);
+    }
+    return impalaRetType;
+  }
+
+  public Type getIntermediateType() {
+    if (intermediateType == null) {
+      return getRetType();
+    }
+    if (impalaIntermediateType == null) {
+      Type impalaType = ImpalaTypeConverter.getImpalaType(intermediateType);
+      impalaIntermediateType =
+          ImpalaTypeConverter.createImpalaType(impalaType, intermediateTypeLength, 0);
+    }
+    return impalaIntermediateType;
   }
 
   public void setIsAnalyticFn(boolean isAnalyticFn) {
@@ -172,8 +198,8 @@ public class AggFunctionDetails implements FunctionDetails {
    * Retrieve function details about an agg function given a signature
    * containing the function name, return type, and operand types.
    */
-  public static AggFunctionDetails get(String name, List<SqlTypeName> operandTypes,
-       SqlTypeName retType) {
+  public static AggFunctionDetails get(String name, List<RelDataType> operandTypes,
+       RelDataType retType) {
 
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.fetch(AGG_BUILTINS_INSTANCE,
         name, operandTypes, retType);

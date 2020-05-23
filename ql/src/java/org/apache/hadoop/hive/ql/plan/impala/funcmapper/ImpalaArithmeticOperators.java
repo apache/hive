@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -33,7 +32,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.impala.analysis.ArithmeticExpr;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Impala Calcite Arithmetic Operators

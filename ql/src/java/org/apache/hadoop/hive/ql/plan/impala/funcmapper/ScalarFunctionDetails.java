@@ -21,17 +21,18 @@ package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
-import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.HdfsUri;
 import org.apache.impala.catalog.BuiltinsDb;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TFunctionBinaryType;
 import org.apache.impala.thrift.TPrimitiveType;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +48,12 @@ public class ScalarFunctionDetails implements FunctionDetails {
   public String dbName;
   public String fnName;
   public String impalaFnName;
-  public TPrimitiveType retType;
-  public TPrimitiveType[] argTypes;
+  private TPrimitiveType retType;
+  private TPrimitiveType[] argTypes;
+  @Expose(serialize=false,deserialize=false)
+  public Type impalaRetType;
+  @Expose(serialize=false,deserialize=false)
+  public List<Type> impalaArgTypes;
   public String symbolName;
   public String prepareFnSymbol;
   public String closeFnSymbol;
@@ -71,25 +76,16 @@ public class ScalarFunctionDetails implements FunctionDetails {
     Reader reader =
         new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_scalars.json"));
     Gson gson = new Gson();
-    Type scalarFuncDetailsType = new TypeToken<ArrayList<ScalarFunctionDetails>>(){}.getType();
+    java.lang.reflect.Type scalarFuncDetailsType = new TypeToken<ArrayList<ScalarFunctionDetails>>(){}.getType();
     List<ScalarFunctionDetails> scalarDetails = gson.fromJson(reader, scalarFuncDetailsType);
 
-    try {
-      for (ScalarFunctionDetails sfd : scalarDetails) {
-        sfd.setDbName(BuiltinsDb.NAME);
-        List<SqlTypeName> argTypes = (sfd.argTypes == null)
-            ? Lists.newArrayList()
-            : ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
-        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(sfd.retType);
-        ImpalaFunctionSignature ifs =
-            ImpalaFunctionSignature.create(sfd.fnName, argTypes, retType, sfd.hasVarArgs);
-        sfd.ifs = ifs;
-        SCALAR_BUILTINS_INSTANCE.put(ifs, sfd);
-        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
-      }
-    } catch (HiveException e) {
-      // if an exception is hit here, we have a problem in our resource file.
-      throw new RuntimeException("Problem processing resource file impala_scalars.json:" + e);
+    for (ScalarFunctionDetails sfd : scalarDetails) {
+      sfd.setDbName(BuiltinsDb.NAME);
+      ImpalaFunctionSignature ifs =
+          ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(), sfd.getRetType(), sfd.hasVarArgs);
+      sfd.ifs = ifs;
+      SCALAR_BUILTINS_INSTANCE.put(ifs, sfd);
+      BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
     }
   }
 
@@ -110,6 +106,22 @@ public class ScalarFunctionDetails implements FunctionDetails {
 
   public void setArgTypes(TPrimitiveType[] argTypes) {
     this.argTypes = argTypes;
+  }
+
+  public List<Type> getArgTypes() {
+    if (impalaArgTypes == null) {
+      impalaArgTypes = (argTypes != null)
+          ? ImpalaTypeConverter.getImpalaTypesList(argTypes)
+          : Lists.newArrayList();
+    }
+    return impalaArgTypes;
+  }
+
+  public Type getRetType() {
+    if (impalaRetType == null) {
+      impalaRetType = ImpalaTypeConverter.getImpalaType(retType);
+    }
+    return impalaRetType;
   }
 
   public void setSymbolName(String symbolName) {
@@ -162,8 +174,21 @@ public class ScalarFunctionDetails implements FunctionDetails {
     return ifs;
   }
 
-  public static ScalarFunctionDetails get(String name, List<SqlTypeName> operandTypes,
-       SqlTypeName retType) {
+  /**
+   * Shortcut for getting the ScalarFunctionDetails when the Impala operand types,
+   * the return type, and the function name are hardcoded.
+   */
+  public static ScalarFunctionDetails get(String name, List<Type> operandTypes,
+       Type retType) {
+
+    ImpalaFunctionSignature sig = ImpalaFunctionSignature.create(name,
+        operandTypes, retType, false);
+
+    return SCALAR_BUILTINS_INSTANCE.get(sig);
+  }
+
+  public static ScalarFunctionDetails get(String name, List<RelDataType> operandTypes,
+       RelDataType retType) {
 
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.fetch(
         SCALAR_BUILTINS_INSTANCE, name, operandTypes, retType);

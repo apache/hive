@@ -22,14 +22,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StringLiteral;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
 
 /**
  * A StringLiteral that has most of the analysis done by Calcite.
  */
 public class ImpalaStringLiteral extends StringLiteral {
-  public ImpalaStringLiteral(Analyzer analyzer, String value) throws HiveException {
-    super(value);
+  public ImpalaStringLiteral(Analyzer analyzer, Type type, String value) throws HiveException {
+    super(value, type, false);
     try {
       this.analyze(analyzer);
     } catch (AnalysisException e) {

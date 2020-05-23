@@ -191,11 +191,11 @@ public class ImpalaTypeSystemImpl extends RelDataTypeSystemImpl {
   public static RelDataType deriveArithmeticType(RelDataTypeFactory typeFactory,
       RelDataType type1, RelDataType type2, ArithmeticExpr.Operator op) {
     try {
-      Type t1 = ImpalaTypeConverter.getImpalaType(type1);
-      Type t2 = ImpalaTypeConverter.getImpalaType(type2);
+      Type t1 = ImpalaTypeConverter.createImpalaType(type1);
+      Type t2 = ImpalaTypeConverter.createImpalaType(type2);
       // Call out to Impala code to get the correct derived precision on arithmetic operations.
       Type retType = TypesUtil.getArithmeticResultType(t1, t2, op, true);
-      SqlTypeName sqlTypeName = ImpalaTypeConverter.getSqlTypeName(retType.getPrimitiveType().toThrift());
+      SqlTypeName sqlTypeName = ImpalaTypeConverter.getRelDataType(retType).getSqlTypeName();
       RelDataType preNullableType =
           (sqlTypeName == SqlTypeName.DECIMAL)
               ? typeFactory.createSqlType(sqlTypeName,
@@ -244,7 +244,7 @@ public class ImpalaTypeSystemImpl extends RelDataTypeSystemImpl {
       // This code is similar to code in Impala's FunctionCallExpr
       // XXX: should we refactor the code within Impala?
       if (argumentType.getSqlTypeName() == SqlTypeName.DECIMAL) {
-        ScalarType t1 = ImpalaTypeConverter.getImpalaType(argumentType);
+        ScalarType t1 = (ScalarType) ImpalaTypeConverter.createImpalaType(argumentType);
         int digitsBefore = t1.decimalPrecision() - t1.decimalScale();
         int digitsAfter = t1.decimalScale();
         int resultScale = Math.max(ScalarType.MIN_ADJUSTED_SCALE, digitsAfter);

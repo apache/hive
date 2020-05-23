@@ -18,19 +18,16 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import java.util.List;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
-import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+
+import java.util.List;
 
 /**
  * Extract function resolver.  This is used for date specific Calcite
@@ -57,7 +54,7 @@ public class ExtractFunctionResolver extends ImpalaFunctionResolverImpl {
   }
 
   @Override
-  public List<SqlTypeName> getCastOperandTypes(
+  public List<RelDataType> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate) {
     Preconditions.checkState(castCandidate.getArgTypes().size() == 1,
         "Num of arguments for " + this.func + " expected to be 1.");

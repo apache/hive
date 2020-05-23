@@ -44,13 +44,13 @@ public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
   }
 
   @Override
-  public List<SqlTypeName> getCastOperandTypes(ImpalaFunctionSignature castCandidate) {
+  public List<RelDataType> getCastOperandTypes(ImpalaFunctionSignature castCandidate) {
     Preconditions.checkState(castCandidate.getArgTypes().size() == argTypes.size());
-    List<SqlTypeName> result = Lists.newArrayList();
+    List<RelDataType> result = Lists.newArrayList();
     for (int i = 0; i < argTypes.size(); ++i) {
       // The impala function signature doesn't know about interval types.
       // At the very end, it will just be written to impala as a bigint.
-      if (SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(i))) {
+      if (SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(i).getSqlTypeName())) {
         result.add(argTypes.get(i));
       } else {
         result.add(castCandidate.getArgTypes().get(i));

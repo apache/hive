@@ -25,7 +25,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[sum($0)])
   ImpalaProjectPassthroughRel($f0=[*($5, $6)])
-    ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(<($4, 24), >=($10, _UTF-16LE'1994-01-01':VARCHAR(65535)), <($10, _UTF-16LE'1995-01-01':VARCHAR(65535)), BETWEEN(false, $6, 0.05:DECIMAL(2, 2), 0.07:DECIMAL(2, 2)))])
+    ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(<($4, 24), >=($10, _UTF-16LE'1994-01-01'), <($10, _UTF-16LE'1995-01-01'), BETWEEN(false, $6, 0.05:DECIMAL(2, 2), 0.07:DECIMAL(2, 2)))])
 
 PREHOOK: query: explain select
   sum(l_extendedprice * l_discount) as revenue

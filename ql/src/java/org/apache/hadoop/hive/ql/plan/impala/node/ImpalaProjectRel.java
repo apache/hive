@@ -100,7 +100,7 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
     for (RelDataTypeField relDataTypeField : project.getRowType().getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
-      slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
+      slotDesc.setType(ImpalaTypeConverter.createImpalaType(relDataTypeField.getType()));
       slotDesc.setLabel(relDataTypeField.getName());
       slotDesc.setIsMaterialized(true);
     }

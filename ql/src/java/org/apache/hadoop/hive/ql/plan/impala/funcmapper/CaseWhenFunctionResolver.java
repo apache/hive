@@ -27,6 +27,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.impala.catalog.Type;
 
 import java.util.List;
 import java.util.Map;
@@ -60,9 +61,9 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
     // First try to retrieve a signature that directly matches the input with no casting,
     // if possible.
     // If there is a matching signature, the return type will be the first even parameter.
-    SqlTypeName retSqlType = inputNodes.get(1).getType().getSqlTypeName();
+    RelDataType retType = inputNodes.get(1).getType();
     ImpalaFunctionSignature candidate =
-        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, retSqlType);
+        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, retType);
     if (candidate != null) {
       return candidate;
     }
@@ -74,7 +75,7 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
 
   @Override
   public List<RexNode> getConvertedInputs(ImpalaFunctionSignature candidate) throws HiveException {
-    List<SqlTypeName> castTypes = getCastOperandTypes(candidate);
+    List<RelDataType> castTypes = getCastOperandTypes(candidate);
     if (castTypes == null) {
       throw new HiveException();
     }
@@ -83,35 +84,36 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
 
   @Override
   protected boolean canCast(ImpalaFunctionSignature candidate) {
-    SqlTypeName castTo = candidate.getArgTypes().get(0);
+    RelDataType castTo = candidate.getArgTypes().get(0);
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < this.argTypes.size() / 2; ++i) {
       int currentArg = 2 * i;
       // First argument of pair should always be a boolean
-      Preconditions.checkState(this.argTypes.get(currentArg).equals(SqlTypeName.BOOLEAN));
+      Preconditions.checkState(
+          this.argTypes.get(currentArg).getSqlTypeName().equals(SqlTypeName.BOOLEAN));
       currentArg += 1;
       // Check to see if the second argument can be cast.
-      SqlTypeName castFrom = this.argTypes.get(currentArg);
+      RelDataType castFrom = this.argTypes.get(currentArg);
       if (!ImpalaFunctionSignature.canCastUp(castFrom, castTo)) {
         return false;
       }
     }
     // If there is an "else" parameter, we see if that parameter can be cast.
     if (this.argTypes.size() % 2 == 1) {
-      SqlTypeName castFrom = this.argTypes.get(this.argTypes.size() - 1);
+      RelDataType castFrom = this.argTypes.get(this.argTypes.size() - 1);
       return ImpalaFunctionSignature.canCastUp(castFrom, castTo);
     }
     return true;
   }
 
   @Override
-  public List<SqlTypeName> getCastOperandTypes(ImpalaFunctionSignature candidate) {
-    List<SqlTypeName> castArgTypes = Lists.newArrayList();
+  public List<RelDataType> getCastOperandTypes(ImpalaFunctionSignature candidate) {
+    List<RelDataType> castArgTypes = Lists.newArrayList();
 
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < this.argTypes.size() / 2; ++i) {
       // first argument in pair is always a boolean
-      castArgTypes.add(SqlTypeName.BOOLEAN);
+      castArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.BOOLEAN));
       // second argument is the candidate type.
       castArgTypes.add(candidate.getArgTypes().get(0));
     }

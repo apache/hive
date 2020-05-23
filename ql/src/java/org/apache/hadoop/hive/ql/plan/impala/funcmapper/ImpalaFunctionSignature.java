@@ -20,19 +20,22 @@ package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.impala.catalog.Type;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +51,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     BOOLEAN,
     TINYINT,
     SMALLINT,
-    INTEGER,
+    INT,
     BIGINT,
     FLOAT,
     DOUBLE,
@@ -67,83 +70,82 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     Reader reader =
         new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_scalars.json"));
     Gson gson = new Gson();
-    Type scalarFuncDetailsType = new TypeToken<ArrayList<ScalarFunctionDetails>>(){}.getType();
+    java.lang.reflect.Type scalarFuncDetailsType = new TypeToken<ArrayList<ScalarFunctionDetails>>(){}.getType();
     List<ScalarFunctionDetails> scalarDetails = gson.fromJson(reader, scalarFuncDetailsType);
 
     reader =
         new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_aggs.json"));
-    Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
+    java.lang.reflect.Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
     List<AggFunctionDetails> aggDetails = gson.fromJson(reader, aggFuncDetailsType);
 
-    try {
-      for (ScalarFunctionDetails sfd : scalarDetails) {
-        List<SqlTypeName> argTypes = Lists.newArrayList();
-        if (sfd.argTypes != null) {
-          argTypes = ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
-        }
-        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(sfd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, argTypes, retType,
-            sfd.hasVarArgs);
-        List<ImpalaFunctionSignature> castIfsList =
-            CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(sfd.fnName, k -> Lists.newArrayList());
-        castIfsList.add(ifs);
-      }
+    for (ScalarFunctionDetails sfd : scalarDetails) {
+      List<Type> argTypes = Lists.newArrayList();
+      ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, sfd.getArgTypes(),
+          sfd.getRetType(), sfd.hasVarArgs);
+      List<ImpalaFunctionSignature> castIfsList =
+          CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(sfd.fnName, k -> Lists.newArrayList());
+      castIfsList.add(ifs);
+    }
 
-      for (AggFunctionDetails afd : aggDetails) {
-        List<SqlTypeName> argTypes = Lists.newArrayList();
-        if (afd.argTypes != null) {
-          argTypes = ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
-        }
-        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, argTypes, retType,
-            false);
-        List<ImpalaFunctionSignature> castIfsList =
-            CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(afd.fnName, k -> Lists.newArrayList());
-        castIfsList.add(ifs);
-      }
+    for (AggFunctionDetails afd : aggDetails) {
+      ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, afd.getArgTypes(),
+          afd.getRetType(), false);
+      List<ImpalaFunctionSignature> castIfsList =
+          CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(afd.fnName, k -> Lists.newArrayList());
+      castIfsList.add(ifs);
+    }
 
-      for (String fnName : CAST_CHECK_BUILTINS_INSTANCE.keySet()) {
-        List<ImpalaFunctionSignature> ifsList = CAST_CHECK_BUILTINS_INSTANCE.get(fnName);
-        Collections.sort(ifsList);
-      }
-
-    } catch (HiveException e) {
-      // if an exception is hit here, we have a problem in our resource file.
-      throw new RuntimeException(e);
+    for (String fnName : CAST_CHECK_BUILTINS_INSTANCE.keySet()) {
+      List<ImpalaFunctionSignature> ifsList = CAST_CHECK_BUILTINS_INSTANCE.get(fnName);
+      Collections.sort(ifsList);
     }
   }
 
   private final String func;
 
-  private final List<SqlTypeName> argTypes;
+  private final List<Type> argTypes;
 
-  private final SqlTypeName retType;
+  private final Type retType;
 
   private final boolean hasVarArgs;
 
-  private ImpalaFunctionSignature(String func, List<SqlTypeName> argTypes, SqlTypeName retType,
+  private final RelDataType retRelDataType;
+
+  private final List<RelDataType> argRelDataTypes;
+
+  private ImpalaFunctionSignature(String func, List<Type> argTypes, Type retType,
       boolean hasVarArgs) {
     Preconditions.checkNotNull(func);
-    this.func = getFunctionName(func, argTypes);
-    this.argTypes = translateArgTypes(argTypes);
+    this.func = func;
+    this.argTypes = ImmutableList.copyOf(argTypes);
+    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypes(this.argTypes);
     this.retType = retType;
+    this.retRelDataType =
+        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType);
     this.hasVarArgs = hasVarArgs;
   }
 
-  private ImpalaFunctionSignature(String name, List<SqlTypeName> argTypes, SqlTypeName retType) {
-    this(name, argTypes, retType, false);
+  private ImpalaFunctionSignature(String func, List<RelDataType> argTypes, RelDataType retType) {
+    Preconditions.checkNotNull(func);
+    this.func = getFunctionName(func, argTypes);
+    this.argTypes = ImpalaTypeConverter.getNormalizedImpalaTypes(argTypes);
+    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypes(this.argTypes);
+    this.retType = retType != null ? ImpalaTypeConverter.getNormalizedImpalaType(retType) : null;
+    this.retRelDataType =
+        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType);
+    this.hasVarArgs = false;
   }
 
   public String getFunc() {
      return func;
   }
 
-  public SqlTypeName getRetType() {
-     return retType;
+  public RelDataType getRetType() {
+    return ImpalaTypeConverter.getRelDataType(retType);
   }
 
-  public List<SqlTypeName> getArgTypes() {
-    return argTypes;
+  public List<RelDataType> getArgTypes() {
+    return ImpalaTypeConverter.getRelDataTypes(argTypes);
   }
 
   public boolean hasVarArgs() {
@@ -231,23 +233,6 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     return retType + " " + func + "(" + StringUtils.join(argTypes, ", ") + ")";
   }
 
-
-  /**
-   * Translate SqlTypeNames to a common type supported by Impala.
-   */
-  private List<SqlTypeName> translateArgTypes(List<SqlTypeName> argTypes) {
-    ImmutableList.Builder<SqlTypeName> list = ImmutableList.builder();
-    for (SqlTypeName argType : argTypes) {
-      // Interval types are always mapped to BIGINT types.
-      if (SqlTypeName.INTERVAL_TYPES.contains(argType)) {
-        list.add(SqlTypeName.BIGINT);
-      } else {
-        list.add(argType);
-      }
-    }
-    return list.build();
-  }
-
   @Override
   public int compareTo(ImpalaFunctionSignature other) {
     if (this.retType == null) {
@@ -269,13 +254,19 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
       return 1;
     }
 
-    int thisOrdinal = SqlTypeOrdering.valueOf(this.argTypes.get(0).toString()).ordinal();
-    int otherOrdinal = SqlTypeOrdering.valueOf(other.argTypes.get(0).toString()).ordinal();
+    // Check that the types match.
+    // The pattern of the ordinal string for the type needs to be normalized.
+    // It is possible the type can show up like "DECIMAL(32,8)", and we only
+    // want the DECIMAL part.
+    String thisOrdinalString = this.argTypes.get(0).toString().split("\\(")[0];
+    String otherOrdinalString = other.argTypes.get(0).toString().split("\\(")[0];
+    int thisOrdinal = SqlTypeOrdering.valueOf(thisOrdinalString).ordinal();
+    int otherOrdinal = SqlTypeOrdering.valueOf(otherOrdinalString).ordinal();
     return Integer.compare(thisOrdinal, otherOrdinal);
   }
 
-  private static String getFunctionName(String funcName,
-      List<SqlTypeName> sqlTypes) {
+  public static String getFunctionName(String funcName,
+      List<RelDataType> types) {
     if (!funcName.equals("+") && !funcName.equals("-")) {
       return funcName;
     }
@@ -283,37 +274,50 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     // We only need to support months* and milliseconds*. Days intervals and anything less all
     // get translated into milliseconds within calcite.  Months and years both get translated into
     // months.
-    for (SqlTypeName argType : sqlTypes) {
-      if (SqlTypeName.YEAR_INTERVAL_TYPES.contains(argType)) {
+    for (RelDataType type : types) {
+      if (SqlTypeName.YEAR_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
         return "months_" + opType;
       }
-      if (SqlTypeName.DAY_INTERVAL_TYPES.contains(argType)) {
+      if (SqlTypeName.DAY_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
         return "milliseconds_" + opType;
       }
     }
     return funcName;
   }
 
-  private static boolean verifyCaseParams(SqlTypeName typeToMatch, List<SqlTypeName> inputs) {
+  private static boolean verifyCaseParams(RelDataType typeToMatch, List<RelDataType> inputs) {
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < inputs.size() / 2; ++i) {
       // all the even args should match the return type.
       int currentArg = 2 * i + 1;
-      if (typeToMatch != inputs.get(currentArg)) {
+      if (!areCompatibleDataTypes(typeToMatch, inputs.get(currentArg))) {
         return false;
       }
     }
 
     // If there is an "else" parameter, that argument needs to match too.
     if (inputs.size() % 2 == 1) {
-      return typeToMatch == inputs.get(inputs.size() - 1);
+      return areCompatibleDataTypes(typeToMatch,
+          inputs.get(inputs.size() - 1));
     }
     return true;
   }
 
+  /**
+   * Returns true if datatypes are compatible. In the case of character data,
+   * char, varchar, and string are all compatible.
+   */
+  public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2) {
+    if (SqlTypeName.CHAR_TYPES.contains(dt1.getSqlTypeName()) &&
+        SqlTypeName.CHAR_TYPES.contains(dt2.getSqlTypeName())) {
+      return true;
+    }
+    return dt1.getSqlTypeName() == dt2.getSqlTypeName();
+  }
+
   public static ImpalaFunctionSignature fetch(
       Map<ImpalaFunctionSignature, ? extends FunctionDetails> functionDetailsMap,
-      String func, List<SqlTypeName> argTypes, SqlTypeName returnType) {
+      String func, List<RelDataType> argTypes, RelDataType returnType) {
     String lowerCaseFunc = func.toLowerCase();
 
     SqlOperator op = ImpalaOperatorTable.IMPALA_OPERATOR_MAP.get(func.toUpperCase());
@@ -331,13 +335,13 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
           return null;
         }
         ifs = new ImpalaFunctionSignature(lowerCaseFunc, Lists.newArrayList(returnType),
-            returnType, false);
+            returnType);
         break;
       case EXTRACT:
         // Extract can come in two different forms. From the function resolver, it comes in
         // as YEAR(TIMESTAMP). From Calcite, it comes in  the form YEAR(SYMBOL(YEAR), TIMESTAMP).
         // So if we see two parameters, we only need the second one.
-        List<SqlTypeName> extractArgs = argTypes.size() > 1 ? argTypes.subList(1,2) : argTypes;
+        List<RelDataType> extractArgs = argTypes.size() > 1 ? argTypes.subList(1,2) : argTypes;
         ifs = new ImpalaFunctionSignature(lowerCaseFunc, extractArgs, returnType);
         break;
       default:
@@ -349,18 +353,20 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     return ifs.getMatchingSignature(functionDetailsMap);
   }
 
-  public static ImpalaFunctionSignature create(String func, List<SqlTypeName> argTypes, SqlTypeName retType,
+  public static ImpalaFunctionSignature create(String func, List<Type> argTypes, Type retType,
       boolean hasVarArgs) {
     return new ImpalaFunctionSignature(func, argTypes, retType, hasVarArgs);
   }
 
-  public static boolean canCastUp(SqlTypeName castFrom, SqlTypeName castTo) {
-    if (castFrom == SqlTypeName.NULL) {
+  public static boolean canCastUp(RelDataType castFrom, RelDataType castTo) {
+    if (castFrom.getSqlTypeName() == SqlTypeName.NULL) {
       return true;
     }
-    if (castFrom.equals(castTo)) {
+
+    if (areCompatibleDataTypes(castFrom, castTo)) {
       return true;
     }
+
     ImpalaFunctionSignature castSig =
         new ImpalaFunctionSignature("cast", Lists.newArrayList(castFrom), castTo);
     ScalarFunctionDetails details = ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE.get(castSig);

@@ -18,113 +18,198 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.impala.catalog.PrimitiveType;
 import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TPrimitiveType;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
- * class used to define the Impala ColumnType.
- * As defined, this only handles SCALAR types.
- * Once we support other types, we may have to
- * restructure this code.
+ * A utility class that holds methods that convert impala types to Calcite
+ * types and vice versa.
+ *
+ * One important distinction is the different classes used here. On the Impala side,
+ * there are:
+ * - Normalized Type names (e.g. Type.BOOLEAN).  These are pre-created types. This becomes
+ * important for types with precisions like decimal, char, and varchar.  The Type.DECIMAL
+ * (and char and varchar) do not have any precision (or scale) associated with them.  In
+ * the function signatures, all precisions are allowed, so this type is used when describing
+ * them.
+ * - types with precisions.  These also use Types (also of type ScalarType), but the precision
+ * (and scale) is included with the datatype.
+ * 
+ * On the Calcite side, there are:
+ * - Normalized RelDataTypes.  While theoretically we should have been able to use SqlTypeName to
+ * have the same purpose as the Impala default dataypes, there is no SqlTypeName.STRING. Therefore,
+ * we needed to resort to RelDataTypes for this purpose.
+ * - types with precisions. The normal RelDataType is used.
  */
 public class ImpalaTypeConverter {
 
-  static public SqlTypeName getSqlTypeName(TPrimitiveType primitiveType) throws HiveException {
+  // Maps Impala default types to Calcite default types.
+  private static Map<Type, RelDataType> impalaToCalciteMap;
+
+  static {
+    RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new ImpalaTypeSystemImpl()));
+    RelDataTypeFactory factory = rexBuilder.getTypeFactory();
+    ImmutableMap.Builder<Type, RelDataType> map = ImmutableMap.builder();
+    map.put(Type.BOOLEAN, factory.createSqlType(SqlTypeName.BOOLEAN));
+    map.put(Type.TINYINT, factory.createSqlType(SqlTypeName.TINYINT));
+    map.put(Type.SMALLINT, factory.createSqlType(SqlTypeName.SMALLINT));
+    map.put(Type.INT, factory.createSqlType(SqlTypeName.INTEGER));
+    map.put(Type.BIGINT, factory.createSqlType(SqlTypeName.BIGINT));
+    map.put(Type.FLOAT, factory.createSqlType(SqlTypeName.FLOAT));
+    map.put(Type.DOUBLE, factory.createSqlType(SqlTypeName.DOUBLE));
+    map.put(Type.TIMESTAMP, factory.createSqlType(SqlTypeName.TIMESTAMP));
+    map.put(Type.DATE, factory.createSqlType(SqlTypeName.DATE));
+    map.put(Type.DECIMAL, factory.createSqlType(SqlTypeName.DECIMAL));
+    map.put(Type.CHAR, factory.createSqlType(SqlTypeName.CHAR, 1));
+    map.put(Type.VARCHAR, factory.createSqlType(SqlTypeName.VARCHAR, 1));
+    map.put(Type.STRING, factory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE));
+    impalaToCalciteMap = map.build();
+  }
+
+  // helper function to handle translation of lists.
+  public static List<Type> getNormalizedImpalaTypes(List<RelDataType> relDataTypes) {
+    return Lists.transform(relDataTypes, ImpalaTypeConverter::getNormalizedImpalaType);
+  }
+
+  /** 
+   * Return the default impala type given a reldatatype that potentially has precision.
+   */
+  public static Type getNormalizedImpalaType(RelDataType relDataType) {
+    SqlTypeName sqlTypeName = relDataType.getSqlTypeName();
+    if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
+      return Type.BIGINT;
+    }
+    switch (sqlTypeName) {
+      case VARCHAR:
+        return relDataType.getPrecision() == Integer.MAX_VALUE ? Type.STRING : Type.VARCHAR;
+      case CHAR:
+        return Type.CHAR;
+      case DECIMAL:
+        return Type.DECIMAL;
+      case BOOLEAN:
+        return Type.BOOLEAN;
+      case TINYINT:
+        return Type.TINYINT;
+      case SMALLINT:
+        return Type.SMALLINT;
+      case INTEGER:
+        return Type.INT;
+      case BIGINT:
+        return Type.BIGINT;
+      case FLOAT:
+        return Type.FLOAT;
+      case DOUBLE:
+        return Type.DOUBLE;
+      case TIMESTAMP:
+        return Type.TIMESTAMP;
+      case DATE:
+        return Type.DATE;
+      case SYMBOL:
+        return null;
+      default:
+        throw new RuntimeException("Unknown SqlTypeName " + sqlTypeName + " to convert to Impala.");
+    }
+  }
+
+  /**
+   * Given RexNode operands, return the normalized RelDataType associated with it. See
+   * the class description on the definition of normalized.
+   */
+  public static List<RelDataType> getNormalizedImpalaTypeList(List<RexNode> rexNodes) {
+    List<RelDataType> list = Lists.newArrayList();
+    for (RexNode node : rexNodes) {
+      SqlTypeName sqlTypeName = node.getType().getSqlTypeName();
+      if (node instanceof RexLiteral &&
+          SqlTypeName.CHAR_TYPES.contains(sqlTypeName)) {
+        list.add(getInterpretationType((RexLiteral) node));
+      } else if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
+        list.add(node.getType());
+      } else {
+        Type impalaType = getNormalizedImpalaType(node.getType());
+        list.add(getRelDataType(impalaType));
+      }
+    }
+    return Collections.unmodifiableList(list);
+  }
+
+  // helper function to handle translation of lists.
+  public static List<RelDataType> getRelDataTypes(List<Type> impalaTypes) {
+    return Lists.transform(impalaTypes, ImpalaTypeConverter::getRelDataType);
+  }
+
+  /**
+   * Get the normalized RelDataType given an impala type.
+   */
+  public static RelDataType getRelDataType(Type impalaType) {
+    if (impalaType == null) {
+      return null;
+    }
+    TPrimitiveType primitiveType = impalaType.getPrimitiveType().toThrift();
+    Type normalizedImpalaType = getImpalaType(primitiveType);
+    return impalaToCalciteMap.get(normalizedImpalaType);
+  }
+
+  // helper function to handle translation of lists.
+  public static List<Type> createImpalaTypes(List<RelDataType> relDataTypes) {
+    return Lists.transform(relDataTypes, ImpalaTypeConverter::createImpalaType);
+  }
+
+  /**
+   * Create a new impala type given a relDataType
+   */
+  public static Type createImpalaType(RelDataType relDataType) {
+    // First retrieve the normalized impala type
+    if (relDataType.getSqlTypeName() == SqlTypeName.VARCHAR &&
+        relDataType.getPrecision() == Integer.MAX_VALUE) {
+      return Type.STRING;
+    }
+    Type impalaType = getType(relDataType.getSqlTypeName());
+    // create the impala type given the normalized type, precision, and scale.
+    return createImpalaType(impalaType, relDataType.getPrecision(), relDataType.getScale());
+  }
+
+  public static Type createImpalaType(Type impalaType, int precision, int scale) {
+    TPrimitiveType primitiveType = impalaType.getPrimitiveType().toThrift();
+    // Char, varchar, decimal, and fixed_uda_intermediate contain precisions and need to be
+    // treated separately.
     switch (primitiveType) {
-    case TINYINT:
-      return SqlTypeName.TINYINT;
-    case SMALLINT:
-      return SqlTypeName.SMALLINT;
-    case INT:
-      return SqlTypeName.INTEGER;
-    case BIGINT:
-      return SqlTypeName.BIGINT;
-    case STRING:
-      return SqlTypeName.VARCHAR;
-    case BOOLEAN:
-      return SqlTypeName.BOOLEAN;
-    case FLOAT:
-      return SqlTypeName.FLOAT;
-    case DOUBLE:
-      return SqlTypeName.DOUBLE;
-    case DECIMAL:
-      return SqlTypeName.DECIMAL;
-    case CHAR:
-      return SqlTypeName.CHAR;
-    case VARCHAR:
-      return SqlTypeName.VARCHAR;
-    case TIMESTAMP:
-      return SqlTypeName.TIMESTAMP;
-    case DATE:
-      return SqlTypeName.DATE;
-    default:
-      throw new HiveException("Current primitive type name " + primitiveType + " not supported yet.");
+      case CHAR:
+        return ScalarType.createCharType(precision);
+      case VARCHAR:
+        return ScalarType.createVarcharType(precision);
+      case DECIMAL:
+        return ScalarType.createDecimalType(precision, scale);
+      case FIXED_UDA_INTERMEDIATE:
+        return ScalarType.createFixedUdaIntermediateType(precision);
+      default:
+        return impalaType;
     }
   }
 
-  static public TPrimitiveType getTPrimitiveType(SqlTypeName calciteTypeName) throws HiveException {
-    switch (calciteTypeName) {
-    case TINYINT:
-      return TPrimitiveType.TINYINT;
-    case SMALLINT:
-      return TPrimitiveType.SMALLINT;
-    case INTEGER:
-      return TPrimitiveType.INT;
-    case BIGINT:
-      return TPrimitiveType.BIGINT;
-    case VARCHAR:
-      return TPrimitiveType.STRING;
-    case BOOLEAN:
-      return TPrimitiveType.BOOLEAN;
-    case FLOAT:
-      return TPrimitiveType.FLOAT;
-    case DOUBLE:
-      return TPrimitiveType.DOUBLE;
-    case DECIMAL:
-      return TPrimitiveType.DECIMAL;
-    case CHAR:
-      return TPrimitiveType.CHAR;
-    case TIMESTAMP:
-      return TPrimitiveType.TIMESTAMP;
-    case DATE:
-      return TPrimitiveType.DATE;
-    default:
-      throw new HiveException("TPrimitiveType " + calciteTypeName + "  not supported yet.");
-    }
-  }
-
-  static public List<SqlTypeName> getSqlTypeNames(TPrimitiveType[] primitiveTypes)
-      throws HiveException  {
-    List<SqlTypeName> result = Lists.newArrayList();
-    if (primitiveTypes == null) {
-      return result;
-    }
-    for (TPrimitiveType primitiveType : primitiveTypes) {
-      result.add(getSqlTypeName(primitiveType));
-    }
-    return result;
-  }
-
-  static public List<SqlTypeName> getSqlTypeNamesFromNodes(List<RexNode> rexNodes) {
-    List<SqlTypeName> result = Lists.newArrayList();
-    for (RexNode r : rexNodes) {
-      result.add(getSqlType(r));
-    }
-    return result;
-  }
-
-  static public List<Type> getImpalaTypesList(TPrimitiveType[] argTypes) {
+  /**
+   * Create list of types given primitive types.
+   * Primitive types should not be exposed outside of this class.
+   */
+  static List<Type> getImpalaTypesList(TPrimitiveType[] argTypes) {
     List<Type> types = Lists.newArrayList();
     if (argTypes == null) {
       return types;
@@ -135,71 +220,98 @@ public class ImpalaTypeConverter {
     return types;
   }
 
-  static public ScalarType getImpalaType(TPrimitiveType argType, int precision, int scale) {
-    // Char, varchar, ldecimal, and fixed_uda_intermediate contain precisions and need to be
-    // treated separately.
-    switch (argType) {
-      case CHAR:
-        return ScalarType.createCharType(precision);
-      case VARCHAR:
-        return ScalarType.createVarcharType(precision);
-      case DECIMAL:
-        return ScalarType.createDecimalType(precision, scale);
-      case FIXED_UDA_INTERMEDIATE:
-        return ScalarType.createFixedUdaIntermediateType(precision);
-      default:
-        return ScalarType.createType(PrimitiveType.fromThrift(argType));
-    }
-  }
-
-  static public ScalarType getImpalaType(TPrimitiveType argType) {
+  /**
+   * Create Impala types given primitive types.
+   * Primitive types should not be exposed outside of this class.
+   */
+  static Type getImpalaType(TPrimitiveType argType) {
     // Char and decimal contain precisions and need to be treated separately from
     // the rest. The precisions for this case are unknown though, as we are only given
     // a "primitivetype'.
-    if (argType == TPrimitiveType.CHAR) {
-      // -1 is just a placeholder. This is only called for Impala function signatures
-      return ScalarType.createCharType(-1);
-    } else if (argType == TPrimitiveType.VARCHAR) {
-      // -1 is just a placeholder. This is only called for Impala function signatures
-      return ScalarType.createVarcharType(-1);
-    } else if (argType == TPrimitiveType.DECIMAL) {
-      // Unknown precision and scale, just create the wild card.  This is only for
-      // Impala Function signatures.
-      return ScalarType.createWildCardDecimalType();
+    switch (argType) {
+      case CHAR:
+        return Type.CHAR;
+      case VARCHAR:
+        return Type.VARCHAR;
+      case DECIMAL:
+        return Type.DECIMAL;
+      case BOOLEAN:
+        return Type.BOOLEAN;
+      case TINYINT:
+        return Type.TINYINT;
+      case SMALLINT:
+        return Type.SMALLINT;
+      case INT:
+        return Type.INT;
+      case BIGINT:
+        return Type.BIGINT;
+      case FLOAT:
+        return Type.FLOAT;
+      case DOUBLE:
+        return Type.DOUBLE;
+      case TIMESTAMP:
+        return Type.TIMESTAMP;
+      case DATE:
+        return Type.DATE;
+      case STRING:
+        return Type.STRING;
+      case FIXED_UDA_INTERMEDIATE:
+        return Type.FIXED_UDA_INTERMEDIATE;
+      default:
+        throw new RuntimeException("Unknown type " + argType);
     }
-    return ScalarType.createType(PrimitiveType.fromThrift(argType));
   }
 
-  static public ScalarType getImpalaType(RelDataType relDataType) throws HiveException {
-    if (relDataType.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
-      return ScalarType.createDecimalType(relDataType.getPrecision(),
-          relDataType.getScale());
+  /**
+   * Get the RelDataType from the RexLiteral.  WHen the literal is a char
+   * type, the RelDataType does not hold the real type information, we have
+   * to dig a bit deeper into its interpretation type.
+   */
+  private static RelDataType getInterpretationType(RexLiteral rexLiteral) {
+    RexNodeExprFactory.HiveNlsString nlsString =
+        (RexNodeExprFactory.HiveNlsString) rexLiteral.getValue();
+    if (nlsString == null) {
+      return rexLiteral.getType();
     }
-    TPrimitiveType tPrimitiveType = getTPrimitiveType(relDataType.getSqlTypeName());
-    PrimitiveType primitiveType = PrimitiveType.fromThrift(tPrimitiveType);
-    return ScalarType.getDefaultScalarType(primitiveType);
-  }
-
-  public static SqlTypeName getSqlType(RexNode input) {
-    if (!(input instanceof RexLiteral)) {
-      return input.getType().getSqlTypeName();
-    }
-    RexLiteral literal = (RexLiteral) input;
-    if ((literal.getType().getSqlTypeName() != SqlTypeName.CHAR) &&
-        (literal.getType().getSqlTypeName() != SqlTypeName.VARCHAR)) {
-      return input.getType().getSqlTypeName();
-    }
-    RexNodeExprFactory.HiveNlsString nlsString = (RexNodeExprFactory.HiveNlsString) literal.getValue();
     switch (nlsString.interpretation) {
       case CHAR:
-        return SqlTypeName.CHAR;
+        return impalaToCalciteMap.get(Type.CHAR);
       case VARCHAR:
-        return SqlTypeName.VARCHAR;
+        return impalaToCalciteMap.get(Type.VARCHAR);
       case STRING:
-        return SqlTypeName.VARCHAR;
-      default:
-        throw new RuntimeException("Unknown Interpretation");
+        return impalaToCalciteMap.get(Type.STRING);
     }
+    throw new RuntimeException("Unknown Interpretation");
   }
 
+  private static Type getType(SqlTypeName calciteTypeName) {
+    switch (calciteTypeName) {
+      case TINYINT:
+        return Type.TINYINT;
+      case SMALLINT:
+        return Type.SMALLINT;
+      case INTEGER:
+        return Type.INT;
+      case BIGINT:
+        return Type.BIGINT;
+      case VARCHAR:
+        return Type.VARCHAR;
+      case BOOLEAN:
+        return Type.BOOLEAN;
+      case FLOAT:
+        return Type.FLOAT;
+      case DOUBLE:
+        return Type.DOUBLE;
+      case DECIMAL:
+        return Type.DECIMAL;
+      case CHAR:
+        return Type.CHAR;
+      case TIMESTAMP:
+        return Type.TIMESTAMP;
+      case DATE:
+        return Type.DATE;
+      default:
+        throw new RuntimeException("Type " + calciteTypeName + "  not supported yet.");
+    }
+  }
 }

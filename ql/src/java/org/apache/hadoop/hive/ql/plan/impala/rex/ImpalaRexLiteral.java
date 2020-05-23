@@ -25,6 +25,8 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBoolLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaDateLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
@@ -40,7 +42,6 @@ import org.apache.impala.analysis.NumericLiteral;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.SqlCastException;
-import org.apache.impala.thrift.TPrimitiveType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -61,10 +62,7 @@ public class ImpalaRexLiteral {
       // TODO: CDPD-8266: need to support all getTypeName types.
       switch (rexLiteral.getTypeName()) {
         case NULL:
-          SqlTypeName sqlTypeName = rexLiteral.getType().getSqlTypeName();
-          TPrimitiveType primitiveType = ImpalaTypeConverter.getTPrimitiveType(sqlTypeName);
-          Type type = ImpalaTypeConverter.getImpalaType(primitiveType,
-              rexLiteral.getType().getPrecision(), rexLiteral.getType().getScale());
+          Type type = ImpalaTypeConverter.createImpalaType(rexLiteral.getType());
           return new ImpalaNullLiteral(analyzer, type);
         case BOOLEAN:
           return new ImpalaBoolLiteral(analyzer, rexLiteral.getValueAs(Boolean.class));
@@ -72,16 +70,18 @@ public class ImpalaRexLiteral {
         case DECIMAL:
         case DOUBLE:
           return new NumericLiteral(rexLiteral.getValueAs(BigDecimal.class),
-              ImpalaTypeConverter.getImpalaType(rexLiteral.getType()));
+              ImpalaTypeConverter.createImpalaType(rexLiteral.getType()));
         case CHAR:
-          return new ImpalaStringLiteral(analyzer, rexLiteral.getValueAs(String.class));
+        case VARCHAR:
+          return new ImpalaStringLiteral(analyzer, getCharType(rexLiteral),
+	      rexLiteral.getValueAs(String.class));
         case DATE:
           DateString dateStringClass = rexLiteral.getValueAs(DateString.class);
           String dateString = (dateStringClass == null) ? null : dateStringClass.toString();
           return new ImpalaDateLiteral(analyzer, rexLiteral.getValueAs(Integer.class),
               dateString);
         case SYMBOL:
-          return new ImpalaStringLiteral(analyzer, rexLiteral.getValue().toString());
+          return new ImpalaStringLiteral(analyzer, Type.STRING, rexLiteral.getValue().toString());
         case TIMESTAMP:
           return createCastTimestampExpr(analyzer, rexLiteral);
         default:
@@ -102,14 +102,29 @@ public class ImpalaRexLiteral {
    */
   private static Expr createCastTimestampExpr(Analyzer analyzer, RexLiteral rexLiteral)
       throws HiveException, SqlCastException {
-    List<SqlTypeName> typeNames =
-        ImmutableList.of(SqlTypeName.VARCHAR);
-
+    List<Type> typeNames = ImmutableList.of(Type.STRING);
+ 
     String timestamp = rexLiteral.getValueAs(TimestampString.class).toString();
-    List<Expr> argList = Lists.newArrayList(new ImpalaStringLiteral(analyzer, timestamp));
+    List<Expr> argList =
+        Lists.newArrayList(new ImpalaStringLiteral(analyzer, Type.STRING, timestamp));
     ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get("cast", typeNames,
-        SqlTypeName.TIMESTAMP);
+        Type.TIMESTAMP);
     Function castFunc = ImpalaFunctionUtil.create(castFuncDetails);
     return new ImpalaFunctionCallExpr(analyzer, castFunc, argList, null, Type.TIMESTAMP);
+  }
+
+  private static Type getCharType(RexLiteral rexLiteral) {
+    HiveNlsString nlsString = rexLiteral.getValueAs(HiveNlsString.class);
+    switch (nlsString.interpretation) {
+      case CHAR:
+        return ImpalaTypeConverter.createImpalaType(Type.CHAR,
+	   rexLiteral.getType().getPrecision(), 0);
+      case VARCHAR:
+        return ImpalaTypeConverter.createImpalaType(Type.VARCHAR,
+	   rexLiteral.getType().getPrecision(), 0);
+      case STRING:
+        return ImpalaTypeConverter.createImpalaType(Type.STRING, 0, 0);
+    }
+    throw new RuntimeException("Hive Nls Interpetation not found: " + nlsString.interpretation);
   }
 }

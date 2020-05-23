@@ -23,15 +23,23 @@ import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.NlsString;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -41,7 +49,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   protected final String func;
 
-  protected final List<SqlTypeName> argTypes;
+  protected final List<RelDataType> argTypes;
 
   protected final RelDataType retType;
 
@@ -60,7 +68,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     this.rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
     this.inputNodes = inputNodes;
     this.func = op.getName().toLowerCase();
-    this.argTypes = getSqlTypes(inputNodes);
+    this.argTypes = RexUtil.types(inputNodes);
     this.retType = returnType;
     this.op = op;
   }
@@ -71,9 +79,9 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     // First try to retrieve a signature that directly matches the input with no casting,
     // if possible.
-    SqlTypeName retSqlType = getReturnSqlType();
+    RelDataType returnType = getReturnType();
     ImpalaFunctionSignature candidate =
-        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, retSqlType);
+        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, returnType);
     if (candidate != null) {
       return candidate;
     }
@@ -83,7 +91,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   }
 
   public List<RexNode> getConvertedInputs(ImpalaFunctionSignature candidate) throws HiveException {
-    List<SqlTypeName> castTypes = getCastOperandTypes(candidate);
+    List<RelDataType> castTypes = getCastOperandTypes(candidate);
     Preconditions.checkNotNull(castTypes);
     // The number of cast types match 1:1 with the input nodes.
     Preconditions.checkState(castTypes.size() == inputNodes.size());
@@ -95,34 +103,35 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    */
   public RelDataType getRetType(ImpalaFunctionSignature funcSig, List<RexNode> operands) {
     // If the return type was passed in, we just return it.
-    if (retType != null) { 
+    if (retType != null) {
       return retType;
     }
 
+    RelDataType relDataType = funcSig.getRetType();
     // handle the return types with precision and scale separately.
-    switch (funcSig.getRetType()) {
+    switch (relDataType.getSqlTypeName()) {
       case VARCHAR: {
         boolean isNullable = false;
         for (RexNode operand : operands) {
           isNullable = isNullable || operand.getType().isNullable();
         }
 
+        int precision = relDataType.getPrecision();
         RelDataType rdt = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
-              rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+              rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, precision),
               Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
         return rexBuilder.getTypeFactory().createTypeWithNullability(rdt, isNullable);
       }
       case CHAR:
       case DECIMAL:
-        return op.inferReturnType(rexBuilder.getTypeFactory(), getTypes(operands));
+        return op.inferReturnType(rexBuilder.getTypeFactory(), RexUtil.types(operands));
       // For the default case, we can just create a RelDataType.
       default: {
         boolean isNullable = false;
         for (RexNode operand : operands) {
           isNullable = isNullable || operand.getType().isNullable();
         }
-
-        RelDataType rdt = rexBuilder.getTypeFactory().createSqlType(funcSig.getRetType());
+        RelDataType rdt = funcSig.getRetType();
         return rexBuilder.getTypeFactory().createTypeWithNullability(rdt, isNullable);
       }
     }
@@ -165,11 +174,12 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    * signature.
    **/
   protected boolean canCast(ImpalaFunctionSignature candidate) {
-    SqlTypeName retType = getReturnSqlType();
+    RelDataType retType = getReturnType();
     // If the return type is not given (set to null), it is ignored. If it is
     // given, we can only match if the given return type matches exactly (no
     // casting allowed on the return type).
-    if (retType != null && retType != candidate.getRetType()) {
+    if (retType != null &&
+          !ImpalaFunctionSignature.areCompatibleDataTypes(retType, candidate.getRetType())) {
       return false;
     }
 
@@ -181,12 +191,12 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       return false;
     }
 
-    SqlTypeName castTo = null;
+    RelDataType castTo = null;
     // loop through all the arguments to make sure they all can be cast.
     for (int i = 0; i < argTypes.size(); ++i) {
-      SqlTypeName castFrom = argTypes.get(i);
+      RelDataType castFrom = argTypes.get(i);
       // Interval types won't be cast and will be left as/is.
-      if (SqlTypeName.INTERVAL_TYPES.contains(castFrom)) {
+      if (SqlTypeName.INTERVAL_TYPES.contains(castFrom.getSqlTypeName())) {
         continue;
       }
       // if we have var args, the last arg will be repeating, so we don't have to
@@ -196,8 +206,8 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       }
       // if they are equal, it doesn't need to be cast, so we move to the next
       // argument
-      //XXX: look at comment
-      if (!castFrom.equals(castTo) && !ImpalaFunctionSignature.canCastUp(castFrom, castTo)) {
+      if (!ImpalaFunctionSignature.areCompatibleDataTypes(castFrom, castTo) &&
+          !ImpalaFunctionSignature.canCastUp(castFrom, castTo)) {
         return false;
       }
     }
@@ -210,7 +220,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    * can have less than the number of operands in "this" object. But in any case, the
    * number of operands returned should match the number of operands in "this" object.
    **/
-  protected List<SqlTypeName> getCastOperandTypes(
+  protected List<RelDataType> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate) {
     // We need the arguments from the cast candidate signature, but "this" may contain
     // more arguments than the cast in the case where the cast candidate has a variable
@@ -219,13 +229,13 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return getAllVarArgs(castCandidate.getArgTypes(), argTypes.size());
   }
 
-  protected List<RexNode> castInputs(List<RexNode> inputs, List<SqlTypeName> castTypes) {
+  protected List<RexNode> castInputs(List<RexNode> inputs, List<RelDataType> castTypes) {
     List<RexNode> newOperands = Lists.newArrayList();
     Preconditions.checkState(inputs.size() == castTypes.size());
     RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
     for (int i = 0; i < inputs.size(); ++i) {
       RelDataType preCastDataType =  inputs.get(i).getType();
-      if (preCastDataType.getSqlTypeName() == castTypes.get(i)) {
+      if (ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
         newOperands.add(inputs.get(i));
       } else {
         RelDataType castedRelDataType = getCastedDataType(typeFactory, castTypes.get(i), preCastDataType);
@@ -236,45 +246,32 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return newOperands;
   }
 
-  protected SqlTypeName getReturnSqlType() {
+  protected RelDataType getReturnType() {
     if (retType != null) {
-      return retType.getSqlTypeName();
+      return retType;
     }
     return null;
-  }
-
-  /**
-   * Retrieve list of RelDataTypes from list of nodes.
-   */
-  private List<RelDataType> getTypes(List<RexNode> nodes) {
-    List<RelDataType> types = Lists.newArrayList();
-    for (RexNode node : nodes) {
-      types.add(node.getType());
-    }
-    return types;
   }
 
   /**
    * Return the casted RelDatatype of the provided postCastSqlTypeName
    */
   private RelDataType getCastedDataType(RelDataTypeFactory dtFactory,
-      SqlTypeName postCastSqlTypeName, RelDataType preCastRelDataType) {
+      RelDataType postCastRelType, RelDataType preCastRelDataType) {
+    SqlTypeName postCastSqlTypeName = postCastRelType.getSqlTypeName();
     // In the case where we are casting to Decimal, we need to provide a precision
     // and scale.  The Calcite method provides the DecimalRelDataType with the
     // appropriate precision and scale with the provided datatype that will be casted.
     if (postCastSqlTypeName == SqlTypeName.DECIMAL) {
       return Calcite2302.decimalOf(dtFactory, preCastRelDataType);
     }
-    RelDataType rdt = dtFactory.createSqlType(postCastSqlTypeName);
-    return dtFactory.createTypeWithNullability(rdt, preCastRelDataType.isNullable());
-  }
-
-  private List<SqlTypeName> getSqlTypes(List<RexNode> inputNodes) {
-    List<SqlTypeName> sqlTypes = Lists.newArrayList();
-    for (RexNode node : inputNodes) {
-      sqlTypes.add(ImpalaTypeConverter.getSqlType(node));
+    RelDataType rdt;
+    if (SqlTypeName.CHAR_TYPES.contains(postCastSqlTypeName)) {
+      rdt = dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision());
+    } else {
+      rdt = dtFactory.createSqlType(postCastSqlTypeName);
     }
-    return sqlTypes;
+    return dtFactory.createTypeWithNullability(rdt, preCastRelDataType.isNullable());
   }
 
   /**
@@ -282,7 +279,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    * needed and we immediately pass back the args structure.  If there are varargs,
    * we repeat the last args until we have the exact number of args that we need.
    */
-  private List<SqlTypeName> getAllVarArgs(List<SqlTypeName> currArgTypes, int numArgs) {
+  private List<RelDataType> getAllVarArgs(List<RelDataType> currArgTypes, int numArgs) {
     // if the function didn't have var args, we expect it to return right away.
     if (currArgTypes.size() == numArgs) {
       return currArgTypes;
@@ -290,8 +287,8 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     // Fill in the remaining arguments with the last argument so the number of arguments
     // match what is expected.
-    List<SqlTypeName> result = Lists.newArrayList(currArgTypes);
-    SqlTypeName lastArg = result.get(result.size() - 1);
+    List<RelDataType> result = Lists.newArrayList(currArgTypes);
+    RelDataType lastArg = result.get(result.size() - 1);
     while (result.size() < numArgs) {
       result.add(lastArg);
     }
@@ -316,7 +313,10 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         // When there is no return type, the cast is passed in via the function name.
         String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
         SqlTypeName retSqlType = SqlTypeName.valueOf(adjustedFunc);
-        return new CastFunctionResolver(helper, op, inputs, retSqlType);
+        RexBuilder rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
+        RelDataType newReturnType = rexBuilder.getTypeFactory().createSqlType(retSqlType);
+
+        return new CastFunctionResolver(helper, op, inputs, newReturnType);
       case CASE:
         // case statements can come in as "when" or "case", see cthe Case*Resolver comment
         // for more information.

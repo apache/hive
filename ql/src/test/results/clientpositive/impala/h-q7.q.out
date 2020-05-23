@@ -99,16 +99,16 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
               ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(BETWEEN(false, CAST($10):DATE, CAST(_UTF-16LE'1995-01-01'):DATE NOT NULL, CAST(_UTF-16LE'1996-12-31'):DATE NOT NULL), IS NOT NULL($2), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(s_suppkey=[$0], s_nationkey=[$3])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
-          ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'FRANCE':VARCHAR(65535))], =3=[=($1, _UTF-16LE'GERMANY':VARCHAR(65535))])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'FRANCE':VARCHAR(65535)), =($1, _UTF-16LE'GERMANY':VARCHAR(65535))), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'FRANCE')], =3=[=($1, _UTF-16LE'GERMANY')])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'FRANCE'), =($1, _UTF-16LE'GERMANY')), IS NOT NULL($0))])
         ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
           ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
             ImpalaProjectPassthroughRel(c_custkey=[$0], c_nationkey=[$3])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
             ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-          ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'GERMANY':VARCHAR(65535))], =3=[=($1, _UTF-16LE'FRANCE':VARCHAR(65535))])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'GERMANY':VARCHAR(65535)), =($1, _UTF-16LE'FRANCE':VARCHAR(65535))), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'GERMANY')], =3=[=($1, _UTF-16LE'FRANCE')])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'GERMANY'), =($1, _UTF-16LE'FRANCE')), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   supp_nation,

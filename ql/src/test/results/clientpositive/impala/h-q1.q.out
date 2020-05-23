@@ -50,7 +50,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
   ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[avg($2)], agg#5=[avg($3)], agg#6=[avg($6)], agg#7=[count()])
     ImpalaProjectPassthroughRel($f0=[$8], $f1=[$9], $f2=[$4], $f3=[$5], $f4=[*($5, -(1:DECIMAL(10, 0), $6))], $f5=[*(*($5, -(1:DECIMAL(10, 0), $6)), +(1:DECIMAL(10, 0), $7))], $f6=[$6])
-      ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[<=($10, _UTF-16LE'1998-09-02':VARCHAR(65535))])
+      ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[<=($10, _UTF-16LE'1998-09-02')])
 
 PREHOOK: query: explain select
   l_returnflag,

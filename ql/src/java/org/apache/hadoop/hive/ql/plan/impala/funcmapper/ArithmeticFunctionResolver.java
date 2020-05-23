@@ -21,14 +21,9 @@ package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 import com.google.common.collect.Lists;
 
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.impala.analysis.ArithmeticExpr;
 
 import java.util.List;
 
@@ -55,8 +50,8 @@ public class ArithmeticFunctionResolver extends ImpalaFunctionResolverImpl {
    * Return the precalculated return type.
    */
   @Override
-  protected SqlTypeName getReturnSqlType() {
-    return arithRetType.getSqlTypeName();
+  protected RelDataType getReturnType() {
+    return arithRetType;
   }
 
   /**
