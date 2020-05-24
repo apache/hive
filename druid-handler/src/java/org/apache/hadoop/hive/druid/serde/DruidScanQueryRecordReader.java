@@ -48,8 +48,8 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
     if (compactedValues.hasNext()) {
       return true;
     }
-    if (queryResultsIterator.hasNext()) {
-      ScanResultValue current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      ScanResultValue current = getQueryResultsIterator().next();
       //noinspection unchecked
       compactedValues = ((List<List<Object>>) current.getEvents()).iterator();
       return nextKeyValue();
@@ -82,7 +82,7 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
   }
 
   @Override public float getProgress() {
-    return queryResultsIterator.hasNext() || compactedValues.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() || compactedValues.hasNext() ? 0 : 1;
   }
 
 }

@@ -28,14 +28,17 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -46,8 +49,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColumnStatisticsObjTranslator {
+
+  private static transient final Logger LOG = LoggerFactory
+      .getLogger(ColumnStatisticsObjTranslator.class);
 
   public static ColumnStatisticsObj readHiveStruct(String columnName, String columnType, StructField structField, Object values)
       throws HiveException
@@ -210,6 +219,26 @@ public class ColumnStatisticsObjTranslator {
     }
   }
 
+  private static void unpackTimestampStats(ObjectInspector oi, Object o, String fName, ColumnStatisticsObj statsObj) {
+    if (fName.equals("countnulls")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getTimestampStats().setNumNulls(v);
+    } else if (fName.equals("numdistinctvalues")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getTimestampStats().setNumDVs(v);
+    } else if (fName.equals("max")) {
+      TimestampWritableV2 v = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getTimestampStats().setHighValue(new Timestamp(v.getSeconds()));
+    } else if (fName.equals("min")) {
+      TimestampWritableV2 v = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getTimestampStats().setLowValue(new Timestamp(v.getSeconds()));
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getTimestampStats().setBitVectors(buf);
+    }
+  }
+
   private static void unpackPrimitiveObject(ObjectInspector oi, Object o, String fieldName, ColumnStatisticsObj statsObj) throws UnsupportedDoubleException {
     if (o == null) {
       return;
@@ -248,6 +277,10 @@ public class ColumnStatisticsObjTranslator {
         DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
         statsData.setDateStats(dateStats);
         statsObj.setStatsData(statsData);
+      } else if (s.equalsIgnoreCase("timestamp")) {
+        TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
+        statsData.setTimestampStats(timestampStats);
+        statsObj.setStatsData(statsData);
       }
     } else {
       // invoke the right unpack method depending on data type of the column
@@ -265,6 +298,8 @@ public class ColumnStatisticsObjTranslator {
         unpackDecimalStats(oi, o, fieldName, statsObj);
       } else if (statsObj.getStatsData().isSetDateStats()) {
         unpackDateStats(oi, o, fieldName, statsObj);
+      } else if (statsObj.getStatsData().isSetTimestampStats()) {
+        unpackTimestampStats(oi, o, fieldName, statsObj);
       }
     }
   }

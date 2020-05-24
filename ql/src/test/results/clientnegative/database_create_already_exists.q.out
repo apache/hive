@@ -12,4 +12,4 @@ POSTHOOK: Output: database:test_db
 PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Database test_db already exists
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Database test_db already exists

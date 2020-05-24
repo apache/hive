@@ -15,4 +15,18 @@ show partitions dmp.mp;
 
 drop table dmp.mp;
 
+create table dmp.delete_parent_path (c1 int) partitioned by (year string, month string, day string) location '/tmp/delete_parent_path';
+
+alter table dmp.delete_parent_path add partition (year='2019', month='07', day='01');
+
+show partitions dmp.delete_parent_path;
+
+dfs -rm -r /tmp/delete_parent_path/year=2019/month=07;
+
+alter table dmp.delete_parent_path drop partition (year='2019', month='07', day='01');
+
+show partitions dmp.delete_parent_path;
+
+drop table dmp.delete_parent_path;
+
 drop database dmp;

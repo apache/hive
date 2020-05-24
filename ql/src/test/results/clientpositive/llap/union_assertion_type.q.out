@@ -115,21 +115,76 @@ POSTHOOK: Input: default@union_table_test_n0
 POSTHOOK: Input: default@union_table_test_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: union_table_test_n1
+                  Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: column1 (type: string), column2 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 0
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string), '5' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: union_table_test_n0
+                  Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: column1 (type: string), column2 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 0
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string), '5' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Union 2 
+            Vertex: Union 2
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: union_table_test_n0
-          Filter Operator
-            predicate: false (type: boolean)
-            Select Operator
-              expressions: column1 (type: string), column2 (type: string), '5' (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT column1, x.column2, x.column3 FROM (
 SELECT column1, column2, '5' as column3 FROM union_table_test_n1
@@ -263,6 +318,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
@@ -278,6 +334,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
@@ -290,10 +347,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Filter Operator
-                      predicate: false (type: boolean)
+                    Limit
+                      Number of rows: 0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap

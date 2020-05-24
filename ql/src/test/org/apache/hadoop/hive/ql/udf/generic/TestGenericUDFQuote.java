@@ -24,12 +24,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 /**
  * Source for TestGenericUDFQuote.
  */
-public class TestGenericUDFQuote extends TestCase {
+public class TestGenericUDFQuote {
   public TestGenericUDFQuote() {}
+
+  @Test
   public void testQuote() throws HiveException {
     GenericUDFQuote udf = new GenericUDFQuote();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

@@ -49,7 +49,6 @@ import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.After;
@@ -109,8 +108,7 @@ public class TestSequenceFileReadWrite {
   public void testSequenceTableWriteRead() throws Exception {
     String createTable = "CREATE TABLE demo_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     server.setBatchOn();
     server.registerQuery("A = load '"
@@ -137,8 +135,7 @@ public class TestSequenceFileReadWrite {
   public void testTextTableWriteRead() throws Exception {
     String createTable = "CREATE TABLE demo_table_1(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_1");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     server.setBatchOn();
     server.registerQuery("A = load '"
@@ -166,8 +163,7 @@ public class TestSequenceFileReadWrite {
   public void testSequenceTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_2(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table_2");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     Configuration conf = new Configuration();
     conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,
@@ -213,8 +209,7 @@ public class TestSequenceFileReadWrite {
   public void testTextTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_3(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_3");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     Configuration conf = new Configuration();
     conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,

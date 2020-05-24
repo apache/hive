@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -197,12 +198,12 @@ public class HiveLockObject {
   }
 
   public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tbl.getTableName())}, lockData);
+    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
   }
 
   public HiveLockObject(Partition par, HiveLockObjectData lockData) {
     this(new String[] {par.getTable().getDbName(),
-                       org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(par.getTable().getTableName()), par.getName()}, lockData);
+        FileUtils.escapePathName(par.getTable().getTableName()).toLowerCase(), par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {

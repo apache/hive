@@ -1,0 +1,59 @@
+PREHOOK: query: DESCRIBE FUNCTION create_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION create_union
+POSTHOOK: type: DESCFUNCTION
+create_union(tag, obj1, obj2, obj3, ...) - Creates a union with the object for given tag
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED create_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED create_union
+POSTHOOK: type: DESCFUNCTION
+create_union(tag, obj1, obj2, obj3, ...) - Creates a union with the object for given tag
+Example:
+  > SELECT create_union(1, 1, "one") FROM src LIMIT 1;
+  one
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src tablesample (2 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src tablesample (2 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 2
+          Select Operator
+            expressions: create_union(0,key) (type: uniontype<string>), create_union(if((key < 100), 0, 1),2,value) (type: uniontype<decimal(1,0),string>), create_union(1,'a',const struct(2,'b')) (type: uniontype<string,struct<col1:int,col2:string>>)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src tablesample (2 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src tablesample (2 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{0:"238"}	{1:"val_238"}	{1:{"col1":2,"col2":"b"}}
+{0:"86"}	{0:2}	{1:{"col1":2,"col2":"b"}}

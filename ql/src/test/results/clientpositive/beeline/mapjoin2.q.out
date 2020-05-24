@@ -26,7 +26,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_n1
 POSTHOOK: Lineage: tbl_n1.n SCRIPT []
 POSTHOOK: Lineage: tbl_n1.t SCRIPT []
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain
 select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 PREHOOK: type: QUERY
@@ -46,25 +46,32 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:tbl_n1 
+        $hdt$_1:$hdt$_1:$hdt$_1:tbl_n1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:tbl_n1 
+        $hdt$_1:$hdt$_1:$hdt$_1:tbl_n1 
           TableScan
             alias: tbl_n1
             Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: n (type: bigint), t (type: string)
-                outputColumnNames: _col0, _col1
+            Select Operator
+              expressions: n (type: bigint), t (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+              Limit
+                Number of rows: 0
                 Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-                HashTable Sink Operator
-                  keys:
-                    0 
-                    1 
+                Filter Operator
+                  predicate: (_col0 = 1L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 1L (type: bigint), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    HashTable Sink Operator
+                      keys:
+                        0 
+                        1 
 
   Stage: Stage-3
     Map Reduce
@@ -109,7 +116,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_n1
@@ -119,7 +126,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 1	one	true	true
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain
 select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
@@ -139,28 +146,35 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:tbl_n1 
+        $hdt$_0:$hdt$_0:$hdt$_0:tbl_n1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:tbl_n1 
+        $hdt$_0:$hdt$_0:$hdt$_0:tbl_n1 
           TableScan
             alias: tbl_n1
             Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: n (type: bigint), t (type: string)
-                outputColumnNames: _col0, _col1
+            Select Operator
+              expressions: n (type: bigint), t (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+              Limit
+                Number of rows: 0
                 Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-                HashTable Sink Operator
-                  filter predicates:
-                    0 
-                    1 {true}
-                  keys:
-                    0 
-                    1 
+                Filter Operator
+                  predicate: (_col0 = 2L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 2L (type: bigint), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    HashTable Sink Operator
+                      filter predicates:
+                        0 
+                        1 {true}
+                      keys:
+                        0 
+                        1 
 
   Stage: Stage-3
     Map Reduce
@@ -208,7 +222,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_n1
@@ -249,6 +263,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: string)
@@ -264,6 +279,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: string)

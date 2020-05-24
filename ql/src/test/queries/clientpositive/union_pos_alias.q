@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 
 
@@ -14,7 +16,7 @@ select key, value from (select 'tst2' as key, count(1) as value from src s2 UNIO
 order by 1;
 
 drop table src_10;
-create table src_10 as select * from src limit 10;
+create table src_10 as select * from src order by key, value limit 10;
 
 explain 
 select key as value, value as key from src_10

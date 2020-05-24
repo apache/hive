@@ -6,7 +6,6 @@ set hive.fetch.task.conversion=none;
 SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.mapjoin.hybridgrace.hashtable=false;
 set hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled=true;
 

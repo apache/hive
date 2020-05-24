@@ -33,6 +33,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void drop_catalog(DropCatalogRequest catName)')
   print('  void create_database(Database database)')
   print('  Database get_database(string name)')
+  print('  Database get_database_req(GetDatabaseRequest request)')
   print('  void drop_database(string name, bool deleteData, bool cascade)')
   print('   get_databases(string pattern)')
   print('   get_all_databases()')
@@ -48,6 +49,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
   print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints,  defaultConstraints,  checkConstraints)')
+  print('  void create_table_req(CreateTableRequest request)')
   print('  void drop_constraint(DropConstraintRequest req)')
   print('  void add_primary_key(AddPrimaryKeyRequest req)')
   print('  void add_foreign_key(AddForeignKeyRequest req)')
@@ -61,11 +63,13 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
   print('   get_tables(string db_name, string pattern)')
   print('   get_tables_by_type(string db_name, string pattern, string tableType)')
+  print('   get_all_materialized_view_objects_for_rewriting()')
   print('   get_materialized_views_for_rewriting(string db_name)')
   print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
   print('   get_all_tables(string db_name)')
   print('  Table get_table(string dbname, string tbl_name)')
   print('   get_table_objects_by_name(string dbname,  tbl_names)')
+  print('   get_tables_ext(GetTablesExtRequest req)')
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('  Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata, string validTxnList)')
@@ -102,9 +106,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
   print('   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)')
   print('   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
+  print('   get_partition_names_req(PartitionsByExprRequest req)')
   print('   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)')
   print('   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)')
   print('  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)')
+  print('  PartitionsSpecByExprResult get_partitions_spec_by_expr(PartitionsByExprRequest req)')
   print('  i32 get_num_partitions_by_filter(string db_name, string tbl_name, string filter)')
   print('   get_partitions_by_names(string db_name, string tbl_name,  names)')
   print('  GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest req)')
@@ -137,8 +143,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)')
   print('  AggrStats get_aggr_stats_for(PartitionsStatsRequest request)')
   print('  bool set_aggr_stats_for(SetPartitionsStatsRequest request)')
-  print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)')
-  print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)')
+  print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name, string engine)')
+  print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name, string engine)')
   print('  void create_function(Function func)')
   print('  void drop_function(string dbName, string funcName)')
   print('  void alter_function(string dbName, string funcName, Function newFunc)')
@@ -247,6 +253,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_runtime_stats(RuntimeStat stat)')
   print('   get_runtime_stats(GetRuntimeStatsRequest rqst)')
   print('  GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)')
+  print('  ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)')
+  print('  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request)')
+  print('  void scheduled_query_progress(ScheduledQueryProgressInfo info)')
+  print('  ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -370,6 +380,12 @@ elif cmd == 'get_database':
     sys.exit(1)
   pp.pprint(client.get_database(args[0],))
 
+elif cmd == 'get_database_req':
+  if len(args) != 1:
+    print('get_database_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_database_req(eval(args[0]),))
+
 elif cmd == 'drop_database':
   if len(args) != 3:
     print('drop_database requires 3 args')
@@ -460,6 +476,12 @@ elif cmd == 'create_table_with_constraints':
     sys.exit(1)
   pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),eval(args[3]),eval(args[4]),eval(args[5]),eval(args[6]),))
 
+elif cmd == 'create_table_req':
+  if len(args) != 1:
+    print('create_table_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_table_req(eval(args[0]),))
+
 elif cmd == 'drop_constraint':
   if len(args) != 1:
     print('drop_constraint requires 1 args')
@@ -538,6 +560,12 @@ elif cmd == 'get_tables_by_type':
     sys.exit(1)
   pp.pprint(client.get_tables_by_type(args[0],args[1],args[2],))
 
+elif cmd == 'get_all_materialized_view_objects_for_rewriting':
+  if len(args) != 0:
+    print('get_all_materialized_view_objects_for_rewriting requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_materialized_view_objects_for_rewriting())
+
 elif cmd == 'get_materialized_views_for_rewriting':
   if len(args) != 1:
     print('get_materialized_views_for_rewriting requires 1 args')
@@ -567,6 +595,12 @@ elif cmd == 'get_table_objects_by_name':
     print('get_table_objects_by_name requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_table_objects_by_name(args[0],eval(args[1]),))
+
+elif cmd == 'get_tables_ext':
+  if len(args) != 1:
+    print('get_tables_ext requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_tables_ext(eval(args[0]),))
 
 elif cmd == 'get_table_req':
   if len(args) != 1:
@@ -784,6 +818,12 @@ elif cmd == 'get_partition_names_ps':
     sys.exit(1)
   pp.pprint(client.get_partition_names_ps(args[0],args[1],eval(args[2]),eval(args[3]),))
 
+elif cmd == 'get_partition_names_req':
+  if len(args) != 1:
+    print('get_partition_names_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partition_names_req(eval(args[0]),))
+
 elif cmd == 'get_partitions_by_filter':
   if len(args) != 4:
     print('get_partitions_by_filter requires 4 args')
@@ -801,6 +841,12 @@ elif cmd == 'get_partitions_by_expr':
     print('get_partitions_by_expr requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_partitions_by_expr(eval(args[0]),))
+
+elif cmd == 'get_partitions_spec_by_expr':
+  if len(args) != 1:
+    print('get_partitions_spec_by_expr requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partitions_spec_by_expr(eval(args[0]),))
 
 elif cmd == 'get_num_partitions_by_filter':
   if len(args) != 3:
@@ -995,16 +1041,16 @@ elif cmd == 'set_aggr_stats_for':
   pp.pprint(client.set_aggr_stats_for(eval(args[0]),))
 
 elif cmd == 'delete_partition_column_statistics':
-  if len(args) != 4:
-    print('delete_partition_column_statistics requires 4 args')
+  if len(args) != 5:
+    print('delete_partition_column_statistics requires 5 args')
     sys.exit(1)
-  pp.pprint(client.delete_partition_column_statistics(args[0],args[1],args[2],args[3],))
+  pp.pprint(client.delete_partition_column_statistics(args[0],args[1],args[2],args[3],args[4],))
 
 elif cmd == 'delete_table_column_statistics':
-  if len(args) != 3:
-    print('delete_table_column_statistics requires 3 args')
+  if len(args) != 4:
+    print('delete_table_column_statistics requires 4 args')
     sys.exit(1)
-  pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],))
+  pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],args[3],))
 
 elif cmd == 'create_function':
   if len(args) != 1:
@@ -1653,6 +1699,30 @@ elif cmd == 'get_partitions_with_specs':
     print('get_partitions_with_specs requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_partitions_with_specs(eval(args[0]),))
+
+elif cmd == 'scheduled_query_poll':
+  if len(args) != 1:
+    print('scheduled_query_poll requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_poll(eval(args[0]),))
+
+elif cmd == 'scheduled_query_maintenance':
+  if len(args) != 1:
+    print('scheduled_query_maintenance requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_maintenance(eval(args[0]),))
+
+elif cmd == 'scheduled_query_progress':
+  if len(args) != 1:
+    print('scheduled_query_progress requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_progress(eval(args[0]),))
+
+elif cmd == 'get_scheduled_query':
+  if len(args) != 1:
+    print('get_scheduled_query requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_scheduled_query(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

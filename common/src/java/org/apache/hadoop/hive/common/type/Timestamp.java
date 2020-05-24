@@ -18,7 +18,10 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -166,6 +169,11 @@ public class Timestamp implements Comparable<Timestamp> {
     return new Timestamp(localDateTime);
   }
 
+  public static Timestamp getTimestampFromTime(String s) {
+    return new Timestamp(LocalDateTime.of(LocalDate.now(),
+        LocalTime.parse(s, DateTimeFormatter.ISO_LOCAL_TIME)));
+  }
+
   public static Timestamp ofEpochSecond(long epochSecond) {
     return ofEpochSecond(epochSecond, 0);
   }
@@ -173,6 +181,10 @@ public class Timestamp implements Comparable<Timestamp> {
   public static Timestamp ofEpochSecond(long epochSecond, int nanos) {
     return new Timestamp(
         LocalDateTime.ofEpochSecond(epochSecond, nanos, ZoneOffset.UTC));
+  }
+
+  public static Timestamp ofEpochSecond(long epochSecond, long nanos, ZoneId zone) {
+    return new Timestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(epochSecond, nanos), zone));
   }
 
   public static Timestamp ofEpochMilli(long epochMilli) {

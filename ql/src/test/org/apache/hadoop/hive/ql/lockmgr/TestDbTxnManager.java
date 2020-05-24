@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -210,7 +211,8 @@ public class TestDbTxnManager {
   public void testExceptions() throws Exception {
     addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    ((DbTxnManager) txnMgr).openTxn(ctx, "NicholasII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+    ((DbTxnManager) txnMgr).openTxn(ctx, "NicholasII", TxnType.DEFAULT,
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
     LockException exception = null;
@@ -224,7 +226,8 @@ public class TestDbTxnManager {
     Assert.assertEquals("Wrong Exception1", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
 
     exception = null;
-    ((DbTxnManager) txnMgr).openTxn(ctx, "AlexanderIII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+    ((DbTxnManager) txnMgr).openTxn(ctx, "AlexanderIII", TxnType.DEFAULT,
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();//this will abort the txn
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
@@ -441,7 +444,7 @@ public class TestDbTxnManager {
     // Case 2: If there's delay for the heartbeat, but the delay is within the reaper's tolerance,
     //         then txt should be able to commit
     // Start the heartbeat after a delay, which is shorter than  the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).openTxn(ctx, "tom",
+    ((DbTxnManager) txnMgr).openTxn(ctx, "tom", TxnType.DEFAULT,
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2);
     txnMgr.acquireLocks(qp, ctx, "tom");
     runReaper();
@@ -457,7 +460,8 @@ public class TestDbTxnManager {
     //         then the txn will time out and be aborted.
     //         Here we just don't send the heartbeat at all - an infinite delay.
     // Start the heartbeat after a delay, which exceeds the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+    ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", TxnType.DEFAULT,
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     txnMgr.acquireLocks(qp, ctx, "jerry");
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();

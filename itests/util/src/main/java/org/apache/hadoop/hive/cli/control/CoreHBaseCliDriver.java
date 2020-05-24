@@ -25,7 +25,9 @@ import java.io.File;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,11 +51,6 @@ public class CoreHBaseCliDriver extends CliAdapter {
     try {
       qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           new HBaseTestSetup(), initScript, cleanupScript);
-
-      qt.newSession();
-      qt.cleanUp(null);
-      qt.createSources(null);
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -102,6 +99,11 @@ public class CoreHBaseCliDriver extends CliAdapter {
   }
 
   @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
+  @Override
   public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
@@ -111,9 +113,10 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
-      if (ecode != 0) {
-        qt.failed(ecode, fname, null);
+      try {
+        qt.executeClient(fname);
+      } catch (CommandProcessorException e) {
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
@@ -122,7 +125,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
       }
 
     } catch (Exception e) {
-      qt.failed(e, fname, null);
+      qt.failedWithException(e, fname, null);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

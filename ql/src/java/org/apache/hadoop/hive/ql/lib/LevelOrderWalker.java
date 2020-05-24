@@ -60,7 +60,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
    *
    * @param disp Dispatcher to call for each op encountered
    */
-  public LevelOrderWalker(Dispatcher disp) {
+  public LevelOrderWalker(SemanticDispatcher disp) {
     super(disp);
     this.numLevels = Integer.MAX_VALUE;
   }
@@ -72,7 +72,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
    * @param disp Dispatcher to call for each op encountered
    * @param numLevels Number of ancestor levels
    */
-  public LevelOrderWalker(Dispatcher disp, int numLevels) {
+  public LevelOrderWalker(SemanticDispatcher disp, int numLevels) {
     super(disp);
     this.numLevels = numLevels;
   }

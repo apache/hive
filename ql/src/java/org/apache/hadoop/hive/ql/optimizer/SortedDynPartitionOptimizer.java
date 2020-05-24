@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import java.util.stream.Collectors;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -43,21 +45,20 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.*;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -74,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,14 +99,14 @@ public class SortedDynPartitionOptimizer extends Transform {
 
     // create a walker which walks the tree in a DFS manner while maintaining the
     // operator stack. The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
     String FS = FileSinkOperator.getOperatorName() + "%";
 
     opRules.put(new RuleRegExp("Sorted Dynamic Partition", FS), getSortDynPartProc(pCtx));
 
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
@@ -113,11 +115,11 @@ public class SortedDynPartitionOptimizer extends Transform {
     return pCtx;
   }
 
-  private NodeProcessor getSortDynPartProc(ParseContext pCtx) {
+  private SemanticNodeProcessor getSortDynPartProc(ParseContext pCtx) {
     return new SortedDynamicPartitionProc(pCtx);
   }
 
-  class SortedDynamicPartitionProc implements NodeProcessor {
+  class SortedDynamicPartitionProc implements SemanticNodeProcessor {
 
     private final Logger LOG = LoggerFactory.getLogger(SortedDynPartitionOptimizer.class);
     protected ParseContext parseCtx;
@@ -153,6 +155,14 @@ public class SortedDynPartitionOptimizer extends Transform {
       Table destTable = fsOp.getConf().getTable();
       if (destTable == null) {
         LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
+        return null;
+      }
+
+      if (destTable.isMaterializedView() &&
+          (destTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS) != null ||
+          destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as destination is a materialized view"
+            + "with CLUSTER/SORT/DISTRIBUTE spec");
         return null;
       }
 
@@ -211,7 +221,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         /**
          * ROW__ID is always the 1st column of Insert representing Update/Delete operation
          * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
-         * and we wrap it in UDFToInteger 
+         * and we wrap it in UDFToInteger
          * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
          * which extracts bucketId from it
          * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
@@ -223,13 +233,19 @@ public class SortedDynPartitionOptimizer extends Transform {
         if (numBuckets > 0) {
           bucketColumns = new ArrayList<>();
           //add a cast(ROW__ID as int) to wrap in UDFToInteger()
-          bucketColumns.add(ParseUtils.createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
+          bucketColumns.add(ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
         }
       } else {
         if (!destTable.getSortCols().isEmpty()) {
           // Sort columns specified by table
           sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
           sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        } else if (HiveConf.getBoolVar(this.parseCtx.getConf(), HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
+            !bucketPositions.isEmpty()) {
+          // We use clustered columns as sort columns
+          sortPositions = new ArrayList<>(bucketPositions);
+          sortOrder = sortPositions.stream().map(e -> 1).collect(Collectors.toList());
         } else {
           // Infer sort columns from operator tree
           sortPositions = Lists.newArrayList();
@@ -267,22 +283,35 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
-                                                  allRSCols, bucketColumns, numBuckets,
-                                                 fsParent, fsOp.getConf().getWriteType());
+        allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+      rsOp.getConf().setBucketingVersion(fsOp.getConf().getBucketingVersion());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
       String colName;
+      final List<ColumnInfo> fileSinkSchema = fsOp.getSchema().getSignature();
       for (int i = 0; i < allRSCols.size(); i++) {
         ExprNodeDesc col = allRSCols.get(i);
+        ExprNodeDesc newColumnExpr = null;
         colName = col.getExprString();
         colNames.add(colName);
         if (partitionPositions.contains(i) || sortPositions.contains(i)) {
-          descs.add(new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.KEY.toString()+"."+colName, null, false));
+          newColumnExpr = (new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.KEY.toString()+"."+colName, null, false));
         } else {
-          descs.add(new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.VALUE.toString()+"."+colName, null, false));
+          newColumnExpr = (new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.VALUE.toString()+"."+colName, null, false));
         }
+
+        // make sure column type matches with expected types in FS op
+        if(i < fileSinkSchema.size()) {
+          final ColumnInfo fsColInfo = fileSinkSchema.get(i);
+          if (!newColumnExpr.getTypeInfo().equals(fsColInfo.getType())) {
+            newColumnExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .createConversionCast(newColumnExpr, (PrimitiveTypeInfo) fsColInfo.getType());
+          }
+        }
+        descs.add(newColumnExpr);
       }
+
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       if (bucketColumns!= null && !bucketColumns.isEmpty()) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
@@ -313,6 +342,8 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // update partition column info in FS descriptor
       fsOp.getConf().setPartitionCols(rsOp.getConf().getPartitionCols());
+
+      rsOp.setStatistics(rsOp.getParentOperators().get(0).getStatistics());
 
       LOG.info("Inserted " + rsOp.getOperatorId() + " and " + selOp.getOperatorId()
           + " as parent of " + fsOp.getOperatorId() + " and child of " + fsParent.getOperatorId());
@@ -390,14 +421,7 @@ public class SortedDynPartitionOptimizer extends Transform {
               rsChild.getSchema().getSignature().size()) {
             return false;
           }
-          // if child is select and contains expression which isn't column it shouldn't
-          // be removed because otherwise we will end up with different types/schema later
-          // while introducing select for RS
-          for(ExprNodeDesc expr: rsChild.getColumnExprMap().values()){
-            if(!(expr instanceof ExprNodeColumnDesc)){
-              return false;
-            }
-          }
+
           rsParent.getChildOperators().remove(rsToRemove);
           rsParent.getChildOperators().add(rsGrandChild);
           rsGrandChild.getParentOperators().clear();

@@ -32,14 +32,14 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -75,11 +75,11 @@ public class PartitionColumnsSeparator extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // 1. Trigger transformation
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"), new StructInTransformer());
 
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
 
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
@@ -87,7 +87,7 @@ public class PartitionColumnsSeparator extends Transform {
     return pctx;
   }
 
-  private class StructInTransformer implements NodeProcessor {
+  private class StructInTransformer implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -117,13 +117,13 @@ public class PartitionColumnsSeparator extends Transform {
     }
 
     private ExprNodeDesc generateInClauses(ExprNodeDesc predicate) throws SemanticException {
-      Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), new StructInExprProcessor());
 
       // The dispatcher fires the processor corresponding to the closest matching
       // rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, null);
-      GraphWalker egw = new PreOrderOnceWalker(disp);
+      SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, null);
+      SemanticGraphWalker egw = new PreOrderOnceWalker(disp);
 
       List<Node> startNodes = new ArrayList<Node>();
       startNodes.add(predicate);
@@ -147,7 +147,7 @@ public class PartitionColumnsSeparator extends Transform {
    * part of the given query. Once the partitions are pruned, the partition condition
    * remover is expected to remove the redundant predicates from the plan.
    */
-  private class StructInExprProcessor implements NodeProcessor {
+  private class StructInExprProcessor implements SemanticNodeProcessor {
 
     /** TableInfo is populated in PASS 1 of process(). It contains the information required
      * to generate an IN clause of the following format:

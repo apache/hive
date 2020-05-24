@@ -85,19 +85,19 @@ PREHOOK: Input: default@d1
 POSTHOOK: query: desc formatted d1 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@d1
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2010-10-01          	 	 	 	 	 	 	 	 	 	 
-max                 	2010-10-10          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2010-10-01          
+max                 	2010-10-10          
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: explain
 select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
 PREHOOK: type: QUERY
@@ -162,8 +162,8 @@ Stage-0
             PARTITION_ONLY_SHUFFLE [RS_12]
               Group By Operator [GBY_11] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count()"]
-                Select Operator [SEL_10] (rows=3 width=56)
-                  Filter Operator [FIL_9] (rows=3 width=56)
+                Select Operator [SEL_10] (rows=2 width=56)
+                  Filter Operator [FIL_9] (rows=2 width=56)
                     predicate:(d < DATE'2010-10-03')
                     TableScan [TS_0] (rows=10 width=56)
                       default@d1,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d"]

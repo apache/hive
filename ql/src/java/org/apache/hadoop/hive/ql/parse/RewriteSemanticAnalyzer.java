@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * statements (since they are actually inserts) and then doing some patch up to make them work as
  * updates and deletes instead.
  */
-public abstract class RewriteSemanticAnalyzer extends SemanticAnalyzer {
+public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   protected static final Logger LOG = LoggerFactory.getLogger(RewriteSemanticAnalyzer.class);
 
   protected boolean useSuper = false;
@@ -177,7 +178,7 @@ public abstract class RewriteSemanticAnalyzer extends SemanticAnalyzer {
    * @param throwException if false, return null if table doesn't exist, else throw
    */
   protected static Table getTable(ASTNode tabRef, Hive db, boolean throwException) throws SemanticException {
-    String[] tableName;
+    TableName tableName;
     switch (tabRef.getType()) {
     case HiveParser.TOK_TABREF:
       tableName = getQualifiedTableName((ASTNode) tabRef.getChild(0));
@@ -191,12 +192,12 @@ public abstract class RewriteSemanticAnalyzer extends SemanticAnalyzer {
 
     Table mTable;
     try {
-      mTable = db.getTable(tableName[0], tableName[1], throwException);
+      mTable = db.getTable(tableName.getDb(), tableName.getTable(), throwException);
     } catch (InvalidTableException e) {
-      LOG.error("Failed to find table " + getDotName(tableName) + " got exception " + e.getMessage());
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(getDotName(tableName)), e);
+      LOG.error("Failed to find table " + tableName.getNotEmptyDbTable() + " got exception " + e.getMessage());
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);
     } catch (HiveException e) {
-      LOG.error("Failed to find table " + getDotName(tableName) + " got exception " + e.getMessage());
+      LOG.error("Failed to find table " + tableName.getNotEmptyDbTable() + " got exception " + e.getMessage());
       throw new SemanticException(e.getMessage(), e);
     }
     return mTable;
@@ -261,7 +262,7 @@ public abstract class RewriteSemanticAnalyzer extends SemanticAnalyzer {
       rewrittenCtx.setHDFSCleanup(true);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
-      ctx.addRewrittenStatementContext(rewrittenCtx);
+      ctx.addSubContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }

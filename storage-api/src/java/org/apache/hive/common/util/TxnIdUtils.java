@@ -19,62 +19,69 @@ package org.apache.hive.common.util;
 
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 
-import java.util.*;
-
 public class TxnIdUtils {
 
   /**
    * Check if 2 ValidWriteIdLists are at an equivalent commit point.
    */
   public static boolean checkEquivalentWriteIds(ValidWriteIdList a, ValidWriteIdList b) {
-    if (!a.getTableName().equalsIgnoreCase(b.getTableName())) {
-      return false;
-    }
-    ValidWriteIdList newer = a;
-    ValidWriteIdList older = b;
-    if (a.getHighWatermark() < b.getHighWatermark()) {
-      newer = b;
-      older = a;
-    }
-
-    return checkEquivalentCommittedIds(
-            older.getHighWatermark(), older.getInvalidWriteIds(),
-            newer.getHighWatermark(), newer.getInvalidWriteIds());
+    return compare(a, b) == 0;
   }
 
-  /**
-   * Check the min open ID/highwater mark/exceptions list to see if 2 ID lists are at the same commit point.
-   * This can also be used for ValidTxnList as well as ValidWriteIdList.
-   */
-  private static boolean checkEquivalentCommittedIds(
-      long oldHWM, long[] oldInvalidIds,
-      long newHWM, long[] newInvalidIds) {
-
-    // There should be no valid txns in newer list that are not also in older.
-    // - All values in oldInvalidIds should also be in newInvalidIds.
-    // - if oldHWM < newHWM, then all IDs between oldHWM .. newHWM should exist in newInvalidTxns.
-    //   A Gap in the sequence means a committed txn in newer list (lists are not equivalent)
-
-    if (newInvalidIds.length < oldInvalidIds.length) {
-      return false;
+  /*** Compare the freshness of two ValidWriteIdList
+   * @param a
+   * @param b
+   * @return 0, if a and b are equivalent
+   * 1, if a is more recent
+   * -1, if b is more recent
+   ***/
+  public static int compare(ValidWriteIdList a, ValidWriteIdList b) {
+    if (!a.getTableName().equalsIgnoreCase(b.getTableName())) {
+      return a.getTableName().toLowerCase().compareTo(b.getTableName().toLowerCase());
     }
-
-    // Check that the values in the older list are also in newer. Lists should already be sorted.
-    for (int idx = 0; idx < oldInvalidIds.length; ++idx) {
-      if (oldInvalidIds[idx] != newInvalidIds[idx]) {
+    // The algorithm assumes invalidWriteIds are sorted and values are less or equal than hwm, here is how
+    // the algorithm works:
+    // 1. Compare two invalidWriteIds until one the list ends, difference means the mismatch writeid is
+    //    committed in one ValidWriteIdList but not the other, the comparison end
+    // 2. Every writeid from the last writeid in the short invalidWriteIds till its hwm should be committed
+    //    in the other ValidWriteIdList, otherwise the comparison end
+    // 3. Every writeid from lower hwm to higher hwm should be invalid, otherwise, the comparison end
+    int minLen = Math.min(a.getInvalidWriteIds().length, b.getInvalidWriteIds().length);
+    for (int i=0;i<minLen;i++) {
+      if (a.getInvalidWriteIds()[i] == b.getInvalidWriteIds()[i]) {
+        continue;
+      }
+      return a.getInvalidWriteIds()[i] > b.getInvalidWriteIds()[i]?1:-1;
+    }
+    if (a.getInvalidWriteIds().length == b.getInvalidWriteIds().length) {
+      return Long.signum(a.getHighWatermark() - b.getHighWatermark());
+    }
+    if (a.getInvalidWriteIds().length == minLen) {
+      if (a.getHighWatermark() != b.getInvalidWriteIds()[minLen] -1) {
+        return Long.signum(a.getHighWatermark() - (b.getInvalidWriteIds()[minLen] -1));
+      }
+      if (allInvalidFrom(b.getInvalidWriteIds(), minLen, b.getHighWatermark())) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      if (b.getHighWatermark() != a.getInvalidWriteIds()[minLen] -1) {
+        return Long.signum(b.getHighWatermark() - (a.getInvalidWriteIds()[minLen] -1));
+      }
+      if (allInvalidFrom(a.getInvalidWriteIds(), minLen, a.getHighWatermark())) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  }
+  private static boolean allInvalidFrom(long[] invalidIds, int start, long hwm) {
+    for (int i=start+1;i<invalidIds.length;i++) {
+      if (invalidIds[i] != (invalidIds[i-1]+1)) {
         return false;
       }
     }
-
-    // If older committed state is equivalent to newer state, then there should be no committed IDs
-    // between oldHWM and newHWM, and newInvalidIds should have exactly (newHWM - oldHWM)
-    // more entries than oldInvalidIds.
-    long oldNewListSizeDifference = newInvalidIds.length - oldInvalidIds.length;
-    long oldNewHWMDifference = newHWM - oldHWM;
-    if (oldNewHWMDifference != oldNewListSizeDifference) {
-      return false;
-    }
-
-    return true;
+    return invalidIds[invalidIds.length-1] == hwm;
   }
 }

@@ -51,6 +51,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -59,7 +60,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) > 100.0D)) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) > 100.0D) and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -70,6 +71,7 @@ STAGE PLANS:
                       Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE

@@ -23,8 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.ql.session.ISessionAuthState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -77,7 +76,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
   }
 
   @Override
-  public void setSessionState(SessionState ss) {
+  public void setSessionState(ISessionAuthState ss) {
     //no op
   }
 

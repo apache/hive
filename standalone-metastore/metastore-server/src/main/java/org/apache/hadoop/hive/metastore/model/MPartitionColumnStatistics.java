@@ -40,6 +40,7 @@ public class MPartitionColumnStatistics {
   private String partitionName;
   private String colName;
   private String colType;
+  private String engine;
 
   private Long longLowValue;
   private Long longHighValue;
@@ -223,6 +224,14 @@ public class MPartitionColumnStatistics {
     this.longHighValue = highValue;
   }
 
+  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+    this.numNulls = numNulls;
+    this.numDVs = numNDVs;
+    this.bitVector = bitVector;
+    this.longLowValue = lowValue;
+    this.longHighValue = highValue;
+  }
+
   public Long getLongLowValue() {
     return longLowValue;
   }
@@ -277,5 +286,13 @@ public class MPartitionColumnStatistics {
 
   public void setBitVector(byte[] bitVector) {
     this.bitVector = bitVector;
+  }
+
+  public String getEngine() {
+    return engine;
+  }
+
+  public void setEngine(String engine) {
+    this.engine = engine;
   }
 }

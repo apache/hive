@@ -1,0 +1,98 @@
+PREHOOK: query: create temporary table hive_test_src_n2_temp ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_test_src_n2_temp
+POSTHOOK: query: create temporary table hive_test_src_n2_temp ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_test_src_n2_temp
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n2_temp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hive_test_src_n2_temp
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n2_temp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hive_test_src_n2_temp
+PREHOOK: query: create temporary table hive_test_dst_temp ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_test_dst_temp
+POSTHOOK: query: create temporary table hive_test_dst_temp ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_test_dst_temp
+PREHOOK: query: insert overwrite table hive_test_dst_temp partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src_n2_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_src_n2_temp
+PREHOOK: Output: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+POSTHOOK: query: insert overwrite table hive_test_dst_temp partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src_n2_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_src_n2_temp
+POSTHOOK: Output: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+POSTHOOK: Lineage: hive_test_dst_temp PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src_n2_temp)hive_test_src_n2_temp.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_Part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst_temp
+PREHOOK: Input: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_Part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst_temp
+POSTHOOK: Input: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+#### A masked pattern was here ####
+1	test_part	test_Part
+2	test_part	test_Part
+3	test_part	test_Part
+4	test_part	test_Part
+5	test_part	test_Part
+6	test_part	test_Part
+PREHOOK: query: insert overwrite table hive_test_dst_temp partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src_n2_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_src_n2_temp
+PREHOOK: Output: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+POSTHOOK: query: insert overwrite table hive_test_dst_temp partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src_n2_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_src_n2_temp
+POSTHOOK: Output: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+POSTHOOK: Lineage: hive_test_dst_temp PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src_n2_temp)hive_test_src_n2_temp.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####
+PREHOOK: query: select * from hive_test_dst_temp where pcol1='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst_temp
+PREHOOK: Input: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive_test_dst_temp where pcol1='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst_temp
+POSTHOOK: Input: default@hive_test_dst_temp@pcol1=test_part/pcol2=test_Part
+#### A masked pattern was here ####
+1	test_part	test_Part
+2	test_part	test_Part
+3	test_part	test_Part
+4	test_part	test_Part
+5	test_part	test_Part
+6	test_part	test_Part
+PREHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive_test_dst_temp where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####
+PREHOOK: query: select * from hive_test_dst_temp where pcol1='test_Part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive_test_dst_temp where pcol1='test_Part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst_temp
+#### A masked pattern was here ####

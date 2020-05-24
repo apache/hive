@@ -59,6 +59,8 @@ public class AvroSerDe extends AbstractSerDe {
   public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String DATE_TYPE_NAME = "date";
   public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
+  public static final String WRITER_TIME_ZONE = "writer.time.zone";
+  public static final String WRITER_PROLEPTIC = "writer.proleptic";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
@@ -90,7 +92,7 @@ public class AvroSerDe extends AbstractSerDe {
       LOG.debug("Resetting already initialized AvroSerDe");
     }
 
-    LOG.info("AvroSerde::initialize(): Preset value of avro.schema.literal == "
+    LOG.debug("AvroSerde::initialize(): Preset value of avro.schema.literal == "
         + properties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()));
 
     schema = null;
@@ -103,11 +105,13 @@ public class AvroSerDe extends AbstractSerDe {
     final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
     final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? properties
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-        
+
+    boolean gotColTypesFromColProps = true;
     if (hasExternalSchema(properties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
       schema = determineSchemaOrReturnErrorSchema(configuration, properties);
+      gotColTypesFromColProps = false;
     } else {
       // Get column names and sort order
       columnNames = StringInternUtils.internStringsInList(
@@ -136,10 +140,17 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = StringInternUtils.internStringsInList(aoig.getColumnNames());
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+    // HIVE-22595: Update the column/type properties to reflect the  current, since the
+    // these properties may be used
+    if (!gotColTypesFromColProps) {
+      LOG.info("Updating column name/type properties based on current schema");
+      properties.setProperty(serdeConstants.LIST_COLUMNS, String.join(",", columnNames));
+      properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, String.join(",", TypeInfoUtils.getTypeStringsFromTypeInfo(columnTypes)));
+    }
 
     if(!badSchema) {
-      this.avroSerializer = new AvroSerializer();
-      this.avroDeserializer = new AvroDeserializer();
+      this.avroSerializer = new AvroSerializer(configuration);
+      this.avroDeserializer = new AvroDeserializer(configuration);
     }
   }
 

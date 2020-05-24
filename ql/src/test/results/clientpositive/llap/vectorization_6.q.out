@@ -61,7 +61,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((ctinyint <> 0Y) and (((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (((cstring2 like '%a') or (cfloat <= -257.0)) and cbigint is not null))) (type: boolean)
+                  filterExpr: ((((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (((cstring2 like '%a') or (cfloat <= -257.0)) and cbigint is not null)) and (ctinyint <> 0Y)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2110130 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -70,7 +70,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 10:boolean, val 0), FilterLongColGreaterEqualLongColumn(col 11:boolean, col 10:boolean)), FilterExprAndExpr(children: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %a), FilterDoubleColLessEqualDoubleScalar(col 4:float, val -257.0)), SelectColumnIsNotNull(col 3:bigint))))
+                        predicateExpression: FilterExprAndExpr(children: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 10:boolean, val 0), FilterLongColGreaterEqualLongColumn(col 11:boolean, col 10:boolean)), FilterExprAndExpr(children: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %a), FilterDoubleColLessEqualDoubleScalar(col 4:float, val -257.0)), SelectColumnIsNotNull(col 3:bigint))), FilterLongColNotEqualLongScalar(col 0:tinyint, val 0))
                     predicate: ((((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (((cstring2 like '%a') or (cfloat <= -257.0)) and cbigint is not null)) and (ctinyint <> 0Y)) (type: boolean)
                     Statistics: Num rows: 5951 Data size: 1022000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator

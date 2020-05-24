@@ -22,9 +22,12 @@ import java.net.URI;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 /**
  * TestStorageBasedClientSideAuthorizationProvider : Overrides
  * TestClientSideAuthorizationProvider to test StorageBasedAuthorizationProvider
@@ -88,10 +91,10 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
   }
 
   @Override
-  protected void assertNoPrivileges(CommandProcessorResponse ret){
-    assertNotNull(ret);
-    assertFalse(0 == ret.getResponseCode());
-    assertTrue(ret.getErrorMessage().indexOf("AccessControlException") != -1);
+  protected void assertNoPrivileges(CommandProcessorException e){
+    assertNotNull(e);
+    assertFalse(0 == e.getResponseCode());
+    assertTrue(e.getMessage().indexOf("AccessControlException") != -1);
   }
 
 

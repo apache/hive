@@ -37,6 +37,7 @@ class TableOutputFormat implements OutputFormat {
     this.beeLine = beeLine;
   }
 
+  @Override
   public int print(Rows rows) {
     int index = 0;
     ColorBuffer header = null;

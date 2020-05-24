@@ -307,7 +307,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.insert1
                   Filter Operator
-                    predicate: ((key < 20) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 20)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)

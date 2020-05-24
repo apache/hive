@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,6 +72,7 @@ public class Warehouse {
   private final Configuration conf;
   private final String whRootString;
   private final String whRootExternalString;
+  private final boolean isTenantBasedStorage;
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
@@ -91,6 +91,7 @@ public class Warehouse {
     fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
+    isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
   }
 
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
@@ -195,9 +196,9 @@ public class Warehouse {
     }
     if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
       if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRoot();
+        return getWhRootExternal();
       } else {
-        return new Path(getWhRoot(), dbDirFromDbName(db));
+        return new Path(getWhRootExternal(), dbDirFromDbName(db));
       }
     } else {
       return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
@@ -209,7 +210,7 @@ public class Warehouse {
   }
 
   /**
-   * Get the path specified by the database.  In the case of the default database the root of the
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
    * warehouse is returned.
    * @param db database to get the path of
    * @return path to the database directory
@@ -217,11 +218,37 @@ public class Warehouse {
    * file system.
    */
   public Path getDatabasePath(Database db) throws MetaException {
+    if (db.getManagedLocationUri() != null) {
+      return getDnsPath(new Path(db.getManagedLocationUri()));
+    }
     if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
         db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
+    // this is for backward-compatibility where certain DBs do not have managedLocationUri set
     return new Path(db.getLocationUri());
+  }
+
+  /**
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * warehouse is returned.
+   * @param db database to get the path of
+   * @return path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Path getDatabaseManagedPath(Database db) throws MetaException {
+    if (db.getManagedLocationUri() != null) {
+      return getDnsPath(new Path(db.getManagedLocationUri()));
+    }
+    if (!db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+      return new Path(db.getLocationUri());
+    }
+    if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return getWhRoot();
+    }
+
+    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -230,17 +257,26 @@ public class Warehouse {
     // new database is being created.  Once I have confirmation of this change calls of this to
     // getDatabasePath(), since it does the right thing.  Also, merge this with
     // determineDatabasePath() as it duplicates much of the logic.
-    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRoot();
-    }
-    return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return getDefaultDatabasePath(dbName, false);
   }
 
   public Path getDefaultExternalDatabasePath(String dbName) throws MetaException {
-    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRootExternal();
+    return getDefaultDatabasePath(dbName, true);
+  }
+
+  // should only be used to determine paths before the creation of databases
+  public Path getDefaultDatabasePath(String dbName, boolean inExternalWH) throws MetaException {
+    if (inExternalWH) {
+      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRootExternal();
+      }
+      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    } else {
+      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRoot();
+      }
+      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
     }
-    return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   private boolean hasExternalWarehouseRoot() {
@@ -262,11 +298,25 @@ public class Warehouse {
 
   public Path getDefaultTablePath(Database db, String tableName, boolean isExternal) throws MetaException {
     Path dbPath = null;
-    if (isExternal && hasExternalWarehouseRoot()) {
-      dbPath = getDefaultExternalDatabasePath(db.getName());
+    if (isExternal) {
+      dbPath = new Path(db.getLocationUri());
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString() + Path.SEPARATOR)) {
+        // db metadata incorrect, find new location based on external warehouse root
+        dbPath = getDefaultExternalDatabasePath(db.getName());
+      }
     } else {
-      dbPath = getDatabasePath(db);
+      if (isTenantBasedStorage) {
+        dbPath = getDatabaseManagedPath(db);
+      } else {
+        dbPath = getDatabasePath(db);
+      }
     }
+    return getDnsPath(
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+  }
+
+  public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {
+    Path dbPath = getDatabaseManagedPath(db);
     return getDnsPath(
         new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
@@ -373,10 +423,15 @@ public class Warehouse {
     }
   }
 
-  public boolean isEmpty(Path path) throws IOException, MetaException {
-    ContentSummary contents = getFs(path).getContentSummary(path);
-    if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {
-      return true;
+  public boolean isEmptyDir(Path path) throws IOException, MetaException {
+    try {
+      int listCount = getFs(path).listStatus(path).length;
+      if (listCount == 0) {
+        return true;
+      }
+    } catch (FileNotFoundException fnfe) {
+      // File named by path doesn't exist; nothing to validate.
+      return false;
     }
     return false;
   }
@@ -686,7 +741,7 @@ public class Warehouse {
     try {
       Path path = new Path(location);
       FileSystem fileSys = path.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(path, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(path, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
@@ -704,7 +759,7 @@ public class Warehouse {
     Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(tablePath, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(tablePath, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }

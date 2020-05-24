@@ -1,6 +1,5 @@
 SET hive.blobstore.optimizations.enabled=true;
 SET hive.blobstore.use.blobstore.as.scratchdir=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- Insert unpartitioned table;
 DROP TABLE table1;

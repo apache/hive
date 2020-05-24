@@ -203,7 +203,7 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=87)
                     Output:["_col0"]
                     Filter Operator [FIL_17] (rows=2000 width=87)
-                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and key is not null)
+                      predicate:(key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_0] (rows=2000 width=87)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -341,7 +341,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
@@ -367,8 +367,8 @@ Stage-0
                       predicate:cstring is not null
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
-              <-Reducer 2 [ONE_TO_ONE_EDGE] llap
-                FORWARD [RS_12]
+              <-Reducer 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_12]
                   PartitionCols:_col1
                   Merge Join Operator [MERGEJOIN_29] (rows=2200 width=87)
                     Conds:RS_9._col0=RS_10._col0(Inner),Output:["_col1"]
@@ -438,7 +438,7 @@ Vertex dependency in root stage
 Map 1 <- Reducer 6 (BROADCAST_EDGE)
 Map 7 <- Reducer 6 (BROADCAST_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 
@@ -462,7 +462,7 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_28] (rows=9174 width=70)
-                      predicate:((cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and cstring is not null)
+                      predicate:(cstring is not null and cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 6 [BROADCAST_EDGE] llap
@@ -481,8 +481,8 @@ Stage-0
                                       predicate:key1 is not null
                                       TableScan [TS_3] (rows=20 width=87)
                                         default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
-              <-Reducer 2 [ONE_TO_ONE_EDGE] llap
-                FORWARD [RS_12]
+              <-Reducer 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_12]
                   PartitionCols:_col1
                   Merge Join Operator [MERGEJOIN_52] (rows=2200 width=87)
                     Conds:RS_9._col0=RS_10._col0(Inner),Output:["_col1"]
@@ -496,7 +496,7 @@ Stage-0
                       Select Operator [SEL_2] (rows=2000 width=87)
                         Output:["_col0"]
                         Filter Operator [FIL_26] (rows=2000 width=87)
-                          predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and key is not null)
+                          predicate:(key is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                           TableScan [TS_0] (rows=2000 width=87)
                             default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                           <-Reducer 6 [BROADCAST_EDGE] llap
@@ -655,7 +655,7 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=178)
                     Output:["_col0","_col1"]
                     Filter Operator [FIL_17] (rows=2000 width=178)
-                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and key is not null and value is not null)
+                      predicate:(key is not null and value is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_0] (rows=2000 width=178)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -849,7 +849,7 @@ Stage-0
                       Select Operator [SEL_2] (rows=2000 width=178)
                         Output:["_col0","_col1"]
                         Filter Operator [FIL_26] (rows=2000 width=178)
-                          predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and key is not null and value is not null)
+                          predicate:(key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                           TableScan [TS_0] (rows=2000 width=178)
                             default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                           <-Reducer 7 [BROADCAST_EDGE] llap
@@ -869,7 +869,7 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_28] (rows=9174 width=70)
-                      predicate:((cstring BETWEEN DynamicValue(RS_12_srcpart_date_n9_value_min) AND DynamicValue(RS_12_srcpart_date_n9_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n9_value_bloom_filter))) and cstring is not null)
+                      predicate:(cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n9_value_min) AND DynamicValue(RS_12_srcpart_date_n9_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n9_value_bloom_filter)))
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -949,20 +949,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n9
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -982,27 +984,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_date_n9
-                    numFiles 1
-                    numRows 1000
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 176000
-                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3052
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1013,10 +1006,8 @@ STAGE PLANS:
                       name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_date_n9
                   name: default.srcpart_date_n9
@@ -1028,27 +1019,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_date_n9
-                    numFiles 1
-                    numRows 1000
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 176000
-                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3052
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1059,10 +1041,8 @@ STAGE PLANS:
                       name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_date_n9
                   name: default.srcpart_date_n9
@@ -1085,8 +1065,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1103,7 +1085,9 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
+                            bucketingVersion: 2
                             null sort order: 
+                            numBuckets: -1
                             sort order: 
                             Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                             tag: -1
@@ -1124,27 +1108,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_small_n4
-                    numFiles 0
-                    numRows 0
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 0
-                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
@@ -1155,10 +1130,8 @@ STAGE PLANS:
                       name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_small_n4
                   name: default.srcpart_small_n4
@@ -1170,27 +1143,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_small_n4
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 3520
-                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 469
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
@@ -1201,10 +1165,8 @@ STAGE PLANS:
                       name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_small_n4
                   name: default.srcpart_small_n4
@@ -1230,7 +1192,9 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
+                    bucketingVersion: 2
                     null sort order: 
+                    numBuckets: -1
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     tag: -1
@@ -1246,6 +1210,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
                   directory: hdfs://### HDFS PATH ###
@@ -1256,6 +1221,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0
                         columns.types bigint
                         escape.delim \
@@ -1277,7 +1243,9 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
+                  bucketingVersion: 2
                   null sort order: 
+                  numBuckets: -1
                   sort order: 
                   Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   tag: -1

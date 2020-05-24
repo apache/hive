@@ -111,7 +111,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ck_4
-          filterExpr: ((key.col1 >= '165') and (key.col1 < '27')) (type: boolean)
+          filterExpr: ((key.col1 < '27') and (key.col1 >= '165')) (type: boolean)
           Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((key.col1 < '27') and (key.col1 >= '165')) (type: boolean)

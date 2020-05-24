@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.accumulo.predicate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.Set;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.data.Range;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
@@ -52,11 +52,11 @@ import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -260,9 +260,9 @@ public class AccumuloPredicateHandler {
                                   String hiveRowIdColumnName, ExprNodeDesc root) {
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler,
         columnMapper.getRowIdMapping(), hiveRowIdColumnName);
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule, NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     List<Node> roots = new ArrayList<Node>();
     roots.add(root);
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
@@ -362,8 +362,7 @@ public class AccumuloPredicateHandler {
     is.addOption(PrimitiveComparisonFilter.P_COMPARE_CLASS, tuple.getpCompare().getClass()
         .getName());
     is.addOption(PrimitiveComparisonFilter.COMPARE_OPT_CLASS, tuple.getcOpt().getClass().getName());
-    is.addOption(PrimitiveComparisonFilter.CONST_VAL,
-        new String(Base64.encodeBase64(tuple.getConstVal())));
+    is.addOption(PrimitiveComparisonFilter.CONST_VAL, Base64.getEncoder().encodeToString(tuple.getConstVal()));
     is.addOption(PrimitiveComparisonFilter.COLUMN, accumuloColumnMapping.serialize());
 
     return is;

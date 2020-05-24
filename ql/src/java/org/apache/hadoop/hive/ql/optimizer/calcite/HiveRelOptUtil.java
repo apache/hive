@@ -35,6 +35,9 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelReferentialConstraint;
 import org.apache.calcite.rel.core.Aggregate;
@@ -52,20 +55,23 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexCallBinding;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexTableInputRef.RelTableRef;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.validate.SqlMonotonicity;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -558,8 +564,16 @@ public class HiveRelOptUtil extends RelOptUtil {
     // 1) Gather all tables from the FK side and the table from the
     // non-FK side
     final Set<RelTableRef> leftTables = mq.getTableReferences(join.getLeft());
-    final Set<RelTableRef> rightTables =
-        Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
+    if (leftTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> joinTables = mq.getTableReferences(join);
+    if (joinTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> rightTables = Sets.difference(joinTables, leftTables);
     final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
     final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
 
@@ -733,7 +747,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
 
-    if (joinType != JoinRelType.INNER) {
+    if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
       // outer join (as it would not be correct)
@@ -840,7 +854,7 @@ public class HiveRelOptUtil extends RelOptUtil {
             if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
                 ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
               if (foreignKeyColumnType.isNullable()) {
-                if (joinType == JoinRelType.INNER) {
+                if (joinType == JoinRelType.INNER || join.isSemiJoin()) {
                   // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
                   RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
                   assert originalCondOp != null;
@@ -1036,9 +1050,98 @@ public class HiveRelOptUtil extends RelOptUtil {
       return null;
     }
 
-    final HiveRelWriterImpl planWriter = new HiveRelWriterImpl();
+    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl();
     rel.explain(planWriter);
     return planWriter.asString();
   }
 
+  /**
+   * Map Sort and SortExchange keys to the specified Project columns.
+   * @param project the Project
+   * @param sortCollation current collation in Sort
+   * @param cluster RelOptCluster
+   * @return new collation should be used in the Sort
+   */
+  public static List<RelFieldCollation> getNewRelFieldCollations(
+          HiveProject project, RelCollation sortCollation, RelOptCluster cluster) {
+    // Determine mapping between project input and output fields.
+    // In Hive, Sort is always based on RexInputRef
+    // HiveSort*PullUpConstantsRule should remove constants (RexLiteral)
+    // We only need to check if project can contain all the positions that sortCollation needs.
+    final Mappings.TargetMapping map =
+            RelOptUtil.permutationIgnoreCast(
+                    project.getProjects(), project.getInput().getRowType()).inverse();
+    Set<Integer> needed = new HashSet<>();
+    for (RelFieldCollation fc : sortCollation.getFieldCollations()) {
+      needed.add(fc.getFieldIndex());
+      final RexNode node = project.getProjects().get(map.getTarget(fc.getFieldIndex()));
+      if (node.isA(SqlKind.CAST)) {
+        // Check whether it is a monotonic preserving cast, otherwise we cannot push
+        final RexCall cast = (RexCall) node;
+        final RexCallBinding binding =
+                RexCallBinding.create(cluster.getTypeFactory(), cast,
+                        ImmutableList.of(RexUtil.apply(map, sortCollation)));
+        if (cast.getOperator().getMonotonicity(binding) == SqlMonotonicity.NOT_MONOTONIC) {
+          return null;
+        }
+      }
+    }
+    Map<Integer, Integer> m = new HashMap<>();
+    for (int projPos = 0; projPos < project.getChildExps().size(); projPos++) {
+      RexNode expr = project.getChildExps().get(projPos);
+      if (expr instanceof RexInputRef) {
+        Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
+        if (positions.size() <= 1) {
+          int parentPos = positions.iterator().next();
+          if(needed.contains(parentPos)){
+            m.put(parentPos, projPos);
+            needed.remove(parentPos);
+          }
+        }
+      }
+    }
+    if(!needed.isEmpty()){
+      return null;
+    }
+
+    List<RelFieldCollation> fieldCollations = new ArrayList<>();
+    for (RelFieldCollation fc : sortCollation.getFieldCollations()) {
+      fieldCollations.add(new RelFieldCollation(m.get(fc.getFieldIndex()), fc.direction, fc.nullDirection));
+    }
+    return fieldCollations;
+  }
+
+  /**
+   * Map Exchange distribution keys to the specified Project columns.
+   * @param project the Project
+   * @param distribution current distribution in Exchange
+   * @return new distribution should be used in the Exchange
+   */
+  public static List<Integer> getNewRelDistributionKeys(
+          HiveProject project, RelDistribution distribution) {
+    Set<Integer> needed = new HashSet<>(distribution.getKeys());
+    Map<Integer, Integer> m = new HashMap<>();
+    for (int projPos = 0; projPos < project.getChildExps().size(); projPos++) {
+      RexNode expr = project.getChildExps().get(projPos);
+      if (expr instanceof RexInputRef) {
+        Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
+        if (positions.size() <= 1) {
+          int parentPos = positions.iterator().next();
+          if(needed.contains(parentPos)){
+            m.put(parentPos, projPos);
+            needed.remove(parentPos);
+          }
+        }
+      }
+    }
+    if(!needed.isEmpty()){
+      return null;
+    }
+
+    List<Integer> distributionKeys = new ArrayList<>();
+    for (Integer keyIndex : distribution.getKeys()) {
+      distributionKeys.add(m.get(keyIndex));
+    }
+    return distributionKeys;
+  }
 }

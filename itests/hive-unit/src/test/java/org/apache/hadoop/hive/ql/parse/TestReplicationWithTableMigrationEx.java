@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -24,6 +26,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -71,7 +74,6 @@ public class TestReplicationWithTableMigrationEx {
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
@@ -79,13 +81,11 @@ public class TestReplicationWithTableMigrationEx {
       put("hive.strict.managed.tables", "true");
       put("hive.metastore.transactional.event.listeners", "");
     }};
-    replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
 
     HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
       put("fs.defaultFS", fs.getUri().toString());
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
@@ -96,6 +96,8 @@ public class TestReplicationWithTableMigrationEx {
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
+    hiveConfigs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
   }
 
   @AfterClass
@@ -173,7 +175,7 @@ public class TestReplicationWithTableMigrationEx {
 
     InjectableBehaviourObjectStore.setGetCurrentNotificationEventIdBehaviour(callerVerifier);
     try {
-      return primary.dump(primaryDbName, null);
+      return primary.dump(primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetGetCurrentNotificationEventIdBehaviour();
       callerVerifier.assertInjectionsPerformed(true, false);
@@ -186,13 +188,13 @@ public class TestReplicationWithTableMigrationEx {
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    tuple = primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
@@ -203,13 +205,13 @@ public class TestReplicationWithTableMigrationEx {
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    tuple = primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
@@ -219,18 +221,16 @@ public class TestReplicationWithTableMigrationEx {
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create table t1 (i int, j int)")
-            .dump(primaryDbName+".t1", null);
+            .dump(primaryDbName+".'t1'");
     replica.run("create database " + replicatedDbName);
-    replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into t1 values (1, 2)")
-            .dump(primaryDbName+".t1", tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
+            .dump(primaryDbName+".'t1'");
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
-    assertFalse(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
   }
 
   @Test
@@ -245,7 +245,7 @@ public class TestReplicationWithTableMigrationEx {
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"tacid"})
@@ -258,8 +258,8 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    tuple = primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"tacid"})
@@ -272,7 +272,7 @@ public class TestReplicationWithTableMigrationEx {
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 
-  private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {
+  private void loadWithFailureInAddNotification(String tbl) throws Throwable {
     BehaviourInjection<InjectableBehaviourObjectStore.CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<InjectableBehaviourObjectStore.CallerArguments, Boolean>() {
       @Nullable
@@ -296,7 +296,7 @@ public class TestReplicationWithTableMigrationEx {
     try {
       List<String> withClause = Collections.singletonList("'hive.metastore.transactional.event.listeners'='"
               + DbNotificationListener.class.getCanonicalName() + "'");
-      replica.loadFailure(replicatedDbName, dumpLocation, withClause);
+      replica.loadFailure(replicatedDbName, primaryDbName, withClause);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier();
     }
@@ -309,25 +309,23 @@ public class TestReplicationWithTableMigrationEx {
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
     assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
 
-    tuple = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
-           .run("create table tbl_temp (fld int)")
-            .dump(primaryDbName, tuple.lastReplicationId);
+            .run("create table tbl_temp (fld int)")
+            .dump(primaryDbName);
 
-    loadWithFailureInAddNotification("tbl_temp", tuple.dumpLocation);
+    loadWithFailureInAddNotification("tbl_temp");
     Database replDb = replica.getDatabase(replicatedDbName);
     assertTrue(ReplUtils.isFirstIncPending(replDb.getParameters()));
     assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
     assertTrue(replDb.getParameters().get("dummy_key").equalsIgnoreCase("dummy_val"));
 
-    // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 
@@ -339,13 +337,13 @@ public class TestReplicationWithTableMigrationEx {
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
-    replica.load(replicatedDbName, tuple.dumpLocation, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.load(replicatedDbName, tuple.dumpLocation, withClause);
+    tuple = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName, withClause);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 
@@ -384,21 +382,21 @@ public class TestReplicationWithTableMigrationEx {
 
     // test bootstrap
     alterUserName("hive");
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyUserName("hive");
 
     // test incremental
     alterUserName("hive1");
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyUserName("hive1");
   }
 
   @Test
   public void testOnwerPropagationInc() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
 
     primary.run("use " + primaryDbName)
             .run("create table tbl_own (fld int)")
@@ -411,8 +409,48 @@ public class TestReplicationWithTableMigrationEx {
 
     // test incremental when table is getting created in the same load
     alterUserName("hive");
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     verifyUserName("hive");
+  }
+
+  @Test
+  public void dynamicallyConvertNonAcidToAcidTable() throws Throwable {
+    // Non-acid table converted to an ACID table should be prohibited on source cluster with
+    // strict managed false.
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) stored as orc")
+            .run("insert into table t1 values (1)")
+            .run("create table t2 (place string) partitioned by (country string) stored as orc")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .runFailure("alter table t1 set tblproperties('transactional'='true')")
+            .runFailure("alter table t2 set tblproperties('transactional'='true')")
+            .runFailure("alter table t1 set tblproperties('transactional'='true', " +
+                    "'transactional_properties'='insert_only')")
+            .runFailure("alter table t2 set tblproperties('transactional'='true', " +
+                    "'transactional_properties'='insert_only')");
+
+  }
+
+  @Test
+  public void prohibitManagedTableLocationChangeOnReplSource() throws Throwable {
+    String tmpLocation = "/tmp/" + System.nanoTime();
+    primary.miniDFSCluster.getFileSystem().mkdirs(new Path(tmpLocation), new FsPermission("777"));
+
+    // For managed tables at source, the table location shouldn't be changed for the given
+    // non-partitioned table and partition location shouldn't be changed for partitioned table as
+    // alter event doesn't capture the new files list. So, it may cause data inconsistsency. So,
+    // if database is enabled for replication at source, then alter location on managed tables
+    // should be blocked.
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into t1 values(1)")
+            .run("create table t2 (place string) partitioned by (country string) stored as orc")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .runFailure("alter table t1 set location '" + tmpLocation + "'")
+            .runFailure("alter table t2 partition(country='india') set location '" + tmpLocation + "'")
+            .runFailure("alter table t2 set location '" + tmpLocation + "'");
+
+    primary.miniDFSCluster.getFileSystem().delete(new Path(tmpLocation), true);
   }
 }

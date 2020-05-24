@@ -24,8 +24,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,6 +59,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
@@ -100,6 +105,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final AMReporter amReporter;
   private final LlapRegistryService registry;
   private final LlapWebServices webServices;
+  private final LlapLoadGeneratorService llapLoadGeneratorService;
   private final AtomicLong numSubmissions = new AtomicLong(0);
   private final JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
@@ -179,6 +185,21 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
+    int timedWindowAverageDataPoints = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS);
+    long timedWindowAverageWindowLength = HiveConf.getTimeVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH, TimeUnit.NANOSECONDS);
+    int simpleAverageWindowDataSize = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_SIMPLE_AVERAGE_DATA_POINTS);
+
+    Preconditions.checkArgument(timedWindowAverageDataPoints >= 0,
+        "hive.llap.daemon.metrics.timed.window.average.data.points should be greater or equal to 0");
+    Preconditions.checkArgument(timedWindowAverageDataPoints == 0 || timedWindowAverageWindowLength > 0,
+        "hive.llap.daemon.metrics.timed.window.average.window.length should be greater than 0 if " +
+            "hive.llap.daemon.metrics.average.timed.window.data.points is set fo greater than 0");
+    Preconditions.checkArgument(simpleAverageWindowDataSize >= 0,
+        "hive.llap.daemon.metrics.simple.average.data.points should be greater or equal to 0");
+
     final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
       "maxJvmMemory=" + maxJvmMemory + " ("
       + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
@@ -201,6 +222,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
       ", enablePreemption= " + enablePreemption +
+      ", timedWindowAverageDataPoints= " + timedWindowAverageDataPoints +
+      ", timedWindowAverageWindowLength= " + timedWindowAverageWindowLength +
+      ", simpleAverageWindowDataSize= " + simpleAverageWindowDataSize +
       ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
@@ -262,12 +286,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         }
       }
     }
-    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
-        Ints.toArray(intervalList));
+    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors, waitQueueSize,
+        Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength,
+        simpleAverageWindowDataSize);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
-    this.metrics.setWaitQueueSize(waitQueueSize);
     this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
@@ -284,7 +308,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     this.secretManager = sm;
     this.server = new LlapProtocolServerImpl(secretManager,
-        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId);
+        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId, metrics);
 
     UgiFactory fsUgiFactory = null;
     try {
@@ -322,6 +346,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     } else {
       this.webServices = new LlapWebServices(webPort, this, registry);
       addIfService(webServices);
+    }
+
+    if (HiveConf.getVar(daemonConf, ConfVars.HIVE_TEST_LOAD_HOSTNAMES).isEmpty()) {
+      this.llapLoadGeneratorService = null;
+    } else {
+      this.llapLoadGeneratorService = new LlapLoadGeneratorService();
+      addIfService(llapLoadGeneratorService);
     }
     // Bring up the server only after all other components have started.
     addIfService(server);
@@ -607,6 +638,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public UpdateFragmentResponseProto updateFragment(
       UpdateFragmentRequestProto request) throws IOException {
     return containerRunner.updateFragment(request);
+  }
+
+  @Override
+  public SetCapacityResponseProto setCapacity(
+      SetCapacityRequestProto request) throws IOException {
+
+    Map<String, String> capacityValues = new HashMap<>(2);
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS,
+            Integer.toString(request.getExecutorNum()));
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE,
+            Integer.toString(request.getQueueSize()));
+    registry.updateRegistration(capacityValues.entrySet());
+    return containerRunner.setCapacity(request);
   }
 
   @VisibleForTesting

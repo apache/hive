@@ -100,6 +100,7 @@ public class TestAccumuloConnectionParameters {
     cnxnParams.getConnector(instance);
   }
 
+  @Test
   public void testSasl() {
     Configuration conf = new Configuration(false);
 

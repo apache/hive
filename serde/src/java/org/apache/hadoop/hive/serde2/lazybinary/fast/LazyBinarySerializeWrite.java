@@ -72,13 +72,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private byte[] vLongBytes;
   private long[] scratchLongs;
   private byte[] scratchBuffer;
+  private byte[] scratchLongBytes;
 
-  private Field root;
+  private final Field root;
   private Deque<Field> stack = new ArrayDeque<>();
   private LazyBinarySerDe.BooleanRef warnedOnceNullMapKey;
 
   private static class Field {
-    Category type;
+    // Make sure the root.type never changes from STRUCT
+    final Category type;
 
     int fieldCount;
     int fieldIndex;
@@ -89,6 +91,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
     Field(Category type) {
       this.type = type;
+    }
+
+    public void clean() {
+      fieldCount = 0;
+      fieldIndex = 0;
+      byteSizeStart = 0;
+      start = 0;
+      nullOffset = 0;
+      nullByte = 0;
     }
   }
 
@@ -101,6 +112,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
   // Not public since we must have the field count and other information.
   private LazyBinarySerializeWrite() {
+    this.root = new Field(STRUCT);
   }
 
   /*
@@ -133,7 +145,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   }
 
   private void resetWithoutOutput() {
-    root = new Field(STRUCT);
+    root.clean();
     root.fieldCount = rootFieldCount;
     stack.clear();
     stack.push(root);
@@ -394,12 +406,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     if (scratchLongs == null) {
       scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
       scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
+      scratchLongBytes = new byte[LazyBinaryUtils.VLONG_BYTES_LEN];
     }
     LazyBinarySerDe.writeToByteStream(
         output,
         dec,
         scratchLongs,
-        scratchBuffer);
+        scratchBuffer,
+        scratchLongBytes
+        );
     finishElement();
   }
 
@@ -409,12 +424,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     if (scratchLongs == null) {
       scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
       scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
+      scratchLongBytes = new byte[LazyBinaryUtils.VLONG_BYTES_LEN];
     }
     LazyBinarySerDe.writeToByteStream(
         output,
         decWritable,
         scratchLongs,
-        scratchBuffer);
+        scratchBuffer,
+        scratchLongBytes
+        );
     finishElement();
   }
 

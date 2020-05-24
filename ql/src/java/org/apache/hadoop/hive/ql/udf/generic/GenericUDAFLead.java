@@ -28,16 +28,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 
-@WindowFunctionDescription
-(
-    description = @Description(
-                name = "lead",
-                value = "_FUNC_(expr, amt, default)"
-                ),
-    supportsWindow = false,
-    pivotResult = true,
-    impliesOrder = true
-)
+@Description(
+        name = "lead",
+        value = "_FUNC_(expr, amt, default)")
+@WindowFunctionDescription(
+        supportsWindow = false,
+        pivotResult = true,
+        impliesOrder = true)
 public class GenericUDAFLead extends GenericUDAFLeadLag {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLead.class.getName());

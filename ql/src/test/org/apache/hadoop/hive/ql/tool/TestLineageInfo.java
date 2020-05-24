@@ -20,15 +20,17 @@ package org.apache.hadoop.hive.ql.tool;
 
 import java.util.TreeSet;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * TestLineageInfo.
  *
  */
-public class TestLineageInfo extends TestCase {
+public class TestLineageInfo {
 
   /**
    * Checks whether the test outputs match the expected outputs.
@@ -50,6 +52,7 @@ public class TestLineageInfo extends TestCase {
     }
   }
 
+  @Test
   public void testSimpleQuery() {
     LineageInfo lep = new LineageInfo();
     try {
@@ -67,6 +70,7 @@ public class TestLineageInfo extends TestCase {
     }
   }
 
+  @Test
   public void testSimpleQuery2() {
     LineageInfo lep = new LineageInfo();
     try {
@@ -84,6 +88,7 @@ public class TestLineageInfo extends TestCase {
     }
   }
 
+  @Test
   public void testSimpleQuery3() {
     LineageInfo lep = new LineageInfo();
     try {
@@ -102,6 +107,7 @@ public class TestLineageInfo extends TestCase {
     }
   }
 
+  @Test
   public void testSimpleQuery4() {
     LineageInfo lep = new LineageInfo();
     try {
@@ -117,6 +123,7 @@ public class TestLineageInfo extends TestCase {
     }
   }
 
+  @Test
   public void testSimpleQuery5() {
     LineageInfo lep = new LineageInfo();
     try {

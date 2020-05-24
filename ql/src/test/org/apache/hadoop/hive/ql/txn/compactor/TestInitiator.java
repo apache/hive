@@ -19,25 +19,21 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * Tests for the compactor Initiator thread.
@@ -200,35 +197,48 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
+  /**
+   * Test that HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD triggers compaction.
+   *
+   * @throws Exception
+   */
   @Test
-  public void cleanEmptyAbortedTxns() throws Exception {
-    // Test that we are cleaning aborted transactions with no components left in txn_components.
-    // Put one aborted transaction with an entry in txn_components to make sure we don't
-    // accidently clean it too.
-    Table t = newTable("default", "ceat", false);
-
+  public void compactExpiredAbortedTxns() throws Exception {
+    Table t = newTable("default", "expiredAbortedTxns", false);
+    // abort a txn
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
-    comp.setTablename("ceat");
-    comp.setOperationType(DataOperationType.UPDATE);
+    comp.setOperationType(DataOperationType.DELETE);
+    comp.setTablename("expiredAbortedTxns");
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
-    LockResponse res = txnHandler.lock(req);
+    txnHandler.lock(req);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
-    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
-    OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
-      TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
-    txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
-    GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
+    // before setting, check that no compaction is queued
+    initiateAndVerifyCompactionQueueLength(0);
 
+    // negative number disables threshold check
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, -1,
+        TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    initiateAndVerifyCompactionQueueLength(0);
+
+    // set to 1 ms, wait 1 ms, and check that minor compaction is queued
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 1, TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    ShowCompactResponse rsp = initiateAndVerifyCompactionQueueLength(1);
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+  }
+
+  private ShowCompactResponse initiateAndVerifyCompactionQueueLength(int expectedLength)
+      throws Exception {
     startInitiator();
-
-    openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(1, openTxns.getOpen_txnsSize());
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(expectedLength, rsp.getCompactsSize());
+    return rsp;
   }
 
   @Test
@@ -769,6 +779,44 @@ public class TestInitiator extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(0, compacts.size());
   }
+
+  @Test
+  public void processCompactionCandidatesInParallel() throws Exception {
+    Table t = newTable("default", "dp", true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+      comp.setTablename("dp");
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions("default", "dp", 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId("default", "dp", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(10, compacts.size());
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;

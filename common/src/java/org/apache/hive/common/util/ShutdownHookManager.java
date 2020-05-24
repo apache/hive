@@ -22,12 +22,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
-
-import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This is just a wrapper around hadoop's ShutdownHookManager but also manages delete on exit hook for temp files.
@@ -64,7 +65,7 @@ public class ShutdownHookManager {
     if (priority < 0) {
       throw new IllegalArgumentException("Priority should be greater than or equal to zero");
     }
-    MGR.addShutdownHook(shutdownHook, priority);
+    MGR.addShutdownHook(shutdownHook, priority, 30, TimeUnit.SECONDS);
   }
 
   /**

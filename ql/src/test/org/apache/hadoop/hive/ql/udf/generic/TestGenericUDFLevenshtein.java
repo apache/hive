@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -28,9 +28,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
-public class TestGenericUDFLevenshtein extends TestCase {
+/**
+ * TestGenericUDFLevenshtein.
+ */
+public class TestGenericUDFLevenshtein {
 
+  @Test
   public void testLevenshtein() throws HiveException {
     GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -50,6 +59,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
     runAndVerify(null, null, null, udf);
   }
 
+  @Test
   public void testLevenshteinWrongType0() throws HiveException {
     @SuppressWarnings("resource")
     GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
@@ -66,6 +76,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
     }
   }
 
+  @Test
   public void testLevenshteinWrongType1() throws HiveException {
     @SuppressWarnings("resource")
     GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
@@ -82,6 +93,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
     }
   }
 
+  @Test
   public void testLevenshteinWrongLength() throws HiveException {
     @SuppressWarnings("resource")
     GenericUDFLevenshtein udf = new GenericUDFLevenshtein();

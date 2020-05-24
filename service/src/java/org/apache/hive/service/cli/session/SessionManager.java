@@ -54,6 +54,7 @@ import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.service.server.KillQueryZookeeperManager;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,11 @@ import org.slf4j.LoggerFactory;
 public class SessionManager extends CompositeService {
 
   private static final String INACTIVE_ERROR_MESSAGE =
-      "Cannot open sessions on an inactive HS2 instance; use service discovery to connect";
+          "Cannot open sessions on an inactive HS2 instance, " +
+                  "or the HS2 server leader is not ready; please use service discovery to " +
+                  "connect the server leader again";
+  private static final String FAIL_CLOSE_ERROR_MESSAGE="Cannot close the session opened " +
+          "during the HA state change time";
   public static final String HIVERCFILE = ".hiverc";
   private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
   private HiveConf hiveConf;
@@ -81,6 +86,7 @@ public class SessionManager extends CompositeService {
   private int ipAddressLimit;
   private int userIpAddressLimit;
   private final OperationManager operationManager = new OperationManager();
+  private KillQueryZookeeperManager killQueryZookeeperManager;
   private ThreadPoolExecutor backgroundOperationPool;
   private boolean isOperationLogEnabled;
   private File operationLogRootDir;
@@ -110,6 +116,12 @@ public class SessionManager extends CompositeService {
     }
     createBackgroundOperationPool();
     addService(operationManager);
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY) &&
+        !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE) &&
+        hiveConf.getBoolVar(ConfVars.HIVE_ZOOKEEPER_KILLQUERY_ENABLE)) {
+      killQueryZookeeperManager = new KillQueryZookeeperManager(operationManager, hiveServer2);
+      addService(killQueryZookeeperManager);
+    }
     initSessionImplClassName();
     Metrics metrics = MetricsFactory.getInstance();
     if(metrics != null){
@@ -478,7 +490,7 @@ public class SessionManager extends CompositeService {
       } catch (Exception e) {
         LOG.warn("Failed to close the session opened during an HA state change; ignoring", e);
       }
-      throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+      throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
     LOG.info("Session opened, " + session.getSessionHandle()
         + ", current sessions:" + getOpenSessionCount());
@@ -574,12 +586,15 @@ public class SessionManager extends CompositeService {
     return true;
   }
 
-  public synchronized void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
-    HiveSession session = handleToSession.remove(sessionHandle);
-    if (session == null) {
-      throw new HiveSQLException("Session does not exist: " + sessionHandle);
+  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+    final HiveSession session;
+    synchronized(sessionAddLock) {
+      session = handleToSession.remove(sessionHandle);
+      if (session == null) {
+        throw new HiveSQLException("Session does not exist: " + sessionHandle);
+      }
+      LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     }
-    LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     closeSessionInternal(session);
   }
 
@@ -619,6 +634,10 @@ public class SessionManager extends CompositeService {
 
   public OperationManager getOperationManager() {
     return operationManager;
+  }
+
+  public KillQueryZookeeperManager getKillQueryZookeeperManager() {
+    return killQueryZookeeperManager;
   }
 
   private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>();

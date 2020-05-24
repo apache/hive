@@ -273,7 +273,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       }
     }
     // init aggregationParameterFields
-    ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+    List<AggregationDesc> aggrs = conf.getAggregators();
     aggregationParameterFields = new ExprNodeEvaluator[aggrs.size()][];
     aggregationParameterObjectInspectors = new ObjectInspector[aggrs.size()][];
     aggregationParameterStandardObjectInspectors = new ObjectInspector[aggrs.size()][];
@@ -281,7 +281,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     aggregationIsDistinct = new boolean[aggrs.size()];
     for (int i = 0; i < aggrs.size(); i++) {
       AggregationDesc aggr = aggrs.get(i);
-      ArrayList<ExprNodeDesc> parameters = aggr.getParameters();
+      List<ExprNodeDesc> parameters = aggr.getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
       aggregationParameterObjectInspectors[i] = new ObjectInspector[parameters
           .size()];
@@ -542,7 +542,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     // 64 bytes is the overhead for a reference
     fixedRowSize = javaHashEntryOverHead;
 
-    ArrayList<ExprNodeDesc> keys = conf.getKeys();
+    List<ExprNodeDesc> keys = conf.getKeys();
 
     // Go over all the keys and get the size of the fields of fixed length. Keep
     // track of the variable length keys
@@ -739,20 +739,21 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       // if hash aggregation is not behaving properly, disable it
       if (numRowsInput == numRowsCompareHashAggr) {
         numRowsCompareHashAggr += groupbyMapAggrInterval;
+        long numRowsProcessed = groupingSetsPresent ? numRowsInput * groupingSets.size() : numRowsInput;
         // map-side aggregation should reduce the entries by at-least half
-        if (numRowsHashTbl > numRowsInput * minReductionHashAggr) {
+        if (numRowsHashTbl > numRowsProcessed * minReductionHashAggr) {
           LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl
-              + " #total = " + numRowsInput + " reduction = " + 1.0
-              * (numRowsHashTbl / numRowsInput) + " minReduction = "
-              + minReductionHashAggr);
+              + " #numRowsInput = " + numRowsInput + " reduction = " + 1.0 * (numRowsHashTbl / numRowsProcessed)
+              + " minReduction = " + minReductionHashAggr + " groupingSetsPresent = " + groupingSetsPresent
+              + " numRowsProcessed = " + numRowsProcessed);
           flushHashTable(true);
           hashAggr = false;
         } else {
           if (LOG.isTraceEnabled()) {
-            LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
-                + " #total = " + numRowsInput + " reduction = " + 1.0
-                * (numRowsHashTbl / numRowsInput) + " minReduction = "
-                + minReductionHashAggr);
+            LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl + " #numRowsInput = " + numRowsInput
+                + " reduction = " + 1.0 * (numRowsHashTbl / numRowsProcessed) + " minReduction = "
+                + minReductionHashAggr + " groupingSetsPresent = " + groupingSetsPresent + " numRowsProcessed = "
+                + numRowsProcessed);
           }
         }
       }
@@ -1118,14 +1119,14 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   public List<String> genColLists(
       HashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
     List<String> colLists = new ArrayList<String>();
-    ArrayList<ExprNodeDesc> keys = conf.getKeys();
+    List<ExprNodeDesc> keys = conf.getKeys();
     for (ExprNodeDesc key : keys) {
       colLists = Utilities.mergeUniqElems(colLists, key.getCols());
     }
 
-    ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+    List<AggregationDesc> aggrs = conf.getAggregators();
     for (AggregationDesc aggr : aggrs) {
-      ArrayList<ExprNodeDesc> params = aggr.getParameters();
+      List<ExprNodeDesc> params = aggr.getParameters();
       for (ExprNodeDesc param : params) {
         colLists = Utilities.mergeUniqElems(colLists, param.getCols());
       }

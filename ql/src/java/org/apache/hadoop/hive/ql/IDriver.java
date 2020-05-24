@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 /**
@@ -36,9 +37,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 @InterfaceStability.Unstable
 public interface IDriver extends CommandProcessor {
 
-  int compile(String string);
-
-  CommandProcessorResponse compileAndRespond(String statement);
+  CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException;
 
   QueryPlan getPlan();
 
@@ -46,12 +45,12 @@ public interface IDriver extends CommandProcessor {
 
   QueryDisplay getQueryDisplay();
 
-  void setOperationId(String guid64);
+  void setOperationId(String operationId);
 
-  CommandProcessorResponse run();
+  CommandProcessorResponse run() throws CommandProcessorException;
+
   @Override
-  CommandProcessorResponse run(String command);
-
+  CommandProcessorResponse run(String command) throws CommandProcessorException;
 
   // create some "cover" to the result?
   boolean getResults(List res) throws IOException;

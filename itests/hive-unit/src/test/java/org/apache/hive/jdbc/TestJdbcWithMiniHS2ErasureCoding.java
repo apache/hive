@@ -50,7 +50,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.apache.hadoop.hive.ql.QTestUtil.DEFAULT_TEST_EC_POLICY;
+import static org.apache.hadoop.hive.ql.QTestMiniClusters.DEFAULT_TEST_EC_POLICY;
 import static org.apache.hive.jdbc.TestJdbcWithMiniHS2.getDetailedTableDescription;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

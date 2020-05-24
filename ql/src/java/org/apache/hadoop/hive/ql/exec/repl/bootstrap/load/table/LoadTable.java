@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.drop.DropTableDesc;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -84,7 +83,7 @@ public class LoadTable {
     this.tracker = new TaskTracker(limiter);
   }
 
-  public TaskTracker tasks() throws Exception {
+  public TaskTracker tasks(boolean isBootstrapDuringInc) throws Exception {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
     // or are both specified, in which case, that's what we are intended to create the new table as.
@@ -94,7 +93,7 @@ public class LoadTable {
     String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
-    ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
+    ImportTableDesc tableDesc = event.tableDesc(dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
@@ -114,7 +113,7 @@ public class LoadTable {
     }
 
     Task<?> tblRootTask = null;
-    ReplLoadOpType loadTblType = getLoadTableType(table);
+    ReplLoadOpType loadTblType = getLoadTableType(table, isBootstrapDuringInc);
     switch (loadTblType) {
       case LOAD_NEW:
         break;
@@ -151,7 +150,7 @@ public class LoadTable {
             context.hiveConf
     );
     if (!isPartitioned(tableDesc)) {
-      Task<? extends Serializable> replLogTask
+      Task<?> replLogTask
               = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
       ckptTask.addDependentTask(replLogTask);
     }
@@ -159,10 +158,21 @@ public class LoadTable {
     return tracker;
   }
 
-  private ReplLoadOpType getLoadTableType(Table table) throws InvalidOperationException, HiveException {
+  private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc)
+          throws InvalidOperationException, HiveException {
     if (table == null) {
       return ReplLoadOpType.LOAD_NEW;
     }
+
+    // In case user has asked for bootstrap of table during a incremental load, we replace the old one if present.
+    // This is to make sure that the transactional info like write id etc for the table is consistent between the
+    // source and target cluster. This is also to avoid mismatch between target and source cluster table type in case
+    // migration and upgrade uses different conversion rule.
+    if (isBootstrapDuringInc) {
+      LOG.info("Table " + table.getTableName() + " will be replaced as bootstrap is requested during incremental load");
+      return ReplLoadOpType.LOAD_REPLACE;
+    }
+
     if (ReplUtils.replCkptStatus(table.getDbName(), table.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }
@@ -212,7 +222,7 @@ public class LoadTable {
     if (shouldCreateLoadTableTask) {
       LOG.debug("adding dependent ReplTxnTask/CopyWork/MoveWork for table");
       Task<?> loadTableTask = loadTableTask(table, replicationSpec, new Path(tblDesc.getLocation()),
-              event.metadataPath());
+              event.dataPath());
       parentTask.addDependentTask(loadTableTask);
     }
     tracker.addTask(tblRootTask);
@@ -261,7 +271,7 @@ public class LoadTable {
 
   private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,
       Path fromURI) {
-    Path dataPath = new Path(fromURI, EximUtil.DATA_PATH_NAME);
+    Path dataPath = fromURI;
     Path tmpPath = tgtPath;
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
@@ -285,7 +295,8 @@ public class LoadTable {
             + table.getCompleteName() + " with source location: "
             + dataPath.toString() + " and target location " + tgtPath.toString());
 
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf);
+    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
+            false, false);
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
@@ -323,8 +334,7 @@ public class LoadTable {
 
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), table.getTableType(),
-            true, false, event.replicationSpec());
-    return TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
+    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
   }
 }

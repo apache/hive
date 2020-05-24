@@ -233,7 +233,7 @@ PREHOOK: Input: wre1_db@wre1_ext3
 POSTHOOK: query: show create table wre1_db.wre1_ext3
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext3
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext3`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext3`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -318,7 +318,7 @@ PREHOOK: Input: wre1_db@wre1_ext4
 POSTHOOK: query: show create table wre1_db.wre1_ext4
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext4
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext4`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext4`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -413,6 +413,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext5 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -483,7 +484,7 @@ PREHOOK: Input: wre1_db@wre1_ext6
 POSTHOOK: query: show create table wre1_db.wre1_ext6
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext6
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext6`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext6`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -495,6 +496,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
 PREHOOK: type: QUERY

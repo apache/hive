@@ -120,7 +120,18 @@ public final class ObjectInspectorUtils {
    *
    */
   public enum NullValueOption {
-	MINVALUE, MAXVALUE
+    MINVALUE(-1),
+    MAXVALUE(1);
+
+    private final int cmpReturnValue;
+
+    NullValueOption(int cmpReturnValue) {
+      this.cmpReturnValue = cmpReturnValue;
+    }
+
+    public int getCmpReturnValue() {
+      return cmpReturnValue;
+    }
   }
 
   /**
@@ -945,20 +956,36 @@ public final class ObjectInspectorUtils {
   }
 
   public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
-                            ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc) {
+      ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc, NullValueOption[] nullSortOrder) {
     assert (o1.length == oi1.length);
     assert (o2.length == oi2.length);
     assert (o1.length == o2.length);
+    assert (o1.length == columnSortOrderIsDesc.length);
+    assert (o1.length == nullSortOrder.length);
 
     for (int i = 0; i < o1.length; i++) {
-      int r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      int r = compareNull(o1[i], o2[i]);
       if (r != 0) {
-        if (columnSortOrderIsDesc[i]) {
-          return r;
-        } else {
-          return -r;
-        }
+        return nullSortOrder[i] == NullValueOption.MINVALUE ? -r : r;
       }
+
+      if (columnSortOrderIsDesc[i]) {
+        r = compare(o2[i], oi2[i], o1[i], oi1[i]);
+      } else {
+        r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      }
+      if (r != 0) {
+        return r;
+      }
+    }
+    return 0;
+  }
+
+  public static int compareNull(Object o1, Object o2) {
+    if (o1 == null) {
+      return o2 == null ? 0 : 1;
+    } else if (o2 == null) {
+      return -1;
     }
     return 0;
   }
@@ -1026,20 +1053,10 @@ public final class ObjectInspectorUtils {
       return oi1.getCategory().compareTo(oi2.getCategory());
     }
 
-    int nullCmpRtn = -1;
-    switch (nullValueOpt) {
-    case MAXVALUE:
-      nullCmpRtn = 1;
-      break;
-    case MINVALUE:
-      nullCmpRtn = -1;
-      break;
-    }
-
     if (o1 == null) {
-      return o2 == null ? 0 : nullCmpRtn;
+      return o2 == null ? 0 : nullValueOpt.getCmpReturnValue();
     } else if (o2 == null) {
-      return -nullCmpRtn;
+      return -nullValueOpt.getCmpReturnValue();
     }
 
     switch (oi1.getCategory()) {

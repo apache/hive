@@ -21,13 +21,15 @@ package org.apache.hive.hcatalog.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -51,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -584,7 +585,7 @@ public class HCatClientHMSImpl extends HCatClient {
       throws SemanticException, TException {
     LOG.info("HCatClient: Dropping partitions using partition-predicate Expressions.");
     ExprNodeGenericFuncDesc partitionExpression = new ExpressionBuilder(table, partitionSpec).build();
-    ObjectPair<Integer, byte[]> serializedPartitionExpression = new ObjectPair<>(partitionSpec.size(),
+    Pair<Integer, byte[]> serializedPartitionExpression = Pair.of(partitionSpec.size(),
             SerializationUtilities.serializeExpressionToKryo(partitionExpression));
     hmsClient.dropPartitions(table.getDbName(), table.getTableName(), Arrays.asList(serializedPartitionExpression),
         deleteData && !isExternal(table),  // Delete data?
@@ -1007,7 +1008,7 @@ public class HCatClientHMSImpl extends HCatClient {
           }
         });
       } else {
-        return new ArrayList<HCatNotificationEvent>();
+        return Collections.emptyList();
       }
     } catch (TException e) {
       throw new ConnectionFailureException("TException while getting notifications", e);

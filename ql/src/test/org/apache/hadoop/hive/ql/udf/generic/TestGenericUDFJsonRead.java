@@ -96,9 +96,9 @@ public class TestGenericUDFJsonRead {
       udf.initialize(arguments);
 
       Object res = udf.evaluate(evalArgs("{\"a\":\"b\"}"));
-      assertTrue(res instanceof Object[]);
-      Object o[] = (Object[]) res;
-      assertEquals(new Text("b"), o[0]);
+      assertTrue(res instanceof List<?>);
+      List<?> o = (List<?>) res;
+      assertEquals(new Text("b"), o.get(0));
     }
   }
 
@@ -109,9 +109,10 @@ public class TestGenericUDFJsonRead {
       udf.initialize(arguments);
 
       Object res = udf.evaluate(evalArgs("{\"a\":null}"));
-      assertTrue(res instanceof Object[]);
-      Object o[] = (Object[]) res;
-      assertEquals(null, o[0]);
+      assertTrue(res instanceof List<?>);
+
+      List<?> o = (List<?>) res;
+      assertEquals(null, o.get(0));
     }
   }
 
@@ -144,9 +145,10 @@ public class TestGenericUDFJsonRead {
       udf.initialize(arguments);
 
       Object res = udf.evaluate(evalArgs("{\"a\":null}"));
-      assertTrue(res instanceof Object[]);
-      Object o[] = (Object[]) res;
-      assertEquals(null, o[0]);
+      assertTrue(res instanceof List<?>);
+
+      List<?> o = (List<?>) res;
+      assertEquals(null, o.get(0));
     }
   }
 
@@ -156,10 +158,8 @@ public class TestGenericUDFJsonRead {
       ObjectInspector[] arguments = buildArguments("struct<a:int>");
       udf.initialize(arguments);
 
-      Object res = udf.evaluate(evalArgs("{\"b\":null}"));
-      assertTrue(res instanceof Object[]);
-      Object o[] = (Object[]) res;
-      assertEquals(null, o[0]);
+      // Invalid - should throw Exception
+      udf.evaluate(evalArgs("{\"b\":null}"));
     }
   }
 
@@ -169,10 +169,8 @@ public class TestGenericUDFJsonRead {
       ObjectInspector[] arguments = buildArguments("array<int>");
       udf.initialize(arguments);
 
-      Object res = udf.evaluate(evalArgs("[1,22,2,{\"b\":null}]"));
-      assertTrue(res instanceof Object[]);
-      Object o[] = (Object[]) res;
-      assertEquals(null, o[0]);
+      // Invalid - should throw Exception
+      udf.evaluate(evalArgs("[1,22,2,{\"b\":null}]"));
     }
   }
 
@@ -184,7 +182,7 @@ public class TestGenericUDFJsonRead {
 
       Object res = udf.evaluate(evalArgs("{\"a\":\"v\"}"));
       assertTrue(res instanceof Map);
-      Map o = (Map) res;
+      Map<?, ?> o = (Map<?, ?>) res;
       assertEquals(1, o.size());
       assertEquals(new Text("v"), o.get(new Text("a")));
     }

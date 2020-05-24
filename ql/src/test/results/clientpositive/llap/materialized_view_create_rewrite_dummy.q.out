@@ -60,7 +60,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	408
-totalSize	457
+totalSize	468
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3
@@ -94,7 +94,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	232
-totalSize	326
+totalSize	334
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a, c from cmv_basetable_n0 where a = 3
@@ -135,6 +135,31 @@ POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 3	9.80
 3	978.76
+PREHOOK: query: explain
+alter materialized view cmv_mat_view2 disable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: explain
+alter materialized view cmv_mat_view2 disable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Materialized View Rewrite
+      name: default.cmv_mat_view2
+      disable: true
+
+  Stage: Stage-1
+    Materialized View Update
+      name: default.cmv_mat_view2
+      disable rewrite: true
+
 PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@cmv_mat_view2
@@ -188,6 +213,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -200,13 +226,14 @@ STAGE PLANS:
                   filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: decimal(10,2))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -272,12 +299,18 @@ POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Materialized View
+    Alter Materialized View Rewrite
       name: default.cmv_mat_view2
-      operation: UPDATE_REWRITE_FLAG
+      enable: true
+
+  Stage: Stage-1
+    Materialized View Update
+      name: default.cmv_mat_view2
+      retrieve and include: true
 
 PREHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -334,6 +367,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -345,6 +379,7 @@ STAGE PLANS:
                   alias: default.cmv_mat_view2
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: a (type: int), c (type: decimal(10,2))
@@ -453,6 +488,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -465,13 +501,14 @@ STAGE PLANS:
                   filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: decimal(10,2))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))

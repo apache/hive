@@ -18,7 +18,12 @@
 
 package org.apache.hive.beeline;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -122,6 +126,33 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.getOpts().getAuthType().equals("authType"));
   }
+
+  @Test
+  public void testEmptyHiveConfVariable() throws Exception {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    PrintStream ops = new PrintStream(os);
+    TestBeeline bl = new TestBeeline();
+    bl.setOutputStream(ops);
+    BeeLineOpts opts = new BeeLineOpts(bl, System.getProperties());
+    String[] args = { "--hiveconf", "hadoop.tmp.dir=/tmp" };
+
+    File rcFile = new File(opts.saveDir(), "beeline.properties");
+    rcFile.deleteOnExit();
+
+    BufferedWriter writer = new BufferedWriter(new FileWriter(rcFile));
+    writer.write("beeline.hiveconfvariables={}");
+    writer.newLine();
+    writer.write("beeline.hivevariables={}");
+    writer.newLine();
+    writer.flush();
+
+    try (InputStream stream = new FileInputStream(rcFile)) {
+      bl.getOpts().load(stream);
+      bl.initArgs(args);
+      bl.getOpts().getHiveVariables().get("test");
+    }
+  }
+
 
   @Test
   public void testPasswordFileArgs() throws Exception {
@@ -366,6 +397,19 @@ public class TestBeelineArgParsing {
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.getOpts().getScriptFile().equals("hdfs://myscript"));
+  }
+
+  /**
+   * Test the report parameter option.
+   * @throws Exception
+   */
+  @Test
+  public void testReport() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"--report=true"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().isReport());
+    bl.close();
   }
 
 }

@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.CheckFastRowHashMap.VerifyFastRowHashMap;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
+import org.junit.Before;
 import org.junit.Test;
 
 /*
@@ -49,10 +52,19 @@ import org.junit.Test;
  */
 public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
 
+  public static final Properties ANY_TABLE_PROPERTIES = new Properties();
+  private static TableDesc tableDesc = new TableDesc();
+
+  @Before
+  public void setUp() throws Exception {
+    tableDesc.setProperties(ANY_TABLE_PROPERTIES);
+  }
+
   private void addAndVerifyRows(VectorRandomRowSource valueSource, Object[][] rows,
-      VectorMapJoinFastHashTable map, HashTableKeyType hashTableKeyType,
-      VerifyFastRowHashMap verifyTable, String[] keyTypeNames,
-      boolean doClipping, boolean useExactBytes) throws HiveException, IOException, SerDeException {
+                                VectorMapJoinFastHashTable map, HashTableKeyType hashTableKeyType,
+                                VerifyFastRowHashMap verifyTable, String[] keyTypeNames,
+                                boolean doClipping, boolean useExactBytes)
+          throws HiveException, IOException, SerDeException {
 
     final int keyCount = keyTypeNames.length;
     PrimitiveTypeInfo[] keyPrimitiveTypeInfos = new PrimitiveTypeInfo[keyCount];
@@ -139,7 +151,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -166,7 +178,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -193,7 +205,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastStringHashMap map =
         new VectorMapJoinFastStringHashMap(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -301,7 +313,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -328,7 +340,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -355,7 +367,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastStringHashMap map =
         new VectorMapJoinFastStringHashMap(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -464,7 +476,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -491,7 +503,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -518,7 +530,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastStringHashMap map =
         new VectorMapJoinFastStringHashMap(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -626,7 +638,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -653,7 +665,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -680,7 +692,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VectorMapJoinFastStringHashMap map =
         new VectorMapJoinFastStringHashMap(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 

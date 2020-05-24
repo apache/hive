@@ -1,0 +1,27 @@
+PREHOOK: query: DESCRIBE FUNCTION boolean
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION boolean
+POSTHOOK: type: DESCFUNCTION
+boolean(x) - converts it's parameter to boolean
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED boolean
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED boolean
+POSTHOOK: type: DESCFUNCTION
+boolean(x) - converts it's parameter to boolean
+Synonyms: udftoboolean
+- x is NULL -> NULL
+- byte, short, integer, long, float, double, decimal:
+  x == 0 -> false
+  x != 0 -> true
+- string:
+  x is '', 'false', 'no', 'zero', 'off' -> false
+  true otherwise
+- date: always NULL
+- timestamp
+  seconds or nanos are 0 -> false
+  true otherwise
+Example:
+   > SELECT boolean(0);
+  false
+Function class:org.apache.hadoop.hive.ql.udf.UDFToBoolean
+Function type:BUILTIN

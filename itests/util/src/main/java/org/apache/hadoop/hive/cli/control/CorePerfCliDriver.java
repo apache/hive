@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.cli.control;
 
-
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -28,26 +26,29 @@ import java.io.File;
 import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.internal.AssumptionViolatedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+
 /**
- This is the TestPerformance Cli Driver for integrating performance regression tests
- as part of the Hive Unit tests.
- Currently this includes support for :
- 1. Running explain plans for TPCDS workload (non-partitioned dataset)  on 30TB scaleset.
- TODO :
- 1. Support for partitioned data set
- 2. Use HBase Metastore instead of Derby
+ * This is the TestPerformance Cli Driver for integrating performance regression tests as part of
+ * the Hive Unit tests. Currently this includes support for : 1. Running explain plans for TPCDS
+ * workload (non-partitioned dataset) on 30TB scaleset. TODO : 1. Support for partitioned data set
+ * 2. Use HBase Metastore instead of Derby
+ * This suite differs from TestCliDriver w.r.t the fact that we modify the underlying metastore
+ * database to reflect the dataset before running the queries.
+ */
+public class CorePerfCliDriver extends CliAdapter {
 
-This suite differs from TestCliDriver w.r.t the fact that we modify the underlying metastore
-database to reflect the dataset before running the queries.
-*/
-public class CorePerfCliDriver extends CliAdapter{
-
+  private static final Logger LOG = LoggerFactory.getLogger(CorePerfCliDriver.class);
   private static QTestUtil qt;
 
   public CorePerfCliDriver(AbstractCliConfig testCliConfig) {
@@ -65,32 +66,29 @@ public class CorePerfCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      qt = new QTestUtil(
-          QTestArguments.QTestArgumentsBuilder.instance()
-            .withOutDir(cliConfig.getResultsDir())
-            .withLogDir(cliConfig.getLogDir())
-            .withClusterType(miniMR)
-            .withConfDir(hiveConfDir)
-            .withInitScript(initScript)
-            .withCleanupScript(cleanupScript)
-            .withLlapIo(false)
-            .build());
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
-      // Manually modify the underlying metastore db to reflect statistics corresponding to
-      // the 30TB TPCDS scale set. This way the optimizer will generate plans for a 30 TB set.
-      MetaStoreDumpUtility.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf(),
-          System.getProperty(QTestUtil.TEST_TMP_DIR_PROPERTY));
-
+      qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(cliConfig.getResultsDir()).withLogDir(cliConfig.getLogDir())
+          .withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
+          .withCleanupScript(cleanupScript).withLlapIo(false).build());
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization: " + e.getMessage(), e);
+      throw new RuntimeException("Unexpected exception in static initialization: " + e.getMessage(),
+          e);
     }
+  }
+
+  @Override
+  protected void beforeClassSpec() {
+    overrideStatsInMetastore();
+  }
+
+  private void overrideStatsInMetastore() {
+    // Manually modify the underlying metastore db to reflect statistics corresponding to
+    // the 30TB TPCDS scale set. This way the optimizer will generate plans for a 30 TB set.
+    MetaStoreDumpUtility.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf(),
+        QTestSystemProperties.getTempDir());
   }
 
   @Override
@@ -103,7 +101,6 @@ public class CorePerfCliDriver extends CliAdapter{
   public void setUp() {
     try {
       qt.newSession();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -117,7 +114,6 @@ public class CorePerfCliDriver extends CliAdapter{
   public void tearDown() {
     try {
       qt.clearPostTestEffects();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -126,36 +122,43 @@ public class CorePerfCliDriver extends CliAdapter{
     }
   }
 
-  private static String debugHint =
-      "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-          + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
 
   @Override
   public void runTest(String name, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
+      LOG.info("Begin query: " + fname);
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
-      if (ecode != 0) {
-        qt.failed(ecode, fname, debugHint);
+      try {
+        qt.executeClient(fname);
+      } catch (CommandProcessorException e) {
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
+    } catch (AssumptionViolatedException e) {
+      throw e;
     } catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime / 1000 + "s");
+    String message = "Done query: " + fname + " elapsedTime=" + elapsedTime / 1000 + "s";
+    LOG.info(message);
+    System.err.println(message);
     assertTrue("Test passed", true);
   }
 

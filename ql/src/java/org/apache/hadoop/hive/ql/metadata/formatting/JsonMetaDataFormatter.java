@@ -28,19 +28,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -55,7 +57,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
@@ -69,6 +70,19 @@ import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_
  */
 public class JsonMetaDataFormatter implements MetaDataFormatter {
   private static final Logger LOG = LoggerFactory.getLogger(JsonMetaDataFormatter.class);
+
+  private static final String COLUMN_NAME = "name";
+  private static final String COLUMN_TYPE = "type";
+  private static final String COLUMN_COMMENT = "comment";
+  private static final String COLUMN_MIN = "min";
+  private static final String COLUMN_MAX = "max";
+  private static final String COLUMN_NUM_NULLS = "numNulls";
+  private static final String COLUMN_NUM_TRUES = "numTrues";
+  private static final String COLUMN_NUM_FALSES = "numFalses";
+  private static final String COLUMN_DISTINCT_COUNT = "distinctCount";
+  private static final String COLUMN_AVG_LENGTH = "avgColLen";
+  private static final String COLUMN_MAX_LENGTH = "maxColLen";
+
 
   /**
    * Convert the map to a JSON string.
@@ -109,7 +123,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables.
    */
   @Override
-  public void showTables(DataOutputStream out, Set<String> tables)
+  public void showTables(DataOutputStream out, List<String> tables)
       throws HiveException {
     asJson(out, MapBuilder.create().put("tables", tables).build());
   }
@@ -118,48 +132,38 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables including table types.
    */
   @Override
-  public void showTablesExtended(DataOutputStream out, List<Table> tables)
-      throws HiveException {
+  public void showTablesExtended(DataOutputStream out, List<Table> tables) throws HiveException {
     if (tables.isEmpty()) {
-      // Nothing to do
       return;
     }
 
-    MapBuilder builder = MapBuilder.create();
-    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    List<Map<String, Object>> tableDataList = new ArrayList<Map<String, Object>>();
     for (Table table : tables) {
-      final String tableName = table.getTableName();
-      final String tableType = table.getTableType().toString();
-      res.add(builder
-          .put("Table Name", tableName)
-          .put("Table Type", tableType)
-          .build());
+      Map<String, Object> tableData = ImmutableMap.of(
+          "Table Name", table.getTableName(),
+          "Table Type", table.getTableType().toString());
+      tableDataList.add(tableData);
     }
-    asJson(out, builder.put("tables", res).build());
+    asJson(out, ImmutableMap.of("tables", tableDataList));
   }
 
   /**
    * Show a list of materialized views.
    */
   @Override
-  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
-      throws HiveException {
+  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews) throws HiveException {
     if (materializedViews.isEmpty()) {
-      // Nothing to do
       return;
     }
 
-    MapBuilder builder = MapBuilder.create();
-    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
-    for (Table mv : materializedViews) {
-      final String mvName = mv.getTableName();
-      final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
+    List<Map<String, Object>> materializedViewDataList = new ArrayList<Map<String, Object>>();
+    for (Table materializedView : materializedViews) {
       // Currently, we only support manual refresh
       // TODO: Update whenever we have other modes
-      final String refreshMode = "Manual refresh";
-      final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
-      final String mode;
-      if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+      String refreshMode = "Manual refresh";
+      String timeWindowString = materializedView.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+      String mode;
+      if (!StringUtils.isEmpty(timeWindowString)) {
         long time = HiveConf.toTime(timeWindowString,
             HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
             TimeUnit.MINUTES);
@@ -173,28 +177,25 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       } else {
         mode = refreshMode;
       }
-      res.add(builder
-          .put("MV Name", mvName)
-          .put("Rewriting Enabled", rewriteEnabled)
-          .put("Mode", mode)
-          .build());
+
+      Map<String, Object> materializedViewData = ImmutableMap.of(
+          "MV Name", materializedView.getTableName(),
+          "Rewriting Enabled", materializedView.isRewriteEnabled() ? "Yes" : "No",
+          "Mode", mode);
+      materializedViewDataList.add(materializedViewData);
     }
-    asJson(out, builder.put("materialized views", res).build());
+    asJson(out, ImmutableMap.of("materialized views", materializedViewDataList));
   }
 
   /**
    * Describe table.
    */
   @Override
-  public void describeTable(DataOutputStream out, String colPath,
-      String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
-      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo,
-      CheckConstraint cInfo, StorageHandlerInfo storageHandlerInfo) throws HiveException {
+  public void describeTable(DataOutputStream out, String colPath, String tableName, Table tbl, Partition part,
+      List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
+      List<ColumnStatisticsObj> colStats) throws HiveException {
     MapBuilder builder = MapBuilder.create();
-    builder.put("columns", makeColsUnformatted(cols));
+    builder.put("columns", createColumnsInfo(cols, colStats));
 
     if (isExt) {
       if (part != null) {
@@ -203,46 +204,162 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       else {
         builder.put("tableInfo", tbl.getTTable());
       }
-      if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
-        builder.put("primaryKeyInfo", pkInfo);
+      if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo())) {
+        builder.put("primaryKeyInfo", tbl.getPrimaryKeyInfo());
       }
-      if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
-        builder.put("foreignKeyInfo", fkInfo);
+      if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo())) {
+        builder.put("foreignKeyInfo", tbl.getForeignKeyInfo());
       }
-      if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
-        builder.put("uniqueConstraintInfo", ukInfo);
+      if (UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo())) {
+        builder.put("uniqueConstraintInfo", tbl.getUniqueKeyInfo());
       }
-      if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
-        builder.put("notNullConstraintInfo", nnInfo);
+      if (NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint())) {
+        builder.put("notNullConstraintInfo", tbl.getNotNullConstraint());
       }
-      if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
-        builder.put("defaultConstraintInfo", dInfo);
+      if (DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+        builder.put("defaultConstraintInfo", tbl.getDefaultConstraint());
       }
-      if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
-        builder.put("checkConstraintInfo", cInfo);
+      if (CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
+        builder.put("checkConstraintInfo", tbl.getCheckConstraint());
       }
-      if(storageHandlerInfo != null) {
-        builder.put("storageHandlerInfo", storageHandlerInfo.toString());
+      if (tbl.getStorageHandlerInfo() != null) {
+        builder.put("storageHandlerInfo", tbl.getStorageHandlerInfo().toString());
       }
     }
 
     asJson(out, builder.build());
   }
 
-  private List<Map<String, Object>> makeColsUnformatted(List<FieldSchema> cols) {
+  private List<Map<String, Object>> createColumnsInfo(List<FieldSchema> columns,
+      List<ColumnStatisticsObj> columnStatisticsList) {
     ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
-    for (FieldSchema col : cols) {
-      res.add(makeOneColUnformatted(col));
+    for (FieldSchema column : columns) {
+      ColumnStatisticsData statistics = getStatistics(column, columnStatisticsList);
+      res.add(createColumnInfo(column, statistics));
     }
     return res;
   }
 
-  private Map<String, Object> makeOneColUnformatted(FieldSchema col) {
-    return MapBuilder.create()
-        .put("name", col.getName())
-        .put("type", col.getType())
-        .put("comment", col.getComment())
+  private ColumnStatisticsData getStatistics(FieldSchema column, List<ColumnStatisticsObj> columnStatisticsList) {
+    for (ColumnStatisticsObj columnStatistics : columnStatisticsList) {
+      if (column.getName().equals(columnStatistics.getColName())) {
+        return columnStatistics.getStatsData();
+      }
+    }
+
+    return null;
+  }
+
+  private Map<String, Object> createColumnInfo(FieldSchema column, ColumnStatisticsData statistics) {
+    Map<String, Object> result = MapBuilder.create()
+        .put(COLUMN_NAME, column.getName())
+        .put(COLUMN_TYPE, column.getType())
+        .put(COLUMN_COMMENT, column.getComment())
         .build();
+
+    if (statistics != null) {
+      if (statistics.isSetBinaryStats()) {
+        if (statistics.getBinaryStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getBinaryStats().getNumNulls());
+        }
+        if (statistics.getBinaryStats().isSetAvgColLen()) {
+          result.put(COLUMN_AVG_LENGTH, statistics.getBinaryStats().getAvgColLen());
+        }
+        if (statistics.getBinaryStats().isSetMaxColLen()) {
+          result.put(COLUMN_MAX_LENGTH, statistics.getBinaryStats().getMaxColLen());
+        }
+      } else if (statistics.isSetStringStats()) {
+        if (statistics.getStringStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getStringStats().getNumNulls());
+        }
+        if (statistics.getStringStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getStringStats().getNumDVs());
+        }
+        if (statistics.getStringStats().isSetAvgColLen()) {
+          result.put(COLUMN_AVG_LENGTH, statistics.getStringStats().getAvgColLen());
+        }
+        if (statistics.getStringStats().isSetMaxColLen()) {
+          result.put(COLUMN_MAX_LENGTH, statistics.getStringStats().getMaxColLen());
+        }
+      } else if (statistics.isSetBooleanStats()) {
+        if (statistics.getBooleanStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getBooleanStats().getNumNulls());
+        }
+        if (statistics.getBooleanStats().isSetNumTrues()) {
+          result.put(COLUMN_NUM_TRUES, statistics.getBooleanStats().getNumTrues());
+        }
+        if (statistics.getBooleanStats().isSetNumFalses()) {
+          result.put(COLUMN_NUM_FALSES, statistics.getBooleanStats().getNumFalses());
+        }
+      } else if (statistics.isSetDecimalStats()) {
+        if (statistics.getDecimalStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getLowValue()));
+        }
+        if (statistics.getDecimalStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getHighValue()));
+        }
+        if (statistics.getDecimalStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getDecimalStats().getNumNulls());
+        }
+        if (statistics.getDecimalStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDecimalStats().getNumDVs());
+        }
+      } else if (statistics.isSetDoubleStats()) {
+        if (statistics.getDoubleStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, statistics.getDoubleStats().getLowValue());
+        }
+        if (statistics.getDoubleStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, statistics.getDoubleStats().getHighValue());
+        }
+        if (statistics.getDoubleStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getDoubleStats().getNumNulls());
+        }
+        if (statistics.getDoubleStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDoubleStats().getNumDVs());
+        }
+      } else if (statistics.isSetLongStats()) {
+        if (statistics.getLongStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, statistics.getLongStats().getLowValue());
+        }
+        if (statistics.getLongStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, statistics.getLongStats().getHighValue());
+        }
+        if (statistics.getLongStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getLongStats().getNumNulls());
+        }
+        if (statistics.getLongStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getLongStats().getNumDVs());
+        }
+      } else if (statistics.isSetDateStats()) {
+        if (statistics.getDateStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getDateStats().getLowValue()));
+        }
+        if (statistics.getDateStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getDateStats().getHighValue()));
+        }
+        if (statistics.getDateStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getDateStats().getNumNulls());
+        }
+        if (statistics.getDateStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDateStats().getNumDVs());
+        }
+      } else if (statistics.isSetTimestampStats()) {
+        if (statistics.getTimestampStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getTimestampStats().getLowValue()));
+        }
+        if (statistics.getTimestampStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getTimestampStats().getHighValue()));
+        }
+        if (statistics.getTimestampStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getTimestampStats().getNumNulls());
+        }
+        if (statistics.getTimestampStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getTimestampStats().getNumDVs());
+        }
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -297,11 +414,11 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     builder.put("location", tblLoc);
     builder.put("inputFormat", inputFormattCls);
     builder.put("outputFormat", outputFormattCls);
-    builder.put("columns", makeColsUnformatted(tbl.getCols()));
+    builder.put("columns", createColumnsInfo(tbl.getCols(), new ArrayList<ColumnStatisticsObj>()));
 
     builder.put("partitioned", tbl.isPartitioned());
     if (tbl.isPartitioned()) {
-      builder.put("partitionColumns", makeColsUnformatted(tbl.getPartCols()));
+      builder.put("partitionColumns", createColumnsInfo(tbl.getPartCols(), new ArrayList<ColumnStatisticsObj>()));
     }
     if(tbl.getTableType() != TableType.VIRTUAL_VIEW) {
       //tbl.getPath() is null for views
@@ -491,10 +608,13 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
+    if (null != managedLocation) {
+      builder.put("managedLocation", managedLocation);
+    }
     if (null != ownerName) {
       builder.put("owner", ownerName);
     }

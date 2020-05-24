@@ -21,13 +21,23 @@ package org.apache.hive.hcatalog.data.schema;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatException;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import org.junit.Test;
 
 
-public class TestHCatSchema extends TestCase {
+/**
+ *
+ * TestHCatSchema.
+ */
+public class TestHCatSchema {
+  @Test
   public void testCannotAddFieldMoreThanOnce() throws HCatException {
     List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
     fieldSchemaList.add(new HCatFieldSchema("name", HCatFieldSchema.Type.STRING, "What's your handle?"));
@@ -60,6 +70,7 @@ public class TestHCatSchema extends TestCase {
     assertEquals(2, schema.getFields().size());
   }
 
+  @Test
   public void testHashCodeEquals() throws HCatException {
     HCatFieldSchema memberID1 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
     HCatFieldSchema memberID2 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
@@ -75,6 +86,7 @@ public class TestHCatSchema extends TestCase {
     assertTrue("Expected hash codes to be equal", memberID1.hashCode() == memberID2.hashCode());
   }
 
+  @Test
   public void testCannotInstantiateSchemaWithRepeatedFieldNames() throws HCatException {
     List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
 
@@ -94,6 +106,7 @@ public class TestHCatSchema extends TestCase {
       assertTrue(iae.getMessage().contains("Field named memberID already exists"));
     }
   }
+  @Test
   public void testRemoveAddField() throws HCatException {
     List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
 
@@ -115,6 +128,7 @@ public class TestHCatSchema extends TestCase {
   // HIVE-5336. Re-number the position after remove such that:
   // (1) getPosition on a column always returns a value between 0..schema.size()-1
   // (2) getPosition() on 2 different columns should never give the same value.
+  @Test
   public void testRemoveAddField2() throws HCatException {
     List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
     HCatFieldSchema memberIDField = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "id as number");

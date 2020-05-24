@@ -32,10 +32,10 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.FsType;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.ql.QTestSystemProperties;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import com.google.common.base.Splitter;
@@ -47,11 +47,6 @@ public abstract class AbstractCliConfig {
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
   private static final Logger LOG = LoggerFactory.getLogger(AbstractCliConfig.class);
 
-  enum MetastoreType {
-    sql
-  }
-
-  private MetastoreType metastoreType = MetastoreType.sql;
   private String queryFile;
   private String queryFileRegex;
   private String queryDirectory;
@@ -76,7 +71,7 @@ public abstract class AbstractCliConfig {
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
     cliAdapter = adapter;
-    clusterType = MiniClusterType.none;
+    clusterType = MiniClusterType.NONE;
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
@@ -135,7 +130,7 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  protected void excludeQuery(String qFile) {
+  private void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
 
@@ -244,7 +239,8 @@ public abstract class AbstractCliConfig {
     for (String qFileName : excludedQueryFileNames) {
       // in case of running as ptest, exclusions should be respected,
       // because test drivers receive every qfiles regardless of exclusions
-      if ("hiveptest".equals(System.getProperty("user.name")) || !isQFileSpecified()) {
+      if ("hiveptest".equals(System.getProperty("user.name")) || !isQFileSpecified()
+          || QTestSystemProperties.shouldForceExclusions()) {
         testFiles.remove(new File(queryDir, qFileName));
       }
     }
@@ -372,6 +368,7 @@ public abstract class AbstractCliConfig {
     if (clusterType == null) {
       throw new RuntimeException("clustertype cant be null");
     }
+    this.setFsType(clusterType.getDefaultFsType());
   }
 
   protected FsType getFsType() {
@@ -398,23 +395,6 @@ public abstract class AbstractCliConfig {
     } catch (Exception e) {
       throw new RuntimeException("unable to build adapter", e);
     }
-  }
-
-  protected void setMetastoreType(MetastoreType mt) {
-    String metaStoreTypeProperty = getSysPropValue("metaStoreType");
-    if (metaStoreTypeProperty != null) {
-      if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
-        metastoreType = MetastoreType.sql;
-      } else {
-        throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
-      }
-    } else {
-      metastoreType = mt;
-    }
-  }
-
-  public MetastoreType getMetastoreType() {
-    return metastoreType;
   }
 
   public String getQueryDirectory() {

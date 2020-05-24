@@ -21,14 +21,16 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.testutil.BaseScalarUdfTest;
 import org.apache.hadoop.hive.ql.testutil.DataBuilder;
 import org.apache.hadoop.hive.ql.testutil.OperatorTestUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class TestGenericUDFConcat extends BaseScalarUdfTest {
 
@@ -59,14 +61,20 @@ public class TestGenericUDFConcat extends BaseScalarUdfTest {
   }
 
   @Override
-  public List<ExprNodeDesc> getExpressionList() throws UDFArgumentException {
+  public List<ExprNodeDesc> getExpressionList() throws Exception {
     ExprNodeDesc expr1 = OperatorTestUtils.getStringColumn("a");
     ExprNodeDesc expr2 = OperatorTestUtils.getStringColumn("b");
-    ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
+    ExprNodeDesc exprDesc2 = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+        .getFuncExprNodeDesc("concat", expr1, expr2);
     List<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
     earr.add(expr1);
     earr.add(exprDesc2);
     return earr;
+  }
+
+  @Test
+  public void testDummy() {
+    assertTrue(true);
   }
 
 }

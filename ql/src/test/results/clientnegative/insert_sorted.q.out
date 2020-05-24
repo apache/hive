@@ -20,4 +20,4 @@ PREHOOK: query: create table acid_insertsort(a int, b varchar(128)) clustered by
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_insertsort
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:Table default.acid_insertsort cannot support full ACID functionality since it is sorted.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Table default.acid_insertsort cannot support full ACID functionality since it is sorted.)

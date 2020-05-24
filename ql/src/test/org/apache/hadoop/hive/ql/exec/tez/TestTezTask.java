@@ -17,23 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import org.apache.hadoop.yarn.api.records.URL;
-import org.apache.hive.common.util.Ref;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -50,12 +33,13 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.api.records.URL;
+import org.apache.hive.common.util.Ref;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
@@ -70,6 +54,29 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class TestTezTask {
 
@@ -92,12 +99,11 @@ public class TestTezTask {
     utils = mock(DagUtils.class);
     fs = mock(FileSystem.class);
     path = mock(Path.class);
-    when(path.getFileSystem(any(Configuration.class))).thenReturn(fs);
-    when(utils.getTezDir(any(Path.class))).thenReturn(path);
+    when(path.getFileSystem(any())).thenReturn(fs);
+    when(utils.getTezDir(any())).thenReturn(path);
     when(
-        utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class),
-            any(FileSystem.class), any(Context.class),
-            anyBoolean(), any(TezWork.class), any(VertexType.class), any(Map.class))).thenAnswer(
+        utils.createVertex(any(), any(BaseWork.class), any(Path.class),
+            any(TezWork.class), anyMap())).thenAnswer(
         new Answer<Vertex>() {
 
           @Override
@@ -108,7 +114,7 @@ public class TestTezTask {
           }
         });
 
-    when(utils.createEdge(any(JobConf.class), any(Vertex.class), any(Vertex.class),
+    when(utils.createEdge(any(), any(Vertex.class), any(Vertex.class),
             any(TezEdgeProperty.class), any(BaseWork.class), any(TezWork.class)))
             .thenAnswer(new Answer<Edge>() {
           @Override
@@ -133,14 +139,14 @@ public class TestTezTask {
 
     op = mock(Operator.class);
 
-    LinkedHashMap<String, Operator<? extends OperatorDesc>> map
+    Map<String, Operator<? extends OperatorDesc>> map
       = new LinkedHashMap<String,Operator<? extends OperatorDesc>>();
     map.put("foo", op);
     mws[0].setAliasToWork(map);
     mws[1].setAliasToWork(map);
 
-    LinkedHashMap<Path, ArrayList<String>> pathMap = new LinkedHashMap<>();
-    ArrayList<String> aliasList = new ArrayList<String>();
+    Map<Path, List<String>> pathMap = new LinkedHashMap<>();
+    List<String> aliasList = new ArrayList<String>();
     aliasList.add("foo");
     pathMap.put(new Path("foo"), aliasList);
 
@@ -220,31 +226,80 @@ public class TestTezTask {
   @Test
   public void testSubmit() throws Exception {
     DAG dag = DAG.create("test");
-    task.submit(conf, dag, Ref.from(sessionState));
+    task.submit(dag, Ref.from(sessionState));
     // validate close/reopen
     verify(sessionState, times(1)).reopen();
     verify(session, times(2)).submitDAG(any(DAG.class));
   }
 
   @Test
+  public void testSubmitOnNonPoolSession() throws Exception {
+    DAG dag = DAG.create("test");
+
+    // Destroy session incase of non-pool tez session
+    TezSessionState tezSessionState = mock(TezSessionState.class);
+    TezClient tezClient = mock(TezClient.class);
+    when(tezSessionState.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
+    when(tezSessionState.getSession()).thenReturn(tezClient);
+    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    doNothing().when(tezSessionState).destroy();
+    boolean isException = false;
+    try {
+      task.submit(dag, Ref.from(tezSessionState));
+    } catch (Exception e) {
+      isException = true;
+      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionState, times(2)).reopen();
+      verify(tezSessionState, times(1)).destroy();
+      verify(tezSessionState, times(0)).returnToSessionManager();
+    }
+    assertTrue(isException);
+  }
+
+  @Test
+  public void testSubmitOnPoolSession() throws Exception {
+    DAG dag = DAG.create("test");
+    // Move session to TezSessionPool, reopen will handle it
+    SampleTezSessionState tezSessionPoolSession = mock(SampleTezSessionState.class);
+    TezClient tezClient = mock(TezClient.class);
+    when(tezSessionPoolSession.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
+    doNothing().when(tezSessionPoolSession).returnToSessionManager();
+    when(tezSessionPoolSession.getSession()).thenReturn(tezClient);
+    when(tezSessionPoolSession.isDefault()).thenReturn(true);
+    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    boolean isException = false;
+    try {
+      task.submit(dag, Ref.from(tezSessionPoolSession));
+    } catch (Exception e) {
+      isException = true;
+      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionPoolSession, times(2)).reopen();
+      verify(tezSessionPoolSession, times(0)).destroy();
+      verify(tezSessionPoolSession, times(1)).returnToSessionManager();
+    }
+    assertTrue(isException);
+  }
+
+  @Test
   public void testClose() throws HiveException {
     task.close(work, 0, null);
-    verify(op, times(4)).jobClose(any(Configuration.class), eq(true));
+    verify(op, times(4)).jobClose(any(), eq(true));
   }
 
   @Test
   public void testExistingSessionGetsStorageHandlerResources() throws Exception {
-    final String[] inputOutputJars = new String[] {"file:///tmp/foo.jar"};
+    final String jarFilePath = "file:///tmp/foo.jar";
+    final String[] inputOutputJars = new String[] {jarFilePath};
     LocalResource res = createResource(inputOutputJars[0]);
-    final List<LocalResource> resources = Collections.singletonList(res);
+    final Map<String, LocalResource> resources = Collections.singletonMap(jarFilePath, res);
 
-    when(utils.localizeTempFiles(anyString(), any(Configuration.class), eq(inputOutputJars),
+    when(utils.localizeTempFiles(anyString(), any(), eq(inputOutputJars),
         any(String[].class))).thenReturn(resources);
     when(sessionState.isOpen()).thenReturn(true);
     when(sessionState.isOpening()).thenReturn(false);
     task.ensureSessionHasResources(sessionState, inputOutputJars);
     // TODO: ideally we should have a test for session itself.
-    verify(sessionState).ensureLocalResources(any(Configuration.class), eq(inputOutputJars));
+    verify(sessionState).ensureLocalResources(any(), eq(inputOutputJars));
   }
 
   private static LocalResource createResource(String url) {

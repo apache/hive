@@ -157,6 +157,8 @@ public class FetchOperator implements Serializable {
     LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
+    ensureCorrectSchemaEvolutionConfigs(job);
+
     if (isStatReader) {
       outputOI = work.getStatRowOI();
       return;
@@ -214,7 +216,6 @@ public class FetchOperator implements Serializable {
    */
   private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
-  @SuppressWarnings("unchecked")
   public static InputFormat getInputFormatFromCache(
       Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
@@ -317,9 +318,22 @@ public class FetchOperator implements Serializable {
     }
   }
 
+  private void ensureCorrectSchemaEvolutionConfigs(JobConf conf) {
+    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+    boolean isForcePositionalEvolution =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION);
+
+    if (!isSchemaEvolution && isForcePositionalEvolution) {
+      LOG.warn(
+          "invalid schema evolution ({}) and force positional evolution ({}) pair, falling back to disabling both",
+          isSchemaEvolution, isForcePositionalEvolution);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION, false);
+    }
+  }
+
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (!iterSplits.hasNext()) {
-      FetchInputFormatSplit[] splits = getNextSplits();
+      List<FetchInputFormatSplit> splits = getNextSplits();
       if (splits == null) {
         return null;
       }
@@ -335,7 +349,7 @@ public class FetchOperator implements Serializable {
       if (isPartitioned) {
         row[1] = createPartValue(currDesc, partKeyOI);
       }
-      iterSplits = Arrays.asList(splits).iterator();
+      iterSplits = splits.iterator();
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
@@ -348,7 +362,6 @@ public class FetchOperator implements Serializable {
 
     final FetchInputFormatSplit target = iterSplits.next();
 
-    @SuppressWarnings("unchecked")
     final RecordReader<WritableComparable, Writable> reader = target.getRecordReader(job);
     if (hasVC || work.getSplitSample() != null) {
       currRecReader = new HiveRecordReader<WritableComparable, Writable>(reader, job) {
@@ -374,7 +387,7 @@ public class FetchOperator implements Serializable {
     return currRecReader;
   }
 
-  protected FetchInputFormatSplit[] getNextSplits() throws Exception {
+  private List<FetchInputFormatSplit> getNextSplits() throws Exception {
     while (getNextPath()) {
       // not using FileInputFormat.setInputPaths() here because it forces a connection to the
       // default file system - which may or may not be online during pure metadata operations
@@ -437,7 +450,7 @@ public class FetchOperator implements Serializable {
       if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_IN_TEST)) {
         Collections.sort(inputSplits, new FetchInputFormatSplitComparator());
       }
-      return inputSplits.toArray(new FetchInputFormatSplit[inputSplits.size()]);
+      return inputSplits;
     }
 
     return null;
@@ -480,7 +493,7 @@ public class FetchOperator implements Serializable {
 
   }
   private ValidWriteIdList extractValidWriteIdList() {
-    if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
+    if (currDesc.getTableName() == null || !org.apache.commons.lang3.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);
       return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
@@ -663,7 +676,6 @@ public class FetchOperator implements Serializable {
    */
   public void setupContext(List<Path> paths) {
     this.iterPath = paths.iterator();
-    List<PartitionDesc> partitionDescs;
     if (!isPartitioned) {
       this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
     } else {
@@ -689,7 +701,6 @@ public class FetchOperator implements Serializable {
       }
       partKeyOI = getPartitionKeyOI(tableDesc);
 
-      PartitionDesc partDesc = new PartitionDesc(tableDesc, null);
       List<PartitionDesc> listParts = work.getPartDesc();
       // Chose the table descriptor if none of the partitions is present.
       // For eg: consider the query:

@@ -33,4 +33,4 @@ PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db
 PREHOOK: Output: database:test_db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Database test_db is not empty. One or more tables exist.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Database test_db is not empty. One or more tables exist.)

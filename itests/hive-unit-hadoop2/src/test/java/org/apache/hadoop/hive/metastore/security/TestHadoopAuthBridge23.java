@@ -41,7 +41,6 @@ import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.thrift.transport.TTransportFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,8 +93,7 @@ public class TestHadoopAuthBridge23 {
         super();
       }
       @Override
-      public TTransportFactory createTransportFactory(Map<String, String> saslProps)
-      throws TTransportException {
+      public TSaslServerTransport.Factory createSaslServerTransportFactory(Map<String, String> saslProps) {
         TSaslServerTransport.Factory transFactory =
           new TSaslServerTransport.Factory();
         transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
@@ -103,7 +101,7 @@ public class TestHadoopAuthBridge23 {
             saslProps,
             new SaslDigestCallbackHandler(secretManager));
 
-        return new TUGIAssumingTransportFactory(transFactory, realUgi);
+        return transFactory;
       }
 
 

@@ -18,12 +18,17 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestTypeInfoUtils extends TestCase {
+/**
+ * TypeInfoUtils Test.
+ */
+public class TestTypeInfoUtils {
 
   static void parseTypeString(String typeString, boolean exceptionExpected) {
     boolean caughtException = false;
@@ -35,6 +40,7 @@ public class TestTypeInfoUtils extends TestCase {
     assertEquals("parsing typestring " + typeString, exceptionExpected, caughtException);
   }
 
+  @Test
   public void testTypeInfoParser() {
     String[] validTypeStrings = {
         "int",
@@ -65,6 +71,7 @@ public class TestTypeInfoUtils extends TestCase {
     }
   }
 
+  @Test
   public void testQualifiedTypeNoParams() {
     boolean caughtException = false;
     try {
@@ -94,6 +101,7 @@ public class TestTypeInfoUtils extends TestCase {
     }
   }
 
+  @Test
   public void testDecimal() {
     DecimalTestCase[] testCases = {
         new DecimalTestCase("decimal", 10, 0),

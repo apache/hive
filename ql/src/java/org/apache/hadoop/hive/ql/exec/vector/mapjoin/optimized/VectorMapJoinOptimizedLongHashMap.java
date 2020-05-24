@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
@@ -92,8 +93,8 @@ public class VectorMapJoinOptimizedLongHashMap
         throw new RuntimeException("Unexpected key type " + hashMap.hashTableKeyType);
       }
       keyBinarySortableDeserializeRead =
-          new BinarySortableDeserializeRead(
-              new TypeInfo[] {integerTypeInfo}, false);
+          BinarySortableDeserializeRead.with(
+              new TypeInfo[] {integerTypeInfo}, false, hashMap.longCommon.getTableDesc().getProperties());
     }
 
     private boolean readNonMatchedLongKey(ByteSegmentRef keyRef) throws HiveException {
@@ -184,9 +185,9 @@ public class VectorMapJoinOptimizedLongHashMap
 
   public VectorMapJoinOptimizedLongHashMap(
         boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-        MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
+        MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter, TableDesc tableDesc) {
     super(originalTableContainer, hashMapRowGetter);
     this.hashTableKeyType = hashTableKeyType;
-    longCommon =  new VectorMapJoinOptimizedLongCommon(minMaxEnabled, isOuterJoin, hashTableKeyType);
+    longCommon =  new VectorMapJoinOptimizedLongCommon(minMaxEnabled, isOuterJoin, hashTableKeyType, tableDesc);
   }
 }

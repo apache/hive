@@ -16,7 +16,7 @@
  */
 package org.apache.hadoop.hive.accumulo.columns;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 
 import com.google.common.base.Preconditions;

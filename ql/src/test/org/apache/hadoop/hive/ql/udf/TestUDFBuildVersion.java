@@ -21,12 +21,15 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveVersionInfo;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Unit Test Case for UDFBuildVersion.
  */
-public class TestUDFBuildVersion extends TestCase {
+public class TestUDFBuildVersion {
+  @Test
   public void testVersion() {
     UDFBuildVersion udf = new UDFBuildVersion();
     Text result = udf.evaluate();

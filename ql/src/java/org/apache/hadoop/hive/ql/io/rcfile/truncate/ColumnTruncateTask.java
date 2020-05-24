@@ -20,15 +20,15 @@ package org.apache.hadoop.hive.ql.io.rcfile.truncate;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -60,9 +60,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
   protected HadoopJobExecHelper jobExecHelper;
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan,
-      DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, ColumnTruncateTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
@@ -74,11 +73,11 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
   boolean success = true;
 
-  @Override
   /**
    * start a new map-reduce job to do the truncation, almost the same as ExecDriver.
    */
-  public int execute(DriverContext driverContext) {
+  @Override
+  public int execute() {
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
         BucketizedHiveInputFormat.class.getName());
     success = true;
@@ -86,7 +85,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     job.setOutputFormat(HiveOutputFormatImpl.class);
     job.setMapperClass(work.getMapperClass());
 
-    Context ctx = driverContext.getCtx();
+    Context ctx = context;
     boolean ctxCreated = false;
     try {
       if (ctx == null) {
@@ -107,6 +106,9 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     // zero reducers
     job.setNumReduceTasks(0);
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+    job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
     if (work.getMinSplitSize() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work
@@ -157,8 +159,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      job.set(MRJobConfig.JOB_NAME,
-          jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME, jobName != null ? jobName
+          : "JOB" + ThreadLocalRandom.current().nextInt());
     }
 
     try {
@@ -193,7 +195,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     } catch (Exception e) {
       String mesg = rj != null ? ("Ended Job = " + rj.getJobID()) : "Job Submission failed";
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       LOG.error(mesg, org.apache.hadoop.util.StringUtils.stringifyException(e));
       setException(e);
 

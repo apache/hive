@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -226,7 +225,7 @@ public class SparkPlan {
 
   public List<SparkTran> getParents(SparkTran tran) {
     if (!invertedTransGraph.containsKey(tran)) {
-      return new ArrayList<SparkTran>();
+      return Collections.emptyList();
     }
 
     return invertedTransGraph.get(tran);
@@ -234,7 +233,7 @@ public class SparkPlan {
 
   public List<SparkTran> getChildren(SparkTran tran) {
     if (!transGraph.containsKey(tran)) {
-      return new ArrayList<SparkTran>();
+      return Collections.emptyList();
     }
 
     return transGraph.get(tran);

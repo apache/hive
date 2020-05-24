@@ -79,7 +79,7 @@ abstract class Rows implements Iterator {
     if (primaryKeys[col] == null) {
       try {
         // this doesn't always work, since some JDBC drivers (e.g.,
-        // Oracle's) return a blank string from getTableName.
+        // Oracle's) return a blank string from getDbTableName.
         String table = rsMeta.getTableName(col + 1);
         String column = rsMeta.getColumnName(col + 1);
 

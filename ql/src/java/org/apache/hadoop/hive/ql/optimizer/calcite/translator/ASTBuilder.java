@@ -155,17 +155,15 @@ public class ASTBuilder {
     return b.node();
   }
 
-  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
-      boolean semiJoin) {
+  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {
     ASTBuilder b = null;
 
     switch (joinType) {
+    case SEMI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
+      break;
     case INNER:
-      if (semiJoin) {
-        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
-      } else {
-        b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
-      }
+      b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
       break;
     case LEFT:
       b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN, "TOK_LEFTOUTERJOIN");
@@ -245,6 +243,7 @@ public class ASTBuilder {
     case INTERVAL_SECOND:
     case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
+    case ROW:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
       }
@@ -366,8 +365,9 @@ public class ASTBuilder {
       type = HiveParser.TOK_NULL;
       break;
 
-    //binary type should not be seen.
+    //binary, ROW type should not be seen.
     case BINARY:
+    case ROW:
     default:
       throw new RuntimeException("Unsupported Type: " + sqlType);
     }

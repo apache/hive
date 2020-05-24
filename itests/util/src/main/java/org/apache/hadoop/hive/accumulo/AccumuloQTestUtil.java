@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.accumulo;
 
 import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**

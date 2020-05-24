@@ -53,7 +53,6 @@ CREATE TABLE flights_tiny_orc_partitioned_date (
 PARTITIONED BY (fl_date DATE)
 STORED AS ORC;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_orc_partitioned_date
 PARTITION (fl_date)
@@ -97,7 +96,6 @@ CREATE TABLE flights_tiny_orc_partitioned_timestamp (
 PARTITIONED BY (fl_time TIMESTAMP)
 STORED AS ORC;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_orc_partitioned_timestamp
 PARTITION (fl_time)
@@ -166,7 +164,6 @@ CREATE TABLE flights_tiny_parquet_partitioned_date (
 PARTITIONED BY (fl_date DATE)
 STORED AS PARQUET;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_parquet_partitioned_date
 PARTITION (fl_date)
@@ -210,7 +207,6 @@ CREATE TABLE flights_tiny_parquet_partitioned_timestamp (
 PARTITIONED BY (fl_time TIMESTAMP)
 STORED AS PARQUET;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_parquet_partitioned_timestamp
 PARTITION (fl_time)

@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -231,17 +232,43 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
+  public void testShowCompactions() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    showCompactResponse.getCompacts().forEach(e -> {
+      assertEquals(dbName, e.getDbname());
+      assertEquals(tableName, e.getTablename());
+      assertEquals(partitionName, e.getPartitionname());
+      assertEquals("initiated", e.getState());
+      assertEquals(CompactionType.MINOR, e.getType());
+      assertEquals(1, e.getId());
+    });
+  }
+
+  @Test
   public void testMarkFailed() throws Exception {
-    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
-    rqst.setPartitionname("ds=today");
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String workerId = "fred";
+    final String status = "failed";
+    final String errorMessage = "Dummy error";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean().size());
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    CompactionInfo ci = txnHandler.findNextToCompact(workerId);
     assertNotNull(ci);
 
     assertEquals(0, txnHandler.findReadyToClean().size());
+    ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
-    assertNull(txnHandler.findNextToCompact("fred"));
+    assertNull(txnHandler.findNextToCompact(workerId));
     boolean failedCheck = txnHandler.checkFailedCompactions(ci);
     assertFalse(failedCheck);
     try {
@@ -261,23 +288,37 @@ public class TestCompactionTxnHandler {
 
     // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
     for (int i = 1 ; i <  conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
-      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
     // Now checkFailedCompactions() will return true
     assertTrue(txnHandler.checkFailedCompactions(ci));
-
+    // Check the output of show compactions
+    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
     // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED is enough for this.
     // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
     // so that it produces multiple queries. For that we need at least 290.
     for (int i = 0 ; i < 300; i++) {
-      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
+    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     txnHandler.purgeCompactionHistory();
   }
 
+  private void checkShowCompaction(String dbName, String tableName, String partition,
+      String status, String errorMessage) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    showCompactResponse.getCompacts().forEach(e -> {
+      assertEquals(dbName, e.getDbname());
+      assertEquals(tableName, e.getTablename());
+      assertEquals(partition, e.getPartitionname());
+      assertEquals(status, e.getState());
+      assertEquals(errorMessage, e.getErrorMessage());
+    });
+  }
+
   private void addFailedCompaction(String dbName, String tableName, CompactionType type,
-      String partitionName) throws MetaException {
+      String partitionName, String errorMessage) throws MetaException {
     CompactionRequest rqst;
     CompactionInfo ci;
     rqst = new CompactionRequest(dbName, tableName, type);
@@ -285,6 +326,7 @@ public class TestCompactionTxnHandler {
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
+    ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
   }
 
@@ -368,7 +410,7 @@ public class TestCompactionTxnHandler {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
     assertEquals(0, txnHandler.numLocksInLockTable());
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
     boolean sawMyTable = false, sawYourTable = false;
     for (CompactionInfo ci : potentials) {
@@ -379,6 +421,24 @@ public class TestCompactionTxnHandler {
     }
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
+
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    assertEquals(2, potentials.size());
+
+    //simulate auto-compaction interval
+    TimeUnit.SECONDS.sleep(2);
+
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    assertEquals(0, potentials.size());
+
+    //simulate prev failed compaction
+    CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markFailed(ci);
+
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    assertEquals(1, potentials.size());
   }
 
   // TODO test changes to mark cleaned to clean txns and txn_components
@@ -452,9 +512,14 @@ public class TestCompactionTxnHandler {
     // Check that we are cleaning up the empty aborted transactions
     GetOpenTxnsResponse txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
-    txnHandler.cleanEmptyAbortedTxns();
+    // Create one aborted for low water mark
+    txnid = openTxn();
+    txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
-    assertEquals(2, txnList.getOpen_txnsSize());
+    assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");
@@ -469,9 +534,13 @@ public class TestCompactionTxnHandler {
     txnHandler.markCleaned(ci);
 
     txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
-    txnHandler.cleanEmptyAbortedTxns();
+    // The open txn will became the low water mark
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
   }
 
   @Test
@@ -505,7 +574,7 @@ public class TestCompactionTxnHandler {
     txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000, -1L);
     assertEquals(2, potentials.size());
     SortedSet<CompactionInfo> sorted = new TreeSet<CompactionInfo>(potentials);
 
@@ -523,7 +592,6 @@ public class TestCompactionTxnHandler {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

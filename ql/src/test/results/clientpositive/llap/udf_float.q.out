@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION float
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION float
+POSTHOOK: type: DESCFUNCTION
+float(x) - converts it's parameter to float
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED float
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED float
+POSTHOOK: type: DESCFUNCTION
+float(x) - converts it's parameter to float
+Synonyms: udftofloat
+- x is NULL -> NULL
+- byte, short, integer, long, float, double, decimal, timestamp:
+  x fits into the type float -> x
+  undefined otherwise
+- boolean:
+  true  -> 1.0
+  false -> 0.0
+- string:
+  x is a valid float -> x
+  NULL otherwise
+Example:
+   > SELECT float(true);
+  1.0
+Function class:org.apache.hadoop.hive.ql.udf.UDFToFloat
+Function type:BUILTIN

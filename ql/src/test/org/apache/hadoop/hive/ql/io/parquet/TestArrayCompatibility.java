@@ -28,10 +28,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.apache.parquet.io.api.RecordConsumer;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Types;
 
-import static org.apache.parquet.schema.OriginalType.LIST;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.DOUBLE;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32;
@@ -123,7 +123,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
   public void testThriftPrimitiveInList() throws Exception {
     Path test = writeDirect("ThriftPrimitiveInList",
         Types.buildMessage()
-            .requiredGroup().as(LIST)
+            .requiredGroup().as(LogicalTypeAnnotation.listType())
                 .repeated(INT32).named("list_of_ints_tuple")
                 .named("list_of_ints")
             .named("ThriftPrimitiveInList"),
@@ -163,7 +163,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
 
     Path test = writeDirect("ThriftSingleFieldGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .required(INT64).named("count")
                     .named("single_element_groups_tuple")
@@ -212,7 +212,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
   public void testAvroPrimitiveInList() throws Exception {
     Path test = writeDirect("AvroPrimitiveInList",
         Types.buildMessage()
-            .requiredGroup().as(LIST)
+            .requiredGroup().as(LogicalTypeAnnotation.listType())
                 .repeated(INT32).named("array")
                 .named("list_of_ints")
             .named("AvroPrimitiveInList"),
@@ -252,7 +252,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
 
     Path test = writeDirect("AvroSingleFieldGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .required(INT64).named("count")
                     .named("array")
@@ -304,7 +304,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
 
     Path test = writeDirect("SingleFieldGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .required(INT64).named("count")
                     .named("single_element_group")
@@ -355,7 +355,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
 
     Path test = writeDirect("MultiFieldGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .required(DOUBLE).named("latitude")
                     .required(DOUBLE).named("longitude")
@@ -411,7 +411,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
   public void testNewOptionalGroupInList() throws Exception {
     Path test = writeDirect("NewOptionalGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .optionalGroup()
                         .required(DOUBLE).named("latitude")
@@ -488,7 +488,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
   public void testNewRequiredGroupInList() throws Exception {
     Path test = writeDirect("NewRequiredGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .requiredGroup()
                         .required(DOUBLE).named("latitude")
@@ -561,7 +561,7 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
     // this matches the list structure that Hive writes
     Path test = writeDirect("HiveRequiredGroupInList",
         Types.buildMessage()
-            .optionalGroup().as(LIST)
+            .optionalGroup().as(LogicalTypeAnnotation.listType())
                 .repeatedGroup()
                     .requiredGroup()
                         .required(DOUBLE).named("latitude")

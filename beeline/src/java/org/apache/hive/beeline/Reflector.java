@@ -26,9 +26,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 class Reflector {
   private final BeeLine beeLine;
@@ -107,6 +109,16 @@ class Reflector {
     }
     if (toType == String.class) {
       return new String(ob.toString());
+    } else if (toType == Map.class) {
+      String[] vars = ob.toString().split(",");
+      Map<String, String> keyValMap = new HashMap<>();
+      for (String keyValStr : vars) {
+        String[] keyVal = keyValStr.trim().split("=", 2);
+        if (keyVal.length == 2) {
+          keyValMap.put(keyVal[0], keyVal[1]);
+        }
+      }
+      return keyValMap;
     } else if (toType == Byte.class || toType == byte.class) {
       return Byte.valueOf(ob.toString());
     } else if (toType == Character.class || toType == char.class) {

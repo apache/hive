@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Result;
@@ -52,14 +50,20 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
 /**
  * TestLazyHBaseObject is a test for the LazyHBaseXXX classes.
  */
-public class TestLazyHBaseObject extends TestCase {
+public class TestLazyHBaseObject {
   /**
    * Test the LazyMap class with Integer-to-String.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap1() throws SerDeException {
     // Map of Integer to String
     Text nullSequence = new Text("\\N");
@@ -122,6 +126,7 @@ public class TestLazyHBaseObject extends TestCase {
    * Test the LazyMap class with String-to-String.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap2() throws SerDeException {
     // Map of String to String
     Text nullSequence = new Text("\\N");
@@ -185,6 +190,7 @@ public class TestLazyHBaseObject extends TestCase {
    * map are stored in binary format using the appropriate LazyPrimitive objects.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap3() throws SerDeException {
 
     Text nullSequence = new Text("\\N");
@@ -352,8 +358,8 @@ public class TestLazyHBaseObject extends TestCase {
     hbaseCellMap = new LazyHBaseCellMap((LazyMapObjectInspector) oi);
     byte [] cfFloat = "cf-float".getBytes();
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) 1.0F),
-      Bytes.toBytes((float) 1.0F)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(1.0F),
+      Bytes.toBytes(1.0F)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     FloatWritable expectedFloatValue = new FloatWritable(1.0F);
@@ -363,8 +369,8 @@ public class TestLazyHBaseObject extends TestCase {
     assertEquals(expectedFloatValue, lazyPrimitive.getWritableObject());
 
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) Float.MIN_VALUE),
-      Bytes.toBytes((float) Float.MIN_VALUE)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(Float.MIN_VALUE),
+      Bytes.toBytes(Float.MIN_VALUE)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     expectedFloatValue = new FloatWritable(Float.MIN_VALUE);
@@ -374,8 +380,8 @@ public class TestLazyHBaseObject extends TestCase {
     assertEquals(expectedFloatValue, lazyPrimitive.getWritableObject());
 
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) Float.MAX_VALUE),
-      Bytes.toBytes((float) Float.MAX_VALUE)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(Float.MAX_VALUE),
+      Bytes.toBytes(Float.MAX_VALUE)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     expectedFloatValue = new FloatWritable(Float.MAX_VALUE);
@@ -456,6 +462,7 @@ public class TestLazyHBaseObject extends TestCase {
    * Hive fields and HBase columns.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow1() throws SerDeException {
     List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
@@ -578,6 +585,7 @@ public class TestLazyHBaseObject extends TestCase {
    * an HBase column family.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow2() throws SerDeException {
     // column family is mapped to Map<string,string>
     List<TypeInfo> fieldTypeInfos =
@@ -700,6 +708,7 @@ public class TestLazyHBaseObject extends TestCase {
    * are stored in binary format in HBase.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow3() throws SerDeException {
 
     List<TypeInfo> fieldTypeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
@@ -761,11 +770,11 @@ public class TestLazyHBaseObject extends TestCase {
         break;
 
       case 5:
-        value = Bytes.toBytes((float) 1.0F);
+        value = Bytes.toBytes(1.0F);
         break;
 
       case 6:
-        value = Bytes.toBytes((double) 1.0);
+        value = Bytes.toBytes(1.0);
         break;
 
       case 7:

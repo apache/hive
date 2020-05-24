@@ -105,7 +105,6 @@ from src
 insert overwrite table acid_uami_n1 select cast(key as int), cast(key as decimal(5,2)), value where key < 10
 insert overwrite table src_multi2_n1 select * where key > 10 and key < 20;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 -- Table with partition
 CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, b STRING, c STRING NOT NULL ENFORCED)
     PARTITIONED BY (p1 STRING, p2 INT NOT NULL DISABLE);
@@ -185,7 +184,6 @@ drop table tttemp;
 
 -- micro-managed table
 set hive.create.as.insert.only=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 create table part_mm_n1(key int not null enforced) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");

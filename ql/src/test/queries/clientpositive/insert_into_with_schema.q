@@ -49,7 +49,6 @@ select * from pageviews;
 
 INSERT INTO TABLE pageviews PARTITION (datestamp='2014-09-23',i)(userid,i,link) VALUES ('jsmith', 7, '7mail.com');
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23');
 INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24');

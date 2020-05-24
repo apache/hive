@@ -24,10 +24,13 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Perform metastore schema upgrade.
  */
 class SchemaToolTaskUpgrade extends SchemaToolTask {
+  private static final Logger LOG = LoggerFactory.getLogger(SchemaToolTaskUpgrade.class);
   private String fromVersion;
 
   @Override
@@ -38,14 +41,28 @@ class SchemaToolTaskUpgrade extends SchemaToolTask {
   }
 
   private void ensureFromVersion() throws HiveMetaException {
-    if (fromVersion != null) {
-      return;
+    MetaStoreConnectionInfo connectionInfo = schemaTool.getConnectionInfo(false);
+    String dbVersion = null;
+    try {
+      dbVersion = schemaTool.getMetaStoreSchemaInfo().getMetaStoreSchemaVersion(connectionInfo);
+    } catch (HiveMetaException e) {
+      LOG.info("Exception getting db version:" + e.getMessage());
+      LOG.info("Try to initialize db schema");
     }
 
-    // If null, then read from the metastore
-    MetaStoreConnectionInfo connectionInfo = schemaTool.getConnectionInfo(false);
-    fromVersion = schemaTool.getMetaStoreSchemaInfo().getMetaStoreSchemaVersion(connectionInfo);
-    if (fromVersion == null || fromVersion.isEmpty()) {
+    if (fromVersion != null) {
+      if (dbVersion != null && !fromVersion.equals(dbVersion)) {
+        throw new RuntimeException("The upgradeSchemaFrom version " + fromVersion + " and Metastore schema version " +
+                dbVersion + " are different.");
+      }
+      System.out.println("Upgrading from the user input version " + fromVersion);
+      return;
+    }
+    // fromVersion is null
+    if (dbVersion != null) {
+      fromVersion = dbVersion;
+    } else {
+      // both fromVersion and dbVersion are null
       throw new HiveMetaException("Schema version not stored in the metastore. " +
           "Metastore schema is too old or corrupt. Try specifying the version manually");
     }

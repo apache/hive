@@ -23,7 +23,6 @@ set hive.compute.splits.in.am=true;
 set tez.am.grouping.min-size=1000;
 set tez.am.grouping.max-size=50000;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.optimize.sort.dynamic.partition=false;
 set hive.merge.sparkfiles=false;
 

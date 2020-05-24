@@ -22,13 +22,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestHiveFileFormatUtils extends TestCase {
+/**
+ * TestHiveFileFormatUtils.
+ */
+public class TestHiveFileFormatUtils {
 
+  @Test
   public void testGetPartitionDescFromPathRecursively() throws IOException {
 
     PartitionDesc partDesc_3 = new PartitionDesc();

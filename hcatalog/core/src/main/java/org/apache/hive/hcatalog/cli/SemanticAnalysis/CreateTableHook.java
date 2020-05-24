@@ -19,17 +19,16 @@
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -73,7 +72,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       if (format.fillStorageFormat(child)) {
-        if (org.apache.commons.lang.StringUtils
+        if (org.apache.commons.lang3.StringUtils
             .isNotEmpty(format.getStorageHandler())) {
             return ast;
         }
@@ -132,7 +131,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks)
+              List<Task<?>> rootTasks)
     throws SemanticException {
 
     if (rootTasks.size() == 0) {
@@ -140,10 +139,10 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
       return;
     }
     Task<?> t = rootTasks.get(rootTasks.size() - 1);
-    if (!(t instanceof DDLTask2)) {
+    if (!(t instanceof DDLTask)) {
       return;
     }
-    DDLTask2 task = (DDLTask2)t;
+    DDLTask task = (DDLTask)t;
     DDLDesc d = task.getWork().getDDLDesc();
     if (!(d instanceof CreateTableDesc)) {
       return;
@@ -175,7 +174,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     }
 
     try {
-      Table table = context.getHive().newTable(desc.getTableName());
+      Table table = context.getHive().newTable(desc.getDbTableName());
       if (desc.getLocation() != null) {
         table.setDataLocation(new Path(desc.getLocation()));
       }

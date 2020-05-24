@@ -26,9 +26,16 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
 
-    // Check if these belong to the same task, and work with withinDagPriority
+    // Check if these belong to the same DAG, and work with withinDagPriority
     if (o1.getQueryId().equals(o2.getQueryId())) {
       // Same Query
+
+      if (fri1.getWithinDagPriority() == fri2.getWithinDagPriority()) {
+        // task_attempt within same vertex.
+        // Choose the attempt that was started earlier
+        return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
+      }
+
       // Within dag priority - lower values indicate higher priority.
       return Integer.compare(fri1.getWithinDagPriority(), fri2.getWithinDagPriority());
     }
@@ -42,7 +49,20 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
 
     if (waitTime1 == 0 || waitTime2 == 0) {
-      return knownPending1 - knownPending2;
+      // first attempt for one of those
+      if (knownPending1 == knownPending2) {
+        // exactly same number of pending tasks, avoid meddling with FIFO
+        if (waitTime1 == waitTime2) {
+          // first attempt for both
+          return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
+        }
+        // pick the one which has waited the longest, since it might have other bushy branches in
+        // the query to join with, because pending is only the parent part of this node from the DAG
+        return waitTime2 == 0 ? -1 : 1;
+      }
+      // invariant: different number of pending tasks (pending1 != pending2)
+      // if either of them is 1, then other one is greater and this comparison is enough
+      return Long.compare(knownPending1, knownPending2);
     }
 
     double ratio1 = (double) knownPending1 / (double) waitTime1;
@@ -53,6 +73,7 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
       return 1;
     }
 
-    return 0;
+    // when ratio is the same, pick the one which has waited the longest
+    return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
   }
 }

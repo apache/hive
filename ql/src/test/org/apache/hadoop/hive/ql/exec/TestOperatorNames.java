@@ -18,7 +18,7 @@
  
 package org.apache.hadoop.hive.ql.exec;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
@@ -32,6 +32,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 /*
@@ -50,20 +53,20 @@ import org.junit.Test;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-public class TestOperatorNames extends TestCase {
 
-  public TestOperatorNames(String name) {
-    super(name);
+/**
+ * OperatorNames Test.
+ */
+public class TestOperatorNames {
+
+  @Before
+  public void setUp() throws Exception {
+
   }
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
+  @After
+  public void tearDown() throws Exception {
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
   }
 
   /*

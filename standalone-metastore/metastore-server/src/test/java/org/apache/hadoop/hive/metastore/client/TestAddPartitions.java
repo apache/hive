@@ -65,13 +65,13 @@ public class TestAddPartitions extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
-  private static final String DB_NAME = "test_partition_db";
-  private static final String TABLE_NAME = "test_partition_table";
-  private static final String DEFAULT_PARAM_VALUE = "partparamvalue";
-  private static final String DEFAULT_PARAM_KEY = "partparamkey";
-  private static final String DEFAULT_YEAR_VALUE = "2017";
-  private static final String DEFAULT_COL_TYPE = "string";
-  private static final String YEAR_COL_NAME = "year";
+  protected static final String DB_NAME = "test_partition_db";
+  protected static final String TABLE_NAME = "test_partition_table";
+  protected static final String DEFAULT_PARAM_VALUE = "partparamvalue";
+  protected static final String DEFAULT_PARAM_KEY = "partparamkey";
+  protected static final String DEFAULT_YEAR_VALUE = "2017";
+  protected static final String DEFAULT_COL_TYPE = "string";
+  protected static final String YEAR_COL_NAME = "year";
   private static final String MONTH_COL_NAME = "month";
   private static final short MAX = -1;
 
@@ -105,6 +105,18 @@ public class TestAddPartitions extends MetaStoreClientTest {
     }
   }
 
+  protected AbstractMetaStoreService getMetaStore() {
+    return metaStore;
+  }
+
+  protected IMetaStoreClient getClient() {
+    return client;
+  }
+
+  protected void setClient(IMetaStoreClient client) {
+    this.client = client;
+  }
+
   // Tests for the Partition add_partition(Partition partition) method
 
   @Test
@@ -130,6 +142,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void addPartitionOtherCatalog() throws TException {
     String catName = "add_partition_catalog";
     Catalog cat = new CatalogBuilder()
@@ -177,6 +190,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidObjectException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void noSuchCatalog() throws TException {
     String tableName = "table_for_no_such_catalog";
     Table table = new TableBuilder()
@@ -451,17 +465,18 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionNullLocationInTableToo() throws Exception {
 
-    createTable(DB_NAME, TABLE_NAME, null);
+    Table table = createTable(DB_NAME, TABLE_NAME, null);
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE, null);
     client.add_partition(partition);
     Partition part = client.getPartition(DB_NAME, TABLE_NAME, "year=2017");
     Assert.assertEquals(
-        metaStore.getWarehouseRoot() + "/test_partition_db.db/test_partition_table/year=2017",
+        table.getSd().getLocation() + "/year=2017",
         part.getSd().getLocation());
     Assert.assertTrue(metaStore.isPathExists(new Path(part.getSd().getLocation())));
   }
 
   @Test(expected = MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionForView() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -471,6 +486,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionsForViewNullPartLocation() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -484,6 +500,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionsForViewNullPartSd() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -517,13 +534,14 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
     String tableName = "part_add_ext_table";
     createExternalTable(tableName, null);
+    Table table = client.getTable(DB_NAME, tableName);
     Partition partition = buildPartition(DB_NAME, tableName, DEFAULT_YEAR_VALUE, null);
     client.add_partition(partition);
     Partition resultPart =
         client.getPartition(DB_NAME, tableName, Lists.newArrayList(DEFAULT_YEAR_VALUE));
     Assert.assertNotNull(resultPart);
     Assert.assertNotNull(resultPart.getSd());
-    String defaultTableLocation = metaStore.getWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
+    String defaultTableLocation = table.getSd().getLocation();
     String defaulPartitionLocation = defaultTableLocation + "/year=2017";
     Assert.assertEquals(defaulPartitionLocation, resultPart.getSd().getLocation());
   }
@@ -770,6 +788,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
       Assert.fail("MetaException should have been thrown.");
     } catch (MetaException e) {
       // Expected exception
+      System.out.println(e);
     }
 
     List<String> partitionNames = client.listPartitionNames(DB_NAME, tableName, MAX);
@@ -810,7 +829,6 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
   @Test
   public void testAddPartitionsDifferentDBs() throws Exception {
-
     createDB("parttestdb2");
     createTable();
     createTable("parttestdb2", TABLE_NAME, null);
@@ -835,8 +853,8 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsDuplicateInTheList() throws Exception {
 
-    createTable();
-    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME,
+    Table table = createTable();
+    List<Partition> partitions = buildPartitions(table,
         Lists.newArrayList("2014", "2015", "2017", "2017", "2018", "2019"));
 
     try {
@@ -879,13 +897,13 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsAlreadyExists() throws Exception {
 
-    createTable();
-    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Table table = createTable();
+    String tableLocation = table.getSd().getLocation();
     Partition partition =
         buildPartition(DB_NAME, TABLE_NAME, "2016", tableLocation + "/year=2016a");
     client.add_partition(partition);
 
-    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME,
+    List<Partition> partitions = buildPartitions(table,
         Lists.newArrayList("2014", "2015", "2016", "2017", "2018"));
 
     try {
@@ -1134,7 +1152,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsNullLocationInTableToo() throws Exception {
 
-    createTable(DB_NAME, TABLE_NAME, null);
+    Table table = createTable(DB_NAME, TABLE_NAME, null);
     List<Partition> partitions = new ArrayList<>();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE, null);
     partitions.add(partition);
@@ -1142,12 +1160,13 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
     Partition part = client.getPartition(DB_NAME, TABLE_NAME, "year=2017");
     Assert.assertEquals(
-        metaStore.getWarehouseRoot() + "/test_partition_db.db/test_partition_table/year=2017",
+        table.getSd().getLocation() + "/year=2017",
         part.getSd().getLocation());
     Assert.assertTrue(metaStore.isPathExists(new Path(part.getSd().getLocation())));
   }
 
   @Test(expected=MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionsForView() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -1188,6 +1207,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
     String tableName = "part_add_ext_table";
     createExternalTable(tableName, null);
+    Table table = client.getTable(DB_NAME, tableName);
     Partition partition1 = buildPartition(DB_NAME, tableName, "2017", null);
     Partition partition2 = buildPartition(DB_NAME, tableName, "2018", null);
     List<Partition> partitions = Lists.newArrayList(partition1, partition2);
@@ -1197,7 +1217,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         Lists.newArrayList("year=2017", "year=2018"));
     Assert.assertNotNull(resultParts);
     Assert.assertEquals(2, resultParts.size());
-    String defaultTableLocation = metaStore.getWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
+    String defaultTableLocation = table.getSd().getLocation();
     String defaultPartLocation1 = defaultTableLocation + "/year=2017";
     String defaultPartLocation2 = defaultTableLocation + "/year=2018";
     if (resultParts.get(0).getValues().get(0).equals("2017")) {
@@ -1227,8 +1247,8 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test(expected=MetaException.class)
   public void testAddPartitionsMorePartColInTable() throws Exception {
 
-    createTable(DB_NAME, TABLE_NAME, getYearAndMonthPartCols(), null);
-    Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
+    Table table = createTable(DB_NAME, TABLE_NAME, getYearAndMonthPartCols(), null);
+    Partition partition = buildPartition(table, DEFAULT_YEAR_VALUE);
     List<Partition> partitions = new ArrayList<>();
     partitions.add(partition);
     client.add_partitions(partitions);
@@ -1245,8 +1265,8 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testAddPartitionsNullValues() throws Exception {
 
-    createTable();
-    Partition partition = buildPartition(DB_NAME, TABLE_NAME, null);
+    Table table = createTable();
+    Partition partition = buildPartition(table, null);
     partition.setValues(null);
     List<Partition> partitions = new ArrayList<>();
     partitions.add(partition);
@@ -1256,8 +1276,8 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsEmptyValue() throws Exception {
 
-    createTable();
-    Partition partition = buildPartition(DB_NAME, TABLE_NAME, "");
+    Table table = createTable();
+    Partition partition = buildPartition(table, "");
     List<Partition> partitions = new ArrayList<>();
     partitions.add(partition);
     client.add_partitions(partitions);
@@ -1271,15 +1291,15 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsInvalidLocation() throws Exception {
 
-    createTable();
-    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Table table = createTable();
+    String tableLocation = table.getSd().getLocation();
     Map<String, String> valuesAndLocations = new HashMap<>();
     valuesAndLocations.put("2014", tableLocation + "/year=2014");
     valuesAndLocations.put("2015", tableLocation + "/year=2015");
     valuesAndLocations.put("2016", "invalidhost:80000/wrongfolder");
     valuesAndLocations.put("2017", tableLocation + "/year=2017");
     valuesAndLocations.put("2018", tableLocation + "/year=2018");
-    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME, valuesAndLocations);
+    List<Partition> partitions = buildPartitions(table, valuesAndLocations);
 
     try {
       client.add_partitions(partitions);
@@ -1301,8 +1321,8 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsMoreThanThreadCountsOneFails() throws Exception {
 
-    createTable();
-    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Table table = createTable();
+    String tableLocation = table.getSd().getLocation();
 
     List<Partition> partitions = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
@@ -1513,11 +1533,11 @@ public class TestAddPartitions extends MetaStoreClientTest {
     return createTable(DB_NAME, TABLE_NAME, metaStore.getWarehouseRoot() + "/" + TABLE_NAME);
   }
 
-  private Table createTable(String dbName, String tableName, String location) throws Exception {
+  protected Table createTable(String dbName, String tableName, String location) throws Exception {
     return createTable(dbName, tableName, getYearPartCol(), location);
   }
 
-  private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
+  protected Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       String location) throws Exception {
     new TableBuilder()
         .setDbName(dbName)
@@ -1535,7 +1555,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
     return client.getTable(dbName, tableName);
   }
 
-  private void createExternalTable(String tableName, String location) throws Exception {
+  protected void createExternalTable(String tableName, String location) throws Exception {
     new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
@@ -1547,13 +1567,20 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .create(client, metaStore.getConf());
   }
 
-  private Partition buildPartition(String dbName, String tableName, String value)
+  protected Partition buildPartition(String dbName, String tableName, String value)
       throws MetaException {
     return buildPartition(dbName, tableName, value,
         metaStore.getWarehouseRoot() + "/" + tableName + "/addparttest");
   }
 
-  private Partition buildPartition(String dbName, String tableName, String value,
+
+  protected Partition buildPartition(Table table, String value)
+      throws MetaException {
+    return buildPartition(table.getDbName(), table.getTableName(), value,
+        table.getSd().getLocation() + "/addparttest");
+  }
+
+  protected Partition buildPartition(String dbName, String tableName, String value,
       String location) throws MetaException {
     Partition partition = new PartitionBuilder()
         .setDbName(dbName)
@@ -1607,7 +1634,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
     return cols;
   }
 
-  private void verifyPartition(Table table, String name, List<String> values, int index)
+  protected void verifyPartition(Table table, String name, List<String> values, int index)
       throws Exception {
 
     Partition part = client.getPartition(table.getDbName(), table.getTableName(), name);
@@ -1647,7 +1674,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         part.getParameters().keySet().contains(table.getParameters().keySet()));
   }
 
-  private void verifyPartitionAttributesDefaultValues(Partition partition, String tableLocation) {
+  protected void verifyPartitionAttributesDefaultValues(Partition partition, String tableLocation) {
     Assert.assertNotEquals("The partition's last access time should be set.", 0,
         partition.getLastAccessTime());
     Assert.assertNotEquals("The partition's create time should be set.", 0,
@@ -1695,28 +1722,29 @@ public class TestAddPartitions extends MetaStoreClientTest {
         skewedInfo.getSkewedColValueLocationMaps().isEmpty());
   }
 
-  private List<Partition> buildPartitions(String dbName, String tableName, List<String> values)
+  private List<Partition> buildPartitions(Table table, List<String> values)
       throws MetaException {
 
-    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName;
+    String tableLocation = table.getSd().getLocation();
     List<Partition> partitions = new ArrayList<>();
 
     for (String value : values) {
       Partition partition =
-          buildPartition(dbName, tableName, value, tableLocation + "/year=" + value);
+          buildPartition(table.getDbName(), table.getTableName(), value, tableLocation + "/year=" + value);
       partitions.add(partition);
     }
     return partitions;
   }
 
-  private List<Partition> buildPartitions(String dbName, String tableName,
+  private List<Partition> buildPartitions(Table table,
       Map<String, String> valuesAndLocations) throws MetaException {
 
     List<Partition> partitions = new ArrayList<>();
 
     for (Map.Entry<String, String> valueAndLocation : valuesAndLocations.entrySet()) {
       Partition partition =
-          buildPartition(dbName, tableName, valueAndLocation.getKey(), valueAndLocation.getValue());
+          buildPartition(table.getDbName(), table.getTableName(), valueAndLocation.getKey(),
+              valueAndLocation.getValue());
       partitions.add(partition);
     }
     return partitions;

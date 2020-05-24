@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.QTestSetup;
+
 /**
  * QTestArguments composite used as arguments holder for QTestUtil initialization.
  */
@@ -26,21 +29,21 @@ public final class QTestArguments {
   private String outDir;
   private String logDir;
   private String confDir;
-  private QTestUtil.MiniClusterType clusterType;
+  private QTestMiniClusters.MiniClusterType clusterType;
   private String initScript;
   private String cleanupScript;
   private boolean withLlapIo;
-  private QTestUtil.FsType fsType;
-  private QTestUtil.QTestSetup qtestSetup;
+  private FsType fsType;
+  private QTestSetup qtestSetup;
 
   private QTestArguments() {
   }
 
-  public QTestUtil.MiniClusterType getClusterType() {
+  public QTestMiniClusters.MiniClusterType getClusterType() {
     return clusterType;
   }
 
-  private void setClusterType(QTestUtil.MiniClusterType clusterType) {
+  private void setClusterType(QTestMiniClusters.MiniClusterType clusterType) {
     this.clusterType = clusterType;
   }
 
@@ -92,19 +95,19 @@ public final class QTestArguments {
     this.withLlapIo = withLlapIo;
   }
 
-  public QTestUtil.FsType getFsType() {
+  public FsType getFsType() {
     return fsType;
   }
 
-  private void setFsType(QTestUtil.FsType fsType) {
+  private void setFsType(QTestMiniClusters.FsType fsType) {
     this.fsType = fsType;
   }
 
-  public QTestUtil.QTestSetup getQTestSetup() {
+  public QTestSetup getQTestSetup() {
     return qtestSetup;
   }
 
-  private void setQTestSetup(QTestUtil.QTestSetup qtestSetup) {
+  private void setQTestSetup(QTestSetup qtestSetup) {
     this.qtestSetup = qtestSetup;
   }
 
@@ -116,12 +119,12 @@ public final class QTestArguments {
     private String outDir;
     private String logDir;
     private String confDir;
-    private QTestUtil.MiniClusterType clusterType;
+    private QTestMiniClusters.MiniClusterType clusterType;
     private String initScript;
     private String cleanupScript;
     private boolean withLlapIo;
-    private QTestUtil.FsType fsType;
-    private QTestUtil.QTestSetup qtestSetup;
+    private FsType fsType;
+    private QTestSetup qtestSetup;
 
     private QTestArgumentsBuilder(){
     }
@@ -145,7 +148,7 @@ public final class QTestArguments {
       return this;
     }
 
-    public QTestArgumentsBuilder withClusterType(QTestUtil.MiniClusterType clusterType) {
+    public QTestArgumentsBuilder withClusterType(QTestMiniClusters.MiniClusterType clusterType) {
       this.clusterType = clusterType;
       return this;
     }
@@ -165,12 +168,12 @@ public final class QTestArguments {
       return this;
     }
 
-    public QTestArgumentsBuilder withFsType(QTestUtil.FsType fsType) {
+    public QTestArgumentsBuilder withFsType(QTestMiniClusters.FsType fsType) {
       this.fsType = fsType;
       return this;
     }
 
-    public QTestArgumentsBuilder withQTestSetup(QTestUtil.QTestSetup qtestSetup) {
+    public QTestArgumentsBuilder withQTestSetup(QTestSetup qtestSetup) {
       this.qtestSetup = qtestSetup;
       return this;
     }
@@ -189,7 +192,7 @@ public final class QTestArguments {
           fsType != null ? fsType : clusterType.getDefaultFsType());
 
       testArguments.setQTestSetup(
-          qtestSetup != null ? qtestSetup : new QTestUtil.QTestSetup());
+          qtestSetup != null ? qtestSetup : new QTestSetup());
 
       return testArguments;
     }

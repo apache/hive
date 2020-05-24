@@ -268,6 +268,9 @@ UPDATE "DBS"
 -- Add the not null constraint
 ALTER TABLE "DBS" ALTER COLUMN "CTLG_NAME" SET NOT NULL;
 
+-- Add the default catalog name
+ALTER TABLE "DBS" ALTER COLUMN "CTLG_NAME" SET DEFAULT 'hive';
+
 -- Put back the unique index 
 ALTER TABLE "DBS" ADD CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME", "CTLG_NAME");
 

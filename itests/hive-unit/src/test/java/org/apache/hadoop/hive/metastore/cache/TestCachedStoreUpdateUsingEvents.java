@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -47,12 +48,18 @@ public class TestCachedStoreUpdateUsingEvents {
     MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_CACHE_CAN_USE_EVENT, true);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, ConfVars.AGGREGATE_STATS_CACHE_ENABLED, false);
+    MetastoreConf.setBoolVar(conf, ConfVars.REPLCMENABLED, true);
+    MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, "cmroot");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     hmsHandler = new HiveMetaStore.HMSHandler("testCachedStore", conf, true);
 
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
+
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
     sharedCache = CachedStore.getSharedCache();
 
     // Stop the CachedStore cache update service. We'll start it explicitly to control the test
@@ -190,7 +197,7 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.drop_database(dbName, true, true);
     hmsHandler.drop_database(dbName2, true, true);
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
@@ -267,7 +274,7 @@ public class TestCachedStoreUpdateUsingEvents {
     Assert.assertNull(tblRead);
 
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
@@ -379,7 +386,7 @@ public class TestCachedStoreUpdateUsingEvents {
     // Clean up
     rawStore.dropDatabase(DEFAULT_CATALOG_NAME, dbName);
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
@@ -401,8 +408,9 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -442,8 +450,9 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -459,7 +468,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     Deadline.startTimer("getPartitionColumnStatistics");
     List<ColumnStatistics> statRowStore = rawStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, dbName, tblName,
-            Collections.singletonList(partName), Collections.singletonList(colName[1]), validWriteIds);
+            Collections.singletonList(partName), Collections.singletonList(colName[1]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
     verifyStatString(statRowStore.get(0).getStatsObj().get(0), colName[1], avgColLen);
     if (isTxnTable) {
@@ -678,7 +687,7 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private void deleteColStats(String dbName, String tblName, String[] colName) throws Throwable {
-    boolean status = hmsHandler.delete_table_column_statistics(dbName, tblName, null);
+    boolean status = hmsHandler.delete_table_column_statistics(dbName, tblName, null, Constants.HIVE_ENGINE);
     Assert.assertEquals(status, true);
     Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
             Lists.newArrayList(colName[0]),  null, true).getStatsObj().isEmpty(), true);
@@ -689,7 +698,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
   private void deletePartColStats(String dbName, String tblName, String[] colName,
                                   String partName) throws Throwable {
-    boolean status = hmsHandler.delete_partition_column_statistics(dbName, tblName, partName, colName[1]);
+    boolean status = hmsHandler.delete_partition_column_statistics(dbName, tblName, partName, colName[1], Constants.HIVE_ENGINE);
     Assert.assertEquals(status, true);
 
     SharedCache.ColumStatsWithWriteId colStats = sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName,
@@ -777,8 +786,9 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -794,7 +804,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     Deadline.startTimer("getPartitionColumnStatistics");
     List<ColumnStatistics> statRawStore = rawStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, dbName, tblName,
-            Collections.singletonList(partName), Collections.singletonList(colName[1]), validWriteIds);
+            Collections.singletonList(partName), Collections.singletonList(colName[1]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
 
     verifyStat(statRawStore.get(0).getStatsObj(), colName, highValue, avgColLen);
@@ -843,8 +853,9 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -858,7 +869,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     Deadline.startTimer("getPartitionColumnStatistics");
     List<ColumnStatistics> statRawStore = rawStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, dbName, tblName,
-            Collections.singletonList(partName), Collections.singletonList(colName[1]), validWriteIds);
+            Collections.singletonList(partName), Collections.singletonList(colName[1]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
 
     verifyStat(statRawStore.get(0).getStatsObj(), colName, highValue, avgColLen);
@@ -885,7 +896,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     Deadline.startTimer("getPartitionSpecsByFilterAndProjection");
     AggrStats aggrStats = rawStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, partitions,
-            Collections.singletonList(colName[0]), validWriteIds);
+            Collections.singletonList(colName[0]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
     Assert.assertEquals(aggrStats.getPartsFound(), 2);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getDoubleStats().getHighValue(), highValue, 0.01);
@@ -893,7 +904,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // This will update the cache for non txn table.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions);
+            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);
@@ -958,21 +969,22 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, 5, 20));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
     hmsHandler.update_partition_column_statistics_req(setTblColStat);
 
     Deadline.startTimer("getPartitionSpecsByFilterAndProjection");
     AggrStats aggrStats = rawStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, partitions,
-            Collections.singletonList(colName[0]), validWriteIds);
+            Collections.singletonList(colName[0]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
     Assert.assertEquals(aggrStats, null);
 
     // keep the txn open and verify that the stats got is not compliant.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions);
+            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);
@@ -1009,8 +1021,9 @@ public class TestCachedStoreUpdateUsingEvents {
     ColumnStatistics colStats = new ColumnStatistics();
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, 5, 20));
+    colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
     hmsHandler.update_partition_column_statistics_req(setTblColStat);
@@ -1020,13 +1033,13 @@ public class TestCachedStoreUpdateUsingEvents {
 
     Deadline.startTimer("getPartitionSpecsByFilterAndProjection");
     AggrStats aggrStats = rawStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, partitions,
-            Collections.singletonList(colName[0]), validWriteIds);
+            Collections.singletonList(colName[0]), Constants.HIVE_ENGINE, validWriteIds);
     Deadline.stopTimer();
     Assert.assertEquals(aggrStats, null);
 
     // keep the txn open and verify that the stats got is not compliant.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions);
+            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);

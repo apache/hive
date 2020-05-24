@@ -92,11 +92,11 @@ public class PartitionIterable implements Iterable<Partition> {
       }
 
       private void getNextBatch() {
-        int batch_counter = 0;
+        int batchCounter = 0;
         List<String> nameBatch = new ArrayList<String>();
-        while (batch_counter < batch_size && partitionNamesIter.hasNext()){
+        while (batchCounter < batchSize && partitionNamesIter.hasNext()){
           nameBatch.add(partitionNamesIter.next());
-          batch_counter++;
+          batchCounter++;
         }
         try {
           batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
@@ -128,7 +128,7 @@ public class PartitionIterable implements Iterable<Partition> {
   private Table table = null;
   private Map<String, String> partialPartitionSpec = null;
   private List<String> partitionNames = null;
-  private int batch_size;
+  private int batchSize;
   private boolean getColStats = false;
 
   /**
@@ -146,8 +146,8 @@ public class PartitionIterable implements Iterable<Partition> {
    * a Hive object and a table object, and a partial partition spec.
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
-                           int batch_size) throws HiveException {
-    this(db, table, partialPartitionSpec, batch_size, false);
+                           int batchSize) throws HiveException {
+    this(db, table, partialPartitionSpec, batchSize, false);
   }
 
   /**
@@ -155,12 +155,12 @@ public class PartitionIterable implements Iterable<Partition> {
    * a Hive object and a table object, and a partial partition spec.
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
-                           int batch_size, boolean getColStats) throws HiveException {
+                           int batchSize, boolean getColStats) throws HiveException {
     this.currType = Type.LAZY_FETCH_PARTITIONS;
     this.db = db;
     this.table = table;
     this.partialPartitionSpec = partialPartitionSpec;
-    this.batch_size = batch_size;
+    this.batchSize = batchSize;
     this.getColStats = getColStats;
 
     if (this.partialPartitionSpec == null){

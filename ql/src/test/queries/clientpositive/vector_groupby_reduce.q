@@ -1,3 +1,5 @@
+--! qt:disabled:Disabled in HIVE-21396
+
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
@@ -64,7 +66,6 @@ create table store_sales_n3
 stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384");
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert overwrite table store_sales_n3
 select 

@@ -49,6 +49,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexSubQuery;
@@ -59,6 +60,8 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -80,8 +83,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -97,9 +98,6 @@ import com.google.common.collect.Sets;
  */
 
 public class HiveCalciteUtil {
-
-  private static final Logger LOG = LoggerFactory.getLogger(HiveCalciteUtil.class);
-
 
   /**
    * Get list of virtual columns from the given list of projections.
@@ -627,11 +625,11 @@ public class HiveCalciteUtil {
   public static Pair<RelNode, RelNode> getTopLevelSelect(final RelNode rootRel) {
     RelNode tmpRel = rootRel;
     RelNode parentOforiginalProjRel = rootRel;
-    HiveProject originalProjRel = null;
+    RelNode originalProjRel = null;
 
     while (tmpRel != null) {
-      if (tmpRel instanceof HiveProject) {
-        originalProjRel = (HiveProject) tmpRel;
+      if (tmpRel instanceof HiveProject || tmpRel instanceof HiveTableFunctionScan) {
+        originalProjRel = tmpRel;
         break;
       }
       parentOforiginalProjRel = tmpRel;
@@ -1062,6 +1060,25 @@ public class HiveCalciteUtil {
     return HiveProject.create(input, copyInputRefs, null);
   }
 
+  public static boolean isLiteral(RexNode expr) {
+    if (expr instanceof RexCall) {
+      RexCall call = (RexCall) expr;
+      if (call.getOperator() == SqlStdOperatorTable.ROW ||
+          call.getOperator() == SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR ||
+          call.getOperator() == SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR) {
+        // We check all operands
+        for (RexNode node : call.getOperands()) {
+          if (!isLiteral(node)) {
+            return false;
+          }
+        }
+        // All literals
+        return true;
+      }
+    }
+    return expr.isA(SqlKind.LITERAL);
+  }
+
   /**
    * Walks over an expression and determines whether it is constant.
    */
@@ -1157,4 +1174,71 @@ public class HiveCalciteUtil {
       return inputRefSet;
     }
   }
+
+  /** Fixes up the type of all {@link RexInputRef}s in an
+   * expression to match differences in nullability.
+   *
+   * This can be useful in case a field is inferred to be not nullable,
+   * e.g., a not null literal, and the reference to the row type needs
+   * to be changed to adjust the nullability flag.
+   *
+   * In case of references created on top of a Calcite schema generated
+   * directly from a Hive schema, this is especially useful since Hive
+   * does not have a notion of nullability so all fields in the schema
+   * will be inferred to nullable. However, Calcite makes this distinction.
+   *
+   * <p>Throws if there any greater inconsistencies of type. */
+  public static List<RexNode> fixNullability(final RexBuilder rexBuilder,
+      List<RexNode> nodes, final List<RelDataType> fieldTypes) {
+    return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(nodes);
+  }
+
+  /** Fixes up the type of all {@link RexInputRef}s in an
+   * expression to match differences in nullability.
+   *
+   * <p>Throws if there any greater inconsistencies of type. */
+  public static RexNode fixNullability(final RexBuilder rexBuilder,
+      RexNode node, final List<RelDataType> fieldTypes) {
+    return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(node);
+  }
+
+  /** Shuttle that fixes up an expression to match changes in nullability of
+   * input fields. */
+  public static class FixNullabilityShuttle extends RexShuttle {
+    private final List<RelDataType> typeList;
+    private final RexBuilder rexBuilder;
+
+    public FixNullabilityShuttle(RexBuilder rexBuilder,
+          List<RelDataType> typeList) {
+      this.typeList = typeList;
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override public RexNode visitInputRef(RexInputRef ref) {
+      final RelDataType rightType = typeList.get(ref.getIndex());
+      final RelDataType refType = ref.getType();
+      if (refType == rightType) {
+        return ref;
+      }
+      final RelDataType refType2 =
+          rexBuilder.getTypeFactory().createTypeWithNullability(refType,
+              rightType.isNullable());
+      // This is a validation check which can become quite handy debugging type
+      // issues. Basically, we need both types to be equal, only difference should
+      // be nullability.
+      // However, we make an exception for Hive wrt CHAR type because Hive encodes
+      // the STRING type for literals within CHAR value (see {@link HiveNlsString})
+      // while Calcite always considers these literals to be a CHAR, which means
+      // that the reference may be created as a STRING or VARCHAR from AST node
+      // at parsing time but the actual type referenced is a CHAR.
+      if (refType2 == rightType) {
+        return new RexInputRef(ref.getIndex(), refType2);
+      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER &&
+          rightType.getSqlTypeName() == SqlTypeName.CHAR && !rightType.isNullable()) {
+        return new RexInputRef(ref.getIndex(), rightType);
+      }
+      throw new AssertionError("mismatched type " + ref + " " + rightType);
+    }
+  }
+
 }

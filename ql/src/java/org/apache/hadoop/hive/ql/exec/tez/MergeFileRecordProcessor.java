@@ -135,7 +135,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else if (e instanceof InterruptedException) {
-        l4j.info("Hit an interrupt while initializing MergeFileRecordProcessor. Message={}",
+        LOG.info("Hit an interrupt while initializing MergeFileRecordProcessor. Message={}",
             e.getMessage());
         throw (InterruptedException) e;
       } else {
@@ -184,7 +184,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     } catch (Exception e) {
       if (!isAborted()) {
         // signal new failure to map-reduce
-        l4j.error("Hit error while closing operators - failing tree");
+        LOG.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators",
             e);
       }
@@ -217,7 +217,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.error(StringUtils.stringifyException(e));
+        LOG.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }

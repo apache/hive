@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -37,40 +37,40 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 @LimitedPrivate(value = { "Apache Hive, Apache Sentry (incubating)" })
 @Evolving
 public interface HiveAuthorizationTaskFactory {
-  public Task<? extends Serializable> createCreateRoleTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createCreateRoleTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createDropRoleTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createDropRoleTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createShowRoleGrantTask(ASTNode node, Path resultFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createShowRoleGrantTask(ASTNode node, Path resultFile,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createGrantRoleTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createGrantRoleTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createRevokeRoleTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createRevokeRoleTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createGrantTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createGrantTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createShowGrantTask(ASTNode node, Path resultFile, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createShowGrantTask(ASTNode node, Path resultFile, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createRevokeTask(ASTNode node, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createRevokeTask(ASTNode node, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createSetRoleTask(String roleName,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createSetRoleTask(String roleName,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createShowCurrentRoleTask(HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs, Path resFile) throws SemanticException;
+  Task<?> createShowCurrentRoleTask(Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, Path resFile) throws SemanticException;
 
-  public Task<? extends Serializable> createShowRolePrincipalsTask(ASTNode ast, Path resFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createShowRolePrincipalsTask(ASTNode ast, Path resFile,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  public Task<? extends Serializable> createShowRolesTask(ASTNode ast, Path resFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException;
+  Task<?> createShowRolesTask(ASTNode ast, Path resFile,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
 }

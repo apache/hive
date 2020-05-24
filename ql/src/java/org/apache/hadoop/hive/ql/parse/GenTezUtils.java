@@ -196,6 +196,11 @@ public class GenTezUtils {
       mapWork.setIncludedBuckets(ts.getConf().getIncludedBuckets());
     }
 
+    if (ts.getProbeDecodeContext() != null) {
+      // TODO: some operators like VectorPTFEvaluator do not allow the use of Selected take this into account here?
+      mapWork.setProbeDecodeContext(ts.getProbeDecodeContext());
+    }
+
     // add new item to the tez work
     tezWork.add(mapWork);
 
@@ -312,13 +317,16 @@ public class GenTezUtils {
 
     while(!operators.isEmpty()) {
       Operator<?> current = operators.pop();
-      seen.add(current);
 
-      if (current instanceof FileSinkOperator) {
+      if (seen.add(current) && current instanceof FileSinkOperator) {
         FileSinkOperator fileSink = (FileSinkOperator)current;
 
         // remember it for additional processing later
-        context.fileSinkSet.add(fileSink);
+        if (context.fileSinkSet.contains(fileSink)) {
+          continue;
+        } else {
+          context.fileSinkSet.add(fileSink);
+        }
 
         FileSinkDesc desc = fileSink.getConf();
         Path path = desc.getDirName();
@@ -525,8 +533,13 @@ public class GenTezUtils {
     return child;
   }
 
-  public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork, ReduceSinkOperator reduceSinkOperator) {
-    if(reduceSinkOperator.getConf().isForwarding()) {
+  public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork,
+      ReduceSinkOperator reduceSinkOperator) {
+    // The 1-1 edge should also work for sorted cases, however depending on the details of the shuffle
+    // this might end up writing multiple compressed files or end up using an in-memory partitioned kv writer
+    // the condition about ordering = false can be removed at some point with a tweak to the unordered writer
+    // to never split a single output across multiple files (and never attempt a final merge)
+    if (reduceSinkOperator.getConf().isForwarding() && !reduceSinkOperator.getConf().isOrdering()) {
       return EdgeType.ONE_TO_ONE_EDGE;
     }
     if (followingWork instanceof ReduceWork) {
@@ -542,7 +555,7 @@ public class GenTezUtils {
         }
       }
     }
-    if(!reduceSinkOperator.getConf().isOrdering()) {
+    if (!reduceSinkOperator.getConf().isOrdering()) {
       //if no sort keys are specified, use an edge that does not sort
       return EdgeType.CUSTOM_SIMPLE_EDGE;
     }
@@ -631,12 +644,12 @@ public class GenTezUtils {
       }
     }
     // Filter operator
-    filterDynamicValuePredicatesCollection = new DynamicValuePredicateContext();
     for (Operator<?> op : ts.getChildOperators()) {
       if (!(op instanceof FilterOperator)) {
         continue;
       }
       FilterDesc filterDesc = ((FilterOperator) op).getConf();
+      filterDynamicValuePredicatesCollection = new DynamicValuePredicateContext();
       collectDynamicValuePredicates(filterDesc.getPredicate(),
               filterDynamicValuePredicatesCollection);
       for (ExprNodeDesc nodeToRemove : filterDynamicValuePredicatesCollection
@@ -742,7 +755,7 @@ public class GenTezUtils {
     HashMap<ExprNodeDesc, ExprNodeDesc> childParentMapping = new HashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
-  private static class DynamicValuePredicateProc implements NodeProcessor {
+  private static class DynamicValuePredicateProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -768,10 +781,10 @@ public class GenTezUtils {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(new RuleRegExp("R1", ExprNodeDynamicValueDesc.class.getName() + "%"), new DynamicValuePredicateProc());
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);
 
@@ -817,7 +830,7 @@ public class GenTezUtils {
     }
   }
 
-  public static class DynamicPartitionPrunerProc implements NodeProcessor {
+  public static class DynamicPartitionPrunerProc implements SemanticNodeProcessor {
 
     /**
      * process simply remembers all the dynamic partition pruning expressions
@@ -846,14 +859,14 @@ public class GenTezUtils {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(new RuleRegExp("R1", ExprNodeDynamicListDesc.class.getName() + "%"),
         new DynamicPartitionPrunerProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);

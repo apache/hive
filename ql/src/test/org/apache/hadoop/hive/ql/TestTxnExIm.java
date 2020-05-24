@@ -126,7 +126,6 @@ public class TestTxnExIm extends TxnCommandsBaseForTests {
    */
   @Test
   public void testExportPart() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1}, {3, 4, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -154,7 +153,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1519423568221/
    */
   @Test
   public void testExportPartPartial() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -214,7 +212,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
    */
   @Test
   public void testExportPartPartial2() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -232,7 +229,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   }
   @Test
   public void testExportPartPartial3() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 1, 1, 2}, {3, 2, 3, 8}, {5, 1, 2, 6}, {7, 2, 2, 8}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -383,12 +379,33 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0",
-            "t/p=10/delta_0000001_0000001_0000/bucket_00000"},
+            "t/p=10/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4",
             "t/p=11/delta_0000002_0000002_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
             "t/p=12/delta_0000003_0000003_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "import existing table");
+  }
+
+  @Test
+  public void testImportPartitionedOrc() throws Exception {
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists Tstage");
+    runStatementOnDriver("create table T (a int, b int) partitioned by (p int) stored" +
+        " as orc tblproperties('transactional'='true')");
+    //Tstage is the target table
+    runStatementOnDriver("create table Tstage (a int, b int) partitioned by (p int) stored" +
+        " as orc tblproperties('transactional'='true')");
+    //this creates an ORC data file with correct schema under table root
+    runStatementOnDriver("insert into Tstage values(1,2,10),(3,4,11),(5,6,12)");
+    final int[][] rows = {{3}};
+    //now we have an archive with 3 partitions
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
+
+    //load T
+    runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
+    List<String> rs = runStatementOnDriver("select count(*) from T");
+    Assert.assertEquals("Rowcount of imported table", TestTxnCommands2.stringifyValues(rows), rs);
   }
 
   /**

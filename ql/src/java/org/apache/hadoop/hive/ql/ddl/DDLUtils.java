@@ -25,20 +25,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -84,8 +90,8 @@ public final class DDLUtils {
    * @return {@code true} if item was added
    */
   public static boolean addIfAbsentByName(WriteEntity newWriteEntity, Set<WriteEntity> outputs) {
-    for(WriteEntity writeEntity : outputs) {
-      if(writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
+    for (WriteEntity writeEntity : outputs) {
+      if (writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
         LOG.debug("Ignoring request to add {} because {} is present", newWriteEntity.toStringDetail(),
             writeEntity.toStringDetail());
         return false;
@@ -153,12 +159,12 @@ public final class DDLUtils {
     return false;
   }
 
-  public static String propertiesToString(Map<String, String> props, List<String> exclude) {
+  public static String propertiesToString(Map<String, String> props, Set<String> exclude) {
     if (props.isEmpty()) {
       return "";
     }
 
-    Map<String, String> sortedProperties = new TreeMap<String, String>(props);
+    SortedMap<String, String> sortedProperties = new TreeMap<String, String>(props);
     List<String> realProps = new ArrayList<String>();
     for (Map.Entry<String, String> e : sortedProperties.entrySet()) {
       if (e.getValue() != null && (exclude == null || !exclude.contains(e.getKey()))) {
@@ -195,6 +201,40 @@ public final class DDLUtils {
     }
     if (value != null) {
       builder.append(value);
+    }
+  }
+
+  public static void addServiceOutput(HiveConf conf, Set<WriteEntity> outputs) throws SemanticException {
+    String hs2Hostname = getHS2Host(conf);
+    if (hs2Hostname != null) {
+      outputs.add(new WriteEntity(hs2Hostname, Type.SERVICE_NAME));
+    }
+  }
+
+  private static String getHS2Host(HiveConf conf) throws SemanticException {
+    if (SessionState.get().isHiveServerQuery()) {
+      return SessionState.get().getHiveServer2Host();
+    } else if (conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE)) {
+      return "dummyHostnameForTest";
+    }
+
+    throw new SemanticException("Kill query is only supported in HiveServer2 (not hive cli)");
+  }
+
+  /**
+   * Get the fully qualified name in the node.
+   * E.g. the node of the form ^(DOT ^(DOT a b) c) will generate a name of the form "a.b.c".
+   */
+  public static String getFQName(ASTNode node) {
+    if (node.getChildCount() == 0) {
+      return node.getText();
+    } else if (node.getChildCount() == 2) {
+      return getFQName((ASTNode) node.getChild(0)) + "." + getFQName((ASTNode) node.getChild(1));
+    } else if (node.getChildCount() == 3) {
+      return getFQName((ASTNode) node.getChild(0)) + "." + getFQName((ASTNode) node.getChild(1)) + "." +
+          getFQName((ASTNode) node.getChild(2));
+    } else {
+      return null;
     }
   }
 }

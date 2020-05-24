@@ -119,12 +119,12 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     });
 
     // Create a table with smallint/tinyint columns, load data, and query from Hive.
-    Assert.assertEquals(0, driver.run("drop table if exists " + readTblName).getResponseCode());
-    Assert.assertEquals(0, driver.run("create external table " + readTblName +
-      " (my_small_int smallint, my_tiny_int tinyint)" +
-      " row format delimited fields terminated by '\t' stored as textfile").getResponseCode());
-    Assert.assertEquals(0, driver.run("load data local inpath '" +
-      dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName).getResponseCode());
+    driver.run("drop table if exists " + readTblName);
+    driver.run("create external table " + readTblName +
+        " (my_small_int smallint, my_tiny_int tinyint)" +
+        " row format delimited fields terminated by '\t' stored as textfile");
+    driver.run("load data local inpath '" +
+        dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName);
 
     PigServer server = HCatBaseTest.createPigServer(false);
     server.registerQuery(
@@ -150,9 +150,9 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
 
     // Ensure Pig can write correctly to smallint/tinyint columns. This means values within the
     // bounds of the column type are written, and values outside throw an exception.
-    Assert.assertEquals(0, driver.run("drop table if exists " + writeTblName).getResponseCode());
-    Assert.assertEquals(0, driver.run("create table " + writeTblName +
-      " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile").getResponseCode());
+    driver.run("drop table if exists " + writeTblName);
+    driver.run("create table " + writeTblName +
+        " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile");
 
     // Values within the column type bounds.
     HcatTestUtils.createTestDataFile(writeDataFile.getAbsolutePath(), new String[]{
@@ -181,9 +181,8 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
 
   private void smallTinyIntBoundsCheckHelper(String data, ExecJob.JOB_STATUS expectedStatus)
     throws Exception {
-    Assert.assertEquals(0, driver.run("drop table if exists test_tbl").getResponseCode());
-    Assert.assertEquals(0, driver.run("create table test_tbl" +
-      " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile").getResponseCode());
+    driver.run("drop table if exists test_tbl");
+    driver.run("create table test_tbl (my_small_int smallint, my_tiny_int tinyint) stored as rcfile");
 
     PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();

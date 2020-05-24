@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.ql.io.merge;
 
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -50,6 +49,7 @@ import org.apache.hadoop.mapreduce.MRJobConfig;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Task for fast merging of ORC and RC files.
@@ -62,9 +62,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
   private boolean success = true;
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan,
-      DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, MergeFileTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
@@ -78,9 +77,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
    * start a new map-reduce job to do the merge, almost the same as ExecDriver.
    */
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
-    Context ctx = driverContext.getCtx();
+    Context ctx = context;
     boolean ctxCreated = false;
     RunningJob rj = null;
     int returnVal = 0;
@@ -100,6 +99,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       job.setOutputKeyClass(NullWritable.class);
       job.setOutputValueClass(NullWritable.class);
       job.setNumReduceTasks(0);
+      // HIVE-23354 enforces that MR speculative execution is disabled
+      job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+      job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
       // create the temp directories
       Path outputPath = work.getOutputDir();
@@ -124,7 +126,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       if (noName) {
         // This is for a special case to ensure unit tests pass
         job.set(MRJobConfig.JOB_NAME,
-            jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
+            jobName != null ? jobName
+                : "JOB" + ThreadLocalRandom.current().nextInt());
       }
 
       // add input path
@@ -167,7 +170,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       }
 
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       console.printError(mesg, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
 

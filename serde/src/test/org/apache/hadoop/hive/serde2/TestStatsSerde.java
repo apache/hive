@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -45,17 +45,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import org.junit.Test;
 
-public class TestStatsSerde extends TestCase {
-
-  public TestStatsSerde(String name) {
-    super(name);
-  }
+/**
+ * StatsSerde Test.
+ */
+public class TestStatsSerde {
 
   /**
    * Test LazySimpleSerDe
    */
 
+  @Test
   public void testLazySimpleSerDe() throws Throwable {
     try {
       // Create the SerDe
@@ -100,6 +103,7 @@ public class TestStatsSerde extends TestCase {
    * Test LazyBinarySerDe
    */
 
+  @Test
   public void testLazyBinarySerDe() throws Throwable {
     try {
       System.out.println("test: testLazyBinarySerDe");
@@ -165,6 +169,7 @@ public class TestStatsSerde extends TestCase {
    * Test ColumnarSerDe
    */
 
+  @Test
   public void testColumnarSerDe() throws Throwable {
     try {
       System.out.println("test: testColumnarSerde");

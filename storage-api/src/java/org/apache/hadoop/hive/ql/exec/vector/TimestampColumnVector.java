@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -57,6 +58,8 @@ public class TimestampColumnVector extends ColumnVector {
       // Supports keeping a TimestampWritable object without having to import that definition...
 
   private boolean isUTC;
+
+  private boolean usingProlepticCalendar = false;
 
   /**
    * Use this constructor by default. All column vectors
@@ -545,5 +548,57 @@ public class TimestampColumnVector extends ColumnVector {
     super.shallowCopyTo(other);
     other.time = time;
     other.nanos = nanos;
+  }
+
+  /**
+   * Change the calendar to or from proleptic. If the new and old values of the flag are the
+   * same, nothing is done.
+   * useProleptic - set the flag for the proleptic calendar
+   * updateData - change the data to match the new value of the flag.
+   */
+  public void changeCalendar(boolean useProleptic, boolean updateData) {
+    if (useProleptic == usingProlepticCalendar) {
+      return;
+    }
+    usingProlepticCalendar = useProleptic;
+    if (updateData) {
+      try {
+        updateDataAccordingProlepticSetting();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private void updateDataAccordingProlepticSetting() throws Exception {
+    for (int i = 0; i < nanos.length; i++) {
+      if (time[i] >= CalendarUtils.SWITCHOVER_MILLIS) { // no need for conversion
+        continue;
+      }
+      asScratchTimestamp(i);
+      long offset = 0;
+
+      long millis = usingProlepticCalendar ? CalendarUtils.convertTimeToProleptic(scratchTimestamp.getTime())
+          : CalendarUtils.convertTimeToHybrid(scratchTimestamp.getTime());
+
+      Timestamp newTimeStamp = Timestamp.from(Instant.ofEpochMilli(millis));
+
+      scratchTimestamp.setTime(newTimeStamp.getTime() + offset);
+      scratchTimestamp.setNanos(nanos[i]);
+
+      setFromScratchTimestamp(i);
+    }
+  }
+
+  public TimestampColumnVector setUsingProlepticCalendar(boolean usingProlepticCalendar) {
+    this.usingProlepticCalendar = usingProlepticCalendar;
+    return this;
+  }
+
+  /**
+   * Detect whether this data is using the proleptic calendar.
+   */
+  public boolean usingProlepticCalendar() {
+    return usingProlepticCalendar;
   }
 }

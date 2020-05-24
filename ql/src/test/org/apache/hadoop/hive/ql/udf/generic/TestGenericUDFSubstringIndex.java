@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -27,9 +27,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDFSubstringIndex extends TestCase {
+/**
+ * TestGenericUDFSubstringIndex.
+ */
+public class TestGenericUDFSubstringIndex {
 
+  @Test
   public void testSubstringIndex() throws HiveException {
     GenericUDFSubstringIndex udf = new GenericUDFSubstringIndex();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -62,6 +68,7 @@ public class TestGenericUDFSubstringIndex extends TestCase {
     runAndVerify("www.apache.org", ".", null, null, udf);
   }
 
+  @Test
   public void testSubstringIndexConst() throws HiveException {
     GenericUDFSubstringIndex udf = new GenericUDFSubstringIndex();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

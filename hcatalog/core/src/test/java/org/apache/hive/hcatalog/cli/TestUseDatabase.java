@@ -19,28 +19,31 @@
 package org.apache.hive.hcatalog.cli;
 
 import java.io.File;
-import java.io.IOException;
-
-import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.junit.Before;
+import org.junit.Test;
 
 /* Unit test for GitHub Howl issue #3 */
-public class TestUseDatabase extends TestCase {
+/**
+ * TestUseDatabase.
+ */
+public class TestUseDatabase {
 
   private IDriver hcatDriver;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
     HiveConf hcatConf = new HiveConf(this.getClass());
+    hcatConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
     hcatConf.set(ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
@@ -50,30 +53,26 @@ public class TestUseDatabase extends TestCase {
     SessionState.start(new CliSessionState(hcatConf));
   }
 
-  String query;
   private final String dbName = "testUseDatabase_db";
   private final String tblName = "testUseDatabase_tbl";
 
+  @Test
   public void testAlterTablePass() throws Exception {
 
     hcatDriver.run("create database " + dbName);
     hcatDriver.run("use " + dbName);
     hcatDriver.run("create table " + tblName + " (a int) partitioned by (b string) stored as RCFILE");
 
-    CommandProcessorResponse response;
-
     String tmpDir = System.getProperty("test.tmp.dir");
     File dir = new File(tmpDir + "/hive-junit-" + System.nanoTime());
-    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '" + dir.toURI().getPath() + "'");
-    assertEquals(0, response.getResponseCode());
-    assertNull(response.getErrorMessage());
+    hcatDriver.run("alter table " + tblName + " add partition (b='2') location '" + dir.toURI().getPath() + "'");
 
-    response = hcatDriver.run("alter table " + tblName + " set fileformat "
-        + "INPUTFORMAT  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' "
-        + "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' "
-        + "serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' inputdriver 'mydriver' outputdriver 'yourdriver'");
-    assertEquals(0, response.getResponseCode());
-    assertNull(response.getErrorMessage());
+    hcatDriver.run("alter table " + tblName + " set fileformat " +
+        "INPUTFORMAT  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' " +
+        "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' " +
+        "serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'" +
+        "inputdriver 'mydriver'" +
+        "outputdriver 'yourdriver'");
 
     hcatDriver.run("drop table " + tblName);
     hcatDriver.run("drop database " + dbName);

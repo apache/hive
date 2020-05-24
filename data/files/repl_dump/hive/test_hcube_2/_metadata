@@ -1,0 +1,1 @@
+{"version":"0.2","db":"{\"1\":{\"str\":\"test_hcube_2\"},\"3\":{\"str\":\"hdfs://hdpcluster-0/warehouse/tablespace/managed/hive/test_hcube_2.db\"},\"4\":{\"map\":[\"str\",\"str\",1,{\"repl.last.id\":\"548434\"}]},\"6\":{\"str\":\"hive\"},\"7\":{\"i32\":1},\"8\":{\"str\":\"hive\"}}"}

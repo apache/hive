@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.Map;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.accumulo.predicate.compare.CompareOp;
@@ -538,7 +538,7 @@ public class TestAccumuloPredicateHandler {
         assertEquals(option.getValue(), "cf:f1");
       } else if (optKey.equals(PrimitiveComparisonFilter.CONST_VAL)) {
         foundConst = true;
-        assertEquals(option.getValue(), new String(Base64.encodeBase64("aaa".getBytes())));
+        assertEquals(option.getValue(), Base64.getEncoder().encodeToString("aaa".getBytes()));
       } else if (optKey.equals(PrimitiveComparisonFilter.COMPARE_OPT_CLASS)) {
         foundCOpt = true;
         assertEquals(option.getValue(), LessThanOrEqual.class.getName());
@@ -563,7 +563,7 @@ public class TestAccumuloPredicateHandler {
         foundConst = true;
         byte[] intVal = new byte[4];
         ByteBuffer.wrap(intVal).putInt(5);
-        assertEquals(option.getValue(), new String(Base64.encodeBase64(intVal)));
+        assertEquals(option.getValue(), Base64.getEncoder().encodeToString(intVal));
       } else if (optKey.equals(PrimitiveComparisonFilter.COMPARE_OPT_CLASS)) {
         foundCOpt = true;
         assertEquals(option.getValue(), GreaterThan.class.getName());

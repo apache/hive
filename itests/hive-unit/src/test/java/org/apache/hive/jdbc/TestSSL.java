@@ -469,6 +469,7 @@ public class TestSSL {
    * @throws Exception
    */
   @Test
+  @Ignore("HIVE-22621: test case is unstable")
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
     conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,

@@ -10,4 +10,4 @@ PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, CONSTRAINT fk1 FOREIGN 
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidObjectException(message:Child column not found: x)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Child column not found: x)

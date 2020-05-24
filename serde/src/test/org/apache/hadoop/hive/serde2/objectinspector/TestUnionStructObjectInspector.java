@@ -21,17 +21,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  * TestUnionStructObjectInspector.
  *
  */
-public class TestUnionStructObjectInspector extends TestCase {
+public class TestUnionStructObjectInspector {
 
+  @Test
   public void testUnionStructObjectInspector() throws Throwable {
     try {
       ArrayList<String> fieldNames1 = new ArrayList<String>();

@@ -83,6 +83,13 @@ public class LlapWebServices extends AbstractService {
     HttpServer.Builder builder =
         new HttpServer.Builder("llap").setPort(this.port).setHost(bindAddress);
     builder.setConf(new HiveConf(conf, HiveConf.class));
+    builder.setDisableDirListing(true);
+    if (conf.getBoolean(ConfVars.LLAP_DAEMON_WEB_XFRAME_ENABLED.varname,
+        ConfVars.LLAP_DAEMON_WEB_XFRAME_ENABLED.defaultBoolVal)) {
+      builder.configureXFrame(true).setXFrameOption(
+          conf.get(ConfVars.LLAP_DAEMON_WEB_XFRAME_VALUE.varname,
+              ConfVars.LLAP_DAEMON_WEB_XFRAME_VALUE.defaultStrVal));
+    }
     if (UserGroupInformation.isSecurityEnabled()) {
       LOG.info("LLAP UI useSSL=" + this.useSSL + ", auto-auth/SPNEGO="
           + this.useSPNEGO + ", port=" + this.port);

@@ -42,14 +42,14 @@ PREHOOK: Input: database:escape_comments_db
 POSTHOOK: query: describe database extended escape_comments_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:escape_comments_db
-escape_comments_db	a\nb	location/in/test	user	USER	
+escape_comments_db	a\nb	location/in/test		user	USER	
 PREHOOK: query: describe database escape_comments_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:escape_comments_db
 POSTHOOK: query: describe database escape_comments_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:escape_comments_db
-escape_comments_db	a\nb	location/in/test	user	USER	
+escape_comments_db	a\nb	location/in/test		user	USER
 PREHOOK: query: show create table escape_comments_tbl1
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: escape_comments_db@escape_comments_tbl1
@@ -78,7 +78,6 @@ PREHOOK: Input: escape_comments_db@escape_comments_tbl1
 POSTHOOK: query: describe formatted escape_comments_tbl1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-# col_name	data_type	comment
 col1	string	a\nb';
 	NULL	NULL
 # Partition Information	NULL	NULL
@@ -138,7 +137,6 @@ PREHOOK: Input: escape_comments_db@escape_comments_view1
 POSTHOOK: query: describe formatted escape_comments_view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_view1
-# col_name	data_type	comment
 col1	string	a\nb
 	NULL	NULL
 # Detailed Table Information	NULL	NULL

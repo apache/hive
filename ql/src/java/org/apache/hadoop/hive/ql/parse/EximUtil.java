@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,23 +45,23 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.thrift.TException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -75,6 +75,7 @@ public class EximUtil {
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
   public static final String DATA_PATH_NAME = "data";
+  public static final String METADATA_PATH_NAME = "metadata";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
@@ -91,13 +92,13 @@ public class EximUtil {
   public static class SemanticAnalyzerWrapperContext {
     private HiveConf conf;
     private Hive db;
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
-    private List<Task<? extends Serializable>> tasks;
+    private Set<ReadEntity> inputs;
+    private Set<WriteEntity> outputs;
+    private List<Task<?>> tasks;
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
-    private Task<? extends Serializable> openTxnTask = null;
+    private Task<?> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -107,15 +108,15 @@ public class EximUtil {
       return db;
     }
 
-    public HashSet<ReadEntity> getInputs() {
+    public Set<ReadEntity> getInputs() {
       return inputs;
     }
 
-    public HashSet<WriteEntity> getOutputs() {
+    public Set<WriteEntity> getOutputs() {
       return outputs;
     }
 
-    public List<Task<? extends Serializable>> getTasks() {
+    public List<Task<?>> getTasks() {
       return tasks;
     }
 
@@ -136,9 +137,9 @@ public class EximUtil {
     }
 
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
-                                          HashSet<ReadEntity> inputs,
-                                          HashSet<WriteEntity> outputs,
-                                          List<Task<? extends Serializable>> tasks,
+                                          Set<ReadEntity> inputs,
+                                          Set<WriteEntity> outputs,
+                                          List<Task<?>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;
       this.db = db;
@@ -149,14 +150,72 @@ public class EximUtil {
       this.ctx = ctx;
     }
 
-    public Task<? extends Serializable> getOpenTxnTask() {
+    public Task<?> getOpenTxnTask() {
       return openTxnTask;
     }
-    public void setOpenTxnTask(Task<? extends Serializable> openTxnTask) {
+    public void setOpenTxnTask(Task<?> openTxnTask) {
       this.openTxnTask = openTxnTask;
     }
   }
 
+  /**
+   * Wrapper class for mapping source and target path for copying managed table data.
+   */
+  public static class ManagedTableCopyPath {
+    private ReplicationSpec replicationSpec;
+    private static boolean nullSrcPathForTest = false;
+    private Path srcPath;
+    private Path tgtPath;
+
+    public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
+      if (srcPath == null) {
+        throw new IllegalArgumentException("Source path can not be null.");
+      }
+      this.srcPath = srcPath;
+      if (tgtPath == null) {
+        throw new IllegalArgumentException("Target path can not be null.");
+      }
+      this.tgtPath = tgtPath;
+    }
+
+    public Path getSrcPath() {
+      if (nullSrcPathForTest) {
+        return null;
+      }
+      return srcPath;
+    }
+
+    public Path getTargetPath() {
+      return tgtPath;
+    }
+
+    @Override
+    public String toString() {
+      return "ManagedTableCopyPath{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+
+    /**
+     * To be used only for testing purpose.
+     * It has been used to make repl dump operation fail.
+     */
+    public static void setNullSrcPath(HiveConf conf, boolean aNullSrcPath) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        nullSrcPathForTest = aNullSrcPath;
+      }
+    }
+  }
 
   private EximUtil() {
   }
@@ -305,6 +364,19 @@ public class EximUtil {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
       new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
+    }
+  }
+
+  public static MetaData getMetaDataFromLocation(String fromLocn, HiveConf conf)
+      throws SemanticException, IOException {
+    URI fromURI = getValidatedURI(conf, PlanUtils.stripQuotes(fromLocn));
+    Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+    FileSystem fs = FileSystem.get(fromURI, conf);
+
+    try {
+      return readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }
 

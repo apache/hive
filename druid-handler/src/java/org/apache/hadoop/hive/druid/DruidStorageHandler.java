@@ -26,6 +26,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.druid.data.input.impl.DimensionSchema;
 import org.apache.druid.data.input.impl.DimensionsSpec;
@@ -38,8 +39,8 @@ import org.apache.druid.java.util.http.client.HttpClient;
 import org.apache.druid.java.util.http.client.HttpClientConfig;
 import org.apache.druid.java.util.http.client.HttpClientInit;
 import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.FullResponseHandler;
-import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
 import org.apache.druid.metadata.MetadataStorageConnectorConfig;
 import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
@@ -49,6 +50,9 @@ import org.apache.druid.metadata.storage.mysql.MySQLConnector;
 import org.apache.druid.metadata.storage.mysql.MySQLConnectorConfig;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnectorConfig;
+import org.apache.druid.metadata.storage.postgresql.PostgreSQLTablesConfig;
+import org.apache.druid.query.BaseQuery;
+import org.apache.druid.query.Query;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.indexing.DataSchema;
@@ -82,9 +86,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -137,7 +145,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final HttpClient HTTP_CLIENT;
 
-  private static final List<String> ALLOWED_ALTER_TYPES = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
+  private static final List<String> ALLOWED_ALTER_TYPES =
+      ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();
@@ -358,15 +367,12 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private void resetKafkaIngestion(String overlordAddress, String dataSourceName) {
     try {
-      FullResponseHolder
+      StringFullResponseHolder
           response =
           RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.POST,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/reset",
-                      overlordAddress,
-                      dataSourceName))),
-              new FullResponseHandler(Charset.forName("UTF-8"))),
-              input -> input instanceof IOException,
+              new Request(HttpMethod.POST, new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/reset", overlordAddress, dataSourceName))),
+              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
               getMaxRetryCount());
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
         CONSOLE.printInfo("Druid Kafka Ingestion Reset successful.");
@@ -382,15 +388,12 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private void stopKafkaIngestion(String overlordAddress, String dataSourceName) {
     try {
-      FullResponseHolder
+      StringFullResponseHolder
           response =
           RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.POST,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/shutdown",
-                      overlordAddress,
-                      dataSourceName))),
-              new FullResponseHandler(Charset.forName("UTF-8"))),
-              input -> input instanceof IOException,
+              new Request(HttpMethod.POST, new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/shutdown", overlordAddress, dataSourceName))),
+              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
               getMaxRetryCount());
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
         CONSOLE.printInfo("Druid Kafka Ingestion shutdown successful.");
@@ -416,13 +419,12 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
             "Druid Datasource name is null");
     try {
-      FullResponseHolder
+      StringFullResponseHolder
           response =
           RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
               new Request(HttpMethod.GET,
                   new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s", overlordAddress, dataSourceName))),
-              new FullResponseHandler(Charset.forName("UTF-8"))),
-              input -> input instanceof IOException,
+              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
               getMaxRetryCount());
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
         return JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorSpec.class);
@@ -458,15 +460,12 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
             "Druid Datasource name is null");
     try {
-      FullResponseHolder
+      StringFullResponseHolder
           response =
           RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.GET,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/status",
-                      overlordAddress,
-                      dataSourceName))),
-              new FullResponseHandler(Charset.forName("UTF-8"))),
-              input -> input instanceof IOException,
+              new Request(HttpMethod.GET, new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/status", overlordAddress, dataSourceName))),
+              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
               getMaxRetryCount());
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
         return DruidStorageHandlerUtils.JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorReport.class);
@@ -539,9 +538,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       coordinatorResponse =
           RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
               new Request(HttpMethod.GET, new URL(String.format("http://%s/status", coordinatorAddress))),
-              new FullResponseHandler(Charset.forName("UTF-8"))).getContent(),
-              input -> input instanceof IOException,
-              maxTries);
+              new StringFullResponseHandler(Charset.forName("UTF-8"))).getContent(),
+              input -> input instanceof IOException, maxTries);
     } catch (Exception e) {
       CONSOLE.printInfo("Will skip waiting for data loading, coordinator unavailable");
       return;
@@ -559,7 +557,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
             return new URL(String.format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
                 coordinatorAddress,
                 dataSegment.getDataSource(),
-                dataSegment.getIdentifier()));
+                dataSegment.getId().toString()));
           } catch (MalformedURLException e) {
             Throwables.propagate(e);
           }
@@ -571,11 +569,9 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     while (numRetries++ < maxTries && !urlsOfUnloadedSegments.isEmpty()) {
       urlsOfUnloadedSegments = ImmutableSet.copyOf(Sets.filter(urlsOfUnloadedSegments, input -> {
         try {
-          String
-              result =
-              DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-                  new Request(HttpMethod.GET, input),
-                  new FullResponseHandler(Charset.forName("UTF-8"))).getContent();
+          String result = DruidStorageHandlerUtils
+              .getResponseFromCurrentLeader(getHttpClient(), new Request(HttpMethod.GET, input),
+                  new StringFullResponseHandler(Charset.forName("UTF-8"))).getContent();
 
           LOG.debug("Checking segment [{}] response is [{}]", input, result);
           return Strings.isNullOrEmpty(result);
@@ -604,7 +600,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   @VisibleForTesting void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
     final Path path = DruidStorageHandlerUtils.getPath(segment);
-    LOG.info("removing segment {}, located at path {}", segment.getIdentifier(), path);
+    LOG.info("removing segment {}, located at path {}", segment.getId().toString(), path);
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -691,7 +687,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()), e);
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getId().toString()), e);
         }
       }
     }
@@ -765,7 +761,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   }
 
   @Override public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-    if (UserGroupInformation.isSecurityEnabled()) {
+    final boolean kerberosEnabled = HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
+    if (kerberosEnabled && UserGroupInformation.isSecurityEnabled()) {
       // AM can not do Kerberos Auth so will do the input split generation in the HS2
       LOG.debug("Setting {} to {} to enable split generation on HS2",
           HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
@@ -824,6 +821,17 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     return Suppliers.memoize(this::buildConnector).get();
   }
 
+  private static String getPassword(Configuration conf, HiveConf.ConfVars var) {
+    try {
+      final char[] password = conf.getPassword(var.varname);
+      return password == null ? null : String.valueOf(password);
+    } catch (IOException e) {
+      // Reading password from configuration for backwards compatibility.
+      LOG.warn("Unable to retrieve password from credential providers. Trying to read it from config..", e);
+      return conf.get(var.varname);
+    }
+  }
+
   private SQLMetadataConnector buildConnector() {
 
     if (connector != null) {
@@ -832,7 +840,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
     final String dbType = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
     final String username = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
-    final String password = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String password = getPassword(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
     final String uri = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
     LOG.debug("Supplying SQL Connector with DB type {}, URI {}, User {}", dbType, uri, username);
     @SuppressWarnings("Guava") final Supplier<MetadataStorageConnectorConfig>
@@ -860,9 +868,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     case "postgresql":
       connector =
           new PostgreSQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()),
-                  new PostgreSQLConnectorConfig()
-          );
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()), new PostgreSQLConnectorConfig(),
+              new PostgreSQLTablesConfig());
 
       break;
     case "derby":
@@ -923,7 +930,9 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
             .withNumConnections(numConnection)
             .withReadTimeout(new Period(readTimeout).toStandardDuration())
             .build(), lifecycle);
-    if (UserGroupInformation.isSecurityEnabled()) {
+    final boolean kerberosEnabled =
+        HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
+    if (kerberosEnabled && UserGroupInformation.isSecurityEnabled()) {
       LOG.info("building Kerberos Http Client");
       return new KerberosHttpClient(httpClient);
     }
@@ -962,5 +971,29 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       // e.g. Total size of segments in druid, load status of table on historical nodes etc.
       return null;
     }
+  }
+
+  @Override public Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc,
+      Map<String, String> initialProps) {
+    if (operatorDesc instanceof TableScanDesc) {
+      TableScanDesc tableScanDesc = (TableScanDesc) operatorDesc;
+      ExprNodeGenericFuncDesc filterExpr = tableScanDesc.getFilterExpr();
+      String druidQuery = initialProps.get(Constants.DRUID_QUERY_JSON);
+
+      if (filterExpr != null && druidQuery != null) {
+        try {
+          Query query = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class);
+          Query queryWithDynamicFilters = DruidStorageHandlerUtils.addDynamicFilters(query, filterExpr, conf, false);
+          Map<String, String> props = Maps.newHashMap(initialProps);
+          props.put(Constants.DRUID_QUERY_JSON,
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithDynamicFilters));
+          return props;
+        } catch (IOException e) {
+          LOG.error("Exception while deserializing druid query. Explain plan may not have final druid query", e);
+        }
+      }
+    }
+    // Case when we do not have any additional info to add.
+    return initialProps;
   }
 }

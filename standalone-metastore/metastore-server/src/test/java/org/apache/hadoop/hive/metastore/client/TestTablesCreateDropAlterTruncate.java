@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -102,6 +103,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Map<String, String> extraConf = new HashMap<>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
     startMetaStores(msConf, extraConf);
   }
 
@@ -346,7 +348,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
-    Assert.assertEquals("Storage descriptor location", metaStore.getWarehouseRoot()
+    Assert.assertEquals("Storage descriptor location", metaStore.getExternalWarehouseRoot()
         + "/" + table.getDbName() + ".db/" + table.getTableName(),
         createdTable.getSd().getLocation());
   }
@@ -392,7 +394,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = InvalidObjectException.class)
   public void testCreateTableInvalidTableName() throws Exception {
     Table table = testTables[0];
-    table.setTableName("test_table;");
+    table.setTableName("test§table;");
 
     client.createTable(table);
   }
@@ -764,7 +766,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Table alteredTable = client.getTable(newTable.getDbName(), newTable.getTableName());
     Assert.assertTrue("New table directory should exist",
         metaStore.isPathExists(new Path(alteredTable.getSd().getLocation())));
-    Assert.assertEquals("New directory should be set", new Path(metaStore.getWarehouseRoot()
+    Assert.assertEquals("New directory should be set", new Path(metaStore.getExternalWarehouseRoot()
         + "/" + alteredTable.getDbName() + ".db/" + alteredTable.getTableName()),
         new Path(alteredTable.getSd().getLocation()));
     Path dataFile = new Path(alteredTable.getSd().getLocation() + "/dataFile");
@@ -947,7 +949,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void testAlterTableInvalidTableNameInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();
-    newTable.setTableName("test_table;");
+    newTable.setTableName("test§table;");
     client.alter_table(originalTable.getDbName(), originalTable.getTableName(), newTable);
   }
 

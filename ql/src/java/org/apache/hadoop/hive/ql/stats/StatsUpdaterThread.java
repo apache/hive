@@ -34,6 +34,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -67,6 +69,7 @@ import com.google.common.collect.Lists;
 
 public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   public static final String SKIP_STATS_AUTOUPDATE_PROPERTY = "skip.stats.autoupdate";
+  public static final String WORKER_NAME_PREFIX = "Stats updater worker ";
   private static final Logger LOG = LoggerFactory.getLogger(StatsUpdaterThread.class);
 
   protected Configuration conf;
@@ -144,12 +147,13 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
-      workers[i].setName("Stats updater worker " + i);
+      workers[i].setName(WORKER_NAME_PREFIX + i);
     }
   }
 
   @Override
   public void run() {
+    LOG.info("Stats updater thread started");
     startWorkers();
     while (!stop.get()) {
       boolean hadUpdates = runOneIteration();
@@ -167,12 +171,13 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   @VisibleForTesting
   void startWorkers() {
     for (int i = 0; i < workers.length; ++i) {
+      LOG.info("Stats updater worker thread " + workers[i].getName() + " started");
       workers[i].start();
     }
   }
 
   @VisibleForTesting
-  boolean runOneIteration() {
+  public boolean runOneIteration() {
     List<TableName> fullTableNames;
     try {
       fullTableNames = getTablesToCheck();
@@ -216,6 +221,17 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     // Check if the table should be skipped.
     String skipParam = table.getParameters().get(SKIP_STATS_AUTOUPDATE_PROPERTY);
     if ("true".equalsIgnoreCase(skipParam)) return null;
+
+    // If the table is being replicated into,
+    // 1. the stats are also replicated from the source, so we don't need those to be calculated
+    //    on the target again
+    // 2. updating stats requires a writeId to be created. Hence writeIds on source and target
+    //    can get out of sync when stats are updated. That can cause consistency issues.
+    String replTrgtParam = table.getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
+    if (replTrgtParam != null && !replTrgtParam.isEmpty()) {
+      LOG.debug("Skipping table {} since it is being replicated into", table);
+      return null;
+    }
 
     // Note: ideally we should take a lock here to pretend to be a real reader.
     //       For now, this check is going to have race potential; it may run a spurious analyze.
@@ -441,7 +457,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     try {
       // Note: this should NOT do txn verification - we want to get outdated stats, to
       //       see if we need to update anything.
-      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols);
+      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols, Constants.HIVE_ENGINE);
     } catch (NoSuchObjectException e) {
       LOG.error("Cannot retrieve existing stats, skipping " + fullTableName, e);
       return null;

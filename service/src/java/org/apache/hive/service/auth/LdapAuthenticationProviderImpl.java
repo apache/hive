@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.ldap.ChainFilterFactory;

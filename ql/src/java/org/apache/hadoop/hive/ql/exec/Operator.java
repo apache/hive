@@ -92,7 +92,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
   private String marker;
 
-  protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
   // initializing the whole tree in all the mappers (which might be required for mappers
@@ -574,7 +573,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public abstract void process(Object row, int tag) throws HiveException;
 
   protected final void defaultStartGroup() throws HiveException {
-    LOG.debug("Starting group");
+    LOG.trace("Starting group");
 
     if (CollectionUtils.isEmpty(childOperators))  {
       LOG.trace("No children operators; start group done");
@@ -589,7 +588,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected final void defaultEndGroup() throws HiveException {
-    LOG.debug("Ending group");
+    LOG.trace("Ending group");
 
     if (CollectionUtils.isEmpty(childOperators)) {
       LOG.trace("No children operators; end group done");
@@ -1367,6 +1366,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return builder.toString();
   }
 
+  public static String toString(Operator<?> op) {
+    StringBuilder builder = new StringBuilder();
+    toString(builder, new HashSet<String>(), op, 0);
+    return builder.toString();
+  }
+
   static boolean toString(StringBuilder builder, Set<String> visited, Operator<?> op, int start) {
     String name = op.toString();
     boolean added = visited.add(name);
@@ -1537,13 +1542,5 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
     return true;
-  }
-
-  public void setBucketingVersion(int bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
-  }
-
-  public int getBucketingVersion() {
-    return bucketingVersion;
   }
 }

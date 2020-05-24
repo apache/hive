@@ -1,0 +1,47 @@
+PREHOOK: query: DROP TABLE IF EXISTS salary
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS salary
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE salary(pay_date TIMESTAMP,employee_id INT,department_id INT,currency_id INT,salary_paid DECIMAL(10,4),overtime_paid DECIMAL(10,4),vacation_accrued DOUBLE,vacation_used DOUBLE)
+row format delimited fields terminated by '\011'
+location '../../data/files/salary'
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@salary
+POSTHOOK: query: CREATE EXTERNAL TABLE salary(pay_date TIMESTAMP,employee_id INT,department_id INT,currency_id INT,salary_paid DECIMAL(10,4),overtime_paid DECIMAL(10,4),vacation_accrued DOUBLE,vacation_used DOUBLE)
+row format delimited fields terminated by '\011'
+location '../../data/files/salary'
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@salary
+PREHOOK: query: DROP TABLE IF EXISTS employee_closure
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS employee_closure
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE employee_closure(employee_id INT,supervisor_id INT,distance INT)
+row format delimited fields terminated by '\011'
+location '../../data/files/employee_closure'
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@employee_closure
+POSTHOOK: query: CREATE EXTERNAL TABLE employee_closure(employee_id INT,supervisor_id INT,distance INT)
+row format delimited fields terminated by '\011'
+location '../../data/files/employee_closure'
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@employee_closure
+PREHOOK: query: select sum(salary.salary_paid) from salary, employee_closure where salary.employee_id = employee_closure.employee_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_closure
+PREHOOK: Input: default@salary
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(salary.salary_paid) from salary, employee_closure where salary.employee_id = employee_closure.employee_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_closure
+POSTHOOK: Input: default@salary
+#### A masked pattern was here ####
+1522809.7707

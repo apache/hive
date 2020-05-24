@@ -28,8 +28,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -234,7 +234,6 @@ public class SerializationUtilities {
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
       kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
-      kryo.register(MapWork.class, new MapWorkSerializer(kryo, MapWork.class));
       kryo.register(PartitionDesc.class, new PartitionDescSerializer(kryo, PartitionDesc.class));
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
@@ -367,67 +366,89 @@ public class SerializationUtilities {
   }
 
   /**
-   * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 (oracle jdk,
-   * represented by <code>java.util.ArrayList$SubList</code>).
+   * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 and {@link LinkedList#subList(int, int)} since java9 (openjdk).
    * This is from kryo-serializers package.
    */
   private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
 
-      private Field _parentField;
-      private Field _parentOffsetField;
-      private Field _sizeField;
+    private Field _parentField;
+    private Field _parentOffsetField;
+    private Field _sizeField;
 
-      public ArrayListSubListSerializer() {
-          try {
-              final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
-              _parentField = clazz.getDeclaredField("parent");
-              _parentOffsetField = clazz.getDeclaredField( "parentOffset" );
-              _sizeField = clazz.getDeclaredField( "size" );
-              _parentField.setAccessible( true );
-              _parentOffsetField.setAccessible( true );
-              _sizeField.setAccessible( true );
-          } catch (final Exception e) {
-              throw new RuntimeException(e);
-          }
-      }
-
-      @Override
-      public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> clazz) {
-          kryo.reference(FAKE_REFERENCE);
-          final List<?> list = (List<?>) kryo.readClassAndObject(input);
-          final int fromIndex = input.readInt(true);
-          final int toIndex = input.readInt(true);
-          return list.subList(fromIndex, toIndex);
-      }
-
-      @Override
-      public void write(final Kryo kryo, final Output output, final List<?> obj) {
-        try {
-            kryo.writeClassAndObject(output, _parentField.get(obj));
-            final int parentOffset = _parentOffsetField.getInt( obj );
-            final int fromIndex = parentOffset;
-            output.writeInt(fromIndex, true);
-            final int toIndex = fromIndex + _sizeField.getInt( obj );
-            output.writeInt(toIndex, true);
-        } catch (final Exception e) {
-                throw new RuntimeException(e);
-        }
-      }
-
-      @Override
-      public List<?> copy(final Kryo kryo, final List<?> original) {
-        try {
-            kryo.reference(FAKE_REFERENCE);
-            final List<?> list = (List<?>) _parentField.get(original);
-            final int parentOffset = _parentOffsetField.getInt( original );
-            final int fromIndex = parentOffset;
-            final int toIndex = fromIndex + _sizeField.getInt( original );
-            return kryo.copy(list).subList(fromIndex, toIndex);
-        } catch (final Exception e) {
-                throw new RuntimeException(e);
-        }
+    public ArrayListSubListSerializer() {
+      try {
+        final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
+        _parentField = getParentField(clazz);
+        _parentOffsetField = getOffsetField(clazz);
+        _sizeField = clazz.getDeclaredField( "size" );
+        _parentField.setAccessible( true );
+        _parentOffsetField.setAccessible( true );
+        _sizeField.setAccessible( true );
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
       }
     }
+
+    private static Field getParentField(Class clazz) throws NoSuchFieldException {
+      try {
+        // java 9+
+        return clazz.getDeclaredField("root");
+      } catch(NoSuchFieldException e) {
+        return clazz.getDeclaredField("parent");
+      }
+    }
+
+    private static Field getOffsetField(Class<?> clazz) throws NoSuchFieldException {
+      try {
+        // up to jdk8 (which also has an "offset" field (we don't need) - therefore we check "parentOffset" first
+        return clazz.getDeclaredField( "parentOffset" );
+      } catch (NoSuchFieldException e) {
+        // jdk9+ only has "offset" which is the parent offset
+        return clazz.getDeclaredField( "offset" );
+      }
+    }
+
+    @Override
+    public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> clazz) {
+      kryo.reference(FAKE_REFERENCE);
+      final List<?> list = (List<?>) kryo.readClassAndObject(input);
+      final int fromIndex = input.readInt(true);
+      final int toIndex = input.readInt(true);
+      return list.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public void write(final Kryo kryo, final Output output, final List<?> obj) {
+      try {
+        kryo.writeClassAndObject(output, _parentField.get(obj));
+        final int parentOffset = _parentOffsetField.getInt( obj );
+        final int fromIndex = parentOffset;
+        output.writeInt(fromIndex, true);
+        final int toIndex = fromIndex + _sizeField.getInt( obj );
+        output.writeInt(toIndex, true);
+      } catch (final RuntimeException e) {
+        // Don't eat and wrap RuntimeExceptions because the ObjectBuffer.write...
+        // handles SerializationException specifically (resizing the buffer)...
+        throw e;
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public List<?> copy(final Kryo kryo, final List<?> original) {
+      kryo.reference(FAKE_REFERENCE);
+      try {
+        final List<?> list = (List<?>) _parentField.get(original);
+        final int parentOffset = _parentOffsetField.getInt( original );
+        final int fromIndex = parentOffset;
+        final int toIndex = fromIndex + _sizeField.getInt( original );
+        return kryo.copy(list).subList(fromIndex, toIndex);
+      } catch(final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
   /**
    * A kryo {@link Serializer} for lists created via {@link Arrays#asList(Object...)}.
@@ -539,29 +560,6 @@ public class SerializationUtilities {
       Properties ip = kryo.readObjectOrNull(input, Properties.class);
       ((CopyOnFirstWriteProperties) map).setInterned(ip);
       return map;
-    }
-  }
-
-  /**
-   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link MapWork} objects in
-   * order to invoke any string interning code present in the "setter" methods. The fields in {@link
-   * MapWork} often store paths that contain duplicate strings, so interning them can decrease
-   * memory significantly.
-   */
-  private static class MapWorkSerializer extends FieldSerializer<MapWork> {
-
-    MapWorkSerializer(Kryo kryo, Class type) {
-      super(kryo, type);
-    }
-
-    @Override
-    public MapWork read(Kryo kryo, Input input, Class<MapWork> type) {
-      MapWork mapWork = super.read(kryo, input, type);
-      // The set methods in MapWork intern the any duplicate strings which is why we call them
-      // during de-serialization
-      mapWork.setPathToPartitionInfo(mapWork.getPathToPartitionInfo());
-      mapWork.setPathToAliases(mapWork.getPathToAliases());
-      return mapWork;
     }
   }
 
@@ -696,7 +694,7 @@ public class SerializationUtilities {
    */
   public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
     if (roots.isEmpty()) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     CompilationOpContext ctx = roots.get(0).getCompilationOpContext();

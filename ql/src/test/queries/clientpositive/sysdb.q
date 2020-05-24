@@ -1,4 +1,5 @@
---! qt:dataset:alltypesorc,alltypesparquet,part,src,src1,srcbucket,srcbucket2,src_cbo,src_json,src_sequencefile,src_thrift,srcpart,cbo_t1,cbo_t2,cbo_t3,lineitem
+--! qt:dataset:src,part,srcbucket:ONLY
+--! qt:sysdb
 
 set hive.strict.checks.cartesian.product=false;
 
@@ -32,8 +33,6 @@ CREATE TEMPORARY TABLE src_tmp (key int, value string);
 CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3));
 
 show grant user hive_test_user;
-
-source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 
 use sys;
 
@@ -82,9 +81,10 @@ select skewed_col_name from skewed_col_names order by skewed_col_name limit 5;
 
 select count(*) from skewed_col_value_loc_map;
 
-select count(*) from skewed_string_list;
+-- HIVE-23289: there are fallout in these tables from previous tests
+select * from skewed_string_list limit 0;
 
-select count(*) from skewed_string_list_values;
+select * from skewed_string_list_values limit 0;
 
 select count(*) from skewed_values;
 

@@ -1,0 +1,489 @@
+PREHOOK: query: DROP TABLE parquet_decimal_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_bigint_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_bigint_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_int_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_int_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_smallint_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_smallint_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_tinyint_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_tinyint_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_double_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_double_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_decimal_float_spark
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_decimal_float_spark
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_decimal_spark (d1 decimal(4,2), d2 decimal(4,0), d3 decimal(12,5), d4 decimal(12,0)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_spark (d1 decimal(4,2), d2 decimal(4,0), d3 decimal(12,5), d4 decimal(12,0)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_bigint_spark (d1 bigint, d2 bigint, d3 bigint, d4 bigint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_bigint_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_bigint_spark (d1 bigint, d2 bigint, d3 bigint, d4 bigint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_bigint_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_int_spark (d1 int, d2 int, d3 int, d4 int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_int_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_int_spark (d1 int, d2 int, d3 int, d4 int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_int_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_smallint_spark (d1 smallint, d2 smallint, d3 smallint, d4 smallint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_smallint_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_smallint_spark (d1 smallint, d2 smallint, d3 smallint, d4 smallint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_smallint_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_tinyint_spark (d1 tinyint, d2 tinyint, d3 tinyint, d4 tinyint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_tinyint_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_tinyint_spark (d1 tinyint, d2 tinyint, d3 tinyint, d4 tinyint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_tinyint_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_double_spark (d1 double, d2 double, d3 double, d4 double) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_double_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_double_spark (d1 double, d2 double, d3 double, d4 double) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_double_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_float_spark (d1 float, d2 float, d3 float, d4 float) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_float_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_float_spark (d1 float, d2 float, d3 float, d4 float) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_float_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_string_spark (d1 string, d2 string, d3 string, d4 string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_string_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_string_spark (d1 string, d2 string, d3 string, d4 string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_string_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_varchar_spark (d1 varchar(100), d2 varchar(100), d3 varchar(100), d4 varchar(100)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_varchar_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_varchar_spark (d1 varchar(100), d2 varchar(100), d3 varchar(100), d4 varchar(100)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_varchar_spark
+PREHOOK: query: CREATE TABLE parquet_decimal_char_spark (d1 char(4), d2 char(4), d3 char(4), d4 char(4)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_char_spark
+POSTHOOK: query: CREATE TABLE parquet_decimal_char_spark (d1 char(4), d2 char(4), d3 char(4), d4 char(4)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_char_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_bigint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_bigint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_bigint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_bigint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_bigint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_bigint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_bigint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_bigint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_int_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_int_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_int_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_int_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_int_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_int_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_int_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_int_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_smallint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_smallint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_smallint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_smallint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_smallint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_smallint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_smallint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_smallint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_tinyint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_tinyint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_tinyint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_tinyint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_tinyint_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_tinyint_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_tinyint_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_tinyint_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_double_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_double_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_double_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_double_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_double_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_double_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_double_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_double_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_float_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_float_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_float_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_float_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_float_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_float_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_float_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_float_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_string_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_string_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_string_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_string_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_string_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_string_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_string_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_string_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_varchar_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_varchar_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_varchar_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_varchar_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_varchar_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_varchar_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_varchar_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_varchar_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_char_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_char_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_1.parquet' INTO TABLE parquet_decimal_char_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_char_spark
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_char_spark
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_decimal_char_spark
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_int_decimal_2.parquet' INTO TABLE parquet_decimal_char_spark
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_decimal_char_spark
+PREHOOK: query: SELECT * FROM parquet_decimal_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_spark
+#### A masked pattern was here ####
+44.21	54	3344556.21211	3344556
+52.00	62	8877665.00000	776644993322
+0.00	0	0.00000	0
+-42.25	-52	-2233114.88776	-2233115
+-15.00	-25	-8877665.00000	-776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_bigint_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_bigint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_bigint_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_bigint_spark
+#### A masked pattern was here ####
+NULL	54	NULL	3344556
+52	62	8877665	776644993322
+0	0	0	0
+NULL	-52	NULL	-2233115
+-15	-25	-8877665	-776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_int_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_int_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_int_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_int_spark
+#### A masked pattern was here ####
+NULL	54	NULL	3344556
+52	62	8877665	NULL
+0	0	0	0
+NULL	-52	NULL	-2233115
+-15	-25	-8877665	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_smallint_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_smallint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_smallint_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_smallint_spark
+#### A masked pattern was here ####
+NULL	54	NULL	NULL
+52	62	NULL	NULL
+0	0	0	0
+NULL	-52	NULL	NULL
+-15	-25	NULL	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_tinyint_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_tinyint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_tinyint_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_tinyint_spark
+#### A masked pattern was here ####
+NULL	54	NULL	NULL
+52	62	NULL	NULL
+0	0	0	0
+NULL	-52	NULL	NULL
+-15	-25	NULL	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_double_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_double_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_double_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_double_spark
+#### A masked pattern was here ####
+44.21	54.0	3344556.21211	3344556.0
+52.0	62.0	8877665.0	7.76644993322E11
+0.0	0.0	0.0	0.0
+-42.25	-52.0	-2233114.88776	-2233115.0
+-15.0	-25.0	-8877665.0	-7.76644993322E11
+PREHOOK: query: SELECT * FROM parquet_decimal_float_spark
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_float_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_float_spark
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_float_spark
+#### A masked pattern was here ####
+44.21	54.0	3344556.2	3344556.0
+52.0	62.0	8877665.0	7.7664498E11
+0.0	0.0	0.0	0.0
+-42.25	-52.0	-2233115.0	-2233115.0
+-15.0	-25.0	-8877665.0	-7.7664498E11
+PREHOOK: query: SELECT * FROM parquet_decimal_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_spark
+#### A masked pattern was here ####
+-42.25	-52	-2233114.88776	-2233115
+-15.00	-25	-8877665.00000	-776644993322
+0.00	0	0.00000	0
+44.21	54	3344556.21211	3344556
+52.00	62	8877665.00000	776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_bigint_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_bigint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_bigint_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_bigint_spark
+#### A masked pattern was here ####
+NULL	-52	NULL	-2233115
+-15	-25	-8877665	-776644993322
+0	0	0	0
+NULL	54	NULL	3344556
+52	62	8877665	776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_int_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_int_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_int_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_int_spark
+#### A masked pattern was here ####
+NULL	-52	NULL	-2233115
+-15	-25	-8877665	NULL
+0	0	0	0
+NULL	54	NULL	3344556
+52	62	8877665	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_smallint_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_smallint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_smallint_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_smallint_spark
+#### A masked pattern was here ####
+NULL	-52	NULL	NULL
+-15	-25	NULL	NULL
+0	0	0	0
+NULL	54	NULL	NULL
+52	62	NULL	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_tinyint_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_tinyint_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_tinyint_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_tinyint_spark
+#### A masked pattern was here ####
+NULL	-52	NULL	NULL
+-15	-25	NULL	NULL
+0	0	0	0
+NULL	54	NULL	NULL
+52	62	NULL	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_double_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_double_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_double_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_double_spark
+#### A masked pattern was here ####
+-42.25	-52.0	-2233114.88776	-2233115.0
+-15.0	-25.0	-8877665.0	-7.76644993322E11
+0.0	0.0	0.0	0.0
+44.21	54.0	3344556.21211	3344556.0
+52.0	62.0	8877665.0	7.76644993322E11
+PREHOOK: query: SELECT * FROM parquet_decimal_float_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_float_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_float_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_float_spark
+#### A masked pattern was here ####
+-42.25	-52.0	-2233115.0	-2233115.0
+-15.0	-25.0	-8877665.0	-7.7664498E11
+44.21	54.0	3344556.2	3344556.0
+52.0	62.0	8877665.0	7.7664498E11
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM parquet_decimal_string_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_string_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_string_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_string_spark
+#### A masked pattern was here ####
+-15	-25	-8877665	-776644993322
+-42.25	-52	-2233114.88776	-2233115
+0	0	0	0
+44.21	54	3344556.21211	3344556
+52	62	8877665	776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_varchar_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_varchar_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_varchar_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_varchar_spark
+#### A masked pattern was here ####
+-15	-25	-8877665	-776644993322
+-42.25	-52	-2233114.88776	-2233115
+0	0	0	0
+44.21	54	3344556.21211	3344556
+52	62	8877665	776644993322
+PREHOOK: query: SELECT * FROM parquet_decimal_char_spark order by d2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_char_spark
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_char_spark order by d2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_char_spark
+#### A masked pattern was here ####
+-15 	-25 	-887	-776
+-42.	-52 	-223	-223
+0   	0   	0   	0   
+44.2	54  	3344	3344
+52  	62  	8877	7766

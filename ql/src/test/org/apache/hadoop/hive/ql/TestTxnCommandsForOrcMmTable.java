@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Same as TestTxnCommands2 but tests ACID tables with vectorization turned on by

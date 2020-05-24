@@ -40,9 +40,10 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -82,6 +83,9 @@ public class HiveStringUtils {
           {"\\", "\\\\"},
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
+
+  private static final CharSequenceTranslator UNICODE_CONVERTER =
+      JavaUnicodeEscaper.outsideOf(32, 127);
 
   static {
     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
@@ -649,6 +653,16 @@ public class HiveStringUtils {
    */
   public static String escapeHiveCommand(String str) {
     return ESCAPE_HIVE_COMMAND.translate(str);
+  }
+
+  /**
+   * Escape java unicode characters.
+   *
+   * @param str Original string
+   * @return Escaped string
+   */
+  public static String escapeUnicode(String str) {
+    return UNICODE_CONVERTER.translate(str);
   }
 
   /**

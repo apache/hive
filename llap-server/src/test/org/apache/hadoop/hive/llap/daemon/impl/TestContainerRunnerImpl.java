@@ -98,8 +98,8 @@ public class TestContainerRunnerImpl {
     srvAddress.set(serverSocket);
 
     this.metrics = LlapDaemonExecutorMetrics
-        .create("ContinerRunerTests", MetricsUtils.getUUID(), numExecutors,
-            Ints.toArray(intervalList));
+        .create("ContinerRunerTests", MetricsUtils.getUUID(), numExecutors, waitQueueSize,
+            Ints.toArray(intervalList), 0, 0L, 0);
 
     for (int i = 0; i < numLocalDirs; i++) {
       File f = new File(testWorkDir, "localDir");
@@ -174,7 +174,9 @@ public class TestContainerRunnerImpl {
     containerRunner.submitWork(sRequest);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    if (ShuffleHandler.get().isDirWatcherEnabled()) {
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    }
   }
 }

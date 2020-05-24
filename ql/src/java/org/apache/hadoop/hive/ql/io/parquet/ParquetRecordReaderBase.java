@@ -16,11 +16,14 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -41,7 +44,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ParquetRecordReaderBase {
   public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordReaderBase.class);
@@ -49,6 +54,7 @@ public class ParquetRecordReaderBase {
   protected Path file;
   protected ProjectionPusher projectionPusher;
   protected boolean skipTimestampConversion = false;
+  protected Boolean skipProlepticConversion;
   protected SerDeStats serDeStats;
   protected JobConf jobConf;
 
@@ -125,6 +131,13 @@ public class ParquetRecordReaderBase {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
         skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
       }
+      skipProlepticConversion = DataWritableReadSupport
+          .getWriterDateProleptic(fileMetaData.getKeyValueMetaData());
+      if (skipProlepticConversion == null) {
+        skipProlepticConversion = HiveConf.getBoolVar(
+            conf, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
+      }
+
       split = new ParquetInputSplit(finalPath,
         splitStart,
         splitLength,
@@ -146,9 +159,18 @@ public class ParquetRecordReaderBase {
       return null;
     }
 
+    String columnTypes = conf.get(IOConstants.COLUMNS_TYPES);
+    String columnNames = conf.get(IOConstants.COLUMNS);
+    List<TypeInfo> columnTypeList = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
+    Map<String, TypeInfo> columns = new HashMap<>();
+    String[] names = columnNames.split(",");
+    for (int i = 0; i < names.length; i++) {
+      columns.put(names[i], columnTypeList.get(i));
+    }
+
     // Create the Parquet FilterPredicate without including columns that do not exist
     // on the schema (such as partition columns).
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columns);
     if (p != null) {
       // Filter may have sensitive information. Do not send to debug.
       LOG.debug("PARQUET predicate push down generated.");

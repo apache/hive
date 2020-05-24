@@ -40,7 +40,6 @@ import org.apache.hadoop.mapred.InputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Explain(displayName = "Merge File Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -132,7 +131,7 @@ public class MergeFileWork extends MapWork {
   public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf,
       Path path,
       TableDesc tblDesc,
-      ArrayList<String> aliases,
+      List<String> aliases,
       PartitionDesc partDesc) {
     super.resolveDynamicPartitionStoredAsSubDirsMerge(conf, path, tblDesc,
         aliases, partDesc);

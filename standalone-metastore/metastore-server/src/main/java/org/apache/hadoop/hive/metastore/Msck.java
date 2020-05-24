@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,7 +46,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -108,15 +108,11 @@ public class Msck {
     boolean success = false;
     long txnId = -1;
     int ret = 0;
+    long partitionExpirySeconds = msckInfo.getPartitionExpirySeconds();
     try {
       Table table = getMsc().getTable(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName());
       qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-      if (getConf().getBoolean(MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION.getHiveName(), false)) {
-        msckInfo.setPartitionExpirySeconds(PartitionManagementTask.getRetentionPeriodInSeconds(table));
-        LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..",
-          qualifiedTableName, msckInfo.getPartitionExpirySeconds());
-      }
-      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), msckInfo.getPartitionExpirySeconds());
+      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), partitionExpirySeconds);
       // checkMetastore call will fill in result with partitions that are present in filesystem
       // and missing in metastore - accessed through getPartitionsNotInMs
       // And partitions that are not present in filesystem and metadata exists in metastore -
@@ -253,7 +249,7 @@ public class Msck {
           firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
             "Partitions missing from filesystem:", resultOut, firstWritten);
           firstWritten |= writeMsckResult(result.getExpiredPartitions(),
-            "Expired partitions (retention period: " + msckInfo.getPartitionExpirySeconds() + "s) :", resultOut, firstWritten);
+            "Expired partitions (retention period: " + partitionExpirySeconds + "s) :", resultOut, firstWritten);
           // sorting to stabilize qfile output (msck_repair_drop.q)
           Collections.sort(repairOutput);
           for (String rout : repairOutput) {
@@ -398,7 +394,7 @@ public class Msck {
     }.run();
   }
 
-  private static String makePartExpr(Map<String, String> spec)
+  public static String makePartExpr(Map<String, String> spec)
     throws MetaException {
     StringBuilder suffixBuf = new StringBuilder();
     int i = 0;
@@ -471,7 +467,7 @@ public class Msck {
             // so 3rd parameter (deleteData) is set to false
             // msck is doing a clean up of hms.  if for some reason the partition is already
             // deleted, then it is good.  So, the last parameter ifexists is set to true
-            List<ObjectPair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
+            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
             metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(), partExprs, dropOptions);
 
             // if last batch is successful remove it from partsNotInFs
@@ -484,8 +480,8 @@ public class Msck {
         }
       }
 
-      private List<ObjectPair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
-        List<ObjectPair<Integer, byte[]>> expr = new ArrayList<>(parts.size());
+      private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
+        List<Pair<Integer, byte[]>> expr = new ArrayList<>(parts.size());
         for (int i = 0; i < parts.size(); i++) {
           String partName = parts.get(i);
           Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
@@ -493,7 +489,7 @@ public class Msck {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Generated partExpr: {} for partName: {}", partExpr, partName);
           }
-          expr.add(new ObjectPair<>(i, partExpr.getBytes(StandardCharsets.UTF_8)));
+          expr.add(Pair.of(i, partExpr.getBytes(StandardCharsets.UTF_8)));
         }
         return expr;
       }

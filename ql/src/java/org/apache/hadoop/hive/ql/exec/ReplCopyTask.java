@@ -45,7 +45,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -103,37 +102,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private void renameFileCopiedFromCmPath(Path toPath, FileSystem dstFs, List<ReplChangeManager.FileInfo> srcFiles)
-          throws IOException {
-    for (ReplChangeManager.FileInfo srcFile : srcFiles) {
-      if (srcFile.isUseSourcePath()) {
-        continue;
-      }
-      String destFileName = srcFile.getCmPath().getName();
-      Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
-      Path destFile = new Path(destRoot, destFileName);
-      if (dstFs.exists(destFile)) {
-        String destFileWithSourceName = srcFile.getSourcePath().getName();
-        Path newDestFile = new Path(destRoot, destFileWithSourceName);
-
-        // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
-        // directly to table path (bypassing staging directory) then there might be some stale files from previous
-        // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
-          dstFs.delete(newDestFile, true);
-        }
-        boolean result = dstFs.rename(destFile, newDestFile);
-        if (!result) {
-          throw new IllegalStateException(
-                  "could not rename " + destFile.getName() + " to " + newDestFile.getName());
-        }
-      }
-    }
-  }
-
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute() {
     LOG.debug("ReplCopyTask.execute()");
     FileSystem dstFs = null;
     Path toPath = null;
@@ -191,33 +161,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }
 
         if (work.isCopyToMigratedTxnTable()) {
-          if (work.isNeedCheckDuplicateCopy()) {
-            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
-            if (srcFiles.isEmpty()) {
-              LOG.info("All files are already present in the base directory. Skipping copy task.");
-              return 0;
-            }
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
           }
-          // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
-          // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
-          // The toPath received in ReplCopyWork is pointing to table/partition base location.
-          // So, just need to append the base or delta directory.
-          // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
-          // hence need to create base directory. If false, then it is repl load for regular insert into or
-          // load flow and hence just create delta directory.
-          String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-          if (writeIdString == null) {
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
             return 6;
           }
-          long writeId = Long.parseLong(writeIdString);
-          // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
-          // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ?
-                  ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
-                  driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+          toPath = modifiedToPath;
         }
       } else {
         // This flow is usually taken for IMPORT command
@@ -233,12 +186,22 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
-
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-                                                      oneSrc.getPath(), null));
+          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
+        }
+        if (work.isCopyToMigratedTxnTable()) {
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
+          }
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
+            console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
+            return 6;
+          }
+          toPath = modifiedToPath;
         }
       }
 
@@ -257,12 +220,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         return 2;
       }
       // Copy the files from different source file systems to one destination directory
-      new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs).copyAndVerify(toPath, srcFiles);
+      CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
+      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.isOverWrite());
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
-      renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+      copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -271,6 +235,38 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
+  private boolean isDuplicateCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles)
+          throws IOException {
+    if (work.isNeedCheckDuplicateCopy()) {
+      updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
+              ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
+      if (srcFiles.isEmpty()) {
+        LOG.info("All files are already present in the base directory. Skipping copy task.");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Path getModifiedToPath(Path toPath) {
+    // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
+    // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
+    // The toPath received in ReplCopyWork is pointing to table/partition base location.
+    // So, just need to append the base or delta directory.
+    // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
+    // hence need to create base directory. If false, then it is repl load for regular insert into or
+    // load flow and hence just create delta directory.
+    Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+    if (writeId == null) {
+      return null;
+    }
+    // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
+    // duplicate copy from the source. Check HIVE-21197 for more detail.
+    int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
+            ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
+            context.getHiveTxnManager().getStmtIdAndIncrement();
+    return new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+  }
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);
@@ -326,10 +322,26 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                         boolean copyToMigratedTxnTable) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+                           copyToMigratedTxnTable, true);
+  }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+            copyToMigratedTxnTable, readSourceAsFileList, false);
+  }
+
+  private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList,
+                                        boolean overWrite) {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
-      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, overWrite);
+      rcwork.setReadSrcAsFilesList(readSourceAsFileList);
       if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
         rcwork.setDeleteDestIfExist(true);
         rcwork.setAutoPurge(isAutoPurge);
@@ -341,15 +353,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // replace events getting replayed in the first incremental load.
       rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck() && !replicationSpec.isReplace());
       LOG.debug("ReplCopyTask:\trcwork");
-      if (replicationSpec.isLazy()) {
-        LOG.debug("ReplCopyTask:\tlazy");
-        rcwork.setReadSrcAsFilesList(true);
-
-        // It is assumed isLazy flag is set only for REPL LOAD flow.
-        // IMPORT always do deep copy. So, distCpDoAsUser will be null by default in ReplCopyWork.
-        String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-        rcwork.setDistCpDoAsUser(distCpDoAsUser);
-      }
+      String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+      rcwork.setDistCpDoAsUser(distCpDoAsUser);
       copyTask = TaskFactory.get(rcwork, conf);
     } else {
       LOG.debug("ReplCopyTask:\tcwork");
@@ -361,5 +366,15 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false);
+  }
+
+  /*
+   * Invoked in the bootstrap path.
+   * Overwrite set to true
+   */
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                          HiveConf conf, boolean readSourceAsFileList, boolean overWrite) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+            false, readSourceAsFileList, overWrite);
   }
 }

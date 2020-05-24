@@ -20,9 +20,15 @@ package org.apache.hadoop.hive.common.type;
 
 import java.util.Random;
 
-import junit.framework.TestCase;
 
-public class TestHiveBaseChar extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
+
+/**
+ * HiveBaseChar Test.
+ */
+public class TestHiveBaseChar {
   static Random rnd = new Random();
 
   public static int getRandomSupplementaryChar() {
@@ -62,6 +68,7 @@ public class TestHiveBaseChar extends TestCase {
     return sb.toString();
   }
 
+  @Test
   public void testStringLength() throws Exception {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };
@@ -83,6 +90,7 @@ public class TestHiveBaseChar extends TestCase {
     assertNull(HiveBaseChar.enforceMaxLength(null, 0));
   }
 
+  @Test
   public void testGetPaddedValue() {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };

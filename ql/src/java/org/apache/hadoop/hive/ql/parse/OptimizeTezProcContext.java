@@ -41,7 +41,7 @@ import com.google.common.collect.Multimap;
  * to do some additional optimizations on it.
  *
  */
-public class OptimizeTezProcContext implements NodeProcessorCtx{
+public class OptimizeTezProcContext implements NodeProcessorCtx {
 
   public final ParseContext parseContext;
   public final HiveConf conf;

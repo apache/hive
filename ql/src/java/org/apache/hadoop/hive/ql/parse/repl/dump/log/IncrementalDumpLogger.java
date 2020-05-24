@@ -23,22 +23,35 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.IncrementalDumpEvent;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
-public class IncrementalDumpLogger extends ReplLogger {
+/**
+ * IncrementalDumpLogger.
+ *
+ * Repllogger for incremental dump.
+ **/
+public class IncrementalDumpLogger extends ReplLogger<String> {
   private String dbName;
   private String dumpDir;
   private long estimatedNumEvents;
   private long eventSeqNo;
+  private Long fromEventId;
+  private Long toEventId;
+  private int maxEvents;
 
-  public IncrementalDumpLogger(String dbName, String dumpDir, long estimatedNumEvents) {
+  public IncrementalDumpLogger(String dbName, String dumpDir, long estimatedNumEvents,
+                               Long fromEventId, Long toEventId, int maxEvents) {
     this.dbName = dbName;
     this.dumpDir = dumpDir;
     this.estimatedNumEvents = estimatedNumEvents;
     this.eventSeqNo = 0;
+    this.fromEventId = fromEventId;
+    this.toEventId = toEventId;
+    this.maxEvents = maxEvents;
   }
 
   @Override
   public void startLog() {
-    (new IncrementalDumpBegin(dbName, estimatedNumEvents)).log(LogTag.START);
+    (new IncrementalDumpBegin(dbName, estimatedNumEvents, fromEventId, toEventId,
+            Long.valueOf(maxEvents))).log(LogTag.START);
   }
 
   @Override

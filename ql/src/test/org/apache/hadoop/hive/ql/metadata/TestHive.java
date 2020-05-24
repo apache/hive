@@ -38,14 +38,13 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -66,25 +65,29 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
 
 /**
  * TestHive.
  *
  */
-public class TestHive extends TestCase {
-  protected Hive hm;
-  protected HiveConf hiveConf;
+public class TestHive {
+  protected static Hive hm;
+  protected static HiveConf hiveConf;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    hiveConf = new HiveConf(this.getClass());
+  @BeforeClass
+  public static void setUp() throws Exception {
+
+    hiveConf = new HiveConf(TestHive.class);
     hm = setUpImpl(hiveConf);
   }
 
@@ -94,6 +97,8 @@ public class TestHive extends TestCase {
     // enable trash so it can be tested
     hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
     hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     SessionState.start(hiveConf);
     try {
       return Hive.get(hiveConf);
@@ -104,10 +109,10 @@ public class TestHive extends TestCase {
     }
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     try {
-      super.tearDown();
+
       // disable trash
       hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
       hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
@@ -121,6 +126,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testTable() throws Throwable {
     try {
       // create a simple table and test create, drop, get
@@ -220,6 +226,7 @@ public class TestHive extends TestCase {
    *
    * @throws Throwable
    */
+  @Test
   public void testThriftTable() throws Throwable {
     String tableName = "table_for_test_thrifttable";
     try {
@@ -263,6 +270,7 @@ public class TestHive extends TestCase {
    *
    * @throws Throwable
    */
+  @Test
   public void testMetaStoreApiTiming() throws Throwable {
     // Get the RootLogger which, if you don't have log4j2-test.properties defined, will only log ERRORs
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
@@ -343,6 +351,11 @@ public class TestHive extends TestCase {
         ft.getTTable().setWriteId(0);
         tbl.getTTable().setWriteId(0);
       }
+      // accessType set by HMS Transformer
+      if (tbl.getTTable().isSetAccessType() != ft.getTTable().isSetAccessType()) {
+        // No need to compare this field.
+        tbl.getTTable().setAccessType(ft.getTTable().getAccessType());
+      }
 
       tbl.getTTable().unsetId();
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
@@ -372,6 +385,7 @@ public class TestHive extends TestCase {
    * Test basic Hive class interaction, that:
    * - We can have different Hive objects throughout the lifetime of this thread.
    */
+  @Test
   public void testHiveCloseCurrent() throws Throwable {
     Hive hive1 = Hive.get();
     Hive.closeCurrent();
@@ -380,6 +394,7 @@ public class TestHive extends TestCase {
     assertTrue(hive1 != hive2);
   }
 
+  @Test
   public void testGetAndDropTables() throws Throwable {
     try {
       String dbName = "db_for_testgettables";
@@ -432,6 +447,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testWmNamespaceHandling() throws Throwable {
     HiveConf hiveConf = new HiveConf(this.getClass());
     Hive hm = setUpImpl(hiveConf);
@@ -478,6 +494,7 @@ public class TestHive extends TestCase {
     hm2.alterResourcePlan("hm", changes, true, false, false);
   }
 
+  @Test
   public void testDropTableTrash() throws Throwable {
     if (!ShimLoader.getHadoopShims().supportTrashFeature()) {
       return; // it's hadoop-1
@@ -590,6 +607,7 @@ public class TestHive extends TestCase {
    * 2. Drop partitions with PURGE, and check that the data is moved to Trash.
    * @throws Exception on failure.
    */
+  @Test
   public void testDropPartitionsWithPurge() throws Exception {
     String dbName = Warehouse.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testDropPartitionsWithPurge";
@@ -652,6 +670,7 @@ public class TestHive extends TestCase {
    * Test that tables set up with auto-purge skip trash-directory when tables/partitions are dropped.
    * @throws Throwable
    */
+  @Test
   public void testAutoPurgeTablesAndPartitions() throws Throwable {
 
     String dbName = Warehouse.DEFAULT_DATABASE_NAME;
@@ -704,6 +723,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testPartition() throws Throwable {
     try {
       String tableName = "table_for_testpartition";
@@ -752,6 +772,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testHiveRefreshOnConfChange() throws Throwable{
     Hive prevHiveObj = Hive.get();
     prevHiveObj.getDatabaseCurrent();

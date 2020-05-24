@@ -13,13 +13,14 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -27,7 +28,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
-import org.apache.parquet.schema.DecimalMetadata;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
 import org.apache.parquet.schema.Type;
 
 import java.io.IOException;
@@ -49,10 +50,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       PageReader pageReader,
       boolean skipTimestampConversion,
       ZoneId writerTimezone,
+      boolean skipProlepticConversion,
       Type type,
       TypeInfo hiveType)
       throws IOException {
-    super(descriptor, pageReader, skipTimestampConversion, writerTimezone, type, hiveType);
+    super(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion, type, hiveType);
   }
 
   @Override
@@ -102,6 +104,8 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readSmallInts(num, (LongColumnVector) column, rowId);
       break;
     case DATE:
+      readDate(num, (DateColumnVector) column, rowId);
+      break;
     case INTERVAL_YEAR_MONTH:
     case LONG:
       readLongs(num, (LongColumnVector) column, rowId);
@@ -332,9 +336,12 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       DecimalColumnVector c,
       int rowId) throws IOException {
 
-    DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
+    DecimalLogicalTypeAnnotation decimalLogicalType = null;
+    if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
+      decimalLogicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+    }
     byte[] decimalData = null;
-    fillDecimalPrecisionScale(decimalMetadata, c);
+    fillDecimalPrecisionScale(decimalLogicalType, c);
 
     int left = total;
     while (left > 0) {
@@ -436,7 +443,34 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
+  private void readDate(
+      int total,
+      DateColumnVector c,
+      int rowId) throws IOException {
+    c.setUsingProlepticCalendar(true);
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.vector[rowId] = skipProlepticConversion ?
+            dataColumn.readLong() : CalendarUtils.convertDateToProleptic((int) dataColumn.readLong());
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
+      } else {
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
   private void readTimestamp(int total, TimestampColumnVector c, int rowId) throws IOException {
+    c.setUsingProlepticCalendar(true);
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -446,9 +480,12 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         case INT96:
           c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
           break;
+        case INT64:
+          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
+          break;
         default:
           throw new IOException(
-              "Unsupported parquet logical type: " + type.getOriginalType() + " for timestamp");
+              "Unsupported parquet logical type: " + type.getLogicalTypeAnnotation().toString() + " for timestamp");
         }
         c.isNull[rowId] = false;
         c.isRepeating =
@@ -511,6 +548,19 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case DATE:
+      DateColumnVector dc = (DateColumnVector) column;
+      dc.setUsingProlepticCalendar(true);
+      for (int i = rowId; i < rowId + num; ++i) {
+        dc.vector[i] =
+            skipProlepticConversion ?
+                dictionary.readLong((int) dictionaryIds.vector[i]) :
+                CalendarUtils.convertDateToProleptic((int) dictionary.readLong((int) dictionaryIds.vector[i]));
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          dc.vector[i] = 0;
+        }
+      }
+      break;
     case INTERVAL_YEAR_MONTH:
     case LONG:
       for (int i = rowId; i < rowId + num; ++i) {
@@ -573,11 +623,14 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case DECIMAL:
-      DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
+      DecimalLogicalTypeAnnotation decimalLogicalType = null;
+      if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
+        decimalLogicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+      }
       DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
       byte[] decimalData = null;
 
-      fillDecimalPrecisionScale(decimalMetadata, decimalColumnVector);
+      fillDecimalPrecisionScale(decimalLogicalType, decimalColumnVector);
 
       for (int i = rowId; i < rowId + num; ++i) {
         decimalData = dictionary.readDecimal((int) dictionaryIds.vector[i]);
@@ -589,9 +642,10 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case TIMESTAMP:
+      TimestampColumnVector tsc = (TimestampColumnVector) column;
+      tsc.setUsingProlepticCalendar(true);
       for (int i = rowId; i < rowId + num; ++i) {
-        ((TimestampColumnVector) column)
-            .set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
+        tsc.set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
       }
       break;
     case INTERVAL_DAY_TIME:
@@ -602,19 +656,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
 
   /**
    * The decimal precision and scale is filled into decimalColumnVector.  If the data in
-   * Parquet is in decimal, the precision and scale will come in from decimalMetadata.  If parquet
+   * Parquet is in decimal, the precision and scale will come in from decimalLogicalType.  If parquet
    * is not in decimal, then this call is made because HMS shows the type as decimal.  So, the
    * precision and scale are picked from hiveType.
    *
-   * @param decimalMetadata
+   * @param decimalLogicalType
    * @param decimalColumnVector
    */
-  private void fillDecimalPrecisionScale(DecimalMetadata decimalMetadata,
+  private void fillDecimalPrecisionScale(DecimalLogicalTypeAnnotation decimalLogicalType,
       DecimalColumnVector decimalColumnVector) {
-    if (decimalMetadata != null) {
-      decimalColumnVector.precision =
-          (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
-      decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
+    if (decimalLogicalType != null) {
+      decimalColumnVector.precision = (short) decimalLogicalType.getPrecision();
+      decimalColumnVector.scale = (short) decimalLogicalType.getScale();
     } else if (TypeInfoUtils.getBaseName(hiveType.getTypeName())
         .equalsIgnoreCase(serdeConstants.DECIMAL_TYPE_NAME)) {
       decimalColumnVector.precision = (short) ((DecimalTypeInfo) hiveType).getPrecision();

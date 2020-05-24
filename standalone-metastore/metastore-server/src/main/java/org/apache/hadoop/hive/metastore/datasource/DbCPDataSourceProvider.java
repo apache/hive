@@ -17,19 +17,25 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import com.codahale.metrics.MetricRegistry;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DataSourceConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.pool2.impl.BaseObjectPoolConfig;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.SQLException;
 
 /**
  * DataSourceProvider for the dbcp connection pool.
@@ -51,38 +57,61 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
   private static final String CONNECTION_SOFT_MIN_EVICTABLE_IDLE_TIME = DBCP + ".softMinEvictableIdleTimeMillis";
   private static final String CONNECTION_LIFO = DBCP + ".lifo";
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
-
     LOG.debug("Creating dbcp connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+
+    BasicDataSource dbcpDs = new BasicDataSource();
+    dbcpDs.setUrl(driverUrl);
+    dbcpDs.setUsername(user);
+    dbcpDs.setPassword(passwd);
+    dbcpDs.setDefaultReadOnly(false);
+    dbcpDs.setDefaultAutoCommit(true);
+
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    switch (dbProduct){
+      case MYSQL:
+        dbcpDs.setConnectionProperties("allowMultiQueries=true");
+        dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");
+        break;
+      case POSTGRES:
+        dbcpDs.setConnectionProperties("reWriteBatchedInserts=true");
+        break;
+    default:
+      break;
+    }
     int maxPoolSize = hdpConfig.getInt(
             MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(),
             ((Long) MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getDefaultVal()).intValue());
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
-    int connectionMaxIlde = hdpConfig.getInt(CONNECTION_MAX_IDLE_PROPERTY, GenericObjectPool.DEFAULT_MAX_IDLE);
-    int connectionMinIlde = hdpConfig.getInt(CONNECTION_MIN_IDLE_PROPERTY, GenericObjectPool.DEFAULT_MIN_IDLE);
+    int connectionMaxIlde = hdpConfig.getInt(CONNECTION_MAX_IDLE_PROPERTY, 8);
+    int connectionMinIlde = hdpConfig.getInt(CONNECTION_MIN_IDLE_PROPERTY, 0);
     boolean testOnBorrow = hdpConfig.getBoolean(CONNECTION_TEST_BORROW_PROPERTY,
-            GenericObjectPool.DEFAULT_TEST_ON_BORROW);
+        BaseObjectPoolConfig.DEFAULT_TEST_ON_BORROW);
     long evictionTimeMillis = hdpConfig.getLong(CONNECTION_MIN_EVICT_MILLIS_PROPERTY,
-            GenericObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+        BaseObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
     boolean testWhileIdle = hdpConfig.getBoolean(CONNECTION_TEST_IDLEPROPERTY,
-            GenericObjectPool.DEFAULT_TEST_WHILE_IDLE);
+        BaseObjectPoolConfig.DEFAULT_TEST_WHILE_IDLE);
     long timeBetweenEvictionRuns = hdpConfig.getLong(CONNECTION_TIME_BETWEEN_EVICTION_RUNS_MILLIS,
-            GenericObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
+        BaseObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
     int numTestsPerEvictionRun = hdpConfig.getInt(CONNECTION_NUM_TESTS_PER_EVICTION_RUN,
-            GenericObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN);
-    boolean testOnReturn = hdpConfig.getBoolean(CONNECTION_TEST_ON_RETURN, GenericObjectPool.DEFAULT_TEST_ON_RETURN);
+        BaseObjectPoolConfig.DEFAULT_NUM_TESTS_PER_EVICTION_RUN);
+    boolean testOnReturn = hdpConfig.getBoolean(CONNECTION_TEST_ON_RETURN, BaseObjectPoolConfig.DEFAULT_TEST_ON_RETURN);
     long softMinEvictableIdleTimeMillis = hdpConfig.getLong(CONNECTION_SOFT_MIN_EVICTABLE_IDLE_TIME,
-            GenericObjectPool.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
-    boolean lifo = hdpConfig.getBoolean(CONNECTION_LIFO, GenericObjectPool.DEFAULT_LIFO);
+        BaseObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+    boolean lifo = hdpConfig.getBoolean(CONNECTION_LIFO, BaseObjectPoolConfig.DEFAULT_LIFO);
 
-    GenericObjectPool objectPool = new GenericObjectPool();
-    objectPool.setMaxActive(maxPoolSize);
-    objectPool.setMaxWait(connectionTimeout);
+    ConnectionFactory connFactory = new DataSourceConnectionFactory(dbcpDs);
+    PoolableConnectionFactory poolableConnFactory = new PoolableConnectionFactory(connFactory, null);
+
+    GenericObjectPool objectPool = new GenericObjectPool(poolableConnFactory);
+    objectPool.setMaxTotal(maxPoolSize);
+    objectPool.setMaxWaitMillis(connectionTimeout);
     objectPool.setMaxIdle(connectionMaxIlde);
     objectPool.setMinIdle(connectionMinIlde);
     objectPool.setTestOnBorrow(testOnBorrow);
@@ -94,19 +123,10 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
-    ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
-    // This doesn't get used, but it's still necessary, see
-    // https://git1-us-west.apache.org/repos/asf?p=commons-dbcp.git;a=blob;f=doc/ManualPoolingDataSourceExample.java;
-    // h=f45af2b8481f030b27364e505984c0eef4f35cdb;hb=refs/heads/DBCP_1_5_x_BRANCH
-    new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
-
+    if (dbProduct == MYSQL) {
+      poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
+    }
     return new PoolingDataSource(objectPool);
-  }
-
-  @Override
-  public boolean mayReturnClosedConnection() {
-    // Only BoneCP should return true
-    return false;
   }
 
   @Override

@@ -66,6 +66,9 @@ CREATE TABLE "CTLGS" (
     "LOCATION_URI" VARCHAR(4000) NOT NULL
 );
 
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO "CTLGS" VALUES (1, 'hive', 'Default catalog for Hive', 'TBD');
+
 --
 -- Name: DBS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
@@ -77,7 +80,7 @@ CREATE TABLE "DBS" (
     "NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
-    "CTLG_NAME" varchar(256)
+    "CTLG_NAME" varchar(256) DEFAULT 'hive'
 );
 
 

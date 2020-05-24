@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import org.apache.hadoop.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.hadoop.classification.InterfaceStability.Evolving;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 
 /**
  * Represents the object on which privilege is being granted/revoked, and objects
@@ -65,6 +66,16 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
           (o.className != null ? className.compareTo(o.className) : 1) :
           (o.className != null ? -1 : 0);
     }
+    if (compare == 0) {
+      compare = ownerName != null?
+          (o.ownerName != null ? ownerName.compareTo(o.ownerName) : 1) :
+          (o.ownerName != null ? -1 : 0);
+    }
+    if (compare == 0) {
+      compare = ownerType != null?
+          (o.ownerType != null ? ownerType.compareTo(o.ownerType) : 1) :
+          (o.ownerType != null ? -1 : 0);
+    }
 
     return compare;
   }
@@ -99,8 +110,9 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     // HIVE_SERVICE refers to a logical service name. For now hiveserver2 hostname will be
     // used to give service actions a name. This is used by kill query command so it can
     // be authorized specifically to a service if necessary.
-    SERVICE_NAME
-  };
+    SERVICE_NAME,
+    SCHEDULED_QUERY,
+  }
 
   /**
    * When {@link HiveOperationType} is QUERY, this action type is set so that it is possible
@@ -108,7 +120,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    */
   public enum HivePrivObjectActionType {
     OTHER, INSERT, INSERT_OVERWRITE, UPDATE, DELETE
-  };
+  }
 
   private final HivePrivilegeObjectType type;
   private final String dbname;
@@ -118,6 +130,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final List<String> columns;
   private final HivePrivObjectActionType actionType;
   private final String className;
+  private final String ownerName;
+  private final PrincipalType ownerType;
   // cellValueTransformers is corresponding to the columns.
   // Its size should be the same as columns.
   // For example, if a table has two columns, "key" and "value"
@@ -164,9 +178,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns, null);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
-      List<String> commandParams, String className) {
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
+    this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
+      String ownerName, PrincipalType ownerType) {
     this.type = type;
     this.dbname = dbname;
     this.objectName = objectName;
@@ -175,6 +194,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.actionType = actionType;
     this.commandParams = commandParams;
     this.className = className;
+    this.ownerName = ownerName;
+    this.ownerType = ownerType;
+  }
+
+  public static HivePrivilegeObject forScheduledQuery(String owner, String clusterNamespace, String scheduleName) {
+    return new HivePrivilegeObject(HivePrivilegeObjectType.SCHEDULED_QUERY,
+        /*dbName*/clusterNamespace, /*objectName*/scheduleName, null, null, null, null, null,
+        /*ownerName*/owner, null);
   }
 
   public HivePrivilegeObjectType getType() {
@@ -271,8 +298,21 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       default:
       }
     }
-
     return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
+  }
+
+  /**
+   * @return ownerName of the object
+   */
+  public String getOwnerName() {
+    return this.ownerName;
+  }
+
+  /**
+   * @return principal type of the owner
+   */
+  public PrincipalType getOwnerType() {
+    return this.ownerType;
   }
 
   private String getDbObjectName(String dbname2, String objectName2) {
@@ -294,4 +334,5 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public void setRowFilterExpression(String rowFilterExpression) {
     this.rowFilterExpression = rowFilterExpression;
   }
+
 }

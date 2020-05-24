@@ -29,8 +29,9 @@ public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK
 
     @Before
     public void setUp() throws Exception {
+      initConf();
       // Test that the metastore gets bound to the configured address.
       MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-        super.setUp();
+      super.setUp();
     }
 }

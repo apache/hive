@@ -17,7 +17,23 @@
  */
 package org.apache.hadoop.hive.upgrade.acid;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -38,8 +54,10 @@ import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -49,10 +67,10 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.security.AccessControlException;
@@ -62,20 +80,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This utility is designed to help with upgrading Hive 2.x to Hive 3.0.  On-disk layout for
@@ -112,85 +117,136 @@ import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLStri
  *
  * See also org.apache.hadoop.hive.ql.util.UpgradeTool in Hive 3.x
  */
-public class PreUpgradeTool {
+public class PreUpgradeTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(PreUpgradeTool.class);
   private static final int PARTITION_BATCH_SIZE = 10000;
-  private final Options cmdLineOptions = new Options();
 
   public static void main(String[] args) throws Exception {
-    PreUpgradeTool tool = new PreUpgradeTool();
-    tool.init();
+    Options cmdLineOptions = createCommandLineOptions();
     CommandLineParser parser = new GnuParser();
-    CommandLine line ;
-    String outputDir = ".";
-    boolean execute = false;
+    CommandLine line;
     try {
-      line = parser.parse(tool.cmdLineOptions, args);
+      line = parser.parse(cmdLineOptions, args);
     } catch (ParseException e) {
       System.err.println("PreUpgradeTool: Parsing failed.  Reason: " + e.getLocalizedMessage());
-      printAndExit(tool);
+      printAndExit(cmdLineOptions);
       return;
     }
     if (line.hasOption("help")) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("upgrade-acid", tool.cmdLineOptions);
+      formatter.printHelp("upgrade-acid", cmdLineOptions);
       return;
     }
-    if(line.hasOption("location")) {
-      outputDir = line.getOptionValue("location");
-    }
-    if(line.hasOption("execute")) {
-      execute = true;
-    }
-    LOG.info("Starting with execute=" + execute + ", location=" + outputDir);
+    RunOptions runOptions = RunOptions.fromCommandLine(line);
+    LOG.info("Starting with " + runOptions.toString());
 
     try {
       String hiveVer = HiveVersionInfo.getShortVersion();
       LOG.info("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
-          HiveVersionInfo.getBuildVersion());
+              HiveVersionInfo.getBuildVersion());
       if(!hiveVer.startsWith("2.")) {
         throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
       }
-      tool.prepareAcidUpgradeInternal(outputDir, execute);
-    }
-    catch(Exception ex) {
+      try (PreUpgradeTool tool = new PreUpgradeTool(runOptions)) {
+        tool.prepareAcidUpgradeInternal();
+      }
+    } catch(Exception ex) {
       LOG.error("PreUpgradeTool failed", ex);
       throw ex;
     }
   }
-  private static void printAndExit(PreUpgradeTool tool) {
+
+  private final HiveConf conf;
+  private final CloseableThreadLocal<IMetaStoreClient> metaStoreClient;
+  private final ThreadLocal<ValidTxnList> txns;
+  private final RunOptions runOptions;
+
+  public PreUpgradeTool(RunOptions runOptions) {
+    this.runOptions = runOptions;
+    this.conf = hiveConf != null ? hiveConf : new HiveConf();
+    this.metaStoreClient = new CloseableThreadLocal<>(this::getHMS, IMetaStoreClient::close,
+            runOptions.getTablePoolSize());
+    this.txns = ThreadLocal.withInitial(() -> {
+      /*
+       This API changed from 2.x to 3.0.  so this won't even compile with 3.0
+       but it doesn't need to since we only run this preUpgrade
+      */
+      try {
+        TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+        return TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  private static void printAndExit(Options cmdLineOptions) {
     HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp("upgrade-acid", tool.cmdLineOptions);
+    formatter.printHelp("upgrade-acid", cmdLineOptions);
     System.exit(1);
   }
 
-  private void init() {
+  static Options createCommandLineOptions() {
     try {
+      Options cmdLineOptions = new Options();
       cmdLineOptions.addOption(new Option("help", "Generates a script to execute on 2.x" +
           " cluster.  This requires 2.x binaries on the classpath and hive-site.xml."));
       Option exec = new Option("execute",
           "Executes commands equivalent to generated scrips");
       exec.setOptionalArg(true);
       cmdLineOptions.addOption(exec);
-      cmdLineOptions.addOption(new Option("location", true,
-          "Location to write scripts to. Default is CWD."));
-    }
-    catch(Exception ex) {
+      Option locationOption = new Option("location", true,
+              "Location to write scripts to. Default is CWD.");
+      locationOption.setArgName("path of directory");
+      cmdLineOptions.addOption(locationOption);
+
+      Option dbRegexOption = new Option("d",
+              "Regular expression to match database names on which this tool will be run. Default: all databases");
+      dbRegexOption.setLongOpt("dbRegex");
+      dbRegexOption.setArgs(1);
+      dbRegexOption.setArgName("regex");
+      cmdLineOptions.addOption(dbRegexOption);
+
+      Option tableRegexOption = new Option("t",
+              "Regular expression to match table names on which this tool will be run. Default: all tables");
+      tableRegexOption.setLongOpt("tableRegex");
+      tableRegexOption.setArgs(1);
+      tableRegexOption.setArgName("regex");
+      cmdLineOptions.addOption(tableRegexOption);
+
+      Option tableTypeOption = new Option("tt",
+              String.format("Table type to match tables on which this tool will be run. Possible values: %s " +
+                      "Default: all tables",
+                      Arrays.stream(TableType.values()).map(Enum::name).collect(Collectors.joining("|"))));
+      tableTypeOption.setLongOpt("tableType");
+      tableTypeOption.setArgs(1);
+      tableTypeOption.setArgName("table type");
+      cmdLineOptions.addOption(tableTypeOption);
+
+      Option tablePoolSizeOption = new Option("tn", "Number of threads to process tables.");
+      tablePoolSizeOption.setLongOpt("tablePoolSize");
+      tablePoolSizeOption.setArgs(1);
+      tablePoolSizeOption.setArgName("pool size");
+      cmdLineOptions.addOption(tablePoolSizeOption);
+
+      return cmdLineOptions;
+    } catch(Exception ex) {
       LOG.error("init()", ex);
       throw ex;
     }
   }
+
   private static HiveMetaHookLoader getHookLoader() {
     return new HiveMetaHookLoader() {
       @Override
       public HiveMetaHook getHook(
-          org.apache.hadoop.hive.metastore.api.Table tbl) {
+              org.apache.hadoop.hive.metastore.api.Table tbl) {
         return null;
       }
     };
   }
 
-  private static IMetaStoreClient getHMS(HiveConf conf) {
+  public IMetaStoreClient getHMS() {
     UserGroupInformation loggedInUser = null;
     try {
       loggedInUser = UserGroupInformation.getLoginUser();
@@ -207,84 +263,51 @@ public class PreUpgradeTool {
       which calls HiveMetaStoreClient(HiveConf, Boolean) which exists in
        (at least) 2.1.0.2.6.5.0-292 and later but not in 2.1.0.2.6.0.3-8 (the HDP 2.6 release)
        i.e. RetryingMetaStoreClient.getProxy(conf, true) is broken in 2.6.0*/
-      return RetryingMetaStoreClient.getProxy(conf,
-          new Class[]{HiveConf.class, HiveMetaHookLoader.class, Boolean.class},
-          new Object[]{conf, getHookLoader(), Boolean.TRUE}, null, HiveMetaStoreClient.class.getName());
-    } catch (MetaException e) {
+      IMetaStoreClient client = RetryingMetaStoreClient.getProxy(conf,
+              new Class[]{HiveConf.class, HiveMetaHookLoader.class, Boolean.class},
+              new Object[]{conf, getHookLoader(), Boolean.TRUE}, null, HiveMetaStoreClient.class.getName());
+      if (hiveConf != null) {
+        SessionState ss = SessionState.start(conf);
+        ss.applyAuthorizationPolicy();
+      }
+      return client;
+    } catch (MetaException | HiveException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
-          + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
+              + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
     }
   }
 
-  /**
+  /*
    * todo: change script comments to a preamble instead of a footer
    */
-  private void prepareAcidUpgradeInternal(String scriptLocation, boolean execute)
+  private void prepareAcidUpgradeInternal()
       throws HiveException, TException, IOException {
-    HiveConf conf = hiveConf != null ? hiveConf : new HiveConf();
-    boolean isAcidEnabled = isAcidEnabled(conf);
-    IMetaStoreClient hms = getHMS(conf);
+    if (!isAcidEnabled(conf)) {
+      LOG.info("acid is off, there can't be any acid tables - nothing to compact");
+      return;
+    }
+    IMetaStoreClient hms = metaStoreClient.get();
     LOG.debug("Looking for databases");
     String exceptionMsg = null;
     List<String> databases;
-    List<String> compactions = new ArrayList<>();
-    final CompactionMetaInfo compactionMetaInfo = new CompactionMetaInfo();
-    ValidTxnList txns = null;
-    Hive db = null;
+    CompactTablesState compactTablesState;
     try {
-      databases = hms.getAllDatabases();//TException
+      databases = hms.getDatabases(runOptions.getDbRegex()); //TException
       LOG.debug("Found " + databases.size() + " databases to process");
-      if (execute) {
-        db = Hive.get(conf);
-      }
 
-      for (String dbName : databases) {
-        try {
-          List<String> tables = hms.getAllTables(dbName);
-          LOG.debug("found " + tables.size() + " tables in " + dbName);
-          for (String tableName : tables) {
-            try {
-              Table t = hms.getTable(dbName, tableName);
-              LOG.debug("processing table " + Warehouse.getQualifiedName(t));
-              if (isAcidEnabled) {
-                //if acid is off, there can't be any acid tables - nothing to compact
-                if (txns == null) {
-          /*
-           This API changed from 2.x to 3.0.  so this won't even compile with 3.0
-           but it doesn't need to since we only run this preUpgrade
-          */
-                  TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-                  txns = TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
-                }
-                List<String> compactionCommands =
-                  getCompactionCommands(t, conf, hms, compactionMetaInfo, execute, db, txns);
-                compactions.addAll(compactionCommands);
-              }
-              /*todo: handle renaming files somewhere*/
-            } catch (Exception e) {
-              if (isAccessControlException(e)) {
-                // this could be external table with 0 permission for hive user
-                exceptionMsg = "Unable to access " + dbName + "." + tableName + ". Pre-upgrade tool requires read-access " +
-                  "to databases and tables to determine if a table has to be compacted. " +
-                  "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
-                  "false to allow read-access to databases and tables and retry the pre-upgrade tool again..";
-              }
-              throw e;
-            }
-          }
-        } catch (Exception e) {
-          if (exceptionMsg == null && isAccessControlException(e)) {
-            // we may not have access to read all tables from this db
-            exceptionMsg = "Unable to access " + dbName + ". Pre-upgrade tool requires read-access " +
-              "to databases and tables to determine if a table has to be compacted. " +
-              "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
-              "false to allow read-access to databases and tables and retry the pre-upgrade tool again..";
-          }
-          throw e;
-        }
-      }
+      ForkJoinPool processTablePool = new ForkJoinPool(
+              runOptions.getTablePoolSize(),
+              new NamedForkJoinWorkerThreadFactory("Table-"),
+              getUncaughtExceptionHandler(),
+              false
+              );
+      compactTablesState = databases.stream()
+                      .map(dbName -> processDatabase(dbName, processTablePool, runOptions))
+                      .reduce(CompactTablesState::merge)
+              .orElse(CompactTablesState.empty());
+
     } catch (Exception e) {
-      if (exceptionMsg == null && isAccessControlException(e)) {
+      if (isAccessControlException(e)) {
         exceptionMsg = "Unable to get databases. Pre-upgrade tool requires read-access " +
           "to databases and tables to determine if a table has to be compacted. " +
           "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
@@ -293,95 +316,155 @@ public class PreUpgradeTool {
       throw new HiveException(exceptionMsg, e);
     }
 
-    makeCompactionScript(compactions, scriptLocation, compactionMetaInfo);
+    makeCompactionScript(compactTablesState, runOptions.getOutputDir());
 
-    if(execute) {
-      while(compactionMetaInfo.compactionIds.size() > 0) {
-        LOG.debug("Will wait for " + compactionMetaInfo.compactionIds.size() +
+    if(runOptions.isExecute()) {
+      while(compactTablesState.getMetaInfo().getCompactionIds().size() > 0) {
+        LOG.debug("Will wait for " + compactTablesState.getMetaInfo().getCompactionIds().size() +
             " compactions to complete");
-        ShowCompactResponse resp = db.showCompactions();
+        ShowCompactResponse resp = hms.showCompactions();
         for(ShowCompactResponseElement e : resp.getCompacts()) {
           final String state = e.getState();
           boolean removed;
           switch (state) {
-            case TxnStore.CLEANING_RESPONSE:
-            case TxnStore.SUCCEEDED_RESPONSE:
-              removed = compactionMetaInfo.compactionIds.remove(e.getId());
-              if(removed) {
-                LOG.debug("Required compaction succeeded: " + e.toString());
-              }
-              break;
-            case TxnStore.ATTEMPTED_RESPONSE:
-            case TxnStore.FAILED_RESPONSE:
-              removed = compactionMetaInfo.compactionIds.remove(e.getId());
-              if(removed) {
-                LOG.warn("Required compaction failed: " + e.toString());
-              }
-              break;
-            case TxnStore.INITIATED_RESPONSE:
-              //may flood the log
-              //LOG.debug("Still waiting  on: " + e.toString());
-              break;
-            case TxnStore.WORKING_RESPONSE:
-              LOG.debug("Still working on: " + e.toString());
-              break;
-            default://shouldn't be any others
-              LOG.error("Unexpected state for : " + e.toString());
+          case TxnStore.CLEANING_RESPONSE:
+          case TxnStore.SUCCEEDED_RESPONSE:
+            removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
+            if(removed) {
+              LOG.debug("Required compaction succeeded: " + e.toString());
+            }
+            break;
+          case TxnStore.ATTEMPTED_RESPONSE:
+          case TxnStore.FAILED_RESPONSE:
+            removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
+            if(removed) {
+              LOG.warn("Required compaction failed: " + e.toString());
+            }
+            break;
+          case TxnStore.INITIATED_RESPONSE:
+            //may flood the log
+            //LOG.debug("Still waiting  on: " + e.toString());
+            break;
+          case TxnStore.WORKING_RESPONSE:
+            LOG.debug("Still working on: " + e.toString());
+            break;
+          default://shouldn't be any others
+            LOG.error("Unexpected state for : " + e.toString());
           }
         }
-        if(compactionMetaInfo.compactionIds.size() > 0) {
+        if(compactTablesState.getMetaInfo().getCompactionIds().size() > 0) {
           try {
             if (callback != null) {
               callback.onWaitForCompaction();
             }
             Thread.sleep(pollIntervalMs);
           } catch (InterruptedException ex) {
-            ;//this only responds to ^C
+            //this only responds to ^C
           }
         }
       }
     }
   }
 
+  private Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
+    return (t, e) -> LOG.error(String.format("Thread %s exited with error", t.getName()), e);
+  }
+
+  private CompactTablesState processDatabase(
+          String dbName, ForkJoinPool threadPool, RunOptions runOptions) {
+    try {
+      IMetaStoreClient hms = metaStoreClient.get();
+
+      List<String> tables;
+      if (runOptions.getTableType() == null) {
+        tables = hms.getTables(dbName, runOptions.getTableRegex());
+        LOG.debug("found {} tables in {}", tables.size(), dbName);
+      } else {
+        tables = hms.getTables(dbName, runOptions.getTableRegex(), runOptions.getTableType());
+        LOG.debug("found {} {} in {}", tables.size(), runOptions.getTableType().name(), dbName);
+      }
+
+      return threadPool.submit(
+          () -> tables.parallelStream()
+                .map(table -> processTable(dbName, table, runOptions))
+                .reduce(CompactTablesState::merge)).get()
+                .orElse(CompactTablesState.empty());
+    } catch (Exception e) {
+      if (isAccessControlException(e)) {
+        // we may not have access to read all tables from this db
+        throw new RuntimeException("Unable to access " + dbName + ". Pre-upgrade tool requires read-access " +
+                "to databases and tables to determine if a table has to be compacted. " +
+                "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
+                "false to allow read-access to databases and tables and retry the pre-upgrade tool again..", e);
+      }
+      throw new RuntimeException(e);
+    }
+  }
+
+  private CompactTablesState processTable(
+          String dbName, String tableName, RunOptions runOptions) {
+    try {
+      IMetaStoreClient hms = metaStoreClient.get();
+      final CompactionMetaInfo compactionMetaInfo = new CompactionMetaInfo();
+
+      Table t = hms.getTable(dbName, tableName);
+      LOG.debug("processing table " + Warehouse.getQualifiedName(t));
+      List<String> compactionCommands =
+              getCompactionCommands(t, conf, hms, compactionMetaInfo, runOptions.isExecute(), txns.get());
+      return CompactTablesState.compactions(compactionCommands, compactionMetaInfo);
+      /*todo: handle renaming files somewhere*/
+    } catch (Exception e) {
+      if (isAccessControlException(e)) {
+        // this could be external table with 0 permission for hive user
+        throw new RuntimeException(
+                "Unable to access " + dbName + "." + tableName + ". Pre-upgrade tool requires read-access " +
+                "to databases and tables to determine if a table has to be compacted. " +
+                "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
+                "false to allow read-access to databases and tables and retry the pre-upgrade tool again..", e);
+      }
+      throw new RuntimeException(e);
+    }
+  }
+
   private boolean isAccessControlException(final Exception e) {
     // hadoop security AccessControlException
     if ((e instanceof MetaException && e.getCause() instanceof AccessControlException) ||
-      ExceptionUtils.getRootCause(e) instanceof AccessControlException) {
+        ExceptionUtils.getRootCause(e) instanceof AccessControlException) {
       return true;
     }
 
     // java security AccessControlException
     if ((e instanceof MetaException && e.getCause() instanceof java.security.AccessControlException) ||
-      ExceptionUtils.getRootCause(e) instanceof java.security.AccessControlException) {
+        ExceptionUtils.getRootCause(e) instanceof java.security.AccessControlException) {
       return true;
     }
 
     // metastore in some cases sets the AccessControlException as message instead of wrapping the exception
-    return e instanceof MetaException && e.getMessage().startsWith("java.security.AccessControlException: Permission denied");
+    return e instanceof MetaException
+            && e.getMessage().startsWith("java.security.AccessControlException: Permission denied");
   }
 
   /**
-   * Generates a set compaction commands to run on pre Hive 3 cluster
+   * Generates a set compaction commands to run on pre Hive 3 cluster.
    */
-  private static void makeCompactionScript(List<String> commands, String scriptLocation,
-      CompactionMetaInfo compactionMetaInfo) throws IOException {
-    if (commands.isEmpty()) {
+  private static void makeCompactionScript(CompactTablesState result, String scriptLocation) throws IOException {
+    if (result.getCompactionCommands().isEmpty()) {
       LOG.info("No compaction is necessary");
       return;
     }
     String fileName = "compacts_" + System.currentTimeMillis() + ".sql";
     LOG.debug("Writing compaction commands to " + fileName);
-    try(PrintWriter pw = createScript(commands, fileName, scriptLocation)) {
+    try(PrintWriter pw = createScript(
+            result.getCompactionCommands(), fileName, scriptLocation)) {
       //add post script
-      pw.println("-- Generated total of " + commands.size() + " compaction commands");
-      if(compactionMetaInfo.numberOfBytes < Math.pow(2, 20)) {
+      pw.println("-- Generated total of " + result.getCompactionCommands().size() + " compaction commands");
+      if(result.getMetaInfo().getNumberOfBytes() < Math.pow(2, 20)) {
         //to see it working in UTs
         pw.println("-- The total volume of data to be compacted is " +
-            String.format("%.6fMB", compactionMetaInfo.numberOfBytes/Math.pow(2, 20)));
-      }
-      else {
+            String.format("%.6fMB", result.getMetaInfo().getNumberOfBytes()/Math.pow(2, 20)));
+      } else {
         pw.println("-- The total volume of data to be compacted is " +
-            String.format("%.3fGB", compactionMetaInfo.numberOfBytes/Math.pow(2, 30)));
+            String.format("%.3fGB", result.getMetaInfo().getNumberOfBytes()/Math.pow(2, 30)));
       }
       pw.println();
       //todo: should be at the top of the file...
@@ -410,7 +493,7 @@ public class PreUpgradeTool {
    * @return any compaction commands to run for {@code Table t}
    */
   private static List<String> getCompactionCommands(Table t, HiveConf conf,
-      IMetaStoreClient hms, CompactionMetaInfo compactionMetaInfo, boolean execute, Hive db,
+      IMetaStoreClient hms, CompactionMetaInfo compactionMetaInfo, boolean execute,
       ValidTxnList txns) throws IOException, TException, HiveException {
     if(!isFullAcidTable(t)) {
       return Collections.emptyList();
@@ -424,7 +507,7 @@ public class PreUpgradeTool {
       List<String> cmds = new ArrayList<>();
       cmds.add(getCompactionCommand(t, null));
       if(execute) {
-        scheduleCompaction(t, null, db, compactionMetaInfo);
+        scheduleCompaction(t, null, hms, compactionMetaInfo);
       }
       return cmds;
     }
@@ -435,19 +518,19 @@ public class PreUpgradeTool {
     for(int i = 0; i < numWholeBatches; i++) {
       List<Partition> partitionList = hms.getPartitionsByNames(t.getDbName(), t.getTableName(),
           partNames.subList(i * batchSize, (i + 1) * batchSize));
-      getCompactionCommands(t, partitionList, db, execute, compactionCommands,
+      getCompactionCommands(t, partitionList, hms, execute, compactionCommands,
           compactionMetaInfo, conf, txns);
     }
     if(numWholeBatches * batchSize < partNames.size()) {
       //last partial batch
       List<Partition> partitionList = hms.getPartitionsByNames(t.getDbName(), t.getTableName(),
           partNames.subList(numWholeBatches * batchSize, partNames.size()));
-      getCompactionCommands(t, partitionList, db, execute, compactionCommands,
+      getCompactionCommands(t, partitionList, hms, execute, compactionCommands,
           compactionMetaInfo, conf, txns);
     }
     return compactionCommands;
   }
-  private static void getCompactionCommands(Table t, List<Partition> partitionList, Hive db,
+  private static void getCompactionCommands(Table t, List<Partition> partitionList, IMetaStoreClient hms,
       boolean execute, List<String> compactionCommands, CompactionMetaInfo compactionMetaInfo,
       HiveConf conf, ValidTxnList txns)
       throws IOException, TException, HiveException {
@@ -455,28 +538,31 @@ public class PreUpgradeTool {
       if (needsCompaction(new Path(p.getSd().getLocation()), conf, compactionMetaInfo, txns)) {
         compactionCommands.add(getCompactionCommand(t, p));
         if (execute) {
-          scheduleCompaction(t, p, db, compactionMetaInfo);
+          scheduleCompaction(t, p, hms, compactionMetaInfo);
         }
       }
     }
   }
-  private static void scheduleCompaction(Table t, Partition p, Hive db,
+  private static void scheduleCompaction(Table t, Partition p, IMetaStoreClient db,
       CompactionMetaInfo compactionMetaInfo) throws HiveException, MetaException {
     String partName = p == null ? null :
         Warehouse.makePartName(t.getPartitionKeys(), p.getValues());
-    CompactionResponse resp =
-        //this gives an easy way to get at compaction ID so we can only wait for those this
-        //utility started
-        db.compact2(t.getDbName(), t.getTableName(), partName, "major", null);
-    if(!resp.isAccepted()) {
-      LOG.info(Warehouse.getQualifiedName(t) + (p == null ? "" : "/" + partName) +
-          " is already being compacted with id=" + resp.getId());
+    try {
+      CompactionResponse resp =
+              //this gives an easy way to get at compaction ID so we can only wait for those this
+              //utility started
+              db.compact2(t.getDbName(), t.getTableName(), partName, CompactionType.MAJOR, null);
+      if (!resp.isAccepted()) {
+        LOG.info(Warehouse.getQualifiedName(t) + (p == null ? "" : "/" + partName) +
+                " is already being compacted with id=" + resp.getId());
+      } else {
+        LOG.info("Scheduled compaction for " + Warehouse.getQualifiedName(t) +
+                (p == null ? "" : "/" + partName) + " with id=" + resp.getId());
+      }
+      compactionMetaInfo.addCompactionId(resp.getId());
+    } catch (TException e) {
+      throw new HiveException(e);
     }
-    else {
-      LOG.info("Scheduled compaction for " + Warehouse.getQualifiedName(t) +
-          (p == null ? "" : "/" + partName) + " with id=" + resp.getId());
-    }
-    compactionMetaInfo.compactionIds.add(resp.getId());
   }
 
   /**
@@ -519,14 +605,14 @@ public class PreUpgradeTool {
         }
         if(needsCompaction(bucket, fs)) {
           //found delete events - this 'location' needs compacting
-          compactionMetaInfo.numberOfBytes += getDataSize(location, conf);
+          compactionMetaInfo.addBytes(getDataSize(location, conf));
 
           //if there are un-compacted original files, they will be included in compaction, so
           //count at the size for 'cost' estimation later
           for(HadoopShims.HdfsFileStatusWithId origFile : dir.getOriginalFiles()) {
             FileStatus fileStatus = origFile.getFileStatus();
             if(fileStatus != null) {
-              compactionMetaInfo.numberOfBytes += fileStatus.getLen();
+              compactionMetaInfo.addBytes(fileStatus.getLen());
             }
           }
           return true;
@@ -546,8 +632,9 @@ public class PreUpgradeTool {
   }
 
 
-  private static final Charset utf8 = Charset.forName("UTF-8");
-  private static final CharsetDecoder utf8Decoder = utf8.newDecoder();
+  private static final Charset UTF_8 = StandardCharsets.UTF_8;
+  private static final ThreadLocal<CharsetDecoder> UTF8_DECODER =
+          ThreadLocal.withInitial(UTF_8::newDecoder);
   private static final String ACID_STATS = "hive.acid.stats";
 
   private static boolean needsCompaction(FileStatus bucket, FileSystem fs) throws IOException {
@@ -557,7 +644,7 @@ public class PreUpgradeTool {
     if (orcReader.hasMetadataValue(ACID_STATS)) {
       try {
         ByteBuffer val = orcReader.getMetadataValue(ACID_STATS).duplicate();
-        String acidStats = utf8Decoder.decode(val).toString();
+        String acidStats = UTF8_DECODER.get().decode(val).toString();
         String[] parts = acidStats.split(",");
         long updates = Long.parseLong(parts[1]);
         long deletes = Long.parseLong(parts[2]);
@@ -581,17 +668,18 @@ public class PreUpgradeTool {
             genPartValueString(t.getPartitionKeys().get(i).getType(), p.getValues().get(i))).
             append(",");
       }
-      sb.setCharAt(sb.length() - 1, ')');//replace trailing ','
+      //replace trailing ','
+      sb.setCharAt(sb.length() - 1, ')');
     }
     return sb.append(" COMPACT 'major'").toString();
   }
 
   /**
    * This is copy-pasted from {@link org.apache.hadoop.hive.ql.parse.ColumnStatsSemanticAnalyzer},
-   * which can't be refactored since this is linked against Hive 2.x
+   * which can't be refactored since this is linked against Hive 2.x .
    */
   private static String genPartValueString(String partColType, String partVal)  {
-    String returnVal = partVal;
+    String returnVal;
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
         partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
         partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
@@ -623,7 +711,7 @@ public class PreUpgradeTool {
     }
     String transacationalValue = t.getParameters()
         .get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (transacationalValue != null && "true".equalsIgnoreCase(transacationalValue)) {
+    if ("true".equalsIgnoreCase(transacationalValue)) {
       System.out.println("Found Acid table: " + Warehouse.getQualifiedName(t));
       return true;
     }
@@ -636,19 +724,13 @@ public class PreUpgradeTool {
     return txnMgr.equals(dbTxnMgr) && concurrency;
   }
 
-  private static class CompactionMetaInfo {
-    /**
-     * total number of bytes to be compacted across all compaction commands
-     */
-    long numberOfBytes;
-    /**
-     * IDs of compactions launched by this utility
-     */
-    Set<Long> compactionIds = new HashSet<>();
+  @Override
+  public void close() {
+    metaStoreClient.close();
   }
 
   @VisibleForTesting
-  static abstract class Callback {
+  abstract static class Callback {
     /**
      * This is a hack enable Unit testing.  Derby can't handle multiple concurrent threads but
      * somehow Compactor needs to run to test "execute" mode.  This callback can be used
@@ -661,7 +743,7 @@ public class PreUpgradeTool {
   @VisibleForTesting
   static int pollIntervalMs = 1000*30;
   /**
-   * can set it from tests to test when config needs something other than default values
+   * can set it from tests to test when config needs something other than default values.
    */
   @VisibleForTesting
   static HiveConf hiveConf = null;

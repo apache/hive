@@ -24,7 +24,6 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.rules.PushProjector;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
@@ -77,7 +76,7 @@ public class HiveProjectJoinTransposeRule extends RelOptRule {
     Project origProj = call.rel(0);
     final Join join = call.rel(1);
 
-    if (join instanceof SemiJoin) {
+    if (join.isSemiJoin()) {
       return; // TODO: support SemiJoin
     }
     // locate all fields referenced in the projection and join condition;

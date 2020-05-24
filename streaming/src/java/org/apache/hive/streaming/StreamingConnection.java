@@ -134,4 +134,20 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
       throws StreamingException {
     throw new UnsupportedOperationException();
   }
+
+  /**
+   * Adds the information of delta directory under which bucket files are created by streaming write.
+   * Hive replication uses this information to log write events.
+   * @param partitionValues partition values
+   * @param writeDir Delta directory under which bucket files are written by streaming
+   */
+  default void addWriteDirectoryInfo(List<String> partitionValues, Path writeDir) {
+  }
+
+  /**
+   * Add Write notification events if it is enabled.
+   * @throws StreamingException File operation errors or HMS errors.
+   */
+  default void addWriteNotificationEvents() throws StreamingException {
+  }
 }

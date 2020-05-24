@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 
 public interface ContainerRunner {
 
@@ -47,4 +49,7 @@ public interface ContainerRunner {
 
   UpdateFragmentResponseProto updateFragment(
       UpdateFragmentRequestProto request) throws IOException;
+
+  SetCapacityResponseProto setCapacity(
+      SetCapacityRequestProto request) throws IOException;
 }

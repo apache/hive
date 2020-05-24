@@ -96,6 +96,12 @@ public enum DumpType {
       return new RenameTableHandler();
     }
   },
+  EVENT_RENAME_DROP_TABLE("EVENT_RENAME_DROP_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new DropTableHandler();
+    }
+  },
   EVENT_TRUNCATE_TABLE("EVENT_TRUNCATE_TABLE") {
     @Override
     public MessageHandler handler() {

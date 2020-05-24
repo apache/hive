@@ -63,15 +63,15 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
-  private static final String DB_NAME = "test_partition_db";
-  private static final String TABLE_NAME = "test_partition_table";
-  private static final String DEFAULT_PARAM_VALUE = "partparamvalue";
-  private static final String DEFAULT_PARAM_KEY = "partparamkey";
+  protected static final String DB_NAME = "test_partition_db";
+  protected static final String TABLE_NAME = "test_partition_table";
+  protected static final String DEFAULT_PARAM_VALUE = "partparamvalue";
+  protected static final String DEFAULT_PARAM_KEY = "partparamkey";
   private static final String DEFAULT_YEAR_VALUE = "2017";
   private static final String DEFAULT_COL_TYPE = "string";
   private static final String YEAR_COL_NAME = "year";
   private static final String MONTH_COL_NAME = "month";
-  private static final int DEFAULT_CREATE_TIME = 123456;
+  protected static final int DEFAULT_CREATE_TIME = 123456;
   private static final short MAX = -1;
 
   public TestAddPartitionsFromPartSpec(String name, AbstractMetaStoreService metaStore) {
@@ -104,6 +104,18 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     } finally {
       client = null;
     }
+  }
+
+  protected AbstractMetaStoreService getMetaStore() {
+    return metaStore;
+  }
+
+  protected IMetaStoreClient getClient() {
+    return client;
+  }
+
+  protected void setClient(IMetaStoreClient client) {
+    this.client = client;
   }
 
   // Tests for int add_partitions_pspec(PartitionSpecProxy partitionSpec) method
@@ -238,6 +250,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionSpecUpperCaseDBAndTableNameInOnePart() throws Exception {
 
     String tableName = "test_add_part_table";
@@ -702,6 +715,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test(expected = MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionSpecWithSharedSDInvalidSD() throws Exception {
 
     Table table = createTable();
@@ -763,6 +777,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test(expected=MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionSpecForView() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -774,6 +789,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionSpecForViewNullPartLocation() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -788,6 +804,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAddPartitionsForViewNullPartSd() throws Exception {
 
     String tableName = "test_add_partition_view";
@@ -1005,7 +1022,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         metaStore.getWarehouseRoot() + "/" + TABLE_NAME);
   }
 
-  private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
+  protected Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       String location) throws Exception {
     new TableBuilder()
         .setDbName(dbName)
@@ -1077,7 +1094,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     return cols;
   }
 
-  private void verifyPartition(Table table, String name, List<String> values, int index)
+  protected void verifyPartition(Table table, String name, List<String> values, int index)
       throws Exception {
 
     Partition part = client.getPartition(table.getDbName(), table.getTableName(), name);

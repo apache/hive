@@ -26,6 +26,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import com.google.common.collect.ImmutableSet;
+
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.junit.Assert.assertNotNull;
 
 public class TestLlapWebServices {
 
@@ -40,23 +49,61 @@ public class TestLlapWebServices {
     llapWS.init(new HiveConf());
     llapWS.start();
     Thread.sleep(5000);
+    ensureUniqueInClasspath("javax/servlet/http/HttpServletRequest.class");
+    ensureUniqueInClasspath("javax/servlet/http/HttpServlet.class");
+  }
+
+  private static void ensureUniqueInClasspath(String name) throws IOException {
+    Enumeration<URL> rr = TestLlapWebServices.class.getClassLoader().getResources(name);
+    List<URL> found = new ArrayList<>();
+    while (rr.hasMoreElements()) {
+      found.add(rr.nextElement());
+    }
+    if (found.size() != 1) {
+      throw new RuntimeException(name + " unexpected number of occurences on the classpath:" + found.toString());
+    }
   }
 
   @Test
   public void testContextRootUrlRewrite() throws Exception {
     String contextRootURL = "http://localhost:" + llapWSPort + "/";
-    String contextRootContent = getURLResponseAsString(contextRootURL);
+    String contextRootContent = getURLResponseAsString(contextRootURL, HTTP_OK);
 
     String indexHtmlUrl = "http://localhost:" + llapWSPort + "/index.html";
-    String indexHtmlContent = getURLResponseAsString(indexHtmlUrl);
+    String indexHtmlContent = getURLResponseAsString(indexHtmlUrl, HTTP_OK);
 
     Assert.assertEquals(contextRootContent, indexHtmlContent);
   }
 
-  private String getURLResponseAsString(String baseURL) throws IOException {
+  @Test
+  public void testDirListingDisabled() throws Exception {
+    for (String folder : ImmutableSet.of("images", "js", "css")) {
+      String url = "http://localhost:" + llapWSPort + "/" + folder;
+      getURLResponseAsString(url, HTTP_FORBIDDEN);
+    }
+  }
+
+  @Test
+  public void testBaseUrlResponseHeader() throws Exception{
+    String baseURL = "http://localhost:" + llapWSPort + "/";
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    String xfoHeader = conn.getHeaderField("X-FRAME-OPTIONS");
+    String xXSSProtectionHeader = conn.getHeaderField("X-XSS-Protection");
+    String xContentTypeHeader = conn.getHeaderField("X-Content-Type-Options");
+    assertNotNull(xfoHeader);
+    assertNotNull(xXSSProtectionHeader);
+    assertNotNull(xContentTypeHeader);
+  }
+
+  private static String getURLResponseAsString(String baseURL, int expectedStatus)
+      throws IOException {
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals(expectedStatus, conn.getResponseCode());
+    if (expectedStatus != HTTP_OK) {
+      return null;
+    }
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();

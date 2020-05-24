@@ -51,7 +51,7 @@ public class FallbackHiveAuthorizer extends AbstractHiveAuthorizer {
   private final HiveAuthenticationProvider authenticator;
   private String[] admins = null;
 
-  FallbackHiveAuthorizer(HiveConf hiveConf, HiveAuthenticationProvider hiveAuthenticator,
+  public FallbackHiveAuthorizer(HiveConf hiveConf, HiveAuthenticationProvider hiveAuthenticator,
                                 HiveAuthzSessionContext ctx) {
     this.authenticator = hiveAuthenticator;
     this.sessionCtx = applyTestSettings(ctx, hiveConf);

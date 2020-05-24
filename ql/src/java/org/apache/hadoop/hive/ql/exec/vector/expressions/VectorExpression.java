@@ -164,30 +164,30 @@ public abstract class VectorExpression implements Serializable {
 
   //------------------------------------------------------------------------------------------------
 
-  public void transientInit() throws HiveException {
+  public void transientInit(Configuration conf) throws HiveException {
     // Do nothing by default.
   }
 
-  public static void doTransientInit(VectorExpression vecExpr) throws HiveException {
+  public static void doTransientInit(VectorExpression vecExpr, Configuration conf) throws HiveException {
     if (vecExpr == null) {
       return;
     }
-    doTransientInitRecurse(vecExpr);
+    doTransientInitRecurse(vecExpr, conf);
   }
 
-  public static void doTransientInit(VectorExpression[] vecExprs) throws HiveException {
+  public static void doTransientInit(VectorExpression[] vecExprs, Configuration conf) throws HiveException {
     if (vecExprs == null) {
       return;
     }
     for (VectorExpression vecExpr : vecExprs) {
-      doTransientInitRecurse(vecExpr);
+      doTransientInitRecurse(vecExpr, conf);
     }
   }
 
-  private static void doTransientInitRecurse(VectorExpression vecExpr) throws HiveException {
+  private static void doTransientInitRecurse(VectorExpression vecExpr, Configuration conf) throws HiveException {
 
     // Well, don't recurse but make sure all children are initialized.
-    vecExpr.transientInit();
+    vecExpr.transientInit(conf);
     List<VectorExpression> newChildren = new ArrayList<VectorExpression>();
     VectorExpression[] children = vecExpr.getChildExpressions();
     if (children != null) {
@@ -199,7 +199,7 @@ public abstract class VectorExpression implements Serializable {
       if (children != null) {
         Collections.addAll(newChildren, children);
       }
-      childVecExpr.transientInit();
+      childVecExpr.transientInit(conf);
     }
   }
 

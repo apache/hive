@@ -30,7 +30,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.hive.hplsql.*;
 

@@ -72,9 +72,15 @@ public class TriggerValidatorRunnable implements Runnable {
                       currentCounterValue);
                     violatedSessions.put(sessionState, currentTrigger);
                     LOG.info("KILL trigger replacing MOVE for query {}", queryId);
-                  } else {
+                  } else if (existingTrigger.getAction().getType().equals(Action.Type.MOVE_TO_POOL) &&
+                    currentTrigger.getAction().getType().equals(Action.Type.MOVE_TO_POOL)){
                     // if multiple MOVE happens, only first move will be chosen
                     LOG.warn("Conflicting MOVE triggers ({} and {}). Choosing the first MOVE trigger: {}",
+                      existingTrigger, currentTrigger, existingTrigger.getName());
+                  } else if (existingTrigger.getAction().getType().equals(Action.Type.KILL_QUERY) &&
+                    currentTrigger.getAction().getType().equals(Action.Type.KILL_QUERY)){
+                    // if multiple KILL happens, only first kill will be chosen
+                    LOG.warn("Conflicting KILL triggers ({} and {}). Choosing the first KILL trigger: {}",
                       existingTrigger, currentTrigger, existingTrigger.getName());
                   }
                 } else {

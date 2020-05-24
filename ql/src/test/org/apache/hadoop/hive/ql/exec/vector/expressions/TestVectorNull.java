@@ -382,7 +382,7 @@ public class TestVectorNull {
             (isFilter ?
                 VectorExpressionDescriptor.Mode.FILTER :
                 VectorExpressionDescriptor.Mode.PROJECTION));
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (nullTestMode == NullTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

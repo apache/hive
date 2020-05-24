@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.registry.impl;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class ZookeeperUtils {
   public static String setupZookeeperAuth(Configuration conf, String saslLoginContextName,
       String zkPrincipal, String zkKeytab) throws IOException {
     // If the login context name is not set, we are in the client and don't need auth.
-    if (UserGroupInformation.isSecurityEnabled() && saslLoginContextName != null) {
+    if (isKerberosEnabled(conf) && saslLoginContextName != null) {
       LOG.info("UGI security is enabled. Setting up ZK auth.");
 
       if (zkPrincipal == null || zkPrincipal.isEmpty()) {
@@ -53,10 +54,27 @@ public class ZookeeperUtils {
   }
 
   /**
-   * Dynamically sets up the JAAS configuration that uses kerberos
+   * Check if Kerberos authentication is enabled.
+   * This is used by:
+   * - LLAP daemons
+   * - Tez AM
+   * - HS2
+   * - LLAP status service
+   * Among the these Tez AM process has the lowest security setting wrt Kerberos in UGI.
+   * Even in secure scenarios Tez AM will return false for
+   * UGI.getLoginUser().hasKerberosCredentials() as it does not log in using Kerberos.
+   * Hence UGI.isSecurityEnabled() is the tightest setting we can check against.
+   */
+  public static boolean isKerberosEnabled(Configuration conf) {
+      return UserGroupInformation.isSecurityEnabled() &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
+  }
+
+  /**
+   * Dynamically sets up the JAAS configuration that uses kerberos.
    *
-   * @param principal
-   * @param keyTabFile
+   * @param zkPrincipal
+   * @param zkKeytab
    * @throws IOException
    */
   private static String setZookeeperClientKerberosJaasConfig(

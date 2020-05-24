@@ -7,7 +7,6 @@ SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
 set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
 set hive.llap.io.enabled=true;
@@ -89,7 +88,9 @@ CREATE TABLE table_change_string_group_double_n7(insert_num int, c1 STRING, c2 C
 insert into table table_change_string_group_double_n7 SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n19;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table table_change_string_group_double_n7 replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
+set hive.metastore.disallow.incompatible.col.type.changes=true;
 
 insert into table table_change_string_group_double_n7 VALUES (111, 789.321, 789.321, 789.321, 'new');
 

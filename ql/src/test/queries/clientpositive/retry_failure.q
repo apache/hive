@@ -9,5 +9,8 @@ set reexec.overlay.zzz=2;
 
 set hive.query.reexecution.enabled=true;
 set hive.query.reexecution.strategies=overlay;
+set hive.fetch.task.conversion=none;
+set tez.queue.name=default;
 
 select assert_true(${hiveconf:zzz} > a) from tx_n1 group by a;
+select assert_true(${hiveconf:zzz} > a), assert_true("${hiveconf:tez.queue.name}" = "default") from tx_n1;

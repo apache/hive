@@ -343,7 +343,7 @@ public class MapOperator extends AbstractMapOperator {
   private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
     Map<String, Configuration> tableNameToConf = new HashMap<>();
 
-    for (Map.Entry<Path, ArrayList<String>> e : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> e : conf.getPathToAliases().entrySet()) {
       List<String> aliases = e.getValue();
       if (aliases == null || aliases.isEmpty()) {
         continue;
@@ -426,7 +426,7 @@ public class MapOperator extends AbstractMapOperator {
     Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(tableNameToConf);
 
-    for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {
       Path onefile = entry.getKey();
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);

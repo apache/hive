@@ -10,4 +10,4 @@ PREHOOK: query: DROP VIEW xxx1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@xxx1
 PREHOOK: Output: default@xxx1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot drop a base table with DROP VIEW
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Cannot drop a base table with DROP VIEW

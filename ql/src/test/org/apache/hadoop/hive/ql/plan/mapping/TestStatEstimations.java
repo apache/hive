@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -26,8 +28,10 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -56,8 +60,7 @@ public class TestStatEstimations {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
   }
 
@@ -70,20 +73,18 @@ public class TestStatEstimations {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = {"t2" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorException {
+    driver.run(query);
     PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
   @Test
-  public void testFilterIntIn() throws ParseException {
+  public void testFilterIntIn() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     String query = "explain select a from t2 where a IN (-1,0,1,2,10,20,30,40) order by a";
 
@@ -91,7 +92,7 @@ public class TestStatEstimations {
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     // the same operator is present 2 times
     fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-    assertEquals(1, fos.size());
+    assertThat(fos.size(), Matchers.greaterThanOrEqualTo(1));
     FilterOperator fop = fos.get(0);
 
     // all outside elements should be ignored from stat estimation

@@ -189,24 +189,32 @@ public class ReduceRecordSource implements RecordSource {
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
 
         keyBinarySortableDeserializeToRow =
-                  new VectorDeserializeRow<BinarySortableDeserializeRead>(
-                        new BinarySortableDeserializeRead(
-                                  VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                      keyStructInspector),
-                                  /* useExternalBuffer */ true,
-                                  binarySortableSerDe.getSortOrders(),
-                                  binarySortableSerDe.getNullMarkers(),
-                                  binarySortableSerDe.getNotNullMarkers()));
+            new VectorDeserializeRow<BinarySortableDeserializeRead>(
+                new BinarySortableDeserializeRead(
+                    VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                        keyStructInspector),
+                    (batchContext.getRowdataTypePhysicalVariations().length > firstValueColumnOffset)
+                        ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(), 0,
+                            firstValueColumnOffset)
+                        : batchContext.getRowdataTypePhysicalVariations(),
+                    /* useExternalBuffer */ true,
+                    binarySortableSerDe.getSortOrders(),
+                    binarySortableSerDe.getNullMarkers(),
+                    binarySortableSerDe.getNotNullMarkers()));
         keyBinarySortableDeserializeToRow.init(0);
 
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
         if (valuesSize > 0) {
           valueLazyBinaryDeserializeToRow =
-                  new VectorDeserializeRow<LazyBinaryDeserializeRead>(
-                        new LazyBinaryDeserializeRead(
-                            VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                       valueStructInspectors),
-                            /* useExternalBuffer */ true));
+              new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+                  new LazyBinaryDeserializeRead(
+                      VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                          valueStructInspectors),
+                      (batchContext.getRowdataTypePhysicalVariations().length >= totalColumns)
+                          ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(),
+                              firstValueColumnOffset, totalColumns)
+                          : null,
+                      /* useExternalBuffer */ true));
           valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
 
           // Create data buffers for value bytes column vectors.
@@ -235,6 +243,10 @@ public class ReduceRecordSource implements RecordSource {
       }
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+  }
+
+  public TableDesc getKeyTableDesc() {
+    return keyTableDesc;
   }
 
   @Override

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -111,7 +111,7 @@ public final class CommandProcessorFactory {
     }
   }
 
-  static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
+  private static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
 
   public static CommandProcessor get(String[] cmd, @Nonnull HiveConf conf) throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);

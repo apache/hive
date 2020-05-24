@@ -110,6 +110,10 @@ public class UpdatedMetaDataTracker {
     if (dbName == null) {
       throw new SemanticException("db name can not be null");
     }
+    if (dbName.contains(".") || ((tableName != null)  && tableName.contains("."))) {
+      throw new SemanticException("Invalid DB or table name." + dbName + "::"
+              + ((tableName != null) ? tableName : ""));
+    }
     String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
     Integer idx = updateMetaDataMap.get(key);
     if (idx == null) {

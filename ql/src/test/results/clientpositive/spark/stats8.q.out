@@ -93,7 +93,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n1
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -171,6 +170,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	500                 
@@ -248,7 +248,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n1
-                  Statistics: Num rows: 794 Data size: 179672 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -329,7 +328,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n1
-                  Statistics: Num rows: 1196 Data size: 126864 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -410,7 +408,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n1
-                  Statistics: Num rows: 1598 Data size: 74056 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -503,7 +500,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n1
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -708,6 +704,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	2000                

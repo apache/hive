@@ -1878,7 +1878,7 @@ public class BeeLine implements Closeable {
    */
   int getSize(ResultSet rs) {
     try {
-      if (rs.getType() == rs.TYPE_FORWARD_ONLY) {
+      if (rs.getType() == ResultSet.TYPE_FORWARD_ONLY) {
         return -1;
       }
       rs.last();
@@ -2347,6 +2347,13 @@ public class BeeLine implements Closeable {
     if (signalHandler != null) {
       signalHandler.setStatement(stmnt);
     }
+
+    // If no fetch size is specified in beeline, let the driver figure it out
+    final int fetchSize = getOpts().getFetchSize();
+    if (fetchSize >= 0) {
+      stmnt.setFetchSize(fetchSize);
+    }
+
     return stmnt;
   }
 

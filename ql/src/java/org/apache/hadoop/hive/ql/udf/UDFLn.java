@@ -45,7 +45,7 @@ public class UDFLn extends UDFMath {
     if (a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log(a.get()));
+      result.set(StrictMath.log(a.get()));
       return result;
     }
   }

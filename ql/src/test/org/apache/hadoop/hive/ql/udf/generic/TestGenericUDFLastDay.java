@@ -26,10 +26,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFLastDay extends TestCase {
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFLastDay.
+ */
+public class TestGenericUDFLastDay {
+
+  @Test
   public void testLastDay() throws HiveException {
     GenericUDFLastDay udf = new GenericUDFLastDay();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -63,6 +69,7 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerifyTs("1966-01-31 23:59:59", "1966-01-31", udf);
   }
 
+  @Test
   public void testWrongDateStr() throws HiveException {
     GenericUDFLastDay udf = new GenericUDFLastDay();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -76,6 +83,7 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerify(null, null, udf);
   }
 
+  @Test
   public void testWrongTsStr() throws HiveException {
     GenericUDFLastDay udf = new GenericUDFLastDay();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -89,6 +97,7 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerify("2016-02-28T10:30:45", null, udf);
   }
 
+  @Test
   public void testLastDayTs() throws HiveException {
     GenericUDFLastDay udf = new GenericUDFLastDay();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;

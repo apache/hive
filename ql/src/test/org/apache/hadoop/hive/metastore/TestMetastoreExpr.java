@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -50,7 +51,12 @@ import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * Tests hive metastore expression support. This should be moved in metastore module
@@ -60,13 +66,13 @@ import junit.framework.TestCase;
  * it doesn't test all the edge cases of the filter (if classes were merged, perhaps the
  * filter test could be rolled into it); assumption is that they use the same path in SQL/JDO.
  */
-public class TestMetastoreExpr extends TestCase {
+public class TestMetastoreExpr {
   protected static HiveMetaStoreClient client;
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     try {
-      super.tearDown();
+
       client.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
@@ -75,9 +81,9 @@ public class TestMetastoreExpr extends TestCase {
     }
   }
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+
     try {
       client = new HiveMetaStoreClient(new HiveConf(this.getClass()));
     } catch (Throwable e) {
@@ -98,6 +104,7 @@ public class TestMetastoreExpr extends TestCase {
     }
   }
 
+  @Test
   public void testPartitionExpr() throws Exception {
     String dbName = "filterdb";
     String tblName = "filtertbl";
@@ -175,9 +182,23 @@ public class TestMetastoreExpr extends TestCase {
     client.listPartitionsByExpr(dbName, tblName,
         SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
+
+    // check with partition spec as well
+    List<PartitionSpec> partSpec = new ArrayList<>();
+    client.listPartitionsSpecByExpr(dbName, tblName,
+        SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, partSpec);
+    int partSpecSize = 0;
+    if(!partSpec.isEmpty()) {
+      partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
+    }
+    assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
   }
 
-  private static class ExprBuilder {
+
+  /**
+   * Helper class for building an expression.
+   */
+  public static class ExprBuilder {
     private final String tblName;
     private final Stack<ExprNodeDesc> stack = new Stack<ExprNodeDesc>();
 

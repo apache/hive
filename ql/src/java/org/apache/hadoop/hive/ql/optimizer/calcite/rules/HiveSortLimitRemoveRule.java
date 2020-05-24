@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
@@ -41,8 +42,17 @@ public final class HiveSortLimitRemoveRule extends RelOptRule {
     final HiveSortLimit sortLimit = call.rel(0);
 
     Double maxRowCount = call.getMetadataQuery().getMaxRowCount(sortLimit.getInput());
-    if (maxRowCount != null &&(maxRowCount <= 1)) {
-      return true;
+    if (maxRowCount != null) {
+      if (sortLimit.getFetchExpr() != null) {
+        // we have LIMIT
+        int limit = RexLiteral.intValue(sortLimit.getFetchExpr());
+        if (maxRowCount <= limit) {
+          return true;
+        }
+      } else if (maxRowCount <= 1) {
+        // No LIMIT only ORDER BY
+        return true;
+      }
     }
     return false;
   }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -32,108 +33,8 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
-import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FindSchemasByColsResp;
-import org.apache.hadoop.hive.metastore.api.FindSchemasByColsRqst;
-import org.apache.hadoop.hive.metastore.api.FireEventRequest;
-import org.apache.hadoop.hive.metastore.api.FireEventResponse;
-import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.Materialization;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
-import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 
 /**
@@ -333,6 +234,32 @@ public interface IMetaStoreClient {
    */
   List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Retrieve all materialized views that have rewriting enabled. This will use the default catalog.
+   * @return List of materialized views.
+   * @throws MetaException error fetching from the RDBMS
+   * @throws TException thrift transport error
+   * @throws UnknownDBException no such database
+   */
+  List<Table> getAllMaterializedViewObjectsForRewriting()
+      throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Get the names of all the tables along with extended table metadata
+   * @param catName catalog name.
+   * @param dbName Name of the database to fetch tables from.
+   * @param tablePattern pattern to match the tables names.
+   * @param requestedFields An int bitmask to indicate the depth of the returned objects
+   * @param processorCapabilities A list of "capabilities" possessed by the caller, to be matched with table's params
+   * @param processorId Any string id to identify the caller/client, for logging purposes only.
+   * @param limit Maximum size of the result set. <=0 indicates no limit
+   * @return List of ExtendedTableInfo that match the input arguments.
+   * @throws MetaException Thrown if there is error on fetching from DBMS.
+   * @throws TException Thrown if there is a thrift transport exception.
+   */
+  public List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern, int requestedFields,
+      int limit) throws MetaException, TException;
 
   /**
    * Get materialized views that have rewriting enabled.  This will use the default catalog.
@@ -732,6 +659,7 @@ public interface IMetaStoreClient {
    *          Name of the table to fetch.
    * @param getColumnStats
    *          get the column stats, if available, when true
+   * @param engine engine sending the request
    * @return An object representing the table.
    * @throws MetaException
    *           Could not fetch the table
@@ -740,7 +668,7 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
-  Table getTable(String dbName, String tableName, boolean getColumnStats) throws MetaException,
+  Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
   /**
    * Get a table object.
@@ -773,12 +701,13 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param validWriteIdList applicable snapshot
    * @param getColumnStats get the column stats, if available, when true
+   * @param engine engine sending the request
    * @return table object.
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
   Table getTable(String catName, String dbName, String tableName,
-                 String validWriteIdList, boolean getColumnStats) throws TException;
+                 String validWriteIdList, boolean getColumnStats, String engine) throws TException;
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -1284,6 +1213,24 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param defaultPartName default partition name.
+   * @param exprBytes expression, serialized from ExprNodeDesc.
+   * @param order ordered the resulting list.
+   * @param maxParts maximum number of partition names to return, or -1 to return all that are
+   *                  found.
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException no such table.
+   */
+  List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order, short maxParts)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values
    * @param request request
    * @return reponse
@@ -1396,6 +1343,41 @@ public interface IMetaStoreClient {
       throws MetaException, NoSuchObjectException, TException;
 
   /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param dbName the database name
+   * @param tblName the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param maxParts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param defaultPartName Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String dbName, String tblName,
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+          throws TException;
+
+  /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param catName the catalog name
+   * @param dbName the database name
+   * @param tblName the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param maxParts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param defaultPartitionName Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      throws TException;
+
+  /**
    * Get list of partitions matching specified serialized expression
    * @param db_name the database name
    * @param tbl_name the table name
@@ -1410,7 +1392,7 @@ public interface IMetaStoreClient {
    */
   boolean listPartitionsByExpr(String db_name, String tbl_name,
       byte[] expr, String default_partition_name, short max_parts, List<Partition> result)
-          throws TException;
+      throws TException;
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -1482,13 +1464,14 @@ public interface IMetaStoreClient {
    * @param tbl_name table name
    * @param part_names list of partition names
    * @param getColStats if true include statistics in the Partition object
+   * @param engine engine sending the request
    * @return list of Partition objects
    * @throws NoSuchObjectException No such partitions
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
   List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats) throws NoSuchObjectException, MetaException, TException;
+      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1512,13 +1495,14 @@ public interface IMetaStoreClient {
      * @param tbl_name table name
      * @param part_names list of partition names
      * @param getColStats if true, column statistics is added to the Partition objects
+     * @param engine engine sending the request
      * @return list of Partition objects
      * @throws NoSuchObjectException No such partitions
      * @throws MetaException error accessing the RDBMS.
      * @throws TException thrift transport error
      */
     List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                         List<String> part_names, boolean getColStats)
+            List<String> part_names, boolean getColStats, String engine)
             throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -1644,11 +1628,23 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.Table)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
    */
 
   void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException;
+
+  /**
+   * @param request CreateTableRequest
+   * @throws AlreadyExistsException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+
+  void createTable(CreateTableRequest request) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
   /**
    * Alter a table
@@ -1949,7 +1945,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   List<Partition> dropPartitions(String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+                                 List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                  boolean ifExists) throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -1970,7 +1966,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                         List<ObjectPair<Integer, byte[]>> partExprs,
+                                         List<Pair<Integer, byte[]>> partExprs,
                                          boolean deleteData, boolean ifExists)
       throws NoSuchObjectException, MetaException, TException {
     return dropPartitions(catName, dbName, tblName, partExprs,
@@ -2000,7 +1996,7 @@ public interface IMetaStoreClient {
    */
   @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2023,7 +2019,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                         List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+                                         List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                          boolean ifExists, boolean needResults)
       throws NoSuchObjectException, MetaException, TException {
     return dropPartitions(catName, dbName, tblName, partExprs,
@@ -2045,7 +2041,7 @@ public interface IMetaStoreClient {
    * @throws TException On failure
    */
   List<Partition> dropPartitions(String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs,
+                                 List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2062,7 +2058,7 @@ public interface IMetaStoreClient {
    * @throws TException On failure
    */
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs,
+                                 List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2287,7 +2283,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException
@@ -2310,7 +2306,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException
@@ -2446,17 +2442,17 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
+   * @param engine engine sending the request
    * @return list of column statistics objects, one per column
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames) throws NoSuchObjectException, MetaException, TException;
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-                                                     List<String> colNames,
-                                                     String validWriteIdList)
+      List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2467,18 +2463,17 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
+   * @param engine engine sending the request
    * @return list of column statistics objects, one per column
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-                                                     List<String> colNames)
-      throws NoSuchObjectException, MetaException, TException;
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-                                                     List<String> colNames,
-                                                     String validWriteIdList)
+      List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Get the column statistics for a set of columns in a partition.
@@ -2487,18 +2482,19 @@ public interface IMetaStoreClient {
    * @param partNames partition names.  Since these are names they should be of the form
    *                  "key1=value1[/key2=value2...]"
    * @param colNames list of column names
+   * @param engine engine sending the request
    * @return map of columns to statistics
    * @throws NoSuchObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames)
+      String tableName,  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
-      String validWriteIdList)
+      String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2509,19 +2505,20 @@ public interface IMetaStoreClient {
    * @param partNames partition names.  Since these are names they should be of the form
    *                  "key1=value1[/key2=value2...]"
    * @param colNames list of column names
+   * @param engine engine sending the request
    * @return map of columns to statistics
    * @throws NoSuchObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames)
-      throws NoSuchObjectException, MetaException, TException;
+      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
+      String engine) throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
-      String validWriteIdList)
+      String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2530,6 +2527,7 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param partName partition name.
    * @param colName column name, or null for all columns
+   * @param engine engine, or null for all engines
    * @return boolean indicating outcome of the operation
    * @throws NoSuchObjectException no such partition exists
    * @throws InvalidObjectException error dropping the stats data
@@ -2538,7 +2536,7 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException input is invalid or null.
    */
   boolean deletePartitionColumnStatistics(String dbName, String tableName,
-    String partName, String colName) throws NoSuchObjectException, MetaException,
+    String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
     InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2549,6 +2547,7 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param partName partition name.
    * @param colName column name, or null for all columns
+   * @param engine engine, or null for all engines
    * @return boolean indicating outcome of the operation
    * @throws NoSuchObjectException no such partition exists
    * @throws InvalidObjectException error dropping the stats data
@@ -2557,7 +2556,7 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException input is invalid or null.
    */
   boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-                                          String partName, String colName)
+      String partName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2566,6 +2565,7 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colName column name, or null to drop stats for all columns
+   * @param engine engine, or null for all engines
    * @return boolean indicating the outcome of the operation
    * @throws NoSuchObjectException No such table
    * @throws MetaException error accessing the RDBMS
@@ -2573,7 +2573,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName) throws
+   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
     NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2583,6 +2583,7 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colName column name, or null to drop stats for all columns
+   * @param engine engine, or null for all engines
    * @return boolean indicating the outcome of the operation
    * @throws NoSuchObjectException No such table
    * @throws MetaException error accessing the RDBMS
@@ -2590,7 +2591,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName)
+  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -3305,7 +3306,7 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
-  /**
+    /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -3407,17 +3408,18 @@ public interface IMetaStoreClient {
    * @param tblName table name
    * @param colNames list of column names
    * @param partName list of partition names (not values).
+   * @param engine engine sending the request
    * @return aggregated stats for requested partitions
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
   AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
+      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName,
-      String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3426,18 +3428,20 @@ public interface IMetaStoreClient {
    * @param tblName table name
    * @param colNames list of column names
    * @param partNames list of partition names (not values).
+   * @param engine engine sending the request
    * @return aggregated stats for requested partitions
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-                               List<String> colNames, List<String> partNames)
+                               List<String> colNames, List<String> partNames,
+                               String engine)
       throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                List<String> colNames, List<String> partNames,
-                               String writeIdList)
+                               String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Set table or partition column statistics.
@@ -3954,4 +3958,29 @@ public interface IMetaStoreClient {
    * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
    */
   String getServerVersion() throws TException;
+
+  /**
+   * Returns details about a scheduled query by name.
+   * 
+   * @throws NoSuchObjectException if an object by the given name dosen't exists.
+   */
+  ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;
+
+  /**
+   * Carries out maintenance of scheduled queries (insert/update/drop).
+   */
+  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
+
+  /**
+   * Checks whenever a query is available for execution.
+   *
+   * @return optionally a scheduled query to be processed.
+   */
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
+
+  /**
+   * Registers the progress a scheduled query being executed.
+   */
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
+
 }

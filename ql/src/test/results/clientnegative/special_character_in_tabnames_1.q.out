@@ -2,4 +2,4 @@ PREHOOK: query: create table `c/b/o_t1`(key string, value string, c_int int, c_f
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@c/b/o_t1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. org.apache.hadoop.hive.ql.metadata.HiveException: [c/b/o_t1]: is not a valid table name
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: [c/b/o_t1]: is not a valid table name

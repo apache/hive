@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.text.WordUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -40,7 +41,7 @@ public class StringInitCap extends StringUnaryUDF {
         if (s == null) {
           return null;
         }
-        t.set(WordUtils.capitalizeFully(s.toString()));
+        t.set(WordUtils.capitalizeFully(s.toString(), Utilities.COMMON_WHITESPACE_CHARS));
         return t;
       }
     });

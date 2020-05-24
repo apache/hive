@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.time.ZoneId;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
@@ -30,9 +35,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFToUnixTimestamp extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
+import org.apache.hadoop.mapred.JobConf;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+/**
+ * TestGenericUDFToUnixTimestamp.
+ */
+public class TestGenericUDFToUnixTimestamp {
 
   public static void runAndVerify(GenericUDFToUnixTimeStamp udf,
       Object arg, Object expected) throws HiveException {
@@ -56,51 +71,66 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     }
   }
 
+  @Test
   public void testTimestamp() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
     ObjectInspector[] arguments = {valueOI};
+    MapredContext mockContext = Mockito.mock(MapredContext.class);
+    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
+    udf.configure(mockContext);
     udf.initialize(arguments);
 
     Timestamp ts = Timestamp.valueOf("1970-01-01 00:00:00");
+    TimestampTZ tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
     runAndVerify(udf,
         new TimestampWritableV2(ts),
-        new LongWritable(ts.toEpochSecond()));
+        new LongWritable(tstz.getEpochSecond()));
 
     ts = Timestamp.valueOf("2001-02-03 01:02:03");
+    tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
     runAndVerify(udf,
         new TimestampWritableV2(ts),
-        new LongWritable(ts.toEpochSecond()));
+        new LongWritable(tstz.getEpochSecond()));
 
     // test null values
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testDate() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     ObjectInspector[] arguments = {valueOI};
+    MapredContext mockContext = Mockito.mock(MapredContext.class);
+    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
+    udf.configure(mockContext);
     udf.initialize(arguments);
 
     Date date = Date.valueOf("1970-01-01");
+    TimestampTZ tstz = TimestampTZUtil.convert(date, ZoneId.systemDefault());
     runAndVerify(udf,
         new DateWritableV2(date),
-        new LongWritable(date.toEpochSecond()));
+        new LongWritable(tstz.getEpochSecond()));
 
     // test null values
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testString() throws HiveException {
     GenericUDFToUnixTimeStamp udf1 = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] arguments = {valueOI};
+    MapredContext mockContext = Mockito.mock(MapredContext.class);
+    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
+    udf1.configure(mockContext);
     udf1.initialize(arguments);
 
     String val = "2001-01-01 01:02:03";
     runAndVerify(udf1,
         new Text(val),
-        new LongWritable(Timestamp.valueOf(val).toEpochSecond()));
+        new LongWritable(TimestampTZUtil.parse(val, ZoneId.systemDefault()).getEpochSecond()));
 
     // test null values
     runAndVerify(udf1, null, null);
@@ -108,6 +138,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     // Try 2-arg version
     GenericUDFToUnixTimeStamp udf2 = new GenericUDFToUnixTimeStamp();
     ObjectInspector[] args2 = {valueOI, valueOI};
+    udf2.configure(mockContext);
     udf2.initialize(args2);
 
     val = "2001-01-01";
@@ -115,7 +146,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     runAndVerify(udf2,
         new Text(val),
         new Text(format),
-        new LongWritable(Date.valueOf(val).toEpochSecond()));
+        new LongWritable(TimestampTZUtil.parse(val, ZoneId.systemDefault()).getEpochSecond()));
 
     // test null values
     runAndVerify(udf2, null, null, null);

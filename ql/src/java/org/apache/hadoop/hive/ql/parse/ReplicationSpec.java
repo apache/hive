@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
@@ -41,7 +42,6 @@ public class ReplicationSpec {
   private String eventId = null;
   private String currStateId = null;
   private boolean isNoop = false;
-  private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
   private boolean isReplace = true; // default is that the import mode is insert overwrite
   private String validWriteIdList = null; // WriteIds snapshot for replicating ACID/MM tables.
   //TxnIds snapshot
@@ -50,14 +50,16 @@ public class ReplicationSpec {
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
+  //Determine if replication is done using repl or export-import
+  private boolean isRepl = false;
+  private boolean isMetadataOnlyForExternalTables = false;
 
-  // Key definitions related to replication
+  // Key definitions related to replication.
   public enum KEY {
     REPL_SCOPE("repl.scope"),
     EVENT_ID("repl.event.id"),
-    CURR_STATE_ID("repl.last.id"),
+    CURR_STATE_ID(ReplConst.REPL_TARGET_TABLE_PROPERTY),
     NOOP("repl.noop"),
-    LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
     VALID_WRITEID_LIST("repl.valid.writeid.list"),
     VALID_TXN_LIST("repl.valid.txnid.list")
@@ -114,18 +116,17 @@ public class ReplicationSpec {
   }
 
   public ReplicationSpec(String fromId, String toId) {
-    this(true, false, fromId, toId, false, true, false);
+    this(true, false, fromId, toId, false, false);
   }
 
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
                          String eventReplicationState, String currentReplicationState,
-                         boolean isNoop, boolean isLazy, boolean isReplace) {
+                         boolean isNoop, boolean isReplace) {
     this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
     this.isNoop = isNoop;
-    this.isLazy = isLazy;
     this.isReplace = isReplace;
     this.specType = Type.DEFAULT;
   }
@@ -146,7 +147,6 @@ public class ReplicationSpec {
     this.eventId = keyFetcher.apply(ReplicationSpec.KEY.EVENT_ID.toString());
     this.currStateId = keyFetcher.apply(ReplicationSpec.KEY.CURR_STATE_ID.toString());
     this.isNoop = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString()));
-    this.isLazy = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.LAZY.toString()));
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
     this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
     this.validTxnList = keyFetcher.apply(KEY.VALID_TXN_LIST.toString());
@@ -281,6 +281,17 @@ public class ReplicationSpec {
   }
 
   /**
+   * @return true if this statement refers to metadata-only operation.
+   */
+  public boolean isMetadataOnlyForExternalTables() {
+    return isMetadataOnlyForExternalTables;
+  }
+
+  public void setMetadataOnlyForExternalTables(boolean metadataOnlyForExternalTables) {
+    isMetadataOnlyForExternalTables = metadataOnlyForExternalTables;
+  }
+
+  /**
    * @return true if this statement refers to insert-into or insert-overwrite operation.
    */
   public boolean isReplace(){ return isReplace; }
@@ -319,20 +330,6 @@ public class ReplicationSpec {
    */
   public void setNoop(boolean isNoop) {
     this.isNoop = isNoop;
-  }
-
-  /**
-   * @return whether or not the current replication action is set to be lazy
-   */
-  public boolean isLazy() {
-    return isLazy;
-  }
-
-  /**
-   * @param isLazy whether or not the current replication action should be lazy
-   */
-  public void setLazy(boolean isLazy){
-    this.isLazy = isLazy;
   }
 
   /**
@@ -382,8 +379,6 @@ public class ReplicationSpec {
         return getCurrentReplicationState();
       case NOOP:
         return String.valueOf(isNoop());
-      case LAZY:
-        return String.valueOf(isLazy());
       case IS_REPLACE:
         return String.valueOf(isReplace());
       case VALID_WRITEID_LIST:
@@ -436,5 +431,13 @@ public class ReplicationSpec {
     // Duplicate file check during copy is required until after first successful incremental load.
     // Check HIVE-21197 for more detail.
     this.needDupCopyCheck = isFirstIncPending;
+  }
+
+  public boolean isRepl() {
+    return isRepl;
+  }
+
+  public void setRepl(boolean repl) {
+    isRepl = repl;
   }
 }

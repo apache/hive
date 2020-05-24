@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.PostgresCommandParser;

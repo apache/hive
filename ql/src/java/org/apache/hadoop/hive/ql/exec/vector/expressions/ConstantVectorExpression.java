@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Constant is represented as a vector with repeating values.
@@ -308,6 +306,18 @@ public class ConstantVectorExpression extends VectorExpression {
     }
   }
 
+  private void evaluateDecimal64(ColumnVector colVector) {
+    Decimal64ColumnVector dcv = (Decimal64ColumnVector) colVector;
+    dcv.isRepeating = true;
+    if (!isNullValue) {
+      dcv.isNull[0] = false;
+      dcv.vector[0] = longValue;
+    } else {
+      dcv.isNull[0] = true;
+      dcv.noNulls = false;
+    }
+  }
+
   private void evaluateTimestamp(ColumnVector colVector) {
     TimestampColumnVector tcv = (TimestampColumnVector) colVector;
     tcv.isRepeating = true;
@@ -371,7 +381,11 @@ public class ConstantVectorExpression extends VectorExpression {
       evaluateBytes(colVector);
       break;
     case DECIMAL:
-      evaluateDecimal(colVector);
+      if (outputDataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+        evaluateDecimal64(colVector);
+      } else {
+        evaluateDecimal(colVector);
+      }
       break;
     case TIMESTAMP:
       evaluateTimestamp(colVector);
@@ -439,6 +453,25 @@ public class ConstantVectorExpression extends VectorExpression {
     return intervalDayTimeValue;
   }
 
+  public Object getValue() {
+    switch (type) {
+    case LONG:
+      return getLongValue();
+    case DOUBLE:
+      return getDoubleValue();
+    case BYTES:
+      return getBytesValue();
+    case DECIMAL:
+      return getDecimalValue();
+    case TIMESTAMP:
+      return getTimestampValue();
+    case INTERVAL_DAY_TIME:
+      return getIntervalDayTimeValue();
+    default:
+      throw new RuntimeException("Unexpected column vector type " + type);
+    }
+  }
+
   public void setStructValue(Object structValue) throws HiveException {
     StructTypeInfo structTypeInfo = (StructTypeInfo) outputTypeInfo;
     ArrayList<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
@@ -504,5 +537,9 @@ public class ConstantVectorExpression extends VectorExpression {
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
+  }
+
+  public boolean getIsNullValue() {
+    return isNullValue;
   }
 }

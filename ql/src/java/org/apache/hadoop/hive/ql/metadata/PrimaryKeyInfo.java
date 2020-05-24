@@ -104,4 +104,7 @@ public class PrimaryKeyInfo implements Serializable {
     return sb.toString();
   }
 
+  public static boolean isPrimaryKeyInfoNotEmpty(PrimaryKeyInfo info) {
+    return info != null && !info.getColNames().isEmpty();
+  }
 }

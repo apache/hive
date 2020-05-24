@@ -43,38 +43,38 @@ PREHOOK: Input: default@all_nulls
 POSTHOOK: query: describe formatted all_nulls a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@all_nulls
-col_name	a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-data_type	bigint	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-min	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-max	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_nulls	5	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-distinct_count	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-avg_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-max_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_trues		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_falses		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-bitVector	HL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-comment	from deserializer	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+col_name	a
+data_type	bigint
+min	0
+max	0
+num_nulls	5
+distinct_count	1
+avg_col_len	
+max_col_len	
+num_trues	
+num_falses	
+bit_vector	HL
+comment	from deserializer
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: describe formatted all_nulls b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@all_nulls
 POSTHOOK: query: describe formatted all_nulls b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@all_nulls
-col_name	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-data_type	double	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-min	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-max	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_nulls	5	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-distinct_count	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-avg_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-max_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_trues		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-num_falses		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-bitVector	HL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-comment	from deserializer	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+col_name	b
+data_type	double
+min	0.0
+max	0.0
+num_nulls	5
+distinct_count	1
+avg_col_len	
+max_col_len	
+num_trues	
+num_falses	
+bit_vector	HL
+comment	from deserializer
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: drop table all_nulls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@all_nulls

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.client.builder.SQLPrimaryKeyBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.SQLUniqueConstraintBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 import org.junit.After;
@@ -96,6 +97,7 @@ public abstract class NonCatCallsWithCatalog {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(this.conf, ConfVars.HIVE_IN_TEST, true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Get new client

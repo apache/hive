@@ -19,9 +19,9 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: key string, value string
+      name: default.symlink_text_input_format
       input format: org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-      name: default.symlink_text_input_format
 
 PREHOOK: query: CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 PREHOOK: type: CREATETABLE
@@ -56,6 +56,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string)
+                null sort order: zz
                 sort order: ++
                 Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -127,6 +128,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
+                null sort order: z
                 sort order: +
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -201,6 +203,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
@@ -275,6 +278,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string)
+                null sort order: zz
                 sort order: ++
                 Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -349,6 +353,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
+                null sort order: z
                 sort order: +
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -426,6 +431,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)

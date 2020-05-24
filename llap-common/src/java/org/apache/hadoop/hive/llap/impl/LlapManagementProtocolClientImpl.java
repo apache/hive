@@ -89,4 +89,35 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       throw new ServiceException(e);
     }
   }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getDaemonMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto request) throws ServiceException {
+    try {
+      return getProxy().getDaemonMetrics(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.SetCapacityResponseProto setCapacity(final RpcController controller,
+      final LlapDaemonProtocolProtos.SetCapacityRequestProto request) throws ServiceException {
+    try {
+      return getProxy().setCapacity(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.EvictEntityResponseProto evictEntity(
+      RpcController controller, LlapDaemonProtocolProtos.EvictEntityRequestProto request)
+      throws ServiceException {
+    try {
+      return getProxy().evictEntity(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
 }

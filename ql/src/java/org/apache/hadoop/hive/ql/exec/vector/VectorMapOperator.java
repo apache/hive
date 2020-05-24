@@ -28,11 +28,9 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -46,7 +44,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -561,7 +558,7 @@ public class VectorMapOperator extends AbstractMapOperator {
     HashMap<PartitionDesc, VectorPartitionContext> partitionContextMap =
         new HashMap<PartitionDesc, VectorPartitionContext>();
 
-    for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {
       Path path = entry.getKey();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(path);
 

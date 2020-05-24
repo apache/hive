@@ -70,6 +70,11 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>
@@ -349,4 +354,13 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
+<property>
+  <name>hive.scheduled.queries.executor.enabled</name>
+  <value>false</value>
+</property>
 </configuration>

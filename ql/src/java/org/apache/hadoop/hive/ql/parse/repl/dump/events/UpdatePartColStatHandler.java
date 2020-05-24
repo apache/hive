@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -47,20 +46,14 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
               event.getEventType());
       return;
     }
-
     // Statistics without any data does not make sense.
-    if (withinContext.replicationSpec.isMetadataOnly()) {
-      return;
-    }
-
-    // For now we do not dump statistics for a transactional table since replicating the same is
-    // not supported.
-    if (AcidUtils.isTransactionalTable(tableObj)) {
+    if (withinContext.replicationSpec.isMetadataOnly()
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(new Table(tableObj), withinContext.hiveConf)) {
       return;
     }
 
     if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj), true,
-                              withinContext.hiveConf)) {
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

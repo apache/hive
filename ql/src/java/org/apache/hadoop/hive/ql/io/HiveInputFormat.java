@@ -18,44 +18,30 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.s3a.S3AFileSystem;
+import org.apache.hadoop.fs.s3a.S3AInputPolicy;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -70,6 +56,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -78,8 +65,35 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static java.lang.Integer.min;
+import static org.apache.hadoop.hive.common.FileUtils.isS3a;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -99,6 +113,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
+  private CompressionCodecFactory compressionCodecs;
 
   // both classes access by subclasses
   protected Map<Path, PartitionDesc> pathToPartitionInfo;
@@ -228,6 +243,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   @Override
   public void configure(JobConf job) {
     this.job = job;
+    this.compressionCodecs = new CompressionCodecFactory(job);
   }
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
@@ -368,6 +384,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return instance;
   }
 
+  /**
+   * Returns true if the inputFormat performs random seek+read
+   * @param inputFormat
+   * @return
+   */
+  public static boolean isRandomAccessInputFormat(InputFormat inputFormat) {
+    if (inputFormat instanceof OrcInputFormat ||
+        inputFormat instanceof VectorizedParquetInputFormat) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
@@ -406,10 +435,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     pushProjectionsAndFilters(job, inputFormatClass, splitPath, nonNative);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-    try {
-      inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
-    } catch (HiveException e) {
-      throw new IOException(e);
+    if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
+      try {
+        inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
     RecordReader innerReader = null;
     try {
@@ -418,6 +449,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
     }
+
+    FileSystem splitFileSystem = splitPath.getFileSystem(job);
+    if (isS3a(splitFileSystem) && isRandomAccessInputFormat(inputFormat)) {
+      LOG.debug("Changing S3A input policy to RANDOM");
+      ((S3AFileSystem) splitFileSystem).setInputPolicy(S3AInputPolicy.Random);
+    }
+
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
@@ -476,7 +514,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    List<Path> dirsWithFileOriginals = new ArrayList<>(), finalDirs = new ArrayList<>();
+    List<Path> dirsWithFileOriginals = Collections.synchronizedList(new ArrayList<>()),
+            finalDirs = Collections.synchronizedList(new ArrayList<>());
     processPathsForMmRead(dirs, conf, validMmWriteIdList, finalDirs, dirsWithFileOriginals);
     if (finalDirs.isEmpty() && dirsWithFileOriginals.isEmpty()) {
       // This is for transactional tables.
@@ -494,12 +533,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     conf.setInputFormat(inputFormat.getClass());
     int headerCount = 0;
     int footerCount = 0;
+    boolean isCompressedFormat = isCompressedInput(finalDirs);
     if (table != null) {
       headerCount = Utilities.getHeaderCount(table);
       footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        // Input file has header or footer, cannot be splitted.
-        HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && !isCompressedFormat) {
+          SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
+          skippingTextInputFormat.configure(conf, headerCount, footerCount);
+          inputFormat = skippingTextInputFormat;
+        } else {
+          // if the input is Compressed OR not text we have no way of splitting them!
+          // In that case RecordReader should take care of header/footer skipping!
+          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+        }
       }
     }
 
@@ -546,7 +593,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   protected ValidWriteIdList getMmValidWriteIds(
       JobConf conf, TableDesc table, ValidWriteIdList validWriteIdList) throws IOException {
-    if (!AcidUtils.isInsertOnlyTable(table.getProperties())) return null;
+    if (!AcidUtils.isInsertOnlyTable(table.getProperties())) {
+      return null;
+    }
     if (validWriteIdList == null) {
       validWriteIdList = AcidUtils.getTableValidWriteIdList( conf, table.getTableName());
       if (validWriteIdList == null) {
@@ -558,6 +607,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return validWriteIdList;
   }
 
+  public boolean isCompressedInput(List<Path> finalPaths) {
+    if (compressionCodecs != null) {
+      for (Path curr : finalPaths) {
+        if (this.compressionCodecs.getCodec(curr) != null) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public static void processPathsForMmRead(List<Path> dirs, Configuration conf,
       ValidWriteIdList validWriteIdList, List<Path> finalPaths,
       List<Path> pathsWithFileOriginals) throws IOException {
@@ -566,13 +626,45 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
     boolean allowOriginals = HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS);
-    for (Path dir : dirs) {
-      processForWriteIds(
-          dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+
+    int numThreads = min(HiveConf.getIntVar(conf, ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS), dirs.size());
+    List<Future<Void>> pathFutures = new ArrayList<>();
+    ExecutorService pool = null;
+    if (numThreads > 1) {
+      pool = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MM-Split-Paths-%d").build());
+    }
+
+    try {
+      for (Path dir : dirs) {
+        if (pool != null) {
+          Future<Void> pathFuture = pool.submit(() -> {
+            processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+            return null;
+          });
+          pathFutures.add(pathFuture);
+        } else {
+          processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+        }
+      }
+      try {
+        for (Future<Void> pathFuture : pathFutures) {
+          pathFuture.get();
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        for (Future<Void> future : pathFutures) {
+          future.cancel(true);
+        }
+        throw new IOException(e);
+      }
+    } finally {
+      if (pool != null) {
+        pool.shutdown();
+      }
     }
   }
 
-  private static void processForWriteIds(Path dir, Configuration conf,
+  private static void processForWriteIdsForMmRead(Path dir, Configuration conf,
       ValidWriteIdList validWriteIdList, boolean allowOriginals, List<Path> finalPaths,
       List<Path> pathsWithFileOriginals) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
@@ -604,7 +696,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     if (hasAcidDirs) {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          fs, dir, conf, validWriteIdList, Ref.from(false), true, null);
+          fs, dir, conf, validWriteIdList, Ref.from(false), true, null, false);
 
       // Find the base, created for IOW.
       Path base = dirInfo.getBaseDirectory();
@@ -635,7 +727,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
   }
- 
+
 
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs;
@@ -819,7 +911,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnNameList(jobConf, tableScan);
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
-    ExprNodeGenericFuncDesc filterExpr = (ExprNodeGenericFuncDesc)scanDesc.getFilterExpr();
+    ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
     if (filterExpr == null) {
       return;
     }
@@ -877,13 +969,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Iterator<Entry<Path, ArrayList<String>>> iterator = this.mrwork
-        .getPathToAliases().entrySet().iterator();
+    Iterator<Entry<Path, List<String>>> iterator = this.mrwork.getPathToAliases().entrySet().iterator();
 
     Set<Path> splitParentPaths = null;
     int pathsSize = this.mrwork.getPathToAliases().entrySet().size();
     while (iterator.hasNext()) {
-      Entry<Path, ArrayList<String>> entry = iterator.next();
+      Entry<Path, List<String>> entry = iterator.next();
       Path key = entry.getKey();
       boolean match;
       if (nonNative) {
@@ -913,7 +1004,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
       if (match) {
-        ArrayList<String> list = entry.getValue();
+        List<String> list = entry.getValue();
         for (String val : list) {
           aliases.add(val);
         }

@@ -80,13 +80,18 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
 
 <property>
@@ -356,6 +361,27 @@
 <property>
   <name>tez.counters.max</name>
   <value>1024</value>
+</property>
+
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
+<property>
+  <name>hive.semantic.analyzer.hook</name>
+  <value>org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook</value>
+</property>
+
+<property>
+  <name>hive.users.in.admin.role</name>
+  <value>hive_admin_user</value>
+</property>
+
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value>hive.query.max.length</value>
+  <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
 </property>
 
 </configuration>

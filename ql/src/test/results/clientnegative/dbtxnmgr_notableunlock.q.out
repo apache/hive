@@ -12,4 +12,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@drop_notableunlock
 PREHOOK: query: unlock table drop_notableunlock
 PREHOOK: type: UNLOCKTABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Current transaction manager does not support explicit lock requests.  Transaction manager:   org.apache.hadoop.hive.ql.lockmgr.DbTxnManager
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Current transaction manager does not support explicit lock requests.  Transaction manager:   org.apache.hadoop.hive.ql.lockmgr.DbTxnManager

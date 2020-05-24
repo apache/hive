@@ -60,8 +60,7 @@ public class JsonSerDe extends AbstractSerDe {
   public void initialize(Configuration conf, Properties tbl)
     throws SerDeException {
 
-    jsonSerde.initialize(conf, tbl);
-    jsonSerde.setWriteablesUsage(false);
+    jsonSerde.initialize(conf, tbl, false);
 
     StructTypeInfo rowTypeInfo = jsonSerde.getTypeInfo();
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
@@ -84,28 +83,32 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
     try {
-      Object row = jsonSerde.deserialize(blob);
-      List fatRow = fatLand((Object[]) row);
+      List<?> row = (List<?>) jsonSerde.deserialize(blob);
+      List<Object> fatRow = fatLand(row);
       return new DefaultHCatRecord(fatRow);
     } catch (Exception e) {
       throw new SerDeException(e);
     }
   }
 
+
   @SuppressWarnings({"rawtypes", "unchecked" })
-  private static List fatLand(Object[] arr) {
-    List ret = new ArrayList<>();
-    for (Object o : arr) {
-      if (o != null && o instanceof Map<?, ?>) {
+  private static List<Object> fatLand(final List<?> arr) {
+    final List ret = new ArrayList<>();
+    for (final Object o : arr) {
+      if (o == null) {
+        ret.add(null);
+      } else if (o instanceof Map<?, ?>) {
         ret.add(fatMap(((Map) o)));
-      } else if (o != null && o instanceof List<?>) {
-        ret.add(fatLand(((List) o).toArray()));
-      } else if (o != null && o.getClass().isArray() && o.getClass().getComponentType() != byte.class) {
+      } else if (o instanceof List<?>) {
+        ret.add(fatLand((List) o));
+      } else if (o.getClass().isArray()
+          && o.getClass().getComponentType() != byte.class) {
         Class<?> ct = o.getClass().getComponentType();
         if (ct.isPrimitive()) {
           ret.add(primitiveArrayToList(o));
         } else {
-          ret.add(fatLand((Object[]) o));
+          ret.add(fatLand(Arrays.asList((Object[]) o)));
         }
       } else {
         ret.add(o);
@@ -114,15 +117,14 @@ public class JsonSerDe extends AbstractSerDe {
     return ret;
   }
 
-  @SuppressWarnings("rawtypes")
   private static Object fatMap(Map<Object, Object> map) {
-    Map ret = new LinkedHashMap<>();
+    Map<Object, Object> ret = new LinkedHashMap<>();
     Set<Entry<Object, Object>> es = map.entrySet();
     for (Entry<Object, Object> e : es) {
-      Object oldV = e.getValue();
-      Object newV;
+      final Object oldV = e.getValue();
+      final Object newV;
       if (oldV != null && oldV.getClass().isArray()) {
-        newV = fatLand((Object[]) oldV);
+        newV = fatLand(Arrays.asList((Object[]) oldV));
       } else {
         newV = oldV;
       }

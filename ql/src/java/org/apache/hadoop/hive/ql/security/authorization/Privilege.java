@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * Privilege defines a privilege in Hive. Each privilege has a name and scope associated with it.
  * This class contains all of the predefined privileges in Hive.
@@ -44,6 +47,7 @@ public class Privilege {
 
   }
 
+  @Explain(skipHeader = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrivilegeType getPriv() {
     return priv;
   }

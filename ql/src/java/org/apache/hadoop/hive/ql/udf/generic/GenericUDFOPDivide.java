@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarDivideLongColumn;
@@ -48,7 +49,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
   LongScalarDivideLongColumn.class, LongScalarDivideDoubleColumn.class,
   DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class,
   DecimalColDivideDecimalColumn.class, DecimalColDivideDecimalScalar.class,
-  DecimalScalarDivideDecimalColumn.class})
+  DecimalScalarDivideDecimalColumn.class, Decimal64ColDivideDecimal64Scalar.class,
+  Decimal64ColDivideDecimal64Column.class})
+@VectorizedExpressionsSupportDecimal64()
 public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
   public GenericUDFOPDivide() {

@@ -21,12 +21,10 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,28 +33,29 @@ import java.util.List;
  */
 public class UpdateTableColStatHandler extends AbstractMessageHandler {
     @Override
-    public List<Task<? extends Serializable>> handle(Context context)
+    public List<Task<?>> handle(Context context)
             throws SemanticException {
         UpdateTableColumnStatMessage utcsm =
                 deserializer.getUpdateTableColumnStatMessage(context.dmd.getPayload());
 
         // Update tablename and database name in the statistics object
         ColumnStatistics colStats = utcsm.getColumnStatistics();
+        // In older version of hive, engine might not have set.
+        if (colStats.getEngine() == null) {
+            colStats.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
+        }
         ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
         colStatsDesc.setDbName(context.dbName);
-        if (!context.isTableNameEmpty()) {
-          colStatsDesc.setTableName(context.tableName);
-        }
         if (!context.isDbNameEmpty()) {
             updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName,
-                    context.tableName, null);
+                    colStatsDesc.getTableName(), null);
         }
 
-      // TODO: For txn stats update, ColumnStatsUpdateTask.execute()->Hive
-      // .setPartitionColumnStatistics expects a valid writeId allocated by the current txn and
-      // also, there should be a table snapshot. But, it won't be there as update from
-      // ReplLoadTask which doesn't have a write id allocated. Need to check this further.
-        return Collections.singletonList(TaskFactory.get(new ColumnStatsUpdateWork(colStats),
-                context.hiveConf));
+        try {
+            return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
+                    utcsm.getTableObject(), utcsm.getWriteId());
+        } catch(Exception e) {
+            throw new SemanticException(e);
+        }
     }
 }

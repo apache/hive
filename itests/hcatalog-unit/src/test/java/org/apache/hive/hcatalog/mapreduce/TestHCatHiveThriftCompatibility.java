@@ -76,8 +76,8 @@ public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
    */
   @Test
   public void testDynamicCols() throws Exception {
-    Assert.assertEquals(0, driver.run("drop table if exists test_thrift").getResponseCode());
-    Assert.assertEquals(0, driver.run(
+    driver.run("drop table if exists test_thrift");
+    driver.run(
         "create external table test_thrift " +
             "partitioned by (year string) " +
             "row format serde 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
@@ -86,11 +86,9 @@ public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
             "  'serialization.format'='org.apache.thrift.protocol.TBinaryProtocol') " +
             "stored as" +
             "  inputformat 'org.apache.hadoop.mapred.SequenceFileInputFormat'" +
-            "  outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'")
-        .getResponseCode());
-    Assert.assertEquals(0,
-        driver.run("alter table test_thrift add partition (year = '2012') location '" +
-            intStringSeq.getParent() + "'").getResponseCode());
+            "  outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'");
+
+    driver.run("alter table test_thrift add partition (year = '2012') location '" + intStringSeq.getParent() + "'");
 
     PigServer pigServer = createPigServer(false);
     pigServer.registerQuery("A = load 'test_thrift' using org.apache.hive.hcatalog.pig.HCatLoader();");

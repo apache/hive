@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -300,9 +302,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       try {
         FileStatus file = files[i];
         i++;
-        return ReplChangeManager.encodeFileUri(file.getPath().toString(),
+        return ReplChangeManager.getInstance(conf).encodeFileUri(file.getPath().toString(),
             ReplChangeManager.checksumFor(file.getPath(), fs), null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         throw new RuntimeException(e);
       }
     }
@@ -519,9 +521,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     public String next() {
       String result;
       try {
-        result = ReplChangeManager.encodeFileUri(files.get(i), chksums != null ? chksums.get(i) : null,
+        result = ReplChangeManager.getInstance(conf).
+                encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
                 subDirs != null ? subDirs.get(i) : null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         // File operations failed
         LOG.error("Encoding file URI failed with error " + e.getMessage());
         throw new RuntimeException(e.getMessage());
@@ -552,6 +555,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   @Override
   public void onOpenTxn(OpenTxnEvent openTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+    if (openTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     int lastTxnIdx = openTxnEvent.getTxnIds().size() - 1;
     OpenTxnMessage msg =
         MessageBuilder.getInstance().buildOpenTxnMessage(openTxnEvent.getTxnIds().get(0),
@@ -570,6 +576,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+    if (commitTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     CommitTxnMessage msg =
         MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId());
 
@@ -587,6 +596,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+    if (abortTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     AbortTxnMessage msg =
         MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId());
     NotificationEvent event =
@@ -997,6 +1009,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
+      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
+      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
+      // only one row in the table, this shouldn't cause any performance degradation.
+      if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
+        String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
+        LOG.info("Going to execute query <" + lockingQuery + ">");
+        stmt.executeUpdate(lockingQuery);
+      }
       String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
               " from \"NOTIFICATION_SEQUENCE\"");
       LOG.debug("Going to execute query <" + s + ">");
@@ -1081,6 +1101,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
               String.join(", ", params) + ")");
       pst.execute();
 
+      event.setEventId(nextEventId);
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
       if (event.isSetEventId()) {
         listenerEvent.putParameter(

@@ -66,7 +66,9 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
-    if (currCount + batch.size < offset) {
+    // We should skip number of rows equal to offset value
+    // skip until sum of current read count and current batch size less than or equal offset value
+    if (currCount + batch.size <= offset) {
       currCount += batch.size;
     } else if (currCount >= offset + limit) {
       setDone(true);
@@ -77,19 +79,20 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
       }
       //skip skipSize rows of batch
       batch.size = Math.min(batch.size, offset + limit - currCount);
+      int newBatchSize = batch.size - skipSize;
       if (batch.selectedInUse == false) {
         batch.selectedInUse = true;
-        batch.selected = new int[batch.size];
-        for (int i = 0; i < batch.size - skipSize; i++) {
+        for (int i = 0; i < newBatchSize; i++) {
           batch.selected[i] = skipSize + i;
         }
       } else {
-        for (int i = 0; i < batch.size - skipSize; i++) {
+        for (int i = 0; i < newBatchSize; i++) {
           batch.selected[i] = batch.selected[skipSize + i];
         }
       }
-      vectorForward(batch);
       currCount += batch.size;
+      batch.size = newBatchSize;
+      vectorForward(batch);
     }
   }
 

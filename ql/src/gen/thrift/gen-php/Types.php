@@ -121,6 +121,7 @@ final class StageType {
   const REPL_STATE_LOG = 14;
   const REPL_TXN = 15;
   const REPL_INCREMENTAL_LOAD = 16;
+  const SCHEDULED_QUERY_MAINT = 17;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -139,6 +140,7 @@ final class StageType {
     14 => 'REPL_STATE_LOG',
     15 => 'REPL_TXN',
     16 => 'REPL_INCREMENTAL_LOAD',
+    17 => 'SCHEDULED_QUERY_MAINT',
   );
 }
 

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -39,9 +39,14 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /** Integration tests for the HiveMetaTool program. */
-public class TestHiveMetaTool extends TestCase {
+public class TestHiveMetaTool {
   private static final String DB_NAME = "TestHiveMetaToolDB";
   private static final String TABLE_NAME = "simpleTbl";
   private static final String LOCATION = "hdfs://nn.example.com/";
@@ -53,9 +58,9 @@ public class TestHiveMetaTool extends TestCase {
   private HiveMetaStoreClient client;
   private OutputStream os;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+
 
     try {
       os = new ByteArrayOutputStream();
@@ -109,6 +114,7 @@ public class TestHiveMetaTool extends TestCase {
     client.createTable(tbl);
   }
 
+  @Test
   public void testListFSRoot() throws Exception {
     HiveMetaTool.main(new String[] {"-listFSRoot"});
     String out = os.toString();
@@ -116,6 +122,7 @@ public class TestHiveMetaTool extends TestCase {
         out.contains(client.getDatabase(DB_NAME).getLocationUri()));
   }
 
+  @Test
   public void testExecuteJDOQL() throws Exception {
     HiveMetaTool.main(
         new String[] {"-executeJDOQL", "select locationUri from org.apache.hadoop.hive.metastore.model.MDatabase"});
@@ -124,6 +131,7 @@ public class TestHiveMetaTool extends TestCase {
         out.contains(client.getDatabase(DB_NAME).getLocationUri()));
   }
 
+  @Test
   public void testUpdateFSRootLocation() throws Exception {
     checkAvroSchemaURLProps(AVRO_URI);
 
@@ -140,12 +148,12 @@ public class TestHiveMetaTool extends TestCase {
     assertEquals(expectedUri, table.getSd().getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName()));
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     try {
       client.dropTable(DB_NAME, TABLE_NAME);
       client.dropDatabase(DB_NAME);
-      super.tearDown();
+
       client.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");

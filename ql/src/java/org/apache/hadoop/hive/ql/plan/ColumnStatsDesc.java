@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 /**
  * Contains the information needed to persist column level statistics
  */
-public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable {
+public class ColumnStatsDesc implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
   private FetchWork fWork;

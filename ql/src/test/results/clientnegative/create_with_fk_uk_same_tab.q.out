@@ -2,4 +2,4 @@ PREHOOK: query: CREATE TABLE table1 (a STRING UNIQUE DISABLE, b STRING, CONSTRAI
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:Cannot be both foreign key and primary/unique key on same table: a:string;)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Cannot be both foreign key and primary/unique key on same table: a:string;)

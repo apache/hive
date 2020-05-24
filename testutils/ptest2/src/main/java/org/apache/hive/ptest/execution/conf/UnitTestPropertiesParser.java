@@ -40,7 +40,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 class UnitTestPropertiesParser {
@@ -90,7 +90,7 @@ class UnitTestPropertiesParser {
                            File sourceDirectory, Logger logger,
                            FileListProvider fileListProvider,
                            Set<String> excludedProvided, boolean inTest) {
-    logger.info("{} created with sourceDirectory={}, testCasePropertyName={}, excludedProvide={}",
+    logger.info("{} created with sourceDirectory={}, testCasePropertyName={}, excludedProvide={}" +
         "fileListProvider={}, inTest={}",
         UnitTestPropertiesParser.class.getSimpleName(), sourceDirectory, testCasePropertyName,
         excludedProvided,

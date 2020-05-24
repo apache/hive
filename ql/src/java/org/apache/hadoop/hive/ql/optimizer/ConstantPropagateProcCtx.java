@@ -36,10 +36,8 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -136,7 +134,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
       return constants;
     }
 
-    ArrayList<ColumnInfo> signature = op.getSchema().getSignature();
+    List<ColumnInfo> signature = op.getSchema().getSignature();
     if (op instanceof LimitOperator || op instanceof FilterOperator) {
       // there should be only one parent.
       if (op.getParentOperators().size() == 1) {

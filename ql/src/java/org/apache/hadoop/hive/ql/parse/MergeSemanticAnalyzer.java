@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -59,6 +59,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "MergeSemanticAnalyzer");
     }
+    ctx.setOperation(Context.Operation.MERGE);
     analyzeMerge(tree);
   }
 
@@ -521,7 +522,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   private static String addParseInfo(ASTNode n) {
-    return " at " + ErrorMsg.renderPosition(n);
+    return " at " + ASTErrorUtils.renderPosition(n);
   }
 
   private boolean isAliased(ASTNode n) {

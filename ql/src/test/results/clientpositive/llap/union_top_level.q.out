@@ -47,6 +47,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -70,6 +71,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -93,6 +95,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -240,12 +243,14 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -267,11 +272,13 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -288,16 +295,23 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
+                Top N Key Operator
+                  sort order: +
+                  keys: _col2 (type: string)
+                  null sort order: z
                   Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  top n: 10
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col1 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -326,16 +340,23 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
+                Top N Key Operator
+                  sort order: +
+                  keys: _col2 (type: string)
+                  null sort order: z
                   Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  top n: 10
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col1 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: string)
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -451,6 +472,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -474,6 +496,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -497,6 +520,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -531,11 +555,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -582,11 +607,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -618,11 +644,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -635,10 +662,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value int
+      name: default.union_top
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.union_top
 
   Stage: Stage-3
     Stats Work
@@ -753,6 +780,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -776,6 +804,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -799,6 +828,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -833,11 +863,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -884,11 +915,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -920,11 +952,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -1043,6 +1076,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1066,6 +1100,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1089,6 +1124,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1123,11 +1159,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -1174,11 +1211,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -1210,11 +1248,12 @@ STAGE PLANS:
                       Statistics: Num rows: 9 Data size: 819 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.8888889
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)

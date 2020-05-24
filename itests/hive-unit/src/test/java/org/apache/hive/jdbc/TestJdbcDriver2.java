@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
@@ -36,9 +38,7 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +77,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.rules.TestName;
 
+import static java.sql.ResultSet.CONCUR_READ_ONLY;
+import static java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
@@ -121,6 +124,7 @@ public class TestJdbcDriver2 {
   private static final float floatCompareDelta = 0.0001f;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  @Rule public final TestName testName = new TestName();
 
   private static Connection getConnection(String postfix) throws SQLException {
     Connection con1;
@@ -198,6 +202,8 @@ public class TestJdbcDriver2 {
     System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
+    System.setProperty(ConfVars.REPLCMENABLED.varname, "true");
+    System.setProperty(ConfVars.REPLCMDIR.varname, "cmroot");
     con = getConnection(defaultDbName + ";create=true");
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
@@ -1092,7 +1098,7 @@ public class TestJdbcDriver2 {
     // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2",
+        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask",
         "08S01", 1);
   }
 
@@ -2767,10 +2773,10 @@ public class TestJdbcDriver2 {
             incrementalLogs.addAll(statement.getQueryLog());
             Thread.sleep(500);
           } catch (SQLException e) {
-            LOG.error("Failed getQueryLog. Error message: " + e.getMessage());
+            LOG.info("Failed getQueryLog. Error message: " + e.getMessage());
             fail("error in getting log thread");
           } catch (InterruptedException e) {
-            LOG.error("Getting log thread is interrupted. Error message: " + e.getMessage());
+            LOG.info("Getting log thread is interrupted. Error message: " + e.getMessage());
             fail("error in getting log thread");
           }
         }
@@ -2791,6 +2797,126 @@ public class TestJdbcDriver2 {
     } while (remainingLogs.size() > 0);
     statement.close();
     verifyFetchedLog(incrementalLogs, expectedLogs);
+  }
+
+  private static  int next = 0;
+  private synchronized void advanceDumpDir() {
+    next++;
+    ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+  }
+
+  /**
+   * Test getting query log method in Jdbc for REPL commands
+   * @throws Exception
+   */
+  @Test
+  public void testGetQueryLogForReplCommands() throws Exception {
+    // Prepare
+    String primaryDb = testName.getMethodName() + "_" + System.currentTimeMillis();
+    String replicaDb = primaryDb + "_replica";
+    String primaryTblName = primaryDb + ".t1";
+    Path replDir = new Path(conf.get("test.data.files"));
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    
+    replDir = new Path(replDir, primaryDb + "_repl");
+    FileSystem fs = FileSystem.get(replDir.toUri(), conf);
+    fs.mkdirs(replDir);
+
+    try {
+      // Prepare
+      stmt.execute("set hive.exec.parallel = true");
+      stmt.execute("set hive.server2.logging.operation.level = execution");
+      stmt.execute("set hive.metastore.transactional.event.listeners =" +
+              " org.apache.hive.hcatalog.listener.DbNotificationListener");
+      stmt.execute("set hive.metastore.dml.events = true");
+      stmt.execute("set hive.repl.cm.enabled = true");
+      stmt.execute("set hive.repl.cmrootdir = cmroot");
+      stmt.execute("create database " + primaryDb + " with dbproperties('repl.source.for'='1,2,3')");
+      stmt.execute("create table " + primaryTblName + " (id int)");
+      stmt.execute("insert into " + primaryTblName + " values (1), (2)");
+      stmt.close();
+
+      // Test query logs for bootstrap dump and load
+      String[] expectedBootstrapDumpLogs = {
+        "REPL::START",
+        "REPL::TABLE_DUMP",
+        "REPL::END"
+      };
+
+      // Bootstrap dump
+      stmt = (HiveStatement) con.createStatement();
+      advanceDumpDir();
+      ResultSet replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      assertTrue(replDumpRslt.next());
+      List<String> logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Bootstrap Dump");
+      verifyFetchedLog(logs, expectedBootstrapDumpLogs);
+
+      String[] expectedBootstrapLoadLogs = {
+        "REPL::START",
+        "REPL::TABLE_LOAD",
+        "REPL::END"
+      };
+
+      // Bootstrap load
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Bootstrap Load");
+      verifyFetchedLog(logs, expectedBootstrapLoadLogs);
+
+      // Perform operation for incremental replication
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("insert into " + primaryTblName + " values (3), (4)");
+      stmt.close();
+
+      // Test query logs for incremental dump and load
+      String[] expectedIncrementalDumpLogs = {
+        "REPL::START",
+        "REPL::EVENT_DUMP",
+        "REPL::END"
+      };
+
+      // Incremental dump
+      stmt = (HiveStatement) con.createStatement();
+      advanceDumpDir();
+      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      assertTrue(replDumpRslt.next());
+      logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Incremental Dump");
+      verifyFetchedLog(logs, expectedIncrementalDumpLogs);
+
+      String[] expectedIncrementalLoadLogs = {
+        "REPL::START",
+        "REPL::EVENT_LOAD",
+        "REPL::END"
+      };
+
+      // Incremental load
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      logs = stmt.getQueryLog(false, 10000);
+      LOG.info("Query_Log for Incremental Load");
+      verifyFetchedLog(logs, expectedIncrementalLoadLogs);
+    } finally {
+      fs.delete(replDir, true);
+      // DB cleanup
+      stmt.execute("drop database if exists " + primaryDb + " cascade");
+      stmt.execute("drop database if exists " + replicaDb + " cascade");
+      stmt.execute("set hive.exec.parallel = false");
+      stmt.execute("set hive.server2.logging.operation.level = verbose");
+      stmt.execute("set hive.metastore.dml.events = false");
+      stmt.execute("set hive.metastore.transactional.event.listeners = ");
+      stmt.close();
+    }
   }
 
   /**
@@ -2820,6 +2946,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
+      LOG.info("Checking match for " + expectedLog);
       assertTrue(accumulatedLogs.contains(expectedLog));
     }
   }
@@ -2976,7 +3103,7 @@ public class TestJdbcDriver2 {
 
     try {
       // invalid load path
-      stmt.execute("repl load default1 from '/tmp/junk'");
+      stmt.execute("repl load default into default1");
     } catch(SQLException e){
       assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
     }
@@ -3041,6 +3168,18 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testUnionUniqueColumnNames() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+
+    stmt.execute("SET hive.resultset.use.unique.column.names=true");
+    ResultSet rs = stmt.executeQuery("select 1 UNION ALL select 2");
+    ResultSetMetaData metaData = rs.getMetaData();
+    assertEquals("_c0", metaData.getColumnLabel(1));
+    assertTrue("There's no . for the UNION column name", !metaData.getColumnLabel(1).contains("."));
+    stmt.close();
+  }
+
+  @Test
   public void testGetQueryId() throws Exception {
     HiveStatement stmt = (HiveStatement) con.createStatement();
     HiveStatement stmt1 = (HiveStatement) con.createStatement();
@@ -3073,9 +3212,79 @@ public class TestJdbcDriver2 {
     stmt1.close();
   }
 
+  @Test
+  public void testResultNextAcidTable() throws Exception {
+    Statement stmt = con.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY);
+    try {
+      stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+              "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      stmt.execute("create table tbl (fld int) tblproperties(" +
+              "'transactional'='true','transactional_properties'='insert_only')");
+      stmt.execute("insert into tbl values (1)");
+      stmt.execute("insert into tbl values (2)");
+      stmt.execute("insert into tbl values (3)");
+      ResultSet res = stmt.executeQuery("select * from tbl");
+      assertNotNull(res);
+      int numRows = 0;
+      while (res.next()) {
+        numRows++;
+      }
+      assertEquals(numRows, 3);
+      res.beforeFirst();
+      while (res.next()) {
+        numRows--;
+      }
+      assertEquals(numRows, 0);
+      stmt.execute("drop table tbl");
+    } finally {
+      stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=false");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+              "=org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+      stmt.close();
+    }
+  }
+
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
   @Test(expected = HiveSQLException.class)
   public void testConnectInvalidDatabase() throws SQLException {
     DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+  }
+
+  @Test
+  public void testStatementCloseOnCompletion() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testPreparedStatementCloseOnCompletion() throws SQLException {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testCloseOnAlreadyOpenedResultSetCompletion() throws Exception {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    stmt.closeOnCompletion();
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
   }
 }

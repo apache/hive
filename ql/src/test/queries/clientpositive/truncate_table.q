@@ -1,5 +1,8 @@
 create table src_truncate (key string, value string);
-load data local inpath '../../data/files/kv1.txt' into table src_truncate;;
+load data local inpath '../../data/files/kv1.txt' into table src_truncate;
+
+create table src_truncate_alt (key string, value string);
+load data local inpath '../../data/files/kv1.txt' into table src_truncate_alt;
 
 create table srcpart_truncate (key string, value string) partitioned by (ds string, hr string);
 alter table srcpart_truncate add partition (ds='2008-04-08', hr='11');        
@@ -22,6 +25,12 @@ explain TRUNCATE TABLE src_truncate;
 TRUNCATE TABLE src_truncate;
 select * from src_truncate;
 select count (*) from src_truncate;
+
+-- truncate non-partitioned table with alternative syntax
+explain TRUNCATE src_truncate_alt;
+TRUNCATE src_truncate_alt;
+select * from src_truncate_alt;
+select count (*) from src_truncate_alt;
 
 -- truncate a partition
 explain TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11');

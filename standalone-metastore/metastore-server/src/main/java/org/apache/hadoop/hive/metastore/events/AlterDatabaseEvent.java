@@ -33,11 +33,14 @@ public class AlterDatabaseEvent extends ListenerEvent {
 
   private final Database oldDb;
   private final Database newDb;
+  private final boolean isReplicated;
 
-  public AlterDatabaseEvent(Database oldDb, Database newDb, boolean status, IHMSHandler handler) {
+  public AlterDatabaseEvent(Database oldDb, Database newDb, boolean status, IHMSHandler handler,
+                            boolean isReplicated) {
     super(status, handler);
     this.oldDb = oldDb;
     this.newDb = newDb;
+    this.isReplicated = isReplicated;
   }
 
   /**
@@ -53,4 +56,9 @@ public class AlterDatabaseEvent extends ListenerEvent {
   public Database getNewDatabase() {
     return newDb;
   }
+
+  /**
+   * @return where this event is caused by replication
+   */
+  public boolean isReplicated() { return isReplicated; }
 }

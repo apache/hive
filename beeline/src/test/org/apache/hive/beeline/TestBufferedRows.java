@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +27,6 @@ import java.sql.SQLException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -87,6 +87,7 @@ public class TestBufferedRows {
     when(mockResultSet.next()).thenAnswer(new Answer<Boolean>() {
       private int mockRowDataIndex = 0;
 
+      @Override
       public Boolean answer(InvocationOnMock invocation) {
         if (mockRowDataIndex < mockRowData.length) {
           mockRow.setCurrentRowData(mockRowData[mockRowDataIndex]);
@@ -98,7 +99,8 @@ public class TestBufferedRows {
       }
     });
 
-    when(mockResultSet.getObject(Matchers.anyInt())).thenAnswer(new Answer<String>() {
+    when(mockResultSet.getObject(anyInt())).thenAnswer(new Answer<String>() {
+      @Override
       public String answer(InvocationOnMock invocation) {
         Object[] args = invocation.getArguments();
         int index = ((Integer) args[0]).intValue();

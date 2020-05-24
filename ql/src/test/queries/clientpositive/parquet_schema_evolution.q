@@ -44,3 +44,28 @@ SELECT * FROM schema_test;
 DROP TABLE schema_test;
 DROP TABLE NewStructField;
 DROP TABLE NewStructFieldTable;
+
+drop table if exists parq_test;
+create table parq_test(age int, name string) stored as parquet;
+insert into parq_test values(1, 'aaaa');
+
+DESCRIBE parq_test;
+alter table parq_test change age age string;
+DESCRIBE parq_test;
+
+insert into parq_test values('b', 'bbbb');
+
+select * from parq_test;
+select * from parq_test where age='b';
+select * from parq_test where age='1';
+select * from parq_test where age=1;
+
+explain select * from parq_test where age='b';
+explain select * from parq_test where age='1';
+explain select * from parq_test where age=1;
+
+explain vectorization expression select * from parq_test where age='b';
+explain vectorization expression select * from parq_test where age='1';
+explain vectorization expression select * from parq_test where age=1;
+
+drop table parq_test;

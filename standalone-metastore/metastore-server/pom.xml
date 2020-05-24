@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -54,16 +67,12 @@
       <artifactId>protobuf-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.jolbox</groupId>
-      <artifactId>bonecp</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -102,9 +111,17 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-framework</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -125,6 +142,10 @@
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -158,6 +179,25 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${beanutils.version}</version>
+       <exclusions>
+        <exclusion>
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections-testframework</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+   </dependency>
     <!-- This is our one and only Hive dependency.-->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -206,8 +246,16 @@
       <artifactId>sqlline</artifactId>
     </dependency>
     <dependency>
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
     </dependency>
     <!-- test scope dependencies -->
     <dependency>
@@ -221,15 +269,27 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-server-integ</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-test-framework</artifactId>
+      <version>${apache-directory-server.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-      believe we are fine. -->
-      <groupId>org.mariadb.jdbc</groupId>
-      <artifactId>mariadb-java-client</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -320,6 +380,7 @@
               <metastore.schema.verification>false</metastore.schema.verification>
               <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
               <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+              <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
             </systemPropertyVariables>
             <additionalClasspathElements>
               <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -373,7 +434,24 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifectId -->
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.3.0</version>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>http://downloads.mariadb.com/Connectors/java/connector-java-2.2.0/mariadb-java-client-2.2.0.jar</url>
+              <outputFileName>mariadb-java-client-2.2.0.jar</outputFileName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -387,9 +465,11 @@
             <configuration>
               <target>
                 <delete dir="${test.tmp.dir}"/>
+                <delete dir="${test.warehouse.external.dir}" />
                 <delete dir="${test.warehouse.dir}"/>
                 <mkdir dir="${test.tmp.dir}"/>
                 <mkdir dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.warehouse.external.dir}" />
               </target>
             </configuration>
           </execution>
@@ -438,7 +518,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <protocArtifact>com.google.protobuf:protoc:2.5.0</protocArtifact>
+              <protocArtifact>${protobuf.group}:protoc:${protobuf-exc.version}</protocArtifact>
               <addSources>none</addSources>
               <inputDirectories>
                 <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
@@ -517,6 +597,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
+            <additionalClasspathElement>${project.build.directory}/mariadb-java-client-2.2.0.jar</additionalClasspathElement>
           </additionalClasspathElements>
           <skipITs>${skipITests}</skipITs> <!-- set this to false to run these tests -->
         </configuration>
@@ -541,8 +622,8 @@
             </javax.jdo.option.ConnectionURL>
             <metastore.schema.verification>false</metastore.schema.verification>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}
-            </metastore.warehouse.dir>
+            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -572,6 +653,7 @@
             <exclude>**/gen/**</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -600,7 +682,7 @@
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
-                <source>${project.build.directory}/generated-sources</source>
+                <source>build/generated-sources</source>
                 <source>src/gen/version</source>
               </sources>
             </configuration>

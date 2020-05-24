@@ -273,38 +273,19 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
 
   @Override
   public boolean canUseLlapIo(Configuration conf) {
-    final boolean hasDelta = deltas != null && !deltas.isEmpty();
-    final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
-    final boolean isVectorized = Utilities.getIsVectorized(conf);
-    Boolean isSplitUpdate = null;
-    if (isAcidRead) {
-      final AcidUtils.AcidOperationalProperties acidOperationalProperties
-          = AcidUtils.getAcidOperationalProperties(conf);
-      isSplitUpdate = acidOperationalProperties.isSplitUpdate();
-      // TODO: this is brittle. Who said everyone has to upgrade using upgrade process?
-      assert isSplitUpdate : "should be true in Hive 3.0";
-    }
-
-    if (isOriginal) {
-      if (!isAcidRead && !hasDelta) {
-        // Original scan only
-        return true;
+    if (AcidUtils.isFullAcidScan(conf)) {
+      if (HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED)
+              && Utilities.getIsVectorized(conf)) {
+        boolean hasDeleteDelta = deltas != null && !deltas.isEmpty();
+        return VectorizedOrcAcidRowBatchReader.canUseLlapIoForAcid(this, hasDeleteDelta, conf);
+      } else {
+        LOG.info("Skipping Llap IO based on the following: [vectorized={}, hive.llap.io.acid={}] for {}",
+            Utilities.getIsVectorized(conf), HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED), this);
+        return false;
       }
     } else {
-      boolean isAcidEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED);
-      if (isAcidEnabled && isAcidRead && hasBase && isVectorized) {
-        if (hasDelta) {
-          if (isSplitUpdate) {
-            // Base with delete deltas
-            return true;
-          }
-        } else {
-          // Base scan only
-          return true;
-        }
-      }
+      return true;
     }
-    return false;
   }
 
   /**
@@ -357,8 +338,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   }
 
   public void parse(Configuration conf) throws IOException {
+    parse(conf, rootDir);
+  }
+
+  public void parse(Configuration conf, Path rootPath) throws IOException {
     OrcRawRecordMerger.TransactionMetaData tmd =
-        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootDir, conf);
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootPath, conf);
     writeId = tmd.syntheticWriteId;
     stmtId = tmd.statementId;
     AcidOutputFormat.Options opt = AcidUtils.parseBaseOrDeltaBucketFilename(getPath(), conf);

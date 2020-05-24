@@ -1,0 +1,38 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL1
+POSTHOOK: query: EXPLAIN
+CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUTDDL1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Table
+      columns: key int, value string
+      name: default.INPUTDDL1
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL1
+POSTHOOK: query: CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUTDDL1
+PREHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputddl1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputddl1
+#### A masked pattern was here ####

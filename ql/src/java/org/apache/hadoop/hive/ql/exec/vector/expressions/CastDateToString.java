@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.format.datetime.HiveSqlDateTimeFormatter;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 public class CastDateToString extends LongToStringUnaryUDF {
   private static final long serialVersionUID = 1L;
@@ -33,13 +34,13 @@ public class CastDateToString extends LongToStringUnaryUDF {
   public CastDateToString() {
     super();
     formatter = new SimpleDateFormat("yyyy-MM-dd");
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
   }
 
   public CastDateToString(int inputColumn, int outputColumnNum) {
     super(inputColumn, outputColumnNum);
     formatter = new SimpleDateFormat("yyyy-MM-dd");
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
   }
 
   // The assign method will be overridden for CHAR and VARCHAR.
@@ -51,6 +52,22 @@ public class CastDateToString extends LongToStringUnaryUDF {
   protected void func(BytesColumnVector outV, long[] vector, int i) {
     dt.setTime(DateWritableV2.daysToMillis((int) vector[i]));
     byte[] temp = formatter.format(dt).getBytes();
+    assign(outV, i, temp, temp.length);
+  }
+
+  /**
+   * CastDateToString, CastDateToChar, CastDateToVarchar use this.
+   */
+  void sqlFormat(BytesColumnVector outV, long[] vector, int i,
+      HiveSqlDateTimeFormatter sqlFormatter) {
+    String formattedDate =
+        sqlFormatter.format(org.apache.hadoop.hive.common.type.Date.ofEpochDay((int) vector[i]));
+    if (formattedDate == null) {
+      outV.isNull[i] = true;
+      outV.noNulls = false;
+      return;
+    }
+    byte[] temp = formattedDate.getBytes();
     assign(outV, i, temp, temp.length);
   }
 }

@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
  * processing.
  *
  */
-public class AppMasterEventProcessor implements NodeProcessor {
+public class AppMasterEventProcessor implements SemanticNodeProcessor {
 
   static final private Logger LOG = LoggerFactory.getLogger(AppMasterEventProcessor.class.getName());
 

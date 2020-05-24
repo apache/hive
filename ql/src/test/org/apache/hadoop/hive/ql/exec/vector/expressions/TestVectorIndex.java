@@ -509,7 +509,7 @@ public class TestVectorIndex {
             hiveConf);
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (indexTestMode == IndexTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

@@ -1,6 +1,7 @@
 --! qt:dataset:srcpart
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+set hive.security.authorization.enabled=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 
 create database atlasmask;

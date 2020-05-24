@@ -15,7 +15,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
@@ -35,9 +35,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-public class TestParquetSerDe extends TestCase {
+/**
+ * TestParquetSerDe.
+ */
+public class TestParquetSerDe {
 
+  @Test
   public void testParquetHiveSerDe() throws Throwable {
     try {
       // Create the SerDe
@@ -85,6 +92,7 @@ public class TestParquetSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testParquetHiveSerDeComplexTypes() throws Throwable {
     // Initialize
     ParquetHiveSerDe serDe = new ParquetHiveSerDe();

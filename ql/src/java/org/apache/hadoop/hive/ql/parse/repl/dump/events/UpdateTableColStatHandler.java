@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -38,16 +37,14 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     Table qlMdTable = new Table(eventMessage.getTableObject());
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 
     // Statistics without data doesn't make sense.
-    if (withinContext.replicationSpec.isMetadataOnly()) {
-      return;
-    }
-    // For now we do not replicate the statistics for transactional tables.
-    if (AcidUtils.isTransactionalTable(qlMdTable)) {
+    if (withinContext.replicationSpec.isMetadataOnly()
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTable, withinContext.hiveConf)) {
       return;
     }
 

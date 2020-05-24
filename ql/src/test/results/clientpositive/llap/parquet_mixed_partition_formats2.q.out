@@ -1,0 +1,103 @@
+PREHOOK: query: CREATE TABLE parquet_table_json_partition (
+id bigint COMMENT 'from deserializer',
+address struct<country:bigint,state:bigint> COMMENT 'from deserializer',
+reports array<bigint> COMMENT 'from deserializer')
+PARTITIONED BY (
+ts string)
+ROW FORMAT SERDE
+'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_table_json_partition
+POSTHOOK: query: CREATE TABLE parquet_table_json_partition (
+id bigint COMMENT 'from deserializer',
+address struct<country:bigint,state:bigint> COMMENT 'from deserializer',
+reports array<bigint> COMMENT 'from deserializer')
+PARTITIONED BY (
+ts string)
+ROW FORMAT SERDE
+'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_table_json_partition
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/sample2.json' INTO TABLE parquet_table_json_partition PARTITION(ts='20150101')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_table_json_partition
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/sample2.json' INTO TABLE parquet_table_json_partition PARTITION(ts='20150101')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_table_json_partition
+POSTHOOK: Output: default@parquet_table_json_partition@ts=20150101
+PREHOOK: query: SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_table_json_partition
+PREHOOK: Input: default@parquet_table_json_partition@ts=20150101
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_table_json_partition
+POSTHOOK: Input: default@parquet_table_json_partition@ts=20150101
+#### A masked pattern was here ####
+1	{"country":1,"state":1}	[2,3]	20150101
+2	{"country":1,"state":2}	[]	20150101
+PREHOOK: query: ALTER TABLE parquet_table_json_partition
+  SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+                 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+                 SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@parquet_table_json_partition
+PREHOOK: Output: default@parquet_table_json_partition
+POSTHOOK: query: ALTER TABLE parquet_table_json_partition
+  SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+                 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+                 SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@parquet_table_json_partition
+POSTHOOK: Output: default@parquet_table_json_partition
+PREHOOK: query: SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_table_json_partition
+PREHOOK: Input: default@parquet_table_json_partition@ts=20150101
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_table_json_partition
+POSTHOOK: Input: default@parquet_table_json_partition@ts=20150101
+#### A masked pattern was here ####
+1	{"country":1,"state":1}	[2,3]	20150101
+2	{"country":1,"state":2}	[]	20150101
+PREHOOK: query: CREATE TABLE new_table AS SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@parquet_table_json_partition
+PREHOOK: Input: default@parquet_table_json_partition@ts=20150101
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_table
+POSTHOOK: query: CREATE TABLE new_table AS SELECT * FROM parquet_table_json_partition ORDER BY address, reports LIMIT 100
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@parquet_table_json_partition
+POSTHOOK: Input: default@parquet_table_json_partition@ts=20150101
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_table
+POSTHOOK: Lineage: new_table.address SIMPLE [(parquet_table_json_partition)parquet_table_json_partition.FieldSchema(name:address, type:struct<country:bigint,state:bigint>, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table.id SIMPLE [(parquet_table_json_partition)parquet_table_json_partition.FieldSchema(name:id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table.reports SIMPLE [(parquet_table_json_partition)parquet_table_json_partition.FieldSchema(name:reports, type:array<bigint>, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table.ts SIMPLE [(parquet_table_json_partition)parquet_table_json_partition.FieldSchema(name:ts, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM new_table ORDER BY address, reports
+PREHOOK: type: QUERY
+PREHOOK: Input: default@new_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM new_table ORDER BY address, reports
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@new_table
+#### A masked pattern was here ####
+1	{"country":1,"state":1}	[2,3]	20150101
+2	{"country":1,"state":2}	[]	20150101

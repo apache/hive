@@ -18,9 +18,16 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -33,7 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
     value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(NULL, 1, NULL) FROM src LIMIT 1;\n" + "  1")
-public class GenericUDFCoalesce extends GenericUDF {
+public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -72,4 +79,20 @@ public class GenericUDFCoalesce extends GenericUDF {
     return getStandardDisplayString("COALESCE", children, ",");
   }
 
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new CoalesceStatEstimator();
+  }
+
+  static class CoalesceStatEstimator implements StatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+      for (int i = 0; i < argStats.size(); i++) {
+        combiner.add(argStats.get(i));
+      }
+      return combiner.getResult();
+    }
+  }
 }

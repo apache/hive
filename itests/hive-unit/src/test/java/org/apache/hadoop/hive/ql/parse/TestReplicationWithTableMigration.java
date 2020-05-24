@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.After;
@@ -93,20 +94,17 @@ public class TestReplicationWithTableMigration {
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.strict.managed.tables", "true");
     }};
-    replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
 
     HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
       put("fs.defaultFS", fs.getUri().toString());
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
@@ -114,9 +112,13 @@ public class TestReplicationWithTableMigration {
       put("hive.support.concurrency", "false");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
       put("hive.strict.managed.tables", "false");
+      put("hive.stats.autogather", "true");
+      put("hive.stats.column.autogather", "true");
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
+    hiveConfigs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
   }
 
   private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
@@ -201,7 +203,7 @@ public class TestReplicationWithTableMigration {
         .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
         .run("insert into tflattextpart partition(country='us') values(3333)")
         .run(
-            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
+            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp/fol' ")
         .run("insert into tacidloc values(1)")
         .run("insert into tacidloc values(2)")
         .run("insert into tacidloc values(3)")
@@ -209,7 +211,7 @@ public class TestReplicationWithTableMigration {
             "create table tacidpartloc (place string) partitioned by (country string) clustered by(place) "
                 +
                 "into 3 buckets stored as orc ")
-        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
+        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/fol/part'")
         .run("insert into tacidpartloc partition(country='india') values('mumbai')")
         .run("insert into tacidpartloc partition(country='us') values('sf')")
         .run("insert into tacidpartloc partition(country='france') values('paris')")
@@ -223,7 +225,7 @@ public class TestReplicationWithTableMigration {
                 + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
                 .toString() + "')")
         .run("insert into avro_table_part partition (country='india') values ('another', 13)")
-        .dump(primaryDbName, fromReplId);
+        .dump(primaryDbName);
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflat")));
@@ -304,7 +306,7 @@ public class TestReplicationWithTableMigration {
     return tablePath;
   }
 
-  private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {
+  private void loadWithFailureInAddNotification(String tbl) throws Throwable {
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
@@ -325,7 +327,7 @@ public class TestReplicationWithTableMigration {
     };
     InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName, dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier();
     }
@@ -335,49 +337,49 @@ public class TestReplicationWithTableMigration {
   @Test
   public void testBootstrapLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcid() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidFailure() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-    loadWithFailureInAddNotification("tacid", tuple.dumpLocation);
+    loadWithFailureInAddNotification("tacid");
     replica.run("use " + replicatedDbName)
             .run("show tables like tacid")
             .verifyResult(null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidFailurePart() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-    loadWithFailureInAddNotification("tacidpart", tuple.dumpLocation);
+    loadWithFailureInAddNotification("tacidpart");
     replica.run("use " + replicatedDbName)
             .run("show tables like tacidpart")
             .verifyResult(null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidAllOp() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
     List<String> selectStmtList = new ArrayList<>();
@@ -409,11 +411,60 @@ public class TestReplicationWithTableMigration {
   }
 
   @Test
+  public void testBootstrapConvertedExternalTableAutoPurgeDataOnDrop() throws Throwable {
+    WarehouseInstance.Tuple bootstrap = primary.run("use " + primaryDbName)
+            .run("create table avro_tbl partitioned by (country string) ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_tbl partition (country='india') values ('another', 13)")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName);
+    Path dataLocation = assertTablePath(replicatedDbName, "avro_tbl");
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("drop table avro_tbl")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // After drop, the external table data location should be auto deleted as it is converted one.
+    assertFalse(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+  }
+
+  @Test
+  public void testIncConvertedExternalTableAutoDeleteDataDirOnDrop() throws Throwable {
+    WarehouseInstance.Tuple bootstrap = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    primary.run("use " + primaryDbName)
+            .run("create table avro_tbl ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_tbl values ('str', 13)")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // Data location is valid and is under default external warehouse directory.
+    Table avroTable = replica.getTable(replicatedDbName, "avro_tbl");
+    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
+    Path dataLocation = new Path(avroTable.getSd().getLocation());
+    assertTrue(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+
+    primary.run("use " + primaryDbName)
+            .run("drop table avro_tbl")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+
+    // After drop, the external table data location should be auto deleted as it is converted one.
+    assertFalse(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+  }
+
+  @Test
   public void testBootstrapLoadMigrationToAcidWithMoveOptimization() throws Throwable {
     List<String> withConfigs =
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -421,10 +472,102 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationToAcidWithMoveOptimization() throws Throwable {
     List<String> withConfigs =
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+  }
+
+  @Test
+  public void dynamicallyConvertManagedToExternalTable() throws Throwable {
+    // With Strict managed disabled but Db enabled for replication, it is not possible to convert
+    // external table to managed table.
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into t1 values(1)")
+            .run("create table t2 partitioned by (country string) ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into t2 partition (country='india') values ('another', 13)")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='true')")
+            .runFailure("alter table t2 set tblproperties('EXTERNAL'='true')");
+  }
+
+  @Test
+  public void dynamicallyConvertExternalToManagedTable() throws Throwable {
+    // With Strict managed disabled but Db enabled for replication, it is not possible to convert
+    // external table to managed table.
+    primary.run("use " + primaryDbName)
+            .run("create external table t1 (id int) stored as orc")
+            .run("insert into table t1 values (1)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='false')")
+            .runFailure("alter table t2 set tblproperties('EXTERNAL'='false')");
+  }
+
+  @Test
+  public void testMigrationWithUpgrade() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into tacid values (3)")
+            .run("create table texternal (id int) ")
+            .run("insert into texternal values (1)")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select id from tacid")
+            .verifyResult("3")
+            .run("select id from texternal")
+            .verifyResult("1");
+
+    assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
+    assertFalse(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "texternal")));
+
+    // forcefully (setting db property) alter the table type. For acid table, set the bootstrap acid table to true. For
+    // external table, the alter event should alter the table type at target cluster and then distcp should copy the
+    // files. This is done to mock the upgrade done using HiveStrictManagedMigration.
+    HiveConf hiveConf = primary.getConf();
+
+    try {
+      //Set the txn config required for this test. This will not enable the full acid functionality in the warehouse.
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+
+      primary.run("use " + primaryDbName)
+              .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '')")
+              .run("insert into tacid values (1)")
+              .run("insert into texternal values (2)")
+              .run("alter table tacid set tblproperties ('transactional'='true')")
+              .run("alter table texternal SET TBLPROPERTIES('EXTERNAL'='TRUE')")
+              .run("insert into texternal values (3)")
+              .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    } finally {
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+    }
+
+    assertTrue(isFullAcidTable(primary.getTable(primaryDbName, "tacid")));
+    assertTrue(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "texternal")));
+
+    List<String> withConfigs = new ArrayList();
+    withConfigs.add("'hive.repl.bootstrap.acid.tables'='true'");
+    withConfigs.add("'hive.repl.dump.include.acid.tables'='true'");
+    withConfigs.add("'hive.repl.include.external.tables'='true'");
+    withConfigs.add("'hive.distcp.privileged.doAs' = '" + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    tuple = primary.dump(primaryDbName, withConfigs);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select id from tacid")
+            .verifyResults(new String[] { "1", "3" })
+            .run("select id from texternal")
+            .verifyResults(new String[] { "1", "2", "3" });
+    assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "texternal")));
   }
 }

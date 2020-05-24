@@ -107,7 +107,7 @@ public class ExportWork implements Serializable {
    */
   public void acidPostProcess(Hive db) throws HiveException {
     if (acidFqTableName != null) {
-      LOG.info("Swapping export of " + tableSpec.tableName + " to " + acidFqTableName +
+      LOG.info("Swapping export of " + tableSpec.getTableName().getTable() + " to " + acidFqTableName +
           " using partSpec=" + tableSpec.partSpec);
       tableSpec = new TableSpec(db, acidFqTableName, tableSpec.partSpec, true);
     }

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthTimestamp
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -37,7 +38,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 
 import java.util.Calendar;
-import java.util.TimeZone;
 
 /**
  * UDFMonth.
@@ -60,7 +60,7 @@ public class UDFMonth extends GenericUDF {
   private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[1];
   private final IntWritable output = new IntWritable();
 
-  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
 
 
   @Override

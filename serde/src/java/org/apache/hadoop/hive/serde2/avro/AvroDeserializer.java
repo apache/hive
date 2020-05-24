@@ -22,11 +22,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -39,9 +42,12 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.UnresolvedUnionException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -76,6 +82,25 @@ class AvroDeserializer {
    * record encoding.
    */
   private boolean warnedOnce = false;
+
+  /**
+   * Time zone in which file was written, which may be stored in metadata.
+   */
+  private ZoneId writerTimezone = null;
+
+  /**
+   * Whether the file was written using proleptic Gregorian or hybrid calendar.
+   */
+  private Boolean writerProleptic = null;
+
+  private Configuration configuration = null;
+
+  AvroDeserializer() {}
+
+  AvroDeserializer(Configuration configuration) {
+    this.configuration = configuration;
+  }
+
   /**
    * When encountering a record with an older schema than the one we're trying
    * to read, it is necessary to re-encode with a reader against the newer schema.
@@ -148,9 +173,11 @@ class AvroDeserializer {
     AvroGenericRecordWritable recordWritable = (AvroGenericRecordWritable) writable;
     GenericRecord r = recordWritable.getRecord();
     Schema fileSchema = recordWritable.getFileSchema();
+    writerTimezone = recordWritable.getWriterTimezone();
+    writerProleptic = recordWritable.getWriterProleptic();
 
-   UID recordReaderId = recordWritable.getRecordReaderID();
-   //If the record reader (from which the record is originated) is already seen and valid,
+    UID recordReaderId = recordWritable.getRecordReaderID();
+    //If the record reader (from which the record is originated) is already seen and valid,
     //no need to re-encode the record.
     if(!noEncodingNeeded.contains(recordReaderId)) {
       SchemaReEncoder reEncoder = null;
@@ -290,18 +317,71 @@ class AvroDeserializer {
       str = datum.toString();
       HiveVarchar hvc = new HiveVarchar(str, maxLength);
       return hvc;
-    case DATE:
+    case DATE: {
       if (recordSchema.getType() != Type.INT) {
         throw new AvroSerdeException("Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
       }
 
-      return Date.ofEpochMilli(DateWritableV2.daysToMillis((Integer)datum));
-    case TIMESTAMP:
+      final boolean skipProlepticConversion;
+      if (writerProleptic != null) {
+        skipProlepticConversion = writerProleptic;
+      } else {
+        if (configuration != null) {
+          skipProlepticConversion = HiveConf.getBoolVar(
+              configuration, HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT);
+        } else {
+          skipProlepticConversion = HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.defaultBoolVal;
+        }
+      }
+
+      return Date.ofEpochMilli(DateWritableV2.daysToMillis(
+          skipProlepticConversion ? (Integer) datum : CalendarUtils.convertDateToProleptic((Integer) datum)));
+    }
+    case TIMESTAMP: {
       if (recordSchema.getType() != Type.LONG) {
         throw new AvroSerdeException(
-          "Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
+            "Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
       }
-      return Timestamp.ofEpochMilli((Long)datum);
+      // If a time zone is found in file metadata (property name: writer.time.zone), convert the
+      // timestamp to that (writer) time zone in order to emulate time zone agnostic behavior.
+      // If not, then the file was written by an older version of hive, so we convert the timestamp
+      // to the server's (reader) time zone for backwards compatibility reasons - unless the
+      // session level configuration hive.avro.timestamp.skip.conversion is set to true, in which
+      // case we assume it was written by a time zone agnostic writer, so we don't convert it.
+      final boolean skipUTCConversion;
+      if (configuration != null) {
+        skipUTCConversion = HiveConf.getBoolVar(
+            configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION);
+      } else {
+        skipUTCConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
+      }
+      ZoneId convertToTimeZone;
+      if (writerTimezone != null) {
+        convertToTimeZone = writerTimezone;
+      } else if (skipUTCConversion) {
+        convertToTimeZone = ZoneOffset.UTC;
+      } else {
+        convertToTimeZone = TimeZone.getDefault().toZoneId();
+      }
+      final boolean skipProlepticConversion;
+      if (writerProleptic != null) {
+        skipProlepticConversion = writerProleptic;
+      } else {
+        if (configuration != null) {
+          skipProlepticConversion = HiveConf.getBoolVar(
+              configuration, HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT);
+        } else {
+          skipProlepticConversion = HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.defaultBoolVal;
+        }
+      }
+      Timestamp timestamp = TimestampTZUtil.convertTimestampToZone(
+          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone);
+      if (!skipProlepticConversion) {
+        timestamp = Timestamp.ofEpochMilli(
+            CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
+      }
+      return timestamp;
+    }
     default:
       return datum;
     }

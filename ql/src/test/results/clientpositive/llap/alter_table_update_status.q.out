@@ -1,0 +1,1224 @@
+PREHOOK: query: create table src_stat_n0 as select * from src1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_n0
+POSTHOOK: query: create table src_stat_n0 as select * from src1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_n0
+POSTHOOK: Lineage: src_stat_n0.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_n0.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src_stat_int_n0 (
+  key         double,
+  value       string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_int_n0
+POSTHOOK: query: create table src_stat_int_n0 (
+  key         double,
+  value       string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_int_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE src_stat_int_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_stat_int_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE src_stat_int_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_stat_int_n0
+PREHOOK: query: ANALYZE TABLE src_stat_n0 COMPUTE STATISTICS for columns key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_stat_n0
+PREHOOK: Output: default@src_stat_n0
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_n0 COMPUTE STATISTICS for columns key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_stat_n0
+POSTHOOK: Output: default@src_stat_n0
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_n0
+POSTHOOK: query: describe formatted src_stat_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_n0
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	1.72                
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@src_stat_n0
+PREHOOK: Output: default@src_stat_n0
+POSTHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@src_stat_n0
+POSTHOOK: Output: default@src_stat_n0
+PREHOOK: query: describe formatted src_stat_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_n0
+POSTHOOK: query: describe formatted src_stat_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_n0
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1111                
+avg_col_len         	1.111               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@src_stat_n0
+PREHOOK: Output: default@src_stat_n0
+POSTHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@src_stat_n0
+POSTHOOK: Output: default@src_stat_n0
+PREHOOK: query: describe formatted src_stat_n0 value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_n0
+POSTHOOK: query: describe formatted src_stat_n0 value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_n0
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	122                 
+distinct_count      	121                 
+avg_col_len         	1.23                
+max_col_len         	124                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: ANALYZE TABLE src_stat_int_n0 COMPUTE STATISTICS for columns key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_stat_int_n0
+PREHOOK: Output: default@src_stat_int_n0
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_int_n0 COMPUTE STATISTICS for columns key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_stat_int_n0
+POSTHOOK: Output: default@src_stat_int_n0
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_int_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_int_n0
+POSTHOOK: query: describe formatted src_stat_int_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_int_n0
+col_name            	key                 
+data_type           	double              
+min                 	66.0                
+max                 	406.0               
+num_nulls           	10                  
+distinct_count      	15                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+PREHOOK: query: ALTER TABLE src_stat_int_n0 UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@src_stat_int_n0
+PREHOOK: Output: default@src_stat_int_n0
+POSTHOOK: query: ALTER TABLE src_stat_int_n0 UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@src_stat_int_n0
+POSTHOOK: Output: default@src_stat_int_n0
+PREHOOK: query: describe formatted src_stat_int_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_int_n0
+POSTHOOK: query: describe formatted src_stat_int_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_int_n0
+col_name            	key                 
+data_type           	double              
+min                 	333.22              
+max                 	22.22               
+num_nulls           	10                  
+distinct_count      	2222                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: ALTER TABLE default.src_stat_n0 UPDATE STATISTICS for column key SET ('numDVs'='3333','avgColLen'='2.222')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@src_stat_n0
+PREHOOK: Output: default@src_stat_n0
+POSTHOOK: query: ALTER TABLE default.src_stat_n0 UPDATE STATISTICS for column key SET ('numDVs'='3333','avgColLen'='2.222')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@src_stat_n0
+POSTHOOK: Output: default@src_stat_n0
+PREHOOK: query: describe formatted default.src_stat_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_n0
+POSTHOOK: query: describe formatted default.src_stat_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_n0
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3333                
+avg_col_len         	2.222               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.src_stat_n0 UPDATE STATISTICS for column value SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@src_stat_n0
+PREHOOK: Output: default@src_stat_n0
+POSTHOOK: query: ALTER TABLE default.src_stat_n0 UPDATE STATISTICS for column value SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@src_stat_n0
+POSTHOOK: Output: default@src_stat_n0
+PREHOOK: query: describe formatted default.src_stat_n0 value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_n0
+POSTHOOK: query: describe formatted default.src_stat_n0 value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_n0
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	233                 
+distinct_count      	232                 
+avg_col_len         	2.34                
+max_col_len         	235                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: create table datatype_stats_n0(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: create table datatype_stats_n0(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: INSERT INTO datatype_stats_n0 values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bin SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bl SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.c SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.d SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dem SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dt SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.f SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.i SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.s SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.str SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.t SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.ts SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.v SCRIPT []
+PREHOOK: query: INSERT INTO datatype_stats_n0 values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.bin EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.bl EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.c EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.d EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.dem EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.dt EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.f EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.i EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.s EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.str EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.t EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.ts EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.v EXPRESSION []
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	s                   
+data_type           	smallint            
+min                 	3                   
+max                 	3                   
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	i                   
+data_type           	int                 
+min                 	45                  
+max                 	45                  
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	b                   
+data_type           	bigint              
+min                 	456                 
+max                 	456                 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	f                   
+data_type           	float               
+min                 	45454.3984375       
+max                 	45454.3984375       
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	d                   
+data_type           	double              
+min                 	454.6565            
+max                 	454.6565            
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dem                 
+data_type           	decimal(10,0)       
+min                 	2355                
+max                 	2355                
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	ts                  
+data_type           	timestamp           
+min                 	2012-01-01 01:02:03 
+max                 	2012-01-01 01:02:03 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dt                  
+data_type           	date                
+min                 	2012-01-01          
+max                 	2012-01-01          
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	str                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	17.0                
+max_col_len         	17                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	v                   
+data_type           	varchar(12)         
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	c                   
+data_type           	char(5)             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bl                  
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	1                   
+num_falses          	0                   
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bin                 
+data_type           	binary              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	t                   
+data_type           	tinyint             
+min                 	2                   
+max                 	2                   
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column t SET ('numDVs'='232','numNulls'='233','highValue'='234','lowValue'='35')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column t SET ('numDVs'='232','numNulls'='233','highValue'='234','lowValue'='35')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	t                   
+data_type           	tinyint             
+min                 	35                  
+max                 	234                 
+num_nulls           	233                 
+distinct_count      	232                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	s                   
+data_type           	smallint            
+min                 	3                   
+max                 	3                   
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column s SET ('numDVs'='56','numNulls'='56','highValue'='489','lowValue'='25')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column s SET ('numDVs'='56','numNulls'='56','highValue'='489','lowValue'='25')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	s                   
+data_type           	smallint            
+min                 	25                  
+max                 	489                 
+num_nulls           	56                  
+distinct_count      	56                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	i                   
+data_type           	int                 
+min                 	45                  
+max                 	45                  
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column i SET ('numDVs'='59','numNulls'='1','highValue'='889','lowValue'='5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column i SET ('numDVs'='59','numNulls'='1','highValue'='889','lowValue'='5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	i                   
+data_type           	int                 
+min                 	5                   
+max                 	889                 
+num_nulls           	1                   
+distinct_count      	59                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	b                   
+data_type           	bigint              
+min                 	456                 
+max                 	456                 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column b SET ('numDVs'='9','numNulls'='14','highValue'='89','lowValue'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column b SET ('numDVs'='9','numNulls'='14','highValue'='89','lowValue'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	b                   
+data_type           	bigint              
+min                 	8                   
+max                 	89                  
+num_nulls           	14                  
+distinct_count      	9                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	f                   
+data_type           	float               
+min                 	45454.3984375       
+max                 	45454.3984375       
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column f SET ('numDVs'='563','numNulls'='45','highValue'='2345.656','lowValue'='8.00')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column f SET ('numDVs'='563','numNulls'='45','highValue'='2345.656','lowValue'='8.00')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	f                   
+data_type           	float               
+min                 	8.0                 
+max                 	2345.656            
+num_nulls           	45                  
+distinct_count      	563                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	d                   
+data_type           	double              
+min                 	454.6565            
+max                 	454.6565            
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column d SET ('numDVs'='5677','numNulls'='12','highValue'='560.3367','lowValue'='0.00455')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column d SET ('numDVs'='5677','numNulls'='12','highValue'='560.3367','lowValue'='0.00455')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	d                   
+data_type           	double              
+min                 	0.00455             
+max                 	560.3367            
+num_nulls           	12                  
+distinct_count      	5677                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dem                 
+data_type           	decimal(10,0)       
+min                 	2355                
+max                 	2355                
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column dem SET ('numDVs'='57','numNulls'='912','highValue'='560','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column dem SET ('numDVs'='57','numNulls'='912','highValue'='560','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dem                 
+data_type           	decimal(10,0)       
+min                 	0                   
+max                 	560                 
+num_nulls           	912                 
+distinct_count      	57                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	ts                  
+data_type           	timestamp           
+min                 	2012-01-01 01:02:03 
+max                 	2012-01-01 01:02:03 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column ts SET ('numDVs'='7','numNulls'='12','highValue'='1357030923','lowValue'='1357030924')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column ts SET ('numDVs'='7','numNulls'='12','highValue'='1357030923','lowValue'='1357030924')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	ts                  
+data_type           	timestamp           
+min                 	2013-01-01 09:02:04 
+max                 	2013-01-01 09:02:03 
+num_nulls           	12                  
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dt                  
+data_type           	date                
+min                 	2012-01-01          
+max                 	2012-01-01          
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column dt SET ('numDVs'='57','numNulls'='912','highValue'='2012-01-01','lowValue'='2001-02-04')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column dt SET ('numDVs'='57','numNulls'='912','highValue'='2012-01-01','lowValue'='2001-02-04')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dt                  
+data_type           	date                
+min                 	2001-02-04          
+max                 	2012-01-01          
+num_nulls           	912                 
+distinct_count      	57                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	str                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	17.0                
+max_col_len         	17                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column str SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column str SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	str                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	233                 
+distinct_count      	232                 
+avg_col_len         	2.34                
+max_col_len         	235                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	v                   
+data_type           	varchar(12)         
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column v SET ('numDVs'='22','numNulls'='33','avgColLen'='4.40','maxColLen'='25')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column v SET ('numDVs'='22','numNulls'='33','avgColLen'='4.40','maxColLen'='25')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	v                   
+data_type           	varchar(12)         
+min                 	                    
+max                 	                    
+num_nulls           	33                  
+distinct_count      	22                  
+avg_col_len         	4.4                 
+max_col_len         	25                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	c                   
+data_type           	char(5)             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column c SET ('numDVs'='2','numNulls'='03','avgColLen'='9.00','maxColLen'='58')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column c SET ('numDVs'='2','numNulls'='03','avgColLen'='9.00','maxColLen'='58')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	c                   
+data_type           	char(5)             
+min                 	                    
+max                 	                    
+num_nulls           	3                   
+distinct_count      	2                   
+avg_col_len         	9.0                 
+max_col_len         	58                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bl                  
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	1                   
+num_falses          	0                   
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column bl SET ('numNulls'='1','numTrues'='9','numFalses'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column bl SET ('numNulls'='1','numTrues'='9','numFalses'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bl                  
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	9                   
+num_falses          	8                   
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bin                 
+data_type           	binary              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column bin SET ('numNulls'='8','avgColLen'='2.0','maxColLen'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: ALTER TABLE default.datatype_stats_n0 UPDATE STATISTICS for column bin SET ('numNulls'='8','avgColLen'='2.0','maxColLen'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bin                 
+data_type           	binary              
+min                 	                    
+max                 	                    
+num_nulls           	8                   
+distinct_count      	                    
+avg_col_len         	2.0                 
+max_col_len         	8                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}

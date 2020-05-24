@@ -37,6 +37,7 @@ class TableNameCompletor implements Completer {
     this.beeLine = beeLine;
   }
 
+  @Override
   public int complete(String buf, int pos, List cand) {
     if (beeLine.getDatabaseConnection() == null) {
       return -1;

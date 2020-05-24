@@ -24,7 +24,7 @@ import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -46,12 +46,17 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestHiveHistory.
  *
  */
-public class TestHiveHistory extends TestCase {
+public class TestHiveHistory {
 
   static HiveConf conf;
 
@@ -63,8 +68,8 @@ public class TestHiveHistory extends TestCase {
    * intialize the tables
    */
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       conf = new HiveConf(HiveHistory.class);
       SessionState.start(conf);
@@ -107,7 +112,7 @@ public class TestHiveHistory extends TestCase {
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src,
-          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false);
+          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false, false);
         i++;
       }
 
@@ -120,6 +125,7 @@ public class TestHiveHistory extends TestCase {
   /**
    * Check history file output for this query.
    */
+  @Test
   public void testSimpleQuery() {
     new LineageInfo();
     try {
@@ -145,10 +151,7 @@ public class TestHiveHistory extends TestCase {
 
       String cmd = "select a.key+1 from src a";
       IDriver d = DriverFactory.newDriver(conf);
-      int ret = d.run(cmd).getResponseCode();
-      if (ret != 0) {
-        fail("Failed");
-      }
+      d.run(cmd);
       HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
           .getHiveHistory().getHistFileName());
       Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();
@@ -174,6 +177,7 @@ public class TestHiveHistory extends TestCase {
     }
   }
 
+  @Test
   public void testQueryloglocParentDirNotExist() throws Exception {
     String parentTmpDir = tmpdir + "/HIVE2654";
     Path parentDirPath = new Path(parentTmpDir);
@@ -203,6 +207,7 @@ public class TestHiveHistory extends TestCase {
    * Check if HiveHistoryImpl class is returned when hive history is enabled
    * @throws Exception
    */
+  @Test
   public void testHiveHistoryConfigEnabled() throws Exception {
       HiveConf conf = new HiveConf(SessionState.class);
       conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
@@ -216,6 +221,7 @@ public class TestHiveHistory extends TestCase {
    * Check if HiveHistory class is a Proxy class when hive history is disabled
    * @throws Exception
    */
+  @Test
   public void testHiveHistoryConfigDisabled() throws Exception {
     HiveConf conf = new HiveConf(SessionState.class);
     conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, false);

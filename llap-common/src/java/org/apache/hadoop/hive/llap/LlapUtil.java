@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.BlockingService;
 
+import javax.annotation.Nullable;
+
 public class LlapUtil {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
 
@@ -312,8 +314,7 @@ public class LlapUtil {
       DELETE_DELTA_PREFIX = "delete_delta_", BUCKET_PREFIX = "bucket_",
       DATABASE_PATH_SUFFIX = ".db", UNION_SUDBIR_PREFIX = "HIVE_UNION_SUBDIR_";
 
-  public static final char DERIVED_ENTITY_PARTITION_SEPARATOR = '/';
-
+  @Deprecated
   public static String getDbAndTableNameForMetrics(Path path, boolean includeParts) {
     String[] parts = path.toUri().getPath().toString().split(Path.SEPARATOR);
     int dbIx = -1;
@@ -372,7 +373,7 @@ public class LlapUtil {
   }
 
 
-  public static ThreadMXBean initThreadMxBean() {
+  @Nullable public static ThreadMXBean initThreadMxBean() {
     ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
     if (mxBean != null) {
       if (!mxBean.isCurrentThreadCpuTimeSupported()) {

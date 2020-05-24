@@ -11,7 +11,6 @@ create table if not exists nzhang_part1_n0 like srcpart;
 create table if not exists nzhang_part2_n0 like srcpart;
 describe extended nzhang_part1_n0;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 explain

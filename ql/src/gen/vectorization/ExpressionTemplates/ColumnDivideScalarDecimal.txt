@@ -72,7 +72,7 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-;
+
     HiveDecimalWritable[] vector = inputColVector.vector;
     HiveDecimalWritable[] outputVector = outputColVector.vector;
 
@@ -163,6 +163,10 @@ public class <ClassName> extends VectorExpression {
         }
       }
     }
+  }
+
+  public HiveDecimal getValue() {
+    return value;
   }
 
   @Override

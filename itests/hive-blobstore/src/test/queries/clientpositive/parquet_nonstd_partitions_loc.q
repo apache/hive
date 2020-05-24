@@ -36,7 +36,6 @@ STORED AS PARQUET
 LOCATION '${hiveconf:test.blobstore.path.unique}/parquet_nonstd_partitions_loc/parquet_events/';
 
 SET hive.exec.dynamic.partition=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT OVERWRITE TABLE parquet_events PARTITION (run_date, game_id, event_name)
 SELECT * FROM src_events;

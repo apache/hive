@@ -24,11 +24,14 @@ import org.apache.logging.log4j.core.async.AsyncLoggerContextSelector;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
 import org.apache.logging.log4j.core.selector.ClassLoaderContextSelector;
 import org.apache.logging.log4j.core.selector.ContextSelector;
+
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class TestHiveAsyncLogging extends TestCase {
+/**
+ * HiveAsyncLogging Test.
+ */
+public class TestHiveAsyncLogging {
 
   // this test requires disruptor jar in classpath
   @Test

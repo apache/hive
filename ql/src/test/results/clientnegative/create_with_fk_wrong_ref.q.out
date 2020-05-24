@@ -10,4 +10,4 @@ PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, CONSTRAINT fk1 FOREIGN 
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:Foreign key references a:string; but no corresponding primary key or unique key exists. Possible keys: [a:int;])
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Foreign key references a:string; but no corresponding primary key or unique key exists. Possible keys: [a:int;])

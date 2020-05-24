@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
@@ -53,14 +52,21 @@ class CompactionTxnHandler extends TxnHandler {
    * This will look through the completed_txn_components table and look for partitions or tables
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
-   * @param maxAborted Maximum number of aborted queries to allow before marking this as a
-   *                   potential compaction.
+   * @param abortedThreshold  number of aborted queries forming a potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
+  public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold)
+      throws MetaException {
+    return findPotentialCompactions(abortedThreshold, abortedTimeThreshold, -1);
+  }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold,
+      long abortedTimeThreshold, long checkInterval) throws MetaException {
     Connection dbConn = null;
     Set<CompactionInfo> response = new HashSet<>();
     Statement stmt = null;
@@ -70,8 +76,22 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         // Check for completed transactions
-        String s = "select distinct ctc_database, ctc_table, " +
-          "ctc_partition from COMPLETED_TXN_COMPONENTS";
+        final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\"" +
+            ".\"CTC_PARTITION\" " +
+          "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
+          "LEFT JOIN ( " +
+          "  SELECT \"C1\".* FROM \"COMPLETED_COMPACTIONS\" \"C1\" " +
+          "  INNER JOIN ( " +
+          "    SELECT MAX(\"CC_ID\") \"CC_ID\" FROM \"COMPLETED_COMPACTIONS\" " +
+          "    GROUP BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"" +
+          "  ) \"C2\" " +
+          "  ON \"C1\".\"CC_ID\" = \"C2\".\"CC_ID\" " +
+          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(ATTEMPTED_STATE) + "," + quoteChar(FAILED_STATE) + ")" +
+          ") \"C\" " +
+          "ON \"TC\".\"CTC_DATABASE\" = \"C\".\"CC_DATABASE\" AND \"TC\".\"CTC_TABLE\" = \"C\".\"CC_TABLE\" " +
+          "  AND (\"TC\".\"CTC_PARTITION\" = \"C\".\"CC_PARTITION\" OR (\"TC\".\"CTC_PARTITION\" IS NULL AND \"C\".\"CC_PARTITION\" IS NULL)) " +
+          "WHERE \"C\".\"CC_ID\" IS NOT NULL OR " + isWithinCheckInterval("\"TC\".\"CTC_TIMESTAMP\"", checkInterval) : "");
+
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -83,38 +103,51 @@ class CompactionTxnHandler extends TxnHandler {
         }
         rs.close();
 
-        // Check for aborted txns
-        s = "select tc_database, tc_table, tc_partition " +
-          "from TXNS, TXN_COMPONENTS " +
-          "where txn_id = tc_txnid and txn_state = '" + TXN_ABORTED + "' " +
-          "group by tc_database, tc_table, tc_partition " +
-          "having count(*) > " + maxAborted;
+        // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
+        // past time threshold
+        boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
+        final String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\","
+            + "MIN(\"TXN_STARTED\"), COUNT(*)"
+            + "FROM \"TXNS\", \"TXN_COMPONENTS\" "
+            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = '" + TXN_ABORTED + "' "
+            + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\""
+            + (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
+        LOG.debug("Going to execute query <" + sCheckAborted + ">");
+        rs = stmt.executeQuery(sCheckAborted);
+        long systemTime = System.currentTimeMillis();
         while (rs.next()) {
-          CompactionInfo info = new CompactionInfo();
-          info.dbname = rs.getString(1);
-          info.tableName = rs.getString(2);
-          info.partName = rs.getString(3);
-          info.tooManyAborts = true;
-          response.add(info);
+          boolean pastTimeThreshold =
+              checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
+          int numAbortedTxns = rs.getInt(5);
+          if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
+            CompactionInfo info = new CompactionInfo();
+            info.dbname = rs.getString(1);
+            info.tableName = rs.getString(2);
+            info.partName = rs.getString(3);
+            info.tooManyAborts = numAbortedTxns > abortedThreshold;
+            info.hasOldAbort = pastTimeThreshold;
+            response.add(info);
+          }
         }
 
         LOG.debug("Going to rollback");
         dbConn.rollback();
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database " + e.getMessage());
-        checkRetryable(dbConn, e, "findPotentialCompactions(maxAborted:" + maxAborted + ")");
+        checkRetryable(dbConn, e,
+            "findPotentialCompactions(maxAborted:" + abortedThreshold
+                + ", abortedTimeThreshold:" + abortedTimeThreshold + ")");
       } finally {
         close(rs, stmt, dbConn);
       }
       return response;
     }
     catch (RetryException e) {
-      return findPotentialCompactions(maxAborted);
+      return findPotentialCompactions(abortedThreshold, abortedTimeThreshold, checkInterval);
     }
   }
+
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
@@ -133,8 +166,8 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "select cq_id, cq_database, cq_table, cq_partition, " +
-          "cq_type, cq_tblproperties from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "'";
+        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+          "\"CQ_TYPE\", \"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + INITIATED_STATE + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
@@ -153,9 +186,9 @@ class CompactionTxnHandler extends TxnHandler {
           info.properties = rs.getString(6);
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "update COMPACTION_QUEUE set cq_worker_id = '" + workerId + "', " +
-            "cq_start = " + now + ", cq_state = '" + WORKING_STATE + "' where cq_id = " + info.id +
-            " AND cq_state='" + INITIATED_STATE + "'";
+          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + workerId + "', " +
+            "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
+            " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
           LOG.debug("Going to execute update <" + s + ">");
           int updCount = updStmt.executeUpdate(s);
           if(updCount == 1) {
@@ -203,8 +236,10 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "update COMPACTION_QUEUE set cq_state = '" + READY_FOR_CLEANING + "', " +
-          "cq_worker_id = null where cq_id = " + info.id;
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
+            + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
+            + "(SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\")"
+            + " WHERE \"CQ_ID\" = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
         if (updCnt != 1) {
@@ -247,8 +282,8 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "select cq_id, cq_database, cq_table, cq_partition, "
-                + "cq_type, cq_run_as, cq_highest_write_id from COMPACTION_QUEUE where cq_state = '"
+        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
                 + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -284,57 +319,6 @@ class CompactionTxnHandler extends TxnHandler {
       return findReadyToClean();
     }
   }
-  @Override
-  public long findMinOpenTxnId() throws MetaException {
-    Connection dbConn = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-        return findMinOpenTxnGLB(stmt);
-      } catch (SQLException e) {
-        LOG.error("Unable to findMinOpenTxnId() due to:" + e.getMessage());
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findMinOpenTxnId");
-        throw new MetaException("Unable to execute findMinOpenTxnId() " +
-            StringUtils.stringifyException(e));
-      } finally {
-        close(rs, stmt, dbConn);
-      }
-    } catch (RetryException e) {
-      return findMinOpenTxnId();
-    }
-  }
-
-  /**
-   * See doc at {@link TxnStore#findMinOpenTxnId()}
-   * Note that {@link #openTxns(OpenTxnRequest)} makes update of NEXT_TXN and MIN_HISTORY_LEVEL
-   * a single atomic operation (and no one else should update these tables except the cleaner
-   * which deletes rows from MIN_HISTORY_LEVEL which can only allow minOpenTxn to move higher)
-   */
-  private long findMinOpenTxnGLB(Statement stmt) throws MetaException, SQLException {
-    String s = "select ntxn_next from NEXT_TXN_ID";
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction tables not properly " +
-          "initialized, no record found in next_txn_id");
-    }
-    long hwm = rs.getLong(1);
-    s = "select min(mhl_min_open_txnid) from MIN_HISTORY_LEVEL";
-    LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    rs.next();
-    long minOpenTxnId = rs.getLong(1);
-    if(rs.wasNull()) {
-      return hwm;
-    }
-    //since generating new txnid uses select for update on single row in NEXT_TXN_ID
-    assert hwm >= minOpenTxnId : "(hwm, minOpenTxnId)=(" + hwm + "," + minOpenTxnId + ")";
-    return minOpenTxnId;
-  }
 
   /**
    * This will remove an entry from the queue after
@@ -351,7 +335,10 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+            + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\" "
+            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {
@@ -361,7 +348,7 @@ class CompactionTxnHandler extends TxnHandler {
           throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
         }
         close(rs);
-        String s = "delete from COMPACTION_QUEUE where cq_id = ?";
+        String s = "delete from \"COMPACTION_QUEUE\" where \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
         LOG.debug("Going to execute update <" + s + ">");
@@ -371,7 +358,11 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
-        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)");
+        pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
+            + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
+            + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
+            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\")"
+            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
         info.state = SUCCEEDED_STATE;
         CompactionInfo.insertIntoCompletedCompactions(pStmt, info, getDbTime(dbConn));
         updCount = pStmt.executeUpdate();
@@ -379,13 +370,13 @@ class CompactionTxnHandler extends TxnHandler {
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest write ID include in this compaction job.
         //highestWriteId will be NULL in upgrade scenarios
-        s = "delete from COMPLETED_TXN_COMPONENTS where ctc_database = ? and " +
-            "ctc_table = ?";
+        s = "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_DATABASE\" = ? AND " +
+            "\"CTC_TABLE\" = ?";
         if (info.partName != null) {
-          s += " and ctc_partition = ?";
+          s += " AND \"CTC_PARTITION\" = ?";
         }
         if(info.highestWriteId != 0) {
-          s += " and ctc_writeid <= ?";
+          s += " AND \"CTC_WRITEID\" <= ?";
         }
         pStmt = dbConn.prepareStatement(s);
         int paramCount = 1;
@@ -408,10 +399,10 @@ class CompactionTxnHandler extends TxnHandler {
          * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
          * See {@link ql.txn.compactor.Cleaner.removeFiles()}
          */
-        s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
-          TXN_ABORTED + "' and tc_database = ? and tc_table = ?";
-        if (info.highestWriteId != 0) s += " and tc_writeid <= ?";
-        if (info.partName != null) s += " and tc_partition = ?";
+        s = "SELECT DISTINCT \"TXN_ID\" FROM \"TXNS\", \"TXN_COMPONENTS\" WHERE \"TXN_ID\" = \"TC_TXNID\" "
+            + "AND \"TXN_STATE\" = '" + TXN_ABORTED + "' AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
+        if (info.highestWriteId != 0) s += " AND \"TC_WRITEID\" <= ?";
+        if (info.partName != null) s += " AND \"TC_PARTITION\" = ?";
 
         pStmt = dbConn.prepareStatement(s);
         paramCount = 1;
@@ -441,18 +432,18 @@ class CompactionTxnHandler extends TxnHandler {
           StringBuilder prefix = new StringBuilder();
           StringBuilder suffix = new StringBuilder();
 
-          prefix.append("delete from TXN_COMPONENTS where ");
+          prefix.append("DELETE FROM \"TXN_COMPONENTS\" WHERE ");
 
           //because 1 txn may include different partitions/tables even in auto commit mode
-          suffix.append(" and tc_database = ?");
-          suffix.append(" and tc_table = ?");
+          suffix.append(" AND \"TC_DATABASE\" = ?");
+          suffix.append(" AND \"TC_TABLE\" = ?");
           if (info.partName != null) {
-            suffix.append(" and tc_partition = ?");
+            suffix.append(" AND \"TC_PARTITION\" = ?");
           }
 
           // Populate the complete query with provided prefix and suffix
           List<Integer> counts = TxnUtils
-              .buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "tc_txnid",
+              .buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "\"TC_TXNID\"",
                   true, false);
           int totalCount = 0;
           for (int i = 0; i < queries.size(); i++) {
@@ -498,7 +489,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -516,26 +507,28 @@ class CompactionTxnHandler extends TxnHandler {
 
         // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
         // If there are no txns which are currently open or aborted in the system, then current value of
-        // NEXT_TXN_ID.ntxn_next could be min_uncommitted_txnid.
-        long minUncommittedTxnId = findMinOpenTxnGLB(stmt);
-
-        // If there are aborted txns, then the minimum aborted txnid could be the min_uncommitted_txnid
-        // if lesser than both NEXT_TXN_ID.ntxn_next and min(MIN_HISTORY_LEVEL .mhl_min_open_txnid).
-        String s = "select min(txn_id) from TXNS where txn_state = " + quoteChar(TXN_ABORTED);
+        // max(TXNS.txn_id) could be min_uncommitted_txnid.
+        String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
+            "SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\" " +
+            "UNION " +
+            "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
+            "UNION " +
+            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_ABORTED) +
+            " OR \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+            ") \"RES\"";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          long minAbortedTxnId = rs.getLong(1);
-          if (minAbortedTxnId > 0) {
-            minUncommittedTxnId = Math.min(minAbortedTxnId, minUncommittedTxnId);
-          }
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
+        long minUncommitedTxnid = rs.getLong(1);
+
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
-        s = "delete from TXN_TO_WRITE_ID where t2w_txnid < " + minUncommittedTxnId;
+        s = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < " + minUncommitedTxnid;
         LOG.debug("Going to execute delete <" + s + ">");
         int rc = stmt.executeUpdate(s);
-        LOG.info("Removed " + rc + " rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: " + minUncommittedTxnId);
+        LOG.info("Removed " + rc + " rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: " + minUncommitedTxnid);
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -555,25 +548,36 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components. The reason such
-   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
+   * Clean up aborted / committed transactions from txns that have no components in txn_components.
+   * The committed txns are left there for TXN_OPENTXN_TIMEOUT window period intentionally.
+   * The reason such aborted txns exist can be that now work was done in this txn
+   * (e.g. Streaming opened TransactionBatch and abandoned it w/o doing any work)
+   * or due to {@link #markCleaned(CompactionInfo)} being called.
    */
   @Override
   @RetrySemantics.SafeToRetry
-  public void cleanEmptyAbortedTxns() throws MetaException {
+  public void cleanEmptyAbortedAndCommittedTxns() throws MetaException {
+    LOG.info("Start to clean empty aborted or committed TXNS");
     try {
       Connection dbConn = null;
       Statement stmt = null;
       ResultSet rs = null;
       try {
-        //Aborted is a terminal state, so nothing about the txn can change
+        //Aborted and committed are terminal states, so nothing about the txn can change
         //after that, so READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "select txn_id from TXNS where " +
-            "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
-            "txn_state = '" + TXN_ABORTED + "'";
+        /**
+         * Only delete aborted / committed transaction in a way that guarantees two things:
+         * 1. never deletes anything that is inside the TXN_OPENTXN_TIMEOUT window
+         * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
+          */
+        long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId(dbConn);
+
+        String s = "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE " +
+            "\"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") AND " +
+            " (\"TXN_STATE\" = '" + TXN_ABORTED + "' OR \"TXN_STATE\" = '" + TXN_COMMITTED + "')  AND "
+            + " \"TXN_ID\" < " + lowWaterMark;
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
@@ -589,17 +593,16 @@ class CompactionTxnHandler extends TxnHandler {
         StringBuilder suffix = new StringBuilder();
 
         // Delete from TXNS.
-        prefix.append("delete from TXNS where ");
-        suffix.append("");
+        prefix.append("DELETE FROM \"TXNS\" WHERE ");
 
-        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", false, false);
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"TXN_ID\"", false, false);
 
         for (String query : queries) {
           LOG.debug("Going to execute update <" + query + ">");
           int rc = stmt.executeUpdate(query);
-          LOG.info("Removed " + rc + "  empty Aborted transactions from TXNS");
+          LOG.debug("Removed " + rc + "  empty Aborted and Committed transactions from TXNS");
         }
-        LOG.info("Aborted transactions removed from TXNS: " + txnids);
+        LOG.info("Aborted and committed transactions removed from TXNS: " + txnids);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -613,7 +616,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      cleanEmptyAbortedTxns();
+      cleanEmptyAbortedAndCommittedTxns();
     }
   }
 
@@ -635,8 +638,8 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
-          + INITIATED_STATE+ "' where cq_state = '" + WORKING_STATE + "' and cq_worker_id like '"
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = '"
+          + INITIATED_STATE+ "' WHERE \"CQ_STATE\" = '" + WORKING_STATE + "' AND \"CQ_WORKER_ID\" LIKE '"
           +  hostname + "%'";
         LOG.debug("Going to execute update <" + s + ">");
         // It isn't an error if the following returns no rows, as the local workers could have died
@@ -680,8 +683,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         long latestValidStart = getDbTime(dbConn) - timeout;
         stmt = dbConn.createStatement();
-        String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
-          + INITIATED_STATE+ "' where cq_state = '" + WORKING_STATE + "' and cq_start < "
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = '"
+          + INITIATED_STATE+ "' WHERE \"CQ_STATE\" = '" + WORKING_STATE + "' AND \"CQ_START\" < "
           +  latestValidStart;
         LOG.debug("Going to execute update <" + s + ">");
         // It isn't an error if the following returns no rows, as the local workers could have died
@@ -777,9 +780,9 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String sqlText = "UPDATE COMPACTION_QUEUE SET CQ_HIGHEST_WRITE_ID = " +
-            ci.highestWriteId + ", cq_run_as = " + quoteString(ci.runAs) +
-            " WHERE CQ_ID = " + ci.id;
+        String sqlText = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = " +
+            ci.highestWriteId + ", \"CQ_RUN_AS\" = " + quoteString(ci.runAs) +
+            " WHERE \"CQ_ID\" = " + ci.id;
         if(LOG.isDebugEnabled()) {
           LOG.debug("About to execute: " + sqlText);
         }
@@ -795,13 +798,13 @@ class CompactionTxnHandler extends TxnHandler {
         * a new write id (so as not to invalidate result set caches/materialized views) but
         * we need to set it to something to that markCleaned() only cleans TXN_COMPONENTS up to
         * the level to which aborted files/data has been cleaned.*/
-        sqlText = "insert into TXN_COMPONENTS(" +
-            "TC_TXNID, " +
-            "TC_DATABASE, " +
-            "TC_TABLE, " +
-            (ci.partName == null ? "" : "TC_PARTITION, ") +
-            "TC_WRITEID, " +
-            "TC_OPERATION_TYPE)" +
+        sqlText = "INSERT INTO \"TXN_COMPONENTS\"(" +
+            "\"TC_TXNID\", " +
+            "\"TC_DATABASE\", " +
+            "\"TC_TABLE\", " +
+            (ci.partName == null ? "" : "\"TC_PARTITION\", ") +
+            "\"TC_WRITEID\", " +
+            "\"TC_OPERATION_TYPE\")" +
             " VALUES(" +
             compactionTxnId + "," +
             quoteString(ci.dbname) + "," +
@@ -884,8 +887,8 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         /*cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first*/
-        rs = stmt.executeQuery("select cc_id, cc_database, cc_table, cc_partition, cc_state from " +
-          "COMPLETED_COMPACTIONS order by cc_database, cc_table, cc_partition, cc_id desc");
+        rs = stmt.executeQuery("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\" "
+            + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_ID\" DESC");
         String lastCompactedEntity = null;
         /*In each group, walk from most recent and count occurences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
@@ -911,14 +914,15 @@ class CompactionTxnHandler extends TxnHandler {
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
 
-        prefix.append("delete from COMPLETED_COMPACTIONS where ");
+        prefix.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE ");
         suffix.append("");
 
         List<String> questions = new ArrayList<>(deleteSet.size());
         for (int  i = 0; i < deleteSet.size(); i++) {
           questions.add("?");
         }
-        List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "cc_id", false, false);
+        List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions,
+            "\"CC_ID\"", false, false);
         int totalCount = 0;
         for (int i = 0; i < queries.size(); i++) {
           String query = queries.get(i);
@@ -980,11 +984,11 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("select CC_STATE from COMPLETED_COMPACTIONS where " +
-          "CC_DATABASE = ? and " +
-          "CC_TABLE = ? " +
-          (ci.partName != null ? "and CC_PARTITION = ?" : "") +
-          " and CC_STATE != " + quoteChar(ATTEMPTED_STATE) + " order by CC_ID desc");
+        pStmt = dbConn.prepareStatement("SELECT \"CC_STATE\" FROM \"COMPLETED_COMPACTIONS\" WHERE " +
+          "\"CC_DATABASE\" = ? AND " +
+          "\"CC_TABLE\" = ? " +
+          (ci.partName != null ? "AND \"CC_PARTITION\" = ?" : "") +
+          " AND \"CC_STATE\" != " + quoteChar(ATTEMPTED_STATE) + " ORDER BY \"CC_ID\" DESC");
         pStmt.setString(1, ci.dbname);
         pStmt.setString(2, ci.tableName);
         if (ci.partName != null) {
@@ -1033,15 +1037,21 @@ class CompactionTxnHandler extends TxnHandler {
       Statement stmt = null;
       PreparedStatement pStmt = null;
       ResultSet rs = null;
+      // the error message related to the failure is wrapped inside CompactionInfo
+      // fetch this info, since ci will be reused in subsequent queries
+      String errorMessage = ci.errorMessage;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+            + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\" "
+            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {
           ci = CompactionInfo.loadFullFromCompactionQueue(rs);
-          String s = "delete from COMPACTION_QUEUE where cq_id = ?";
+          String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
           pStmt = dbConn.prepareStatement(s);
           pStmt.setLong(1, ci.id);
           LOG.debug("Going to execute update <" + s + ">");
@@ -1070,7 +1080,14 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, null);
         closeStmt(pStmt);
 
-        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)");
+        pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
+            + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
+            + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
+            + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\") "
+            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
+        if (errorMessage != null) {
+          ci.errorMessage = errorMessage;
+        }
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Going to commit");
@@ -1080,12 +1097,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        try {
-          checkRetryable(dbConn, e, "markFailed(" + ci + ")");
-        }
-        catch(MetaException ex) {
-          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
-        }
+        checkRetryable(dbConn, e, "markFailed(" + ci + ")");
         LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
       } finally {
         close(rs, stmt, null);
@@ -1104,7 +1116,8 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "update COMPACTION_QUEUE set CQ_HADOOP_JOB_ID = " + quoteString(hadoopJobId) + " WHERE CQ_ID = " + id;
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HADOOP_JOB_ID\" = " + quoteString(hadoopJobId)
+            + " WHERE \"CQ_ID\" = " + id;
         LOG.debug("Going to execute <" + s + ">");
         int updateCount = stmt.executeUpdate(s);
         LOG.debug("Going to commit");
@@ -1114,18 +1127,60 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("setHadoopJobId(" + hadoopJobId + "," + id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        try {
-          checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
-        }
-        catch(MetaException ex) {
-          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
-        }
+        checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
         LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ") failed: " + e.getMessage(), e);
       } finally {
         close(null, stmt, dbConn);
       }
     } catch (RetryException e) {
       setHadoopJobId(hadoopJobId, id);
+    }
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
+  public long findMinOpenTxnIdForCleaner() throws MetaException{
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        String query = "SELECT COUNT(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized.");
+        }
+        long numOpenTxns = rs.getLong(1);
+        if (numOpenTxns > 0) {
+          query = "SELECT MIN(\"RES\".\"ID\") FROM (" +
+              "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+              " UNION " +
+              "SELECT MAX(\"CQ_NEXT_TXN_ID\") AS \"ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = "
+              + quoteChar(READY_FOR_CLEANING) +
+              ") \"RES\"";
+        } else {
+          query = "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"";
+        }
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
+        }
+        return rs.getLong(1);
+      } catch (SQLException e) {
+        LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getMinOpenTxnForCleaner");
+        throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " +
+            StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return findMinOpenTxnIdForCleaner();
     }
   }
 }

@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Generated from template ScalarArithmeticColumn.txt.
+ * Generated from template ScalarDivideColumn.txt.
  * Implements a vectorized arithmetic operator with a scalar on the left and a
  * column vector on the right. The result is output to an output column vector.
  */

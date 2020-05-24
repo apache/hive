@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +118,11 @@ public class TestLowLevelCacheImpl {
 
     @Override
     public long purge() {
+      return 0;
+    }
+
+    @Override
+    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
       return 0;
     }
 

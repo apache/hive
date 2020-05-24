@@ -1,7 +1,4 @@
-set hive.security.authorization.enabled=true;
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+--! qt:authorizer
 set hive.repl.rootdir=${system:test.tmp.dir}/hrepl;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/hrepl/sentinel;
@@ -29,7 +26,7 @@ show role grant user hive_admin_user;
 show tables test_repldump_adminpriv;
 repl dump test_repldump_adminpriv;
 
-dfs -rmr  ${system:test.tmp.dir}/hrepl/next;
+dfs -rmr  ${system:test.tmp.dir}/hrepl/dGVzdF9yZXBsZHVtcF9hZG1pbnByaXY=/next;
 
 set user.name=ruser1;
 show tables test_repldump_adminpriv;

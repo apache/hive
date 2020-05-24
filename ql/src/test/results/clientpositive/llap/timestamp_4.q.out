@@ -1,0 +1,58 @@
+PREHOOK: query: drop table if exists timestamp_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists timestamp_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists timestamp_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists timestamp_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table timestamp_1 (key int, dd timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_1
+POSTHOOK: query: create table timestamp_1 (key int, dd timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_1
+PREHOOK: query: create table timestamp_2 (key int, dd timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_2
+POSTHOOK: query: create table timestamp_2 (key int, dd timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_2
+PREHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_timestamp as end_dd from timestamp_1) d1
+  join timestamp_2 as d2
+    on d1.key = d2.key
+    where d2.dd between start_dd and end_dd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_1
+PREHOOK: Input: default@timestamp_2
+#### A masked pattern was here ####
+POSTHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_timestamp as end_dd from timestamp_1) d1
+  join timestamp_2 as d2
+    on d1.key = d2.key
+    where d2.dd between start_dd and end_dd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_1
+POSTHOOK: Input: default@timestamp_2
+#### A masked pattern was here ####
+PREHOOK: query: drop table timestamp_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamp_1
+PREHOOK: Output: default@timestamp_1
+POSTHOOK: query: drop table timestamp_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamp_1
+POSTHOOK: Output: default@timestamp_1
+PREHOOK: query: drop table timestamp_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamp_2
+PREHOOK: Output: default@timestamp_2
+POSTHOOK: query: drop table timestamp_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamp_2
+POSTHOOK: Output: default@timestamp_2

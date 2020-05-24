@@ -53,7 +53,7 @@ public class TestHCatHiveCompatibility extends HCatBaseTest {
 
     driver.run("drop table if exists junit_unparted_noisd");
     String createTable = "create table junit_unparted_noisd(a int) stored as RCFILE";
-    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    driver.run(createTable);
 
     // assert that the table created has no hcat instrumentation, and that we're still able to read it.
     Table table = client.getTable("default", "junit_unparted_noisd");
@@ -89,7 +89,7 @@ public class TestHCatHiveCompatibility extends HCatBaseTest {
 
     driver.run("drop table if exists junit_parted_noisd");
     String createTable = "create table junit_parted_noisd(a int) partitioned by (b string) stored as RCFILE";
-    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    driver.run(createTable);
 
     // assert that the table created has no hcat instrumentation, and that we're still able to read it.
     Table table = client.getTable("default", "junit_parted_noisd");

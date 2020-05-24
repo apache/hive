@@ -59,9 +59,19 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import junit.framework.TestCase;
 
-public class TestPermsGrp extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
+
+/**
+ * TestPermsGrp.
+ */
+public class TestPermsGrp {
 
   private boolean isServerRunning = false;
   private HiveConf hcatConf;
@@ -69,13 +79,13 @@ public class TestPermsGrp extends TestCase {
   private HiveMetaStoreClient msc;
   private static final Logger LOG = LoggerFactory.getLogger(TestPermsGrp.class);
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     System.setSecurityManager(securityManager);
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
     if (isServerRunning) {
       return;
@@ -104,6 +114,7 @@ public class TestPermsGrp extends TestCase {
     msc = new HiveMetaStoreClient(hcatConf);
   }
 
+  @Test
   public void testCustomPerms() throws Exception {
 
     String dbName = Warehouse.DEFAULT_DATABASE_NAME;

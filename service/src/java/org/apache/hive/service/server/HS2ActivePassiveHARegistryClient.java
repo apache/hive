@@ -40,7 +40,7 @@ public class HS2ActivePassiveHARegistryClient {
     String namespace = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE);
     Preconditions.checkArgument(!StringUtils.isBlank(namespace),
       HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE.varname + " cannot be null or empty");
-    String nsKey = ZkRegistryBase.getRootNamespace(null, namespace + "-");
+    String nsKey = ZkRegistryBase.getRootNamespace(conf, null, namespace + "-");
     HS2ActivePassiveHARegistry registry = hs2Registries.get(nsKey);
     if (registry == null) {
       registry = HS2ActivePassiveHARegistry.create(conf, true);

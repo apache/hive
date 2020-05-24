@@ -150,7 +150,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database createdDatabase = client.getDatabase(database.getName());
 
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
-    Assert.assertEquals("Comparing location", metaStore.getWarehouseRoot() + "/" +
+    Assert.assertEquals("Comparing location", metaStore.getExternalWarehouseRoot() + "/" +
                                                   createdDatabase.getName() + ".db", createdDatabase.getLocationUri());
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
@@ -158,6 +158,17 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing owner name", SecurityUtils.getUser(),
         createdDatabase.getOwnerName());
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
+  }
+
+  @Test
+  public void testCreateDatabaseOwnerName() throws Exception{
+    DatabaseBuilder databaseBuilder = new DatabaseBuilder()
+        .setCatalogName("hive")
+        .setName("dummy")
+        .setOwnerName(null);
+
+    Database db = databaseBuilder.create(client, metaStore.getConf());
+    Assert.assertNotNull("Owner name should be filled", db.getOwnerName());
   }
 
   @Test(expected = MetaException.class)
@@ -176,7 +187,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database database = testDatabases[0];
 
     // Invalid character in new database name
-    database.setName("test_database_1;");
+    database.setName("test_database§1;");
     client.createDatabase(database);
   }
 
@@ -204,7 +215,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Default database name", "default", database.getName());
     Assert.assertEquals("Default database description", "Default Hive database",
         database.getDescription());
-    Assert.assertEquals("Default database location", metaStore.getWarehouseRoot(),
+    Assert.assertEquals("Default database location", metaStore.getExternalWarehouseRoot(),
         new Path(database.getLocationUri()));
     Assert.assertEquals("Default database parameters", new HashMap<String, String>(),
         database.getParameters());

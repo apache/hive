@@ -123,7 +123,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.orc_rn1
                   Filter Operator
-                    predicate: ((rn < 1000) and (rn >= 100)) (type: boolean)
+                    predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)

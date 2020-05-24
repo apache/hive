@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.GenMRSkewJoinProcessor;
@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,22 +67,22 @@ public class SparkSkewJoinProcFactory {
     // prevent instantiation
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return SkewJoinProcFactory.getDefaultProc();
   }
 
-  public static NodeProcessor getJoinProc() {
+  public static SemanticNodeProcessor getJoinProc() {
     return new SparkSkewJoinJoinProcessor();
   }
 
-  public static class SparkSkewJoinJoinProcessor implements NodeProcessor {
+  public static class SparkSkewJoinJoinProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SparkSkewJoinResolver.SparkSkewJoinProcCtx context =
           (SparkSkewJoinResolver.SparkSkewJoinProcCtx) procCtx;
-      Task<? extends Serializable> currentTsk = context.getCurrentTask();
+      Task<?> currentTsk = context.getCurrentTask();
       JoinOperator op = (JoinOperator) nd;
       ReduceWork reduceWork = context.getReducerToReduceWork().get(op);
       ParseContext parseContext = context.getParseCtx();
@@ -170,11 +169,11 @@ public class SparkSkewJoinProcFactory {
           tableScanOp, mapWork, false, tableDesc);
       // insert the new task between current task and its child
       @SuppressWarnings("unchecked")
-      Task<? extends Serializable> newTask = TaskFactory.get(newWork);
-      List<Task<? extends Serializable>> childTasks = currentTask.getChildTasks();
+      Task<?> newTask = TaskFactory.get(newWork);
+      List<Task<?>> childTasks = currentTask.getChildTasks();
       // must have at most one child
       if (childTasks != null && childTasks.size() > 0) {
-        Task<? extends Serializable> childTask = childTasks.get(0);
+        Task<?> childTask = childTasks.get(0);
         currentTask.removeDependentTask(childTask);
         newTask.addDependentTask(childTask);
       }
@@ -224,11 +223,11 @@ public class SparkSkewJoinProcFactory {
   }
 
   private static boolean supportRuntimeSkewJoin(JoinOperator joinOp, ReduceWork reduceWork,
-      Task<? extends Serializable> currTask, HiveConf hiveConf) {
+      Task<?> currTask, HiveConf hiveConf) {
     if (currTask instanceof SparkTask &&
         GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp)) {
       SparkWork sparkWork = ((SparkTask) currTask).getWork();
-      List<Task<? extends Serializable>> children = currTask.getChildTasks();
+      List<Task<?>> children = currTask.getChildTasks();
       return !joinOp.getConf().isFixedAsSorted() && sparkWork.contains(reduceWork) &&
           (children == null || children.size() <= 1) &&
           OperatorUtils.getOp(reduceWork, CommonJoinOperator.class).size() == 1;

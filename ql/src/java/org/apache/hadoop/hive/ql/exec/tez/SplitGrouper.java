@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -55,6 +57,7 @@ import org.apache.tez.dag.api.TaskLocationHint;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
 
 /**
  * SplitGrouper is used to combine splits based on head room and locality. It
@@ -175,10 +178,10 @@ public class SplitGrouper {
   public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf, Configuration conf, InputSplit[] splits,
       float waves, int availableSlots, String inputName, boolean groupAcrossFiles,
       SplitLocationProvider locationProvider) throws Exception {
+    boolean isMinorCompaction = true;
     MapWork mapWork = populateMapWork(jobConf, inputName);
     // ArrayListMultimap is important here to retain the ordering for the splits.
     Multimap<Integer, InputSplit> schemaGroupedSplitMultiMap = ArrayListMultimap.<Integer, InputSplit> create();
-    
     if (HiveConf.getVar(jobConf, HiveConf.ConfVars.SPLIT_GROUPING_MODE).equalsIgnoreCase("compactor")) {
       List<Path> paths = Utilities.getInputPathsTez(jobConf, mapWork);
       for (Path path : paths) {
@@ -187,7 +190,9 @@ public class SplitGrouper {
           Operator<? extends OperatorDesc> op = mapWork.getAliasToWork().get(aliases.get(0));
           if ((op != null) && (op instanceof TableScanOperator)) {
             TableScanOperator tableScan = (TableScanOperator) op;
-            if (!tableScan.getConf().isTranscationalTable()) {
+            PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.get(0));
+            isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
+            if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);
               String errorMessage =
                   "Compactor split grouping is enabled only for transactional tables. Please check the path: "
@@ -209,7 +214,7 @@ public class SplitGrouper {
        * Create a TezGroupedSplit for each bucketId and return.
        * TODO: Are there any other config values (split size etc) that can override this per writer split grouping?
        */
-      return getCompactorSplitGroups(splits, conf);
+      return getCompactorSplitGroups(splits, conf, isMinorCompaction);
     }
 
     int i = 0;
@@ -244,26 +249,40 @@ public class SplitGrouper {
    * Takes a list of {@link org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit}s
    * and groups them for Acid Compactor, creating one TezGroupedSplit per bucket number.
    */
-  Multimap<Integer, InputSplit> getCompactorSplitGroups(InputSplit[] rawSplits, Configuration conf) {
+  Multimap<Integer, InputSplit> getCompactorSplitGroups(InputSplit[] rawSplits, Configuration conf,
+      boolean isMinorCompaction) {
     // Note: For our case, this multimap will essentially contain one value (one TezGroupedSplit) per key 
     Multimap<Integer, InputSplit> bucketSplitMultiMap = ArrayListMultimap.<Integer, InputSplit> create();
     HiveInputFormat.HiveInputSplit[] splits = new HiveInputFormat.HiveInputSplit[rawSplits.length];
     int i = 0;
     for (InputSplit is : rawSplits) {
-      splits[i++] = (HiveInputFormat.HiveInputSplit) is;
+      HiveInputFormat.HiveInputSplit hiveInputSplit = (HiveInputFormat.HiveInputSplit) is;
+      OrcSplit o1 = (OrcSplit) hiveInputSplit.getInputSplit();
+      try {
+        if (isMinorCompaction) {
+          o1.parse(conf, o1.getRootDir().getParent());
+        } else {
+          o1.parse(conf);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException();
+      }
+      splits[i++] = hiveInputSplit;
     }
-    Arrays.sort(splits, new ComparatorCompactor(conf));
+    Arrays.sort(splits, new ComparatorCompactor());
     TezGroupedSplit tgs = null;
     int previousWriterId = Integer.MIN_VALUE;
     Path rootDir = null;
     for (i = 0; i < splits.length; i++) {
       int writerId = ((OrcSplit) splits[i].getInputSplit()).getBucketId();
-      if (rootDir == null) {
-        rootDir = ((OrcSplit) splits[i].getInputSplit()).getRootDir();
-      } 
-      Path rootDirFromCurrentSplit = ((OrcSplit) splits[i].getInputSplit()).getRootDir();
-      // These splits should belong to the same partition
-      assert rootDir == rootDirFromCurrentSplit;
+      if (!isMinorCompaction) {
+        if (rootDir == null) {
+          rootDir = ((OrcSplit) splits[i].getInputSplit()).getRootDir();
+        }
+        Path rootDirFromCurrentSplit = ((OrcSplit) splits[i].getInputSplit()).getRootDir();
+        // These splits should belong to the same partition
+        assert rootDir.equals(rootDirFromCurrentSplit);
+      }
       if (writerId != previousWriterId) {
         // Create a new grouped split for this writerId
         tgs = new TezGroupedSplit(1, "org.apache.hadoop.hive.ql.io.HiveInputFormat", null, null);
@@ -275,12 +294,8 @@ public class SplitGrouper {
     return bucketSplitMultiMap;
   }
   
-  static class ComparatorCompactor implements Comparator<HiveInputFormat.HiveInputSplit> {
-    private  Configuration conf;
-    private ComparatorCompactor(Configuration conf) {
-      this.conf = conf;
-    }
-    
+  static class ComparatorCompactor implements Comparator<HiveInputFormat.HiveInputSplit>, Serializable {
+
     @Override
     public int compare(HiveInputFormat.HiveInputSplit h1, HiveInputFormat.HiveInputSplit h2) {
       //sort: bucketId,writeId,stmtId,rowIdOffset,splitStart
@@ -289,12 +304,6 @@ public class SplitGrouper {
       }
       OrcSplit o1 = (OrcSplit)h1.getInputSplit();
       OrcSplit o2 = (OrcSplit)h2.getInputSplit();
-      try {
-        o1.parse(conf);
-        o2.parse(conf);
-      } catch(IOException ex) {
-        throw new RuntimeException(ex);
-      }
       // Note: this is the bucket number as seen in the file name.
       // Hive 3.0 encodes a bunch of info in the Acid schema's bucketId attribute.
       // See: {@link org.apache.hadoop.hive.ql.io.BucketCodec.V1} for details.

@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
@@ -248,8 +247,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    VectorExpression.doTransientInit(reduceSinkKeyExpressions);
-    VectorExpression.doTransientInit(reduceSinkValueExpressions);
+    VectorExpression.doTransientInit(reduceSinkKeyExpressions, hconf);
+    VectorExpression.doTransientInit(reduceSinkValueExpressions, hconf);
 
     if (LOG.isDebugEnabled()) {
       // Determine the name of our map or reduce task for debug tracing.
@@ -273,19 +272,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     }
 
     if (!isEmptyKey) {
-      TableDesc keyTableDesc = conf.getKeySerializeInfo();
-      boolean[] columnSortOrder =
-          getColumnSortOrder(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length);
-      byte[] columnNullMarker =
-          getColumnNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
-      byte[] columnNotNullMarker =
-          getColumnNotNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
-
-      keyBinarySortableSerializeWrite =
-          new BinarySortableSerializeWrite(
-              columnSortOrder,
-              columnNullMarker,
-              columnNotNullMarker);
+      keyBinarySortableSerializeWrite = BinarySortableSerializeWrite.with(
+              conf.getKeySerializeInfo().getProperties(), reduceSinkKeyColumnMap.length);
     }
 
     if (!isEmptyValue) {

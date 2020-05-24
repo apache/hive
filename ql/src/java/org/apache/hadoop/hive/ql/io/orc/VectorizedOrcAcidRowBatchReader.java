@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
@@ -235,6 +236,7 @@ public class VectorizedOrcAcidRowBatchReader
     // Set the range on the deleteEventReaderOptions to 0 to INTEGER_MAX because
     // we always want to read all the delete delta files.
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
+    deleteEventReaderOptions.searchArgument(null, null);
     keyInterval = findMinMaxKeys(orcSplit, conf, deleteEventReaderOptions);
     DeleteEventRegistry der;
     try {
@@ -271,7 +273,7 @@ public class VectorizedOrcAcidRowBatchReader
        * isOriginal - don't have meta columns - nothing to skip
        * there no relevant delete events && ROW__ID is not needed higher up
        * (e.g. this is not a delete statement)*/
-      if (!isOriginal && deleteEventRegistry.isEmpty() && !rowIdProjected) {
+      if (deleteEventRegistry.isEmpty() && !rowIdProjected) {
         Path parent = orcSplit.getPath().getParent();
         while (parent != null && !rootPath.equals(parent)) {
           if (parent.getName().startsWith(AcidUtils.BASE_PREFIX)) {
@@ -722,8 +724,8 @@ public class VectorizedOrcAcidRowBatchReader
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
         //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
-    AcidUtils.Directory directoryState = AcidUtils.getAcidState(syntheticTxnInfo.folder, conf,
-        validWriteIdList, false, true);
+    AcidUtils.Directory directoryState = AcidUtils.getAcidState(null, syntheticTxnInfo.folder, conf,
+        validWriteIdList, Ref.from(false), true, null, true);
     for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
       int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
       if (bucketIdFromPath != bucketId) {
@@ -748,7 +750,7 @@ public class VectorizedOrcAcidRowBatchReader
    * @param hasDeletes - if there are any deletes that apply to this split
    * todo: HIVE-17944
    */
-  static boolean canUseLlapForAcid(OrcSplit split, boolean hasDeletes, Configuration conf) {
+  static boolean canUseLlapIoForAcid(OrcSplit split, boolean hasDeletes, Configuration conf) {
     if(!split.isOriginal()) {
       return true;
     }
@@ -905,12 +907,8 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
 
-    if (isOriginal) {
-     /* Just copy the payload.  {@link recordIdColumnVector} has already been populated */
-      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
-    } else {
-      copyFromBase(value);
-    }
+    copyFromBase(value);
+
     if (rowIdProjected) {
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
       value.cols[ix] = recordIdColumnVector;
@@ -922,7 +920,11 @@ public class VectorizedOrcAcidRowBatchReader
   //ColumnVectors for acid meta cols to create a single ColumnVector
   //representing RecordIdentifier and (optionally) set it in 'value'
   private void copyFromBase(VectorizedRowBatch value) {
-    assert !isOriginal;
+    if (isOriginal) {
+      /* Just copy the payload.  {@link recordIdColumnVector} has already been populated if needed */
+      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
+      return;
+    }
     if (isFlatPayload) {
       int payloadCol = includeAcidColumns ? OrcRecordUpdater.ROW : 0;
         // Ignore the struct column and just copy all the following data columns.
@@ -1132,7 +1134,7 @@ public class VectorizedOrcAcidRowBatchReader
         assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
         this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
                                                     validWriteIdList, readerOptions, deleteDeltas,
-                                                    mergerOptions);
+                                                    mergerOptions, null);
         this.deleteRecordKey = new OrcRawRecordMerger.ReaderKey();
         this.deleteRecordValue = this.deleteRecords.createValue();
         // Initialize the first value in the delete reader.
@@ -1265,7 +1267,6 @@ public class VectorizedOrcAcidRowBatchReader
      * A simple wrapper class to hold the (owid, bucketProperty, rowId) pair.
      */
     static class DeleteRecordKey implements Comparable<DeleteRecordKey> {
-      private static final DeleteRecordKey otherKey = new DeleteRecordKey();
       private long originalWriteId;
       /**
        * see {@link BucketCodec}
@@ -1287,25 +1288,29 @@ public class VectorizedOrcAcidRowBatchReader
         if (other == null) {
           return -1;
         }
-        if (originalWriteId != other.originalWriteId) {
-          return originalWriteId < other.originalWriteId ? -1 : 1;
-        }
-        if(bucketProperty != other.bucketProperty) {
-          return bucketProperty < other.bucketProperty ? -1 : 1;
-        }
-        if (rowId != other.rowId) {
-          return rowId < other.rowId ? -1 : 1;
-        }
-        return 0;
+        return compareTo(other.originalWriteId, other.bucketProperty, other.rowId);
       }
+
       private int compareTo(RecordIdentifier other) {
         if (other == null) {
           return -1;
         }
-        otherKey.set(other.getWriteId(), other.getBucketProperty(),
-            other.getRowId());
-        return compareTo(otherKey);
+        return compareTo(other.getWriteId(), other.getBucketProperty(), other.getRowId());
       }
+
+      private int compareTo(long oOriginalWriteId, int oBucketProperty, long oRowId) {
+        if (originalWriteId != oOriginalWriteId) {
+          return originalWriteId < oOriginalWriteId ? -1 : 1;
+        }
+        if(bucketProperty != oBucketProperty) {
+          return bucketProperty < oBucketProperty ? -1 : 1;
+        }
+        if (rowId != oRowId) {
+          return rowId < oRowId ? -1 : 1;
+        }
+        return 0;
+      }
+
       @Override
       public String toString() {
         return "DeleteRecordKey(" + originalWriteId + "," +
@@ -1560,7 +1565,7 @@ public class VectorizedOrcAcidRowBatchReader
           for (Path deleteDeltaDir : deleteDeltaDirs) {
             FileSystem fs = deleteDeltaDir.getFileSystem(conf);
             Path[] deleteDeltaFiles = OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket,
-                new OrcRawRecordMerger.Options().isCompacting(false));
+                new OrcRawRecordMerger.Options().isCompacting(false), null);
             for (Path deleteDeltaFile : deleteDeltaFiles) {
               // NOTE: Calling last flush length below is more for future-proofing when we have
               // streaming deletes. But currently we don't support streaming deletes, and this can

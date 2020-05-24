@@ -62,6 +62,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
+  public static final String HS2_ALL_MODE = "all";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
@@ -112,6 +113,10 @@ public class MiniHS2 extends AbstractHiveService {
 
     public Builder withMiniMR() {
       this.miniClusterType = MiniClusterType.MR;
+      return this;
+    }
+    public Builder withMiniTez() {
+      this.miniClusterType = MiniClusterType.TEZ;
       return this;
     }
 
@@ -245,6 +250,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setLongVar(ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS, 3l);
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS, 10,
         TimeUnit.SECONDS);
+    hiveConf.setBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED, false);
     this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
@@ -565,8 +571,20 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   /**
-   * Build zk base JDBC URL
-   * @return
+   * Build base JDBC URL
+   * @return URL
+   */
+  public String getBaseHttpJdbcURL() {
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(!transportMode.equalsIgnoreCase(HS2_ALL_MODE)) {
+      return getBaseJdbcURL();
+    }
+    return "jdbc:hive2://" + getHost() + ":" + getHttpPort() + "/";
+  }
+
+  /**
+   * Build zk base JDBC URL.
+   * @return URL
    */
   private String getZKBaseJdbcURL() throws Exception {
     HiveConf hiveConf = getServerConf();
@@ -575,6 +593,24 @@ public class MiniHS2 extends AbstractHiveService {
       return "jdbc:hive2://" + zkEnsemble + "/";
     }
     throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");
+  }
+
+  /**
+   * Returns HTTP connection URL for this server instance.
+   * @return URL
+   * @throws Exception
+   */
+  public synchronized String getHttpJdbcURL() throws Exception {
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(!transportMode.equalsIgnoreCase(HS2_ALL_MODE)) {
+      return getJdbcURL();
+    }
+    try {
+      getHiveConf().setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_HTTP_MODE);
+      return getJdbcURL("default");
+    } finally {
+      getHiveConf().setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_ALL_MODE);
+    }
   }
 
   private boolean isHttpTransportMode() {

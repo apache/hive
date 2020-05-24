@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.junit.BeforeClass;
@@ -38,9 +37,6 @@ public class TestStatsReplicationScenariosNoAutogather extends TestStatsReplicat
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   static WarehouseInstance primary;
-  private static WarehouseInstance replica;
-  private String primaryDbName, replicatedDbName;
-  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -48,6 +44,7 @@ public class TestStatsReplicationScenariosNoAutogather extends TestStatsReplicat
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
 
-    internalBeforeClassSetup(overrides, TestReplicationScenarios.class, false);
+    internalBeforeClassSetup(overrides, overrides, TestStatsReplicationScenariosNoAutogather.class,
+            false, null);
   }
 }

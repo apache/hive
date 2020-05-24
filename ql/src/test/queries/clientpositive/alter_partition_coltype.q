@@ -58,7 +58,6 @@ create database pt;
 
 create table pt.alterdynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string);
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150 limit 5;
 

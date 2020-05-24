@@ -2,4 +2,4 @@ PREHOOK: query: CREATE TEMPORARY FUNCTION dummy_genericudf AS 'org.apache.hadoop
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: dummy_genericudf
 FAILED: Class org.apache.hadoop.hive.ql.udf.generic.DummyGenericUDF not found
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

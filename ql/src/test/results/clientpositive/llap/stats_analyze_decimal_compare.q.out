@@ -1,0 +1,45 @@
+PREHOOK: query: create table stats_analyze_decimal_compare (a decimal) tblproperties ("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_analyze_decimal_compare
+POSTHOOK: query: create table stats_analyze_decimal_compare (a decimal) tblproperties ("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_analyze_decimal_compare
+PREHOOK: query: insert into stats_analyze_decimal_compare values (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_analyze_decimal_compare
+POSTHOOK: query: insert into stats_analyze_decimal_compare values (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_analyze_decimal_compare
+POSTHOOK: Lineage: stats_analyze_decimal_compare.a SCRIPT []
+PREHOOK: query: insert into stats_analyze_decimal_compare values (10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_analyze_decimal_compare
+POSTHOOK: query: insert into stats_analyze_decimal_compare values (10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_analyze_decimal_compare
+POSTHOOK: Lineage: stats_analyze_decimal_compare.a SCRIPT []
+PREHOOK: query: desc formatted stats_analyze_decimal_compare a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_analyze_decimal_compare
+POSTHOOK: query: desc formatted stats_analyze_decimal_compare a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_analyze_decimal_compare
+col_name            	a                   
+data_type           	decimal(10,0)       
+min                 	5                   
+max                 	10                  
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}

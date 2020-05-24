@@ -22,19 +22,19 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestOrcMetadataCache {
@@ -68,6 +68,11 @@ public class TestOrcMetadataCache {
       return 0;
     }
 
+    @Override
+    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
+      return 0;
+    }
+
     public void verifyEquals(int i) {
       assertEquals(i, lockCount);
       assertEquals(i, unlockCount);
@@ -86,6 +91,10 @@ public class TestOrcMetadataCache {
       ++allocs;
     }
 
+    @Override public long evictMemory(long memoryToEvict) {
+      return 0;
+    }
+
     @Override
     public void releaseMemory(long memUsage) {
     }
@@ -93,6 +102,30 @@ public class TestOrcMetadataCache {
     @Override
     public void updateMaxSize(long maxSize) {
     }
+  }
+
+  @Test
+  public void testCaseSomePartialBuffersAreEvicted() {
+    final DummyMemoryManager mm = new DummyMemoryManager();
+    final DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    final LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    final BuddyAllocator alloc = new BuddyAllocator(false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+    final MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    final Object fileKey1 = new Object();
+    final Random rdm = new Random();
+    final ByteBuffer smallBuffer = ByteBuffer.allocate(2 * MAX_ALLOC);
+    rdm.nextBytes(smallBuffer.array());
+    //put some metadata in the cache that needs multiple buffers (2 * MAX_ALLOC)
+    final LlapBufferOrBuffers result = cache.putFileMetadata(fileKey1, smallBuffer, null, null);
+    // assert that we have our 2 buffers
+    Assert.assertEquals(2, result.getMultipleLlapBuffers().length);
+    final LlapAllocatorBuffer[] buffers = result.getMultipleLlapBuffers();
+    //test setup where one buffer is evicted and therefore can not be locked
+    buffers[1].decRef();
+    buffers[1].invalidateAndRelease();
+    //Try to get the buffer should lead to cleaning the cache since some part was evicted.
+    Assert.assertNull(cache.getFileMetadata(fileKey1));
   }
 
   @Test

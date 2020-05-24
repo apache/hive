@@ -18,22 +18,27 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * TestEximUtil.
  *
  */
-public class TestEximUtil extends TestCase {
+public class TestEximUtil {
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
   }
 
-  @Override
-  protected void tearDown() {
+  @After
+  public void tearDown() {
   }
 
+  @Test
   public void testCheckCompatibility() throws SemanticException {
 
     // backward/forward compatible

@@ -16,6 +16,8 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
@@ -66,7 +68,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -295,6 +297,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
+  private final boolean consistentSplits;
   /**
    * An internal version to make sure we don't race and overwrite a newer totalGuaranteed count in
    * ZK with an older one, without requiring us to make ZK updates under the main writeLock.
@@ -313,6 +316,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final Object outputsLock = new Object();
   private TezDAGID depsDagId = null;
   private Map<Integer, Set<Integer>> transitiveOutputs;
+  private LlapMetricsCollector llapMetricsCollector;
 
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
     this(taskSchedulerContext, new MonotonicClock(), true);
@@ -343,6 +347,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                                     LOCK_METRICS);
     readLock = lock.readLock();
     writeLock = lock.writeLock();
+    this.consistentSplits = HiveConf.getBoolVar(conf, ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
 
     if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
       JobTokenSecretManager sm = null;
@@ -400,6 +405,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapTaskSchedulerTimedLogThread")
             .build());
 
+    if (HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS) > 0) {
+      this.llapMetricsCollector = new LlapMetricsCollector(conf, registry);
+      this.registry.registerServiceListener(llapMetricsCollector);
+    }
+
     String instanceId = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
     Preconditions.checkNotNull(instanceId, ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname
@@ -436,8 +447,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     String hostsString = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     LOG.info("Running with configuration: hosts={}, numSchedulableTasksPerNode={}, "
-        + "nodeBlacklistConf={}, localityConf={}",
-        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf);
+        + "nodeBlacklistConf={}, localityConf={} consistentSplits={}",
+        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf, consistentSplits);
     this.amRegistry = TezAmRegistryImpl.create(conf, true);
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
@@ -802,8 +813,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
 
       registry.start();
-      registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
+      registry.registerStateChangeListener(new NodeStateChangeListener());
       for (LlapServiceInstance inst : activeInstances.getAll()) {
         registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);
@@ -814,6 +825,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVESESSIONID),
             serializedToken, jobIdForToken, 0);
       }
+
+
     } finally {
       writeLock.unlock();
     }
@@ -838,8 +851,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     @Override
     public void onUpdate(LlapServiceInstance serviceInstance, int ephSeqVersion) {
-      // Registry uses ephemeral sequential znodes that are never updated as of now.
-      LOG.warn("Unexpected update for instance={}. Ignoring", serviceInstance);
+      NodeInfo nodeInfo = instanceToNodeMap.get(serviceInstance.getWorkerIdentity());
+      nodeInfo.updateLlapServiceInstance(serviceInstance, numSchedulableTasksPerNode);
+      LOG.info("Updated node with identity: {} as a result of registry callback",
+              serviceInstance.getWorkerIdentity());
     }
 
     @Override
@@ -1074,7 +1089,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
-    updateGuaranteedInRegistry(tgVersionForZk, 0);
+    if (!StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim())) {
+      updateGuaranteedInRegistry(tgVersionForZk, 0);
+    }
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
   }
 
@@ -1464,7 +1481,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       /* fall through - miss in locality or no locality-requested */
-      Collection<LlapServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      Collection<LlapServiceInstance> instances;
+      if (consistentSplits) {
+        instances = activeInstances.getAllInstancesOrdered(true);
+      } else {
+        // if consistent splits are not used we don't need the ordering as there will be no cache benefit anyways
+        instances = activeInstances.getAll();
+      }
       List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
       for (LlapServiceInstance inst : instances) {
@@ -2474,7 +2497,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   static class NodeInfo implements Delayed {
     private final NodeBlacklistConf blacklistConf;
-    final LlapServiceInstance serviceInstance;
+    LlapServiceInstance serviceInstance;
     private final Clock clock;
 
     long expireTimeMillis = -1;
@@ -2490,13 +2513,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // Indicates whether a node is disabled - for whatever reason - commFailure, busy, etc.
     private boolean disabled = false;
 
-    private int numPreemptedTasks = 0;
     private int numScheduledTasks = 0;
-    private final int numSchedulableTasks;
+    private int numSchedulableTasks;
     private final LlapTaskSchedulerMetrics metrics;
-    private final Resource resourcePerExecutor;
+    private Resource resourcePerExecutor;
 
-    private final String shortStringBase;
+    private String shortStringBase;
 
     /**
      * Create a NodeInfo bound to a service instance
@@ -2510,36 +2532,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     NodeInfo(LlapServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
         int numSchedulableTasksConf, final LlapTaskSchedulerMetrics metrics) {
       Preconditions.checkArgument(numSchedulableTasksConf >= -1, "NumSchedulableTasks must be >=-1");
-      this.serviceInstance = serviceInstance;
       this.blacklistConf = blacklistConf;
       this.clock = clock;
       this.metrics = metrics;
 
-      int numVcores = serviceInstance.getResource().getVirtualCores();
-      int memoryPerInstance = serviceInstance.getResource().getMemory();
-      int memoryPerExecutor = (int)(memoryPerInstance / (double) numVcores);
-      resourcePerExecutor = Resource.newInstance(memoryPerExecutor, 1);
-
-      if (numSchedulableTasksConf == 0) {
-        int pendingQueueuCapacity = 0;
-        String pendingQueueCapacityString = serviceInstance.getProperties()
-            .get(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE.varname);
-        LOG.info("Setting up node: {} with available capacity={}, pendingQueueSize={}, memory={}",
-            serviceInstance, serviceInstance.getResource().getVirtualCores(),
-            pendingQueueCapacityString, serviceInstance.getResource().getMemory());
-        if (pendingQueueCapacityString != null) {
-          pendingQueueuCapacity = Integer.parseInt(pendingQueueCapacityString);
-        }
-        this.numSchedulableTasks = numVcores + pendingQueueuCapacity;
-      } else {
-        this.numSchedulableTasks = numSchedulableTasksConf;
-        LOG.info("Setting up node: " + serviceInstance + " with schedulableCapacity=" + this.numSchedulableTasks);
-      }
-      if (metrics != null) {
-        metrics.incrSchedulableTasksCount(numSchedulableTasks);
-      }
-      shortStringBase = setupShortStringBase();
-
+      updateLlapServiceInstance(serviceInstance, numSchedulableTasksConf);
     }
 
     String getNodeIdentity() {
@@ -2560,6 +2557,40 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     public Resource getResourcePerExecutor() {
       return resourcePerExecutor;
+    }
+
+    void updateLlapServiceInstance(LlapServiceInstance serviceInstance, int numSchedulableTasksConf) {
+      this.serviceInstance = serviceInstance;
+
+      int numVcores = serviceInstance.getResource().getVirtualCores();
+      int memoryPerInstance = serviceInstance.getResource().getMemory();
+      int memoryPerExecutor = (int)(memoryPerInstance / (double) numVcores);
+      resourcePerExecutor = Resource.newInstance(memoryPerExecutor, 1);
+
+      int oldNumSchedulableTasks = numSchedulableTasks;
+      if (numSchedulableTasksConf == 0) {
+        int pendingQueueuCapacity = 0;
+        String pendingQueueCapacityString = serviceInstance.getProperties()
+                .get(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE);
+        if (pendingQueueCapacityString == null) {
+          pendingQueueCapacityString = serviceInstance.getProperties()
+                  .get(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE.varname);
+        }
+        LOG.info("Setting up node: {} with available capacity={}, pendingQueueSize={}, memory={}",
+                serviceInstance, serviceInstance.getResource().getVirtualCores(),
+                pendingQueueCapacityString, serviceInstance.getResource().getMemory());
+        if (pendingQueueCapacityString != null) {
+          pendingQueueuCapacity = Integer.parseInt(pendingQueueCapacityString);
+        }
+        this.numSchedulableTasks = numVcores + pendingQueueuCapacity;
+      } else {
+        this.numSchedulableTasks = numSchedulableTasksConf;
+        LOG.info("Setting up node: " + serviceInstance + " with schedulableCapacity=" + this.numSchedulableTasks);
+      }
+      if (metrics != null) {
+        metrics.incrSchedulableTasksCount(numSchedulableTasks - oldNumSchedulableTasks);
+      }
+      shortStringBase = setupShortStringBase();
     }
 
     void resetExpireInformation() {
@@ -2625,7 +2656,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         metrics.incrSchedulableTasksCount();
       }
       if (wasPreempted) {
-        numPreemptedTasks++;
         if (metrics != null) {
           metrics.incrPreemptedTasksCount();
         }
@@ -2652,7 +2682,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
     }
 
-    int canAcceptCounter = 0;
     /* Returning true does not guarantee that the task will run, considering other queries
     may be running in the system. Also depends upon the capacity usage configuration
      */
@@ -2660,11 +2689,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean result = _canAccepInternal();
       if (LOG.isTraceEnabled()) {
         LOG.trace(constructCanAcceptLogResult(result));
-      }
-      if (canAcceptCounter == 10000) {
-        canAcceptCounter++;
-        LOG.info(constructCanAcceptLogResult(result));
-        canAcceptCounter = 0;
       }
       return result;
     }

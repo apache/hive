@@ -17,18 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -47,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -58,6 +63,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -65,17 +71,18 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.optimizer.BucketVersionPopulator;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
@@ -88,8 +95,10 @@ import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
@@ -104,6 +113,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -113,18 +123,26 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,8 +202,7 @@ public class TezCompiler extends TaskCompiler {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
     }
 
-    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)
-        || procCtx.parseContext.hasAcidWrite()) {
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       // Dynamic sort partition adds an extra RS therefore need to de-dup
       new ReduceSinkDeDuplication().transform(procCtx.parseContext);
@@ -201,6 +218,9 @@ public class TezCompiler extends TaskCompiler {
     runStatsDependentOptimizations(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
 
+    // repopulate bucket versions; join conversion may have created some new reducesinks
+    new BucketVersionPopulator().transform(pCtx);
+
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTJOINREDUCEDEDUPLICATION)) {
       new ReduceSinkJoinDeDuplication().transform(procCtx.parseContext);
@@ -215,10 +235,6 @@ public class TezCompiler extends TaskCompiler {
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    markOperatorsWithUnstableRuntimeStats(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
-
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
     // Rather than run the full constant folding just need to shortcut AND/OR expressions
@@ -227,15 +243,14 @@ public class TezCompiler extends TaskCompiler {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
 
-    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
-    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
-    // This call updates the bucketing version of final ReduceSinkOp based on
-    // the bucketing version of FileSinkOp. This operation must happen at the
-    // end to ensure there is no further rewrite of plan which may end up
-    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
-    // Update bucketing version of ReduceSinkOp if needed
-    updateBucketingVersionForUpgrade(procCtx);
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
+    markOperatorsWithUnstableRuntimeStats(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      bucketingVersionSanityCheck(procCtx);
+    }
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
@@ -448,7 +463,7 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
@@ -462,10 +477,10 @@ public class TezCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
@@ -544,7 +559,7 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
         new RuleRegExp("Remove dynamic pruning by size",
         AppMasterEventOperator.getOperatorName() + "%"),
@@ -552,10 +567,10 @@ public class TezCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
@@ -570,22 +585,22 @@ public class TezCompiler extends TaskCompiler {
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
     deque.addAll(procCtx.parseContext.getTopOps().values());
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
         new RuleRegExp(new String("Dynamic Partition Pruning"), FilterOperator.getOperatorName()
             + "%"), new DynamicPartitionPruningOptimization());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
@@ -601,7 +616,7 @@ public class TezCompiler extends TaskCompiler {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         genTezWork);
@@ -634,10 +649,10 @@ public class TezCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
+    SemanticGraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
     // we need to specify the reserved memory for each work that contains Map Join
@@ -678,14 +693,14 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
       List<BaseWork> all = work.getAllWork();
       for (BaseWork w: all) {
         if (w instanceof MapWork) {
           MapWork mapWork = (MapWork) w;
-          HashMap<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
+          Map<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
           if (!opMap.isEmpty()) {
             for (Operator<? extends OperatorDesc> op : opMap.values()) {
               setInputFormat(mapWork, op);
@@ -694,15 +709,15 @@ public class TezCompiler extends TaskCompiler {
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
@@ -725,7 +740,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
     // currently all Tez work is on the cluster
@@ -733,7 +748,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
@@ -806,7 +821,7 @@ public class TezCompiler extends TaskCompiler {
     HashMap<CommonMergeJoinOperator, TableScanOperator> JoinOpToTsOpMap = new HashMap<CommonMergeJoinOperator, TableScanOperator>();
   }
 
-  private static class SMBJoinOpProc implements NodeProcessor {
+  private static class SMBJoinOpProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -820,7 +835,7 @@ public class TezCompiler extends TaskCompiler {
 
   private static void removeSemijoinOptimizationFromSMBJoins(
           OptimizeTezProcContext procCtx) throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
                     ".*" + TezDummyStoreOperator.getOperatorName() + "%" +
@@ -829,10 +844,10 @@ public class TezCompiler extends TaskCompiler {
 
     SMBJoinOpProcContext ctx = new SMBJoinOpProcContext();
     // The dispatcher finds SMB and if there is semijoin optimization before it, removes it.
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
 
     List<TableScanOperator> tsOps = new ArrayList<>();
@@ -884,11 +899,9 @@ public class TezCompiler extends TaskCompiler {
 
   private static class TerminalOpsInfo {
     public Set<TerminalOperator<?>> terminalOps;
-    public Set<ReduceSinkOperator> rsOps;
 
-    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps, Set<ReduceSinkOperator> rsOps) {
+    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps) {
       this.terminalOps = terminalOps;
-      this.rsOps = rsOps;
     }
   }
 
@@ -916,7 +929,7 @@ public class TezCompiler extends TaskCompiler {
       OperatorUtils.findWorkOperatorsAndSemiJoinEdges(selOp,
               pCtx.getRsToSemiJoinBranchInfo(), workRSOps, workTerminalOps);
 
-      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps, workRSOps);
+      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps);
 
       // A work may contain multiple semijoin edges, traverse rsOps and add for each
       for (ReduceSinkOperator rsFound : workRSOps) {
@@ -932,7 +945,7 @@ public class TezCompiler extends TaskCompiler {
 
   private void removeSemiJoinIfNoStats(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%" +
@@ -941,14 +954,43 @@ public class TezCompiler extends TaskCompiler {
             new SemiJoinRemovalProc(true, false));
     SemiJoinRemovalContext ctx =
         new SemiJoinRemovalContext(procCtx.parseContext);
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
-  private static class MarkRuntimeStatsAsIncorrect implements NodeProcessor {
+  private static class CollectAll implements SemanticNodeProcessor {
+    private PlanMapper planMapper;
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
+      FilterOperator fop = (FilterOperator) nd;
+      OpTreeSignature sig = planMapper.getSignatureOf(fop);
+      List<EquivGroup> ar = getGroups(planMapper, HiveFilter.class);
+
+
+      return nd;
+    }
+
+    private List<EquivGroup> getGroups(PlanMapper planMapper2, Class<HiveFilter> class1) {
+      Iterator<EquivGroup> it = planMapper.iterateGroups();
+      List<EquivGroup> ret = new ArrayList<PlanMapper.EquivGroup>();
+      while (it.hasNext()) {
+        EquivGroup g = it.next();
+        if (g.getAll(class1).size() > 0) {
+          ret.add(g);
+        }
+      }
+      return ret;
+    }
+  }
+
+  private static class MarkRuntimeStatsAsIncorrect implements SemanticNodeProcessor {
 
     private PlanMapper planMapper;
 
@@ -971,6 +1013,14 @@ public class TezCompiler extends TaskCompiler {
         if (c instanceof DynamicPruningEventDesc) {
           DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
           mark(dped.getTableScan());
+        }
+      }
+      if (nd instanceof TableScanOperator) {
+        // If the tablescan operator is making use of filtering capabilities of readers then
+        // we will not see the actual incoming rowcount which was processed - so we may not use it for relNodes
+        TableScanOperator ts = (TableScanOperator) nd;
+        if (ts.getConf().getPredicateString() != null) {
+          planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());
         }
       }
       return null;
@@ -997,7 +1047,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
         new RuleRegExp("R1",
             ReduceSinkOperator.getOperatorName() + "%"),
@@ -1006,14 +1056,18 @@ public class TezCompiler extends TaskCompiler {
         new RuleRegExp("R2",
             AppMasterEventOperator.getOperatorName() + "%"),
         new MarkRuntimeStatsAsIncorrect());
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    opRules.put(
+        new RuleRegExp("R3",
+            TableScanOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
   }
-    
-  private class SemiJoinRemovalProc implements NodeProcessor {
+
+  private class SemiJoinRemovalProc implements SemanticNodeProcessor {
 
     private final boolean removeBasedOnStats;
     private final boolean removeRedundant;
@@ -1041,7 +1095,7 @@ public class TezCompiler extends TaskCompiler {
       // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
       GroupByOperator gbOp = (GroupByOperator) stack.get(stack.size() - 2);
       GroupByDesc gbDesc = gbOp.getConf();
-      ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
+      List<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
       for (AggregationDesc agg : aggregationDescs) {
         if (!isBloomFilterAgg(agg)) {
           continue;
@@ -1136,7 +1190,7 @@ public class TezCompiler extends TaskCompiler {
     return "bloom_filter".equals(agg.getGenericUDAFName());
   }
 
-  private static class DynamicPruningRemovalRedundantProc implements NodeProcessor {
+  private static class DynamicPruningRemovalRedundantProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -1181,7 +1235,7 @@ public class TezCompiler extends TaskCompiler {
 
   private void removeRedundantSemijoinAndDpp(OptimizeTezProcContext procCtx)
       throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
     opRules.put(
         new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%" +
             ReduceSinkOperator.getOperatorName() + "%" +
@@ -1196,10 +1250,10 @@ public class TezCompiler extends TaskCompiler {
     // Gather
     SemiJoinRemovalContext ctx =
         new SemiJoinRemovalContext(procCtx.parseContext);
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
 
     // Remove
@@ -1234,24 +1288,32 @@ public class TezCompiler extends TaskCompiler {
       return;
     }
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
-        new RuleRegExp("Top n key optimization", GroupByOperator.getOperatorName() + "%" +
-            ReduceSinkOperator.getOperatorName() + "%"),
-        new TopNKeyProcessor());
+        new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
+        new TopNKeyProcessor(
+          HiveConf.getIntVar(procCtx.conf, HiveConf.ConfVars.HIVE_MAX_TOPN_ALLOWED),
+          HiveConf.getFloatVar(procCtx.conf, ConfVars.HIVE_TOPN_EFFICIENCY_THRESHOLD),
+          HiveConf.getIntVar(procCtx.conf, ConfVars.HIVE_TOPN_EFFICIENCY_CHECK_BATCHES),
+          HiveConf.getIntVar(procCtx.conf, ConfVars.HIVE_TOPN_MAX_NUMBER_OF_PARTITIONS)));
+    opRules.put(
+            new RuleRegExp("Top n key pushdown", TopNKeyOperator.getOperatorName() + "%"),
+            new TopNKeyPushdownProcessor());
+
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
   private boolean findParallelSemiJoinBranch(Operator<?> mapjoin, TableScanOperator bigTableTS,
                                              ParseContext parseContext,
-                                             Map<ReduceSinkOperator, TableScanOperator> semijoins) {
+                                             Map<ReduceSinkOperator, TableScanOperator> semijoins,
+                                             Map<TableScanOperator, List<MapJoinOperator>> probeDecodeMJoins) {
 
     boolean parallelEdges = false;
     for (Operator<?> op : mapjoin.getParentOperators()) {
@@ -1318,12 +1380,16 @@ public class TezCompiler extends TaskCompiler {
 
           parallelEdges = true;
 
-          if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
-            // Created by hint, skip it
-            continue;
+          // Keep track of Mj to probeDecode TS
+          if (!probeDecodeMJoins.containsKey(ts)){
+            probeDecodeMJoins.put(ts, new ArrayList<>());
           }
-          // Add the semijoin branch to the map
-          semijoins.put(rs, ts);
+          probeDecodeMJoins.get(ts).add((MapJoinOperator) mapjoin);
+
+          // Skip adding to SJ removal map when created by hint
+          if (!sjInfo.getIsHint() && sjInfo.getShouldRemove()) {
+            semijoins.put(rs, ts);
+          }
         }
       }
     }
@@ -1384,13 +1450,15 @@ public class TezCompiler extends TaskCompiler {
    *  The algorithm looks at all the mapjoins in the operator pipeline until
    *  it hits RS Op and for each mapjoin examines if it has paralllel semijoin
    *  edge or dynamic partition pruning.
+   *
+   *  As an extension, the algorithm also looks for suitable table scan operators that
+   *  could reduce the number of rows decoded at runtime using the information provided by
+   *  the MapJoin operators of the branch when ProbeDecode feature is enabled.
    */
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
-        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
-      // Not needed without semi-join reduction or mapjoins or when semijoins
-      // are enabled for parallel mapjoins.
+    if (!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN)) {
+      // Not needed without mapjoin conversion
       return;
     }
 
@@ -1399,6 +1467,7 @@ public class TezCompiler extends TaskCompiler {
     topOps.addAll(procCtx.parseContext.getTopOps().values());
 
     Map<ReduceSinkOperator, TableScanOperator> semijoins = new HashMap<>();
+    Map<TableScanOperator, List<MapJoinOperator>> probeDecodeMJoins = new HashMap<>();
     for (Operator<?> parent : topOps) {
       // A TS can have multiple branches due to DPP Or Semijoin Opt.
       // USe DFS to traverse all the branches until RS is hit.
@@ -1414,7 +1483,7 @@ public class TezCompiler extends TaskCompiler {
         if (op instanceof MapJoinOperator) {
           // A candidate.
           if (!findParallelSemiJoinBranch(op, (TableScanOperator) parent,
-                  procCtx.parseContext, semijoins)) {
+                  procCtx.parseContext, semijoins, probeDecodeMJoins)) {
             // No parallel edge was found for the given mapjoin op,
             // no need to go down further, skip this TS operator pipeline.
             break;
@@ -1423,18 +1492,126 @@ public class TezCompiler extends TaskCompiler {
         deque.addAll(op.getChildOperators());
       }
     }
-
-    if (semijoins.size() > 0) {
-      for (ReduceSinkOperator rs : semijoins.keySet()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Semijoin optimization with parallel edge to map join. Removing semijoin "
-              + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(semijoins.get(rs)));
+    //  No need to remove SJ branches when we have semi-join reduction or when semijoins are enabled for parallel mapjoins.
+    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+      if (semijoins.size() > 0) {
+        for (Entry<ReduceSinkOperator, TableScanOperator> semiEntry : semijoins.entrySet()) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Semijoin optimization with parallel edge to map join. Removing semijoin " +
+                OperatorUtils.getOpNamePretty(semiEntry.getKey()) + " - " + OperatorUtils.getOpNamePretty(semiEntry.getValue()));
+          }
+          GenTezUtils.removeBranch(semiEntry.getKey());
+          GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, semiEntry.getKey(), semiEntry.getValue());
         }
-        GenTezUtils.removeBranch(rs);
-        GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs,
-                semijoins.get(rs));
       }
     }
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)) {
+      if (probeDecodeMJoins.size() > 0) {
+        // When multiple MJ, select one based on a policy
+        for (Map.Entry<TableScanOperator, List<MapJoinOperator>> probeTsMap : probeDecodeMJoins.entrySet()){
+          TableScanOperator.ProbeDecodeContext tsCntx = null;
+          // Currently supporting: LowestRatio policy
+          // TODO: Add more policies and make the selection a conf property
+          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue());
+          LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
+              probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
+              tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
+          probeTsMap.getKey().setProbeDecodeContext(tsCntx);
+          probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
+        }
+      }
+    }
+  }
+
+  private static TableScanOperator.ProbeDecodeContext selectLowestRatioProbeDecodeMapJoin(TableScanOperator tsOp,
+      List<MapJoinOperator> mjOps){
+    MapJoinOperator selectedMJOp = null;
+    double selectedMJOpRatio = 0;
+    for (MapJoinOperator currMJOp : mjOps) {
+      if (!isValidProbeDecodeMapJoin(currMJOp)) {
+        continue;
+      }
+      // At this point we know it is a single Key MapJoin
+      if (selectedMJOp == null) {
+        // Set the first valid MJ
+        selectedMJOp = currMJOp;
+        selectedMJOpRatio = getProbeDecodeNDVRatio(tsOp, currMJOp);
+        LOG.debug("ProbeDecode MJ {} with Ratio {}", selectedMJOp, selectedMJOpRatio);
+      } else {
+        double currMJRatio = getProbeDecodeNDVRatio(tsOp, currMJOp);
+        if (currMJRatio < selectedMJOpRatio){
+          LOG.debug("ProbeDecode MJ {} Ratio {} is lower than existing MJ {} with Ratio {}",
+              currMJOp, currMJRatio, selectedMJOp, selectedMJOpRatio);
+          selectedMJOp = currMJOp;
+          selectedMJOpRatio = currMJRatio;
+        }
+      }
+    }
+
+    TableScanOperator.ProbeDecodeContext tsProbeDecodeCtx = null;
+    // If there a valid MJ to be used for TS probeDecode make sure the MJ cache key is generated and
+    // then propagate the new ProbeDecodeContext (to be used by LLap IO when executing the TSop)
+    if (selectedMJOp != null) {
+      String mjCacheKey = selectedMJOp.getConf().getCacheKey();
+      if (mjCacheKey == null) {
+        // Generate cache key if it has not been yet generated
+        mjCacheKey = MapJoinDesc.generateCacheKey(selectedMJOp.getOperatorId());
+        // Set in the conf of the map join operator
+        selectedMJOp.getConf().setCacheKey(mjCacheKey);
+      }
+
+      byte posBigTable = (byte) selectedMJOp.getConf().getPosBigTable();
+      Byte[] order = selectedMJOp.getConf().getTagOrder();
+      Byte mjSmallTablePos = (order[0] == posBigTable ? order[1] : order[0]);
+
+      List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
+      ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
+
+      tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
+          keyCol.getColumn(), selectedMJOpRatio);
+    }
+    return tsProbeDecodeCtx;
+  }
+
+  // Return the ratio of: (distinct) JOIN_probe_key_column_rows / (distinct) JOIN_TS_target_column_rows
+  private static double getProbeDecodeNDVRatio(TableScanOperator tsOp, MapJoinOperator mjOp) {
+    long mjKeyCardinality = mjOp.getStatistics().getNumRows();
+    long tsKeyCardinality = tsOp.getStatistics().getNumRows();
+
+    byte posBigTable = (byte) mjOp.getConf().getPosBigTable();
+
+    Byte[] order = mjOp.getConf().getTagOrder();
+    Byte mjSmallTablePos = (order[0] == posBigTable ? order[1] : order[0]);
+    Byte mjBigTablePos = (order[0] == posBigTable ? order[0] : order[1]);
+
+    // Single Key MJ at this point
+    List<ExprNodeDesc> tsKeyDesc = mjOp.getConf().getKeys().get(mjBigTablePos);
+    ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
+
+    List<ExprNodeDesc> mjKeyDesc = mjOp.getConf().getKeys().get(mjSmallTablePos);
+    ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
+
+    ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
+    ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
+
+    if (canUseNDV(mjStats)) {
+      mjKeyCardinality = mjStats.getCountDistint();
+    }
+    if (canUseNDV(tsStats)) {
+      tsKeyCardinality = tsStats.getCountDistint();
+    }
+    return mjKeyCardinality / (double) tsKeyCardinality;
+  }
+
+  // Valid MapJoin with a single Key of Number type (Long/Int/Short)
+  private static boolean isValidProbeDecodeMapJoin(MapJoinOperator mapJoinOp) {
+    Map<Byte, List<ExprNodeDesc>> keyExprs = mapJoinOp.getConf().getKeys();
+    List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get( (byte) mapJoinOp.getConf().getPosBigTable());
+    return (bigTableKeyExprs.size() == 1)
+        && !(((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
+        equals(PrimitiveObjectInspector.PrimitiveCategory.STRING) ||
+        ((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
+            equals(PrimitiveObjectInspector.PrimitiveCategory.BYTE));
   }
 
   private static boolean canUseNDV(ColStatistics colStats) {
@@ -1591,8 +1768,74 @@ public class TezCompiler extends TaskCompiler {
     return netBenefit;
   }
 
+  /**
+   * Sort semijoin filters depending on the benefit (computed depending on selectivity and cost)
+   * that they provide. We create three blocks: first all normal predicates, second between clauses
+   * for the min/max dynamic values, and finally the in bloom filter predicates. The intuition is
+   * that evaluating the between clause will be cheaper than evaluating the bloom filter predicates.
+   * Hence, after this method runs, normal predicates come first (possibly sorted by Calcite),
+   * then we will have sorted between clauses, and finally sorted in bloom filter clauses.
+   */
+  private static void sortSemijoinFilters(OptimizeTezProcContext procCtx,
+      ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap) throws SemanticException {
+    for (Entry<FilterOperator, Collection<SemijoinOperatorInfo>> e : globalReductionFactorMap.asMap().entrySet()) {
+      FilterOperator filterOp = e.getKey();
+      Collection<SemijoinOperatorInfo> semijoinInfos = e.getValue();
+
+      ExprNodeDesc pred = filterOp.getConf().getPredicate();
+      if (FunctionRegistry.isOpAnd(pred)) {
+        LinkedHashSet<ExprNodeDesc> allPreds = new LinkedHashSet<>(pred.getChildren());
+        List<ExprNodeDesc> betweenPreds = new ArrayList<>();
+        List<ExprNodeDesc> inBloomFilterPreds = new ArrayList<>();
+        // We check whether we can find semijoin predicates
+        for (SemijoinOperatorInfo roi : semijoinInfos) {
+          for (ExprNodeDesc expr : pred.getChildren()) {
+            if (FunctionRegistry.isOpBetween(expr) &&
+                expr.getChildren().get(2) instanceof ExprNodeDynamicValueDesc) {
+              // BETWEEN in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(2))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  betweenPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            } else if (FunctionRegistry.isOpInBloomFilter(expr) &&
+                expr.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
+              // IN_BLOOM_FILTER in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(1))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  inBloomFilterPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        List<ExprNodeDesc> newAndArgs = new ArrayList<>(allPreds); // First rest of predicates
+        newAndArgs.addAll(betweenPreds);  // Then sorted between predicates
+        newAndArgs.addAll(inBloomFilterPreds); // Finally, sorted in bloom predicates
+
+        ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("and").getGenericUDF(), newAndArgs);
+        filterOp.getConf().setPredicate(andExpr);
+      }
+    }
+  }
+
   private void removeSemijoinOptimizationByBenefit(OptimizeTezProcContext procCtx)
       throws SemanticException {
+
     Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
     if (map.isEmpty()) {
       // Nothing to do
@@ -1609,6 +1852,7 @@ public class TezCompiler extends TaskCompiler {
         (ReduceSinkOperator o1, ReduceSinkOperator o2) -> (o1.toString().compareTo(o2.toString()));
     SortedSet<ReduceSinkOperator> semiJoinRsOps = new TreeSet<>(rsOpComp);
     semiJoinRsOps.addAll(map.keySet());
+    ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap = ArrayListMultimap.create();
     while (!semiJoinRsOps.isEmpty()) {
       // We will gather the SJs to keep in the plan in the following map
       Map<FilterOperator, SemijoinOperatorInfo> reductionFactorMap = new HashMap<>();
@@ -1658,6 +1902,12 @@ public class TezCompiler extends TaskCompiler {
         } else {
           // This semijoin qualifies, add it to the result set
           if (filterStats != null) {
+            // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
+            if (tsExpr instanceof ExprNodeFieldDesc) {
+              LOG.info("Unwrapped column expression from ExprNodeFieldDesc");
+              tsExpr = ((ExprNodeFieldDesc)tsExpr).getDesc();
+            }
+
             String colName = ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn();
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration
@@ -1705,6 +1955,7 @@ public class TezCompiler extends TaskCompiler {
           LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
         }
         adjustedStatsMap.put(roi.filterOperator, roi.filterStats);
+        globalReductionFactorMap.put(roi.filterOperator, roi);
       }
 
       semiJoinRsOps = semiJoinRsOpsNewIter;
@@ -1718,6 +1969,10 @@ public class TezCompiler extends TaskCompiler {
       }
       GenTezUtils.removeBranch(rs);
       GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs, ts);
+    }
+
+    if (!globalReductionFactorMap.isEmpty()) {
+      sortSemijoinFilters(procCtx, globalReductionFactorMap);
     }
   }
 
@@ -1833,7 +2088,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void updateBucketingVersionForUpgrade(OptimizeTezProcContext procCtx) {
+  private void bucketingVersionSanityCheck(OptimizeTezProcContext procCtx) throws SemanticException {
     // Fetch all the FileSinkOperators.
     Set<FileSinkOperator> fsOpsAll = new HashSet<>();
     for (TableScanOperator ts : procCtx.parseContext.getTopOps().values()) {
@@ -1842,11 +2097,8 @@ public class TezCompiler extends TaskCompiler {
       fsOpsAll.addAll(fsOps);
     }
 
-
+    Map<Operator<?>, Integer> processedOperators = new IdentityHashMap<>();
     for (FileSinkOperator fsOp : fsOpsAll) {
-      if (!fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
-        continue;
-      }
       // Look for direct parent ReduceSinkOp
       // If there are more than 1 parent, bail out.
       Operator<?> parent = fsOp;
@@ -1858,8 +2110,21 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
 
-        // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        // Found the target RSOp 0
+        int bucketingVersion = fsOp.getConf().getTableInfo().getBucketingVersion();
+        if (fsOp.getConf().getTableInfo().getBucketingVersion() == -1) {
+          break;
+        }
+        if (fsOp.getConf().getTableInfo().getBucketingVersion() != fsOp.getConf().getBucketingVersion()) {
+          throw new RuntimeException("FsOp bucketingVersions is inconsistent with its tableinfo");
+        }
+        if (processedOperators.containsKey(parent) && processedOperators.get(parent) != bucketingVersion) {
+          throw new SemanticException(String.format(
+              "Operator (%s) is already processed and is using bucketingVersion(%d); so it can't be changed to %d ",
+              parent, processedOperators.get(parent), bucketingVersion));
+        }
+        processedOperators.put(parent, bucketingVersion);
+
         break;
       }
     }

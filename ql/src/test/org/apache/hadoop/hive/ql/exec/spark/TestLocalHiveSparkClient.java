@@ -91,12 +91,12 @@ public class TestLocalHiveSparkClient {
     try {
       driver = new Driver(new QueryState.Builder()
           .withGenerateNewQueryId(true)
-          .withHiveConf(conf).build(), null, null);
+          .withHiveConf(conf).build(), null);
 
       SparkSession sparkSession = SparkUtilities.getSparkSession(conf,
           SparkSessionManagerImpl.getInstance());
 
-      Assert.assertEquals(0, driver.run("show tables").getResponseCode());
+      driver.run("show tables");
       barrier.await();
 
       SparkContext sparkContext = getSparkContext(sparkSession);

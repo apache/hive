@@ -253,6 +253,22 @@ Snow	56.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	235.0000	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: explain alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: explain alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: default@alter_partition_change_col1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Partition
+      partition key name: p1
+      partition key type: string
+      table: default.alter_partition_change_col1
+
 PREHOOK: query: alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_partition_change_col1

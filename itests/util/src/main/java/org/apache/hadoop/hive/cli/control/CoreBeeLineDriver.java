@@ -33,14 +33,16 @@ import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
-import org.apache.hadoop.hive.ql.dataset.DatasetParser;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
 import org.apache.hive.beeline.QFile.QFileBuilder;
@@ -122,10 +124,15 @@ public class CoreBeeLineDriver extends CliAdapter {
     }
     return Boolean.parseBoolean(value);
   }
+  @Override
+  public void beforeClass() throws Exception {
+    // We use the beforeClassSpec, because we want to HMS to be ready before the miniHS2 start
+    // See CliAdapter.buildClassRule
+  }
 
   @Override
   @BeforeClass
-  public void beforeClass() throws Exception {
+  public void beforeClassSpec() throws Exception {
     overwrite = getBooleanPropertyValue("test.output.overwrite", Boolean.FALSE);
 
     useSharedDatabase = getBooleanPropertyValue("test.beeline.shared.database", Boolean.FALSE);
@@ -201,6 +208,11 @@ public class CoreBeeLineDriver extends CliAdapter {
     }
   }
 
+  @Override
+  protected QTestUtil getQt() {
+    return null;
+  }
+
   private void runTest(QFile qFile, List<Callable<Void>> preCommands) throws Exception {
     try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(qFile.getLogFile())) {
       long startTime = System.currentTimeMillis();
@@ -241,9 +253,9 @@ public class CoreBeeLineDriver extends CliAdapter {
       throw new Exception("Exception running or analyzing the results of the query file: " + qFile
           + "\n" + qFile.getDebugHint(), e);
     }
-    
+
   }
-  
+
   public void runTest(QFile qFile) throws Exception {
     runTest(qFile, null);
   }
@@ -264,12 +276,15 @@ public class CoreBeeLineDriver extends CliAdapter {
   }
 
   private List<Callable<Void>> initDataSetForTest(QFile qFile) throws Exception {
-    DatasetParser parser = new DatasetParser();
-    parser.parse(qFile.getInputFile());
+
+    QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
+    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
+    dispatcher.register("dataset", datasetHandler);
+    dispatcher.process(qFile.getInputFile());
 
     List<Callable<Void>> commands = new ArrayList<>();
 
-    DatasetCollection datasets = parser.getDatasets();
+    DatasetCollection datasets = datasetHandler.getDatasets();
     for (String table : datasets.getTables()) {
       Callable<Void> command = initDataset(table, qFile);
       if (command != null) {

@@ -22,12 +22,12 @@ import com.google.common.collect.Lists;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
 public class TestSparkStatistics {
 
   @Test
-  public void testSparkStatistics() throws MalformedURLException {
+  public void testSparkStatistics() throws MalformedURLException, CommandProcessorException {
     String confDir = "../../data/conf/spark/standalone/hive-site.xml";
     HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf conf = new HiveConf();
@@ -59,22 +58,21 @@ public class TestSparkStatistics {
       driver = new Driver(new QueryState.Builder()
               .withGenerateNewQueryId(true)
               .withHiveConf(conf).build(),
-              null, null);
+              null);
 
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
-      Assert.assertEquals(0, driver.compile("select * from test order by col"));
+      driver.run("create table test (col int)");
+      Assert.assertEquals(0, driver.compile("select * from test order by col", true));
 
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
 
       SparkTask sparkTask = sparkTasks.get(0);
 
-      DriverContext driverCxt = new DriverContext(driver.getContext());
-      driverCxt.prepare(driver.getPlan());
+      TaskQueue taskQueue = new TaskQueue(driver.getContext());
+      taskQueue.prepare(driver.getPlan());
 
-      sparkTask.initialize(driver.getQueryState(), driver.getPlan(), driverCxt, driver.getContext()
-              .getOpContext());
-      Assert.assertEquals(0, sparkTask.execute(driverCxt));
+      sparkTask.initialize(driver.getQueryState(), driver.getPlan(), taskQueue, driver.getContext());
+      Assert.assertEquals(0, sparkTask.execute());
 
       Assert.assertNotNull(sparkTask.getSparkStatistics());
 
@@ -95,7 +93,7 @@ public class TestSparkStatistics {
       Assert.assertTrue(Long.parseLong(statsMap.get(SparkStatisticsNames.EXECUTOR_RUN_TIME)) > 0);
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
     }

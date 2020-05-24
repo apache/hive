@@ -70,14 +70,14 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
         }
       }
     };
-    for (Task<? extends Serializable> task : tasks) {
+    for (Task<?> task : tasks) {
       traverse.traverse(task);
     }
     return sources;
   }
 
   public static List<Task> getExplainOrder(HiveConf conf, List<Task<?>> tasks) {
-    for (Task<? extends Serializable> task : tasks) {
+    for (Task<?> task : tasks) {
       task.setRootTask(true);
     }
     String var = conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE);
@@ -122,7 +122,7 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
         return type == ArrangeType.NONE || type == ArrangeType.IDONLY || super.isReady(task);
       }
     };
-    for (Task<? extends Serializable> task : tasks) {
+    for (Task<?> task : tasks) {
       traverse.traverse(task);
     }
     return new ArrayList<Task>(traverse.traversed);

@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -51,6 +51,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private ListSinkOperator sink;
   private int totalRows;
   private static transient final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
+  JobConf job = null;
 
   public FetchTask() {
     super();
@@ -61,14 +62,17 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
-    work.initializeForFetch(opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
+    work.initializeForFetch(context.getOpContext());
 
     try {
       // Create a file system handle
-      JobConf job = new JobConf(conf);
+      if (job == null) {
+        // The job config should be initilaized once per fetch task. In case of refetch, we should use the
+        // same config.
+        job = new JobConf(conf);
+      }
 
       Operator<?> source = work.getSource();
       if (source instanceof TableScanOperator) {
@@ -104,7 +108,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     assert false;
     return 0;
   }

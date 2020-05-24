@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -32,9 +32,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDFGreatest extends TestCase {
+/**
+ * TestGenericUDFGreatest.
+ */
+public class TestGenericUDFGreatest {
 
+  @Test
   public void testOneArg() throws HiveException {
     @SuppressWarnings("resource")
     GenericUDFGreatest udf = new GenericUDFGreatest();
@@ -50,6 +57,7 @@ public class TestGenericUDFGreatest extends TestCase {
     assertNotNull("greatest() test ", ex);
   }
 
+  @Test
   public void testVoids() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
@@ -60,6 +68,7 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Object[] { null, 1, "test"}, null, udf);
   }
 
+  @Test
   public void testGreatestMixed() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
@@ -72,6 +81,7 @@ public class TestGenericUDFGreatest extends TestCase {
   }
 
 
+  @Test
   public void testGreatestStr() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector[] arguments = new ObjectInspector[3];
@@ -100,6 +110,7 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new String[] { null, null, null }, null, udf);
   }
 
+  @Test
   public void testGreatestInt() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector[] arguments = new ObjectInspector[3];
@@ -122,6 +133,7 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Integer[] { null, null, null }, null, udf);
   }
 
+  @Test
   public void testGreatestDouble() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector[] arguments = new ObjectInspector[3];
@@ -144,6 +156,7 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Double[] { null, null, null }, null, udf);
   }
 
+  @Test
   public void testGreatestDate() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector[] arguments = new ObjectInspector[3];
@@ -166,6 +179,7 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Date[] { null, null, null }, null, udf);
   }
 
+  @Test
   public void testGreatestIntTypes() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector[] arguments = new ObjectInspector[4];

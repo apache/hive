@@ -35,15 +35,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -63,17 +62,17 @@ public class SamplePruner extends Transform {
    *
    */
   public static class SamplePrunerCtx implements NodeProcessorCtx {
-    HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
+    Map<TableScanOperator, SampleDesc> opToSamplePruner;
 
     public SamplePrunerCtx(
-        HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
+        Map<TableScanOperator, SampleDesc> opToSamplePruner) {
       this.opToSamplePruner = opToSamplePruner;
     }
 
     /**
      * @return the opToSamplePruner
      */
-    public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
+    public Map<TableScanOperator, SampleDesc> getOpToSamplePruner() {
       return opToSamplePruner;
     }
 
@@ -102,10 +101,9 @@ public class SamplePruner extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     // create a the context for walking operators
-    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx
-        .getOpToSamplePruner());
+    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx.getOpToSamplePruner());
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + TableScanOperator.getOperatorName() + "%"
       + FilterOperator.getOperatorName() + "%"
@@ -115,9 +113,9 @@ public class SamplePruner extends Transform {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules,
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules,
         samplePrunerCtx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -130,7 +128,7 @@ public class SamplePruner extends Transform {
    * FilterPPR filter processor.
    *
    */
-  public static class FilterPPR implements NodeProcessor {
+  public static class FilterPPR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -152,7 +150,7 @@ public class SamplePruner extends Transform {
     }
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new FilterPPR();
   }
 
@@ -160,7 +158,7 @@ public class SamplePruner extends Transform {
    * DefaultPPR default processor which does nothing.
    *
    */
-  public static class DefaultPPR implements NodeProcessor {
+  public static class DefaultPPR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -170,7 +168,7 @@ public class SamplePruner extends Transform {
     }
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return new DefaultPPR();
   }
 

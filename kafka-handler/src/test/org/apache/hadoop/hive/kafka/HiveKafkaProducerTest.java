@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,16 +57,17 @@ import java.util.stream.IntStream;
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveKafkaProducerTest.class);
   private static final int RECORD_NUMBER = 17384;
-  private static final byte[] KEY_BYTES = "KEY".getBytes(Charset.forName("UTF-8"));
+  private static final byte[] KEY_BYTES = "KEY".getBytes(StandardCharsets.UTF_8);
   private static final KafkaBrokerResource KAFKA_BROKER_RESOURCE = new KafkaBrokerResource();
 
   private static final String TOPIC = "test-tx-producer";
   private static final List<ProducerRecord<byte[], byte[]>>
       RECORDS =
       IntStream.range(0, RECORD_NUMBER).mapToObj(number -> {
-        final byte[] value = ("VALUE-" + Integer.toString(number)).getBytes(Charset.forName("UTF-8"));
+        final byte[] value = ("VALUE-" + number).getBytes(StandardCharsets.UTF_8);
         return new ProducerRecord<>(TOPIC, value, KEY_BYTES);
       }).collect(Collectors.toList());
+  private static final short MAX_ATTEMPTS = 500;
 
   @BeforeClass public static void setupCluster() throws Throwable {
     KAFKA_BROKER_RESOURCE.before();
@@ -109,7 +111,8 @@ import java.util.stream.IntStream;
     consumer = null;
   }
 
-  @Test public void resumeTransaction() {
+
+  @Test(timeout = 120_000) public void resumeTransaction() {
     producer.initTransactions();
     producer.beginTransaction();
     long pid = producer.getProducerId();
@@ -119,7 +122,7 @@ import java.util.stream.IntStream;
     //noinspection unchecked
     RECORDS.forEach(producer::send);
     producer.flush();
-    producer.close();
+    producer.close(Duration.ZERO);
 
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(pid, epoch);
@@ -132,10 +135,14 @@ import java.util.stream.IntStream;
     consumer.seekToBeginning(assignment);
     long numRecords = 0;
     @SuppressWarnings("unchecked") final List<ConsumerRecord<byte[], byte[]>> actualRecords = new ArrayList();
-    while (numRecords < RECORD_NUMBER) {
-      ConsumerRecords<byte[], byte[]> consumerRecords = consumer.poll(Duration.ofMillis(1000));
+    short attempts = 0;
+    while (numRecords < RECORD_NUMBER && attempts++ < MAX_ATTEMPTS) {
+      ConsumerRecords<byte[], byte[]> consumerRecords = consumer.poll(Duration.ofMillis(1_000));
       actualRecords.addAll(consumerRecords.records(new TopicPartition(TOPIC, 0)));
       numRecords += consumerRecords.count();
+    }
+    if(attempts >= MAX_ATTEMPTS) {
+      Assert.fail("Reached max attempts and total number of records is " + numRecords);
     }
     Assert.assertEquals("Size matters !!", RECORDS.size(), actualRecords.size());
     Iterator<ProducerRecord<byte[], byte[]>> expectedIt = RECORDS.iterator();
@@ -152,28 +159,28 @@ import java.util.stream.IntStream;
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(3434L, (short) 12);
     secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
-    secondProducer.close();
+    secondProducer.close(Duration.ZERO);
   }
 
   @Test(expected = org.apache.kafka.common.KafkaException.class) public void testWrongEpoch() {
     producer.initTransactions();
     producer.beginTransaction();
     long pid = producer.getProducerId();
-    producer.close();
+    producer.close(Duration.ZERO);
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(pid, (short) 12);
     secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
-    secondProducer.close();
+    secondProducer.close(Duration.ZERO);
   }
 
   @Test(expected = org.apache.kafka.common.KafkaException.class) public void testWrongPID() {
     producer.initTransactions();
     producer.beginTransaction();
     short epoch = producer.getEpoch();
-    producer.close();
+    producer.close(Duration.ZERO);
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(45L, epoch);
     secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
-    secondProducer.close();
+    secondProducer.close(Duration.ZERO);
   }
 }

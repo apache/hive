@@ -149,6 +149,7 @@ public class TestGenericUDAFPercentileCont {
 
     agg.percentiles = new ArrayList<DoubleWritable>();
     agg.percentiles.add(new DoubleWritable(percentile));
+    agg.isAscending = true;
 
     for (int i = 0; i < items.length; i++) {
       eval.increment(agg, new LongWritable(items[i]), 1);
@@ -168,6 +169,7 @@ public class TestGenericUDAFPercentileCont {
 
     agg.percentiles = new ArrayList<DoubleWritable>();
     agg.percentiles.add(new DoubleWritable(percentile));
+    agg.isAscending = true;
 
     for (int i = 0; i < items.length; i++) {
       eval.increment(agg, new DoubleWritable(items[i]), 1);

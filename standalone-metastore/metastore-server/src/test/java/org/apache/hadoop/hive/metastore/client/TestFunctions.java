@@ -762,4 +762,16 @@ public class TestFunctions extends MetaStoreClientTest {
     Assert.assertEquals(0, functionNames.size());
   }
 
+  @Test
+  public void testCreateFunctionCaseInsensitive() throws Exception {
+    Function function = testFunctions[0];
+
+    function.setFunctionName("Test_Upper_Case_Func_Name");
+    client.createFunction(function);
+
+    String storedName = client.getFunction(function.getDbName(),
+        function.getFunctionName()).getFunctionName();
+    Assert.assertEquals(function.getFunctionName().toLowerCase(), storedName);
+  }
+
 }

@@ -846,8 +846,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
       // Ensure child size.
       final int childCapacity = listColVector.child.isNull.length;
-      final int childCount = listColVector.childCount;
-      if (childCapacity < childCount / 0.75) {
+      if (childCapacity < offset / 0.75) {
         listColVector.child.ensureSize(childCapacity * 2, true);
       }
 
@@ -877,8 +876,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
       // Ensure child size.
       final int childCapacity = mapColVector.keys.isNull.length;
-      final int childCount = mapColVector.childCount;
-      if (childCapacity < childCount / 0.75) {
+      if (childCapacity < offset / 0.75) {
         mapColVector.keys.ensureSize(childCapacity * 2, true);
         mapColVector.values.ensureSize(childCapacity * 2, true);
       }

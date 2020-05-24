@@ -144,7 +144,7 @@ public class ReduceSinkDeDuplicationUtils {
       if (parentPCs == null || parentPCs.isEmpty()) {
         // If partitioning columns of the parent RS are not assigned,
         // assign partitioning columns of the child RS to the parent RS.
-        ArrayList<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
+        List<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
         pRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(childPCs, cRS, pRS));
       }
     }
@@ -208,7 +208,7 @@ public class ReduceSinkDeDuplicationUtils {
           throws SemanticException {
     return strictMerge(cRS, ImmutableList.of(pRS));
   }
-  
+
   public static boolean strictMerge(ReduceSinkOperator cRS, List<ReduceSinkOperator> pRSs)
           throws SemanticException {
     ReduceSinkDesc cRSc = cRS.getConf();
@@ -226,7 +226,7 @@ public class ReduceSinkDeDuplicationUtils {
       if (moveRSOrderTo == null) {
         return false;
       }
-  
+
       int cKeySize = cRSc.getKeyCols().size();
       for (int i = 0; i < cKeySize; i++) {
         ExprNodeDesc cExpr = cRSc.getKeyCols().get(i);
@@ -240,7 +240,7 @@ public class ReduceSinkDeDuplicationUtils {
           return false;
         }
       }
-  
+
       int cPartSize = cRSc.getPartitionCols().size();
       for (int i = 0; i < cPartSize; i++) {
         ExprNodeDesc cExpr = cRSc.getPartitionCols().get(i);
@@ -307,6 +307,9 @@ public class ReduceSinkDeDuplicationUtils {
     }
     // if cRS is being used for distinct - the two reduce sinks are incompatible
     if (cConf.getDistinctColumnIndices().size() >= 2) {
+      return null;
+    }
+    if (cConf.getBucketingVersion() != pConf.getBucketingVersion()) {
       return null;
     }
     Integer moveReducerNumTo = checkNumReducer(cConf.getNumReducers(), pConf.getNumReducers());
@@ -480,6 +483,9 @@ public class ReduceSinkDeDuplicationUtils {
   // ensure SEL does not branch
   protected static boolean checkSelectSingleBranchOnly(ReduceSinkOperator cRS, ReduceSinkOperator pRS) {
     Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
+    if (cRS.getConf().getBucketingVersion() != pRS.getConf().getBucketingVersion()) {
+      return false;
+    }
     while (parent != pRS) {
       assert parent.getNumParent() == 1;
       if (!(parent instanceof SelectOperator)) {

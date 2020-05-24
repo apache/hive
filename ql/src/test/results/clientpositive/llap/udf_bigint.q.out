@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION bigint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION bigint
+POSTHOOK: type: DESCFUNCTION
+bigint(x) - converts it's parameter to bigint
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED bigint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED bigint
+POSTHOOK: type: DESCFUNCTION
+bigint(x) - converts it's parameter to bigint
+Synonyms: udftolong
+- x is NULL -> NULL
+- byte, short, integer, long, timestamp:
+  x fits into the type bigint -> integer part of x
+  undefined otherwise
+- boolean:
+  true  -> 1
+  false -> 0
+- string:
+  x is a valid integer -> x
+  NULL otherwise
+Example:
+   > SELECT bigint(true);
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFToLong
+Function type:BUILTIN

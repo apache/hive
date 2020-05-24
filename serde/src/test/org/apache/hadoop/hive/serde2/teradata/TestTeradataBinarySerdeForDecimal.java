@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2.teradata;
 
 import com.google.common.io.BaseEncoding;
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -28,22 +28,26 @@ import org.junit.Assert;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the data type DECIMAL for Teradata binary format.
  */
-public class TestTeradataBinarySerdeForDecimal extends TestCase {
+public class TestTeradataBinarySerdeForDecimal {
 
   private final TeradataBinarySerde serde = new TeradataBinarySerde();
   private final Properties props = new Properties();
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     props.setProperty(serdeConstants.LIST_COLUMNS, "TD_DECIMAL");
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "decimal(9,5)");
 
     serde.initialize(null, props);
   }
 
+  @Test
   public void testPositiveFraction() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("0064000000"));
 
@@ -54,6 +58,7 @@ public class TestTeradataBinarySerdeForDecimal extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testNegativeFraction() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("009cffffff"));
 
@@ -64,6 +69,7 @@ public class TestTeradataBinarySerdeForDecimal extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testPositiveNumber1() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("00a0860100"));
 
@@ -74,6 +80,7 @@ public class TestTeradataBinarySerdeForDecimal extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testNegativeNumber1() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("006079feff"));
 
@@ -84,6 +91,7 @@ public class TestTeradataBinarySerdeForDecimal extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testPositiveNumber2() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("0080969800"));
 
@@ -94,6 +102,7 @@ public class TestTeradataBinarySerdeForDecimal extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testNegativeNumber2() throws Exception {
     BytesWritable in = new BytesWritable(BaseEncoding.base16().lowerCase().decode("000065c4e0"));
 

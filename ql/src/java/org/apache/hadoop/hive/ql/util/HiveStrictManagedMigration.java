@@ -19,16 +19,22 @@
 package org.apache.hadoop.hive.ql.util;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,21 +45,17 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
@@ -61,8 +63,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.HiveParser.switchDatabaseStatement_return;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -71,11 +71,19 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.hadoop.hive.metastore.TableType.EXTERNAL_TABLE;
+import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 public class HiveStrictManagedMigration {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveStrictManagedMigration.class);
+  @VisibleForTesting
+  static int RC = 0;
 
   public enum TableMigrationOption {
     NONE,      // Do nothing
@@ -85,38 +93,112 @@ public class HiveStrictManagedMigration {
     MANAGED    // Migrate tables as managed transactional tables
   }
 
-  static class RunOptions {
-    String dbRegex;
-    String tableRegex;
-    String oldWarehouseRoot;
-    TableMigrationOption migrationOption;
+  private static class RunOptions {
+    final String dbRegex;
+    final String tableRegex;
+    final String oldWarehouseRoot;
+    final TableMigrationOption migrationOption;
+    final Properties confProps;
     boolean shouldModifyManagedTableLocation;
-    boolean shouldModifyManagedTableOwner;
-    boolean shouldModifyManagedTablePermissions;
-    boolean dryRun;
+    final boolean shouldModifyManagedTableOwner;
+    final boolean shouldModifyManagedTablePermissions;
+    boolean shouldMoveExternal;
+    final boolean dryRun;
+    final TableType tableType;
+    final int tablePoolSize;
 
-    public RunOptions(String dbRegex,
-        String tableRegex,
-        String oldWarehouseRoot,
-        TableMigrationOption migrationOption,
-        boolean shouldModifyManagedTableLocation,
-        boolean shouldModifyManagedTableOwner,
-        boolean shouldModifyManagedTablePermissions,
-        boolean dryRun) {
+    RunOptions(String dbRegex,
+               String tableRegex,
+               String oldWarehouseRoot,
+               TableMigrationOption migrationOption,
+               Properties confProps,
+               boolean shouldModifyManagedTableLocation,
+               boolean shouldModifyManagedTableOwner,
+               boolean shouldModifyManagedTablePermissions,
+               boolean shouldMoveExternal,
+               boolean dryRun,
+               TableType tableType,
+               int tablePoolSize) {
       super();
       this.dbRegex = dbRegex;
       this.tableRegex = tableRegex;
       this.oldWarehouseRoot = oldWarehouseRoot;
       this.migrationOption = migrationOption;
+      this.confProps = confProps;
       this.shouldModifyManagedTableLocation = shouldModifyManagedTableLocation;
       this.shouldModifyManagedTableOwner = shouldModifyManagedTableOwner;
       this.shouldModifyManagedTablePermissions = shouldModifyManagedTablePermissions;
+      this.shouldMoveExternal = shouldMoveExternal;
       this.dryRun = dryRun;
+      this.tableType = tableType;
+      this.tablePoolSize = tablePoolSize;
+    }
+
+    public void setShouldModifyManagedTableLocation(boolean shouldModifyManagedTableLocation) {
+      this.shouldModifyManagedTableLocation = shouldModifyManagedTableLocation;
+    }
+
+    public void setShouldMoveExternal(boolean shouldMoveExternal) {
+      this.shouldMoveExternal = shouldMoveExternal;
+    }
+
+    @Override
+    public String toString() {
+      return "RunOptions{" +
+              "dbRegex='" + dbRegex + '\'' +
+              ", tableRegex='" + tableRegex + '\'' +
+              ", oldWarehouseRoot='" + oldWarehouseRoot + '\'' +
+              ", migrationOption=" + migrationOption +
+              ", confProps=" + confProps +
+              ", shouldModifyManagedTableLocation=" + shouldModifyManagedTableLocation +
+              ", shouldModifyManagedTableOwner=" + shouldModifyManagedTableOwner +
+              ", shouldModifyManagedTablePermissions=" + shouldModifyManagedTablePermissions +
+              ", shouldMoveExternal=" + shouldMoveExternal +
+              ", dryRun=" + dryRun +
+              ", tableType=" + tableType +
+              ", tablePoolSize=" + tablePoolSize +
+              '}';
+    }
+  }
+
+  private static class OwnerPermsOptions {
+    final String ownerName;
+    final String groupName;
+    final FsPermission dirPerms;
+    final FsPermission filePerms;
+
+    OwnerPermsOptions(String ownerName, String groupName, FsPermission dirPerms, FsPermission filePerms) {
+      this.ownerName = ownerName;
+      this.groupName = groupName;
+      this.dirPerms = dirPerms;
+      this.filePerms = filePerms;
+    }
+  }
+
+  private static class WarehouseRootCheckResult {
+    final boolean shouldModifyManagedTableLocation;
+    final boolean shouldMoveExternal;
+    final Path targetPath;
+    final HadoopShims.HdfsEncryptionShim encryptionShim;
+    final HadoopShims.HdfsErasureCodingShim ecShim;
+
+    WarehouseRootCheckResult(
+            boolean shouldModifyManagedTableLocation,
+            boolean shouldMoveExternal,
+            Path curWhRootPath,
+            HadoopShims.HdfsEncryptionShim encryptionShim,
+            HadoopShims.HdfsErasureCodingShim ecShim) {
+      this.shouldModifyManagedTableLocation = shouldModifyManagedTableLocation;
+      this.shouldMoveExternal = shouldMoveExternal;
+      this.targetPath = curWhRootPath;
+      this.encryptionShim = encryptionShim;
+      this.ecShim = ecShim;
     }
   }
 
   public static void main(String[] args) throws Exception {
     RunOptions runOptions;
+    RC = 0;
 
     try {
       Options opts = createOptions();
@@ -133,14 +215,23 @@ public class HiveStrictManagedMigration {
       throw new Exception("Error processing options", err);
     }
 
-    int rc = 0;
     HiveStrictManagedMigration migration = null;
     try {
-      migration = new HiveStrictManagedMigration(runOptions);
+      HiveConf conf = hiveConf == null ? new HiveConf() : hiveConf;
+      WarehouseRootCheckResult warehouseRootCheckResult = checkOldWarehouseRoot(runOptions, conf);
+      runOptions.setShouldModifyManagedTableLocation(
+          warehouseRootCheckResult.shouldModifyManagedTableLocation);
+      runOptions.setShouldMoveExternal(
+          warehouseRootCheckResult.shouldMoveExternal);
+      boolean createExternalDirsForDbs = checkExternalWarehouseDir(conf);
+      OwnerPermsOptions ownerPermsOptions = checkOwnerPermsOptions(runOptions, conf);
+
+      migration = new HiveStrictManagedMigration(
+              conf, runOptions, createExternalDirsForDbs, ownerPermsOptions, warehouseRootCheckResult);
       migration.run();
     } catch (Exception err) {
       LOG.error("Failed with error", err);
-      rc = -1;
+      RC = -1;
     } finally {
       if (migration != null) {
         migration.cleanup();
@@ -148,7 +239,9 @@ public class HiveStrictManagedMigration {
     }
 
     // TODO: Something is preventing the process from terminating after main(), adding exit() as hacky solution.
-    System.exit(rc);
+    if (hiveConf == null) {
+      System.exit(RC);
+    }
   }
 
   static Options createOptions() {
@@ -156,66 +249,90 @@ public class HiveStrictManagedMigration {
 
     // -hiveconf x=y
     result.addOption(OptionBuilder
-        .withValueSeparator()
-        .hasArgs(2)
-        .withArgName("property=value")
-        .withLongOpt("hiveconf")
-        .withDescription("Use value for given property")
-        .create());
+            .withValueSeparator()
+            .hasArgs(2)
+            .withArgName("property=value")
+            .withLongOpt("hiveconf")
+            .withDescription("Use value for given property")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("dryRun")
-        .withDescription("Show what migration actions would be taken without actually running commands")
-        .create());
+            .withLongOpt("dryRun")
+            .withDescription("Show what migration actions would be taken without actually running commands")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("dbRegex")
-        .withDescription("Regular expression to match database names on which this tool will be run")
-        .hasArg()
-        .create('d'));
+            .withLongOpt("dbRegex")
+            .withDescription("Regular expression to match database names on which this tool will be run")
+            .hasArg()
+            .create('d'));
 
     result.addOption(OptionBuilder
-        .withLongOpt("tableRegex")
-        .withDescription("Regular expression to match table names on which this tool will be run")
-        .hasArg()
-        .create('t'));
+            .withLongOpt("tableRegex")
+            .withDescription("Regular expression to match table names on which this tool will be run")
+            .hasArg()
+            .create('t'));
 
     result.addOption(OptionBuilder
-        .withLongOpt("oldWarehouseRoot")
-        .withDescription("Location of the previous warehouse root")
-        .hasArg()
-        .create());
+            .withLongOpt("oldWarehouseRoot")
+            .withDescription("Location of the previous warehouse root")
+            .hasArg()
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("migrationOption")
-        .withDescription("Table migration option (automatic|external|managed|validate|none)")
-        .hasArg()
-        .create('m'));
+            .withLongOpt("migrationOption")
+            .withDescription("Table migration option (automatic|external|managed|validate|none)")
+            .hasArg()
+            .create('m'));
 
     result.addOption(OptionBuilder
-        .withLongOpt("shouldModifyManagedTableLocation")
-        .withDescription("Whether managed tables should have their data moved from the old warehouse path to the current warehouse path")
-        .create());
+            .withLongOpt("shouldModifyManagedTableLocation")
+            .withDescription("Whether managed tables should have their data moved from " +
+                    "the old warehouse path to the current warehouse path")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("shouldModifyManagedTableOwner")
-        .withDescription("Whether managed tables should have their directory owners changed to the hive user")
-        .create());
+            .withLongOpt("shouldModifyManagedTableOwner")
+            .withDescription("Whether managed tables should have their directory owners changed to the hive user")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("shouldModifyManagedTablePermissions")
-        .withDescription("Whether managed tables should have their directory permissions changed to conform to strict managed tables mode")
-        .create());
+            .withLongOpt("shouldModifyManagedTablePermissions")
+            .withDescription("Whether managed tables should have their directory permissions changed to conform to " +
+                    "strict managed tables mode")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("modifyManagedTables")
-        .withDescription("This setting enables the shouldModifyManagedTableLocation, shouldModifyManagedTableOwner, shouldModifyManagedTablePermissions options")
-        .create());
+            .withLongOpt("modifyManagedTables")
+            .withDescription("This setting enables the shouldModifyManagedTableLocation, " +
+                    "shouldModifyManagedTableOwner, shouldModifyManagedTablePermissions options")
+            .create());
 
     result.addOption(OptionBuilder
-        .withLongOpt("help")
-        .withDescription("print help message")
-        .create('h'));
+             .withLongOpt("shouldMoveExternal")
+             .withDescription("Whether tables living in the old warehouse path should have their data moved to the" +
+                 " default external location. Applicable only if migrationOption = external")
+             .create());
+
+    result.addOption(OptionBuilder
+            .withLongOpt("help")
+            .withDescription("print help message")
+            .create('h'));
+
+    result.addOption(OptionBuilder
+            .withLongOpt("tablePoolSize")
+            .withDescription("Number of threads to process tables.")
+            .hasArg()
+            .create("tn"));
+
+    result.addOption(OptionBuilder
+            .withLongOpt("tableType")
+            .withDescription(String.format("Table type to match tables on which this tool will be run. " +
+                            "Possible values: %s Default: all tables",
+                    Arrays.stream(TableType.values()).map(Enum::name).collect(Collectors.joining("|"))))
+            .hasArg()
+            .withArgName("table type")
+            .create("tt"));
 
     return result;
   }
@@ -249,108 +366,234 @@ public class HiveStrictManagedMigration {
       shouldModifyManagedTablePermissions = true;
     }
     String oldWarehouseRoot = cli.getOptionValue("oldWarehouseRoot");
+    boolean shouldMoveExternal = cli.hasOption("shouldMoveExternal");
+    if (shouldMoveExternal && !migrationOption.equals(TableMigrationOption.EXTERNAL)) {
+      throw new IllegalArgumentException("Please select external as migration option, it is required for " +
+          "shouldMoveExternal option.");
+    }
+    if (shouldModifyManagedTableLocation && shouldMoveExternal) {
+      throw new IllegalArgumentException("Options shouldModifyManagedTableLocation and " +
+          "shouldMoveExternal cannot be used at the same time. Migration with move option on " +
+          " managed tables either ends up with them remaining managed or converted to external, but can't be both.");
+    }
     boolean dryRun = cli.hasOption("dryRun");
+
+    String tableTypeText = cli.getOptionValue("tableType");
+
+    int defaultPoolSize = Runtime.getRuntime().availableProcessors() / 2;
+    if (defaultPoolSize < 1) {
+      defaultPoolSize = 1;
+    }
+
+    int databasePoolSize = getIntOptionValue(cli, "databasePoolSize", defaultPoolSize);
+    if (databasePoolSize < 1) {
+      throw new IllegalArgumentException("Please specify a positive integer option value for databasePoolSize");
+    }
+    int tablePoolSize = getIntOptionValue(cli, "tablePoolSize", defaultPoolSize);
+    if (tablePoolSize < 1) {
+      throw new IllegalArgumentException("Please specify a positive integer option value for tablePoolSize");
+    }
 
     RunOptions runOpts = new RunOptions(
         dbRegex,
         tableRegex,
         oldWarehouseRoot,
         migrationOption,
+        confProps,
         shouldModifyManagedTableLocation,
         shouldModifyManagedTableOwner,
         shouldModifyManagedTablePermissions,
-        dryRun);
+        shouldMoveExternal,
+        dryRun,
+        tableTypeText == null ? null : TableType.valueOf(tableTypeText),
+        tablePoolSize);
     return runOpts;
   }
 
-  private RunOptions runOptions;
-  private HiveConf conf;
-  private HiveMetaStoreClient hms;
-  private boolean failedValidationChecks;
-  private boolean failuresEncountered;
-  private Warehouse wh;
-  private Warehouse oldWh;
-  private String ownerName;
-  private String groupName;
-  private FsPermission dirPerms;
-  private FsPermission filePerms;
-  private boolean createExternalDirsForDbs;
-  Path curWhRootPath;
-  private HadoopShims.HdfsEncryptionShim encryptionShim;
+  private static int getIntOptionValue(CommandLine commandLine, String optionName, int defaultValue) {
+    if (commandLine.hasOption(optionName)) {
+      try {
+        return Integer.parseInt(commandLine.getOptionValue(optionName));
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Please specify a positive integer option value for " + optionName, e);
+      }
+    }
+    return defaultValue;
+  }
 
-  HiveStrictManagedMigration(RunOptions runOptions) {
+  private final HiveConf conf;
+  private final RunOptions runOptions;
+  private final boolean createExternalDirsForDbs;
+  private final Path targetPath;
+  private final HadoopShims.HdfsEncryptionShim encryptionShim;
+  private final HadoopShims.HdfsErasureCodingShim ecShim;
+  private final String ownerName;
+  private final String groupName;
+  private final FsPermission dirPerms;
+  private final FsPermission filePerms;
+
+  private CloseableThreadLocal<HiveMetaStoreClient> hms;
+  private ThreadLocal<Warehouse> wh;
+  private ThreadLocal<Warehouse> oldWh;
+  private CloseableThreadLocal<HiveUpdater> hiveUpdater;
+
+  private AtomicBoolean failuresEncountered;
+  private AtomicBoolean failedValidationChecks;
+
+  HiveStrictManagedMigration(HiveConf conf, RunOptions runOptions, boolean createExternalDirsForDbs,
+                             OwnerPermsOptions ownerPermsOptions, WarehouseRootCheckResult warehouseRootCheckResult) {
+    this.conf = conf;
     this.runOptions = runOptions;
-    this.conf = new HiveConf();
+    this.createExternalDirsForDbs = createExternalDirsForDbs;
+    this.ownerName = ownerPermsOptions.ownerName;
+    this.groupName = ownerPermsOptions.groupName;
+    this.dirPerms = ownerPermsOptions.dirPerms;
+    this.filePerms = ownerPermsOptions.filePerms;
+    this.targetPath = warehouseRootCheckResult.targetPath;
+    this.encryptionShim = warehouseRootCheckResult.encryptionShim;
+    this.ecShim = warehouseRootCheckResult.ecShim;
+
+    // Make sure all --hiveconf settings get added to the HiveConf.
+    // This allows utility-specific settings (such as strict.managed.tables.migration.owner)
+    // to be set via command line.
+    if (runOptions.confProps != null) {
+      for (String propKey : runOptions.confProps.stringPropertyNames()) {
+        this.conf.set(propKey, runOptions.confProps.getProperty(propKey));
+      }
+    }
+
+    this.hms = new CloseableThreadLocal<>(() -> {
+      try {
+        HiveMetaStoreClient hiveMetaStoreClient = new HiveMetaStoreClient(conf);
+        if (hiveConf != null) {
+          SessionState ss = SessionState.start(conf);
+          ss.applyAuthorizationPolicy();
+        }
+        return hiveMetaStoreClient;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }, runOptions.tablePoolSize);
+    wh = ThreadLocal.withInitial(() -> {
+      try {
+        return new Warehouse(conf);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    if (runOptions.shouldModifyManagedTableLocation || runOptions.shouldMoveExternal) {
+      Configuration oldConf = new Configuration(conf);
+      HiveConf.setVar(oldConf, HiveConf.ConfVars.METASTOREWAREHOUSE, runOptions.oldWarehouseRoot);
+
+      oldWh = ThreadLocal.withInitial(() -> {
+        try {
+          return new Warehouse(oldConf);
+        } catch (MetaException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    this.hiveUpdater = new CloseableThreadLocal<>(() -> {
+      try {
+        return new HiveUpdater(conf, true);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+    }, runOptions.tablePoolSize);
+
+    this.failuresEncountered = new AtomicBoolean(false);
+    this.failedValidationChecks = new AtomicBoolean(false);
   }
 
   void run() throws Exception {
-    wh = new Warehouse(conf);
-    checkOldWarehouseRoot();
-    checkExternalWarehouseDir();
-    checkOwnerPermsOptions();
+    LOG.info("Starting with {}", runOptions);
 
-    hms = new HiveMetaStoreClient(conf);//MetaException
-    try {
-      List<String> databases = hms.getAllDatabases();//TException
-      LOG.info("Found {} databases", databases.size());
-      for (String dbName : databases) {
-        if (dbName.matches(runOptions.dbRegex)) {
-          try {
-            processDatabase(dbName);
-          } catch (Exception err) {
-            LOG.error("Error processing database " + dbName, err);
-            failuresEncountered = true;
-          }
-        }
-      }
-      LOG.info("Done processing databases.");
-    } finally {
-      hms.close();
-    }
+    List<String> databases = hms.get().getDatabases(runOptions.dbRegex); //TException
+    LOG.info("Found {} databases", databases.size());
+    ForkJoinPool tablePool = new ForkJoinPool(
+            runOptions.tablePoolSize,
+            new NamedForkJoinWorkerThreadFactory("Table-"),
+            getUncaughtExceptionHandler(),
+            false);
+    databases.forEach(dbName -> processDatabase(dbName, tablePool));
+    LOG.info("Done processing databases.");
 
-    if (failuresEncountered) {
+    if (failuresEncountered.get()) {
       throw new HiveException("One or more failures encountered during processing.");
     }
-    if (failedValidationChecks) {
+    if (failedValidationChecks.get()) {
       throw new HiveException("One or more tables failed validation checks for strict managed table mode.");
     }
   }
 
-  void checkOldWarehouseRoot() throws IOException, MetaException {
-    if (runOptions.shouldModifyManagedTableLocation) {
+  private Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
+    return (t, e) -> LOG.error(String.format("Thread %s exited with error", t.getName()), e);
+  }
+
+  static WarehouseRootCheckResult checkOldWarehouseRoot(RunOptions runOptions, HiveConf conf) throws IOException {
+    boolean shouldModifyManagedTableLocation = runOptions.shouldModifyManagedTableLocation;
+    boolean shouldMoveExternal = runOptions.shouldMoveExternal;
+    Path targetPath = null;
+    HadoopShims.HdfsEncryptionShim encryptionShim = null;
+    HadoopShims.HdfsErasureCodingShim ecShim = null;
+
+    if (shouldMoveExternal && !checkExternalWarehouseDir(conf)) {
+      LOG.info("External warehouse path not specified/empty. Disabling shouldMoveExternal");
+      shouldMoveExternal = false;
+    }
+
+    if (shouldModifyManagedTableLocation || shouldMoveExternal) {
       if (runOptions.oldWarehouseRoot == null) {
-        LOG.info("oldWarehouseRoot is not specified. Disabling shouldModifyManagedTableLocation");
-        runOptions.shouldModifyManagedTableLocation = false;
+        LOG.info("oldWarehouseRoot is not specified. Disabling shouldModifyManagedTableLocation and " +
+            "shouldMoveExternal");
+        shouldModifyManagedTableLocation = false;
+        shouldMoveExternal = false;
       } else {
-        String curWarehouseRoot = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
-        if (arePathsEqual(conf, runOptions.oldWarehouseRoot, curWarehouseRoot)) {
-          LOG.info("oldWarehouseRoot is the same as the current warehouse root {}."
-              + " Disabling shouldModifyManagedTableLocation",
+        String currentPathString = shouldModifyManagedTableLocation ?
+            HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE) :
+                HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL);
+        if (arePathsEqual(conf, runOptions.oldWarehouseRoot, currentPathString)) {
+          LOG.info("oldWarehouseRoot is the same as the target path {}."
+              + " Disabling shouldModifyManagedTableLocation and shouldMoveExternal",
               runOptions.oldWarehouseRoot);
-          runOptions.shouldModifyManagedTableLocation = false;
+          shouldModifyManagedTableLocation = false;
+          shouldMoveExternal = false;
         } else {
           Path oldWhRootPath = new Path(runOptions.oldWarehouseRoot);
-          curWhRootPath = new Path(curWarehouseRoot);
+          targetPath = new Path(currentPathString);
           FileSystem oldWhRootFs = oldWhRootPath.getFileSystem(conf);
-          FileSystem curWhRootFs = curWhRootPath.getFileSystem(conf);
+          FileSystem curWhRootFs = targetPath.getFileSystem(conf);
           oldWhRootPath = oldWhRootFs.makeQualified(oldWhRootPath);
-          curWhRootPath = curWhRootFs.makeQualified(curWhRootPath);
+          targetPath = curWhRootFs.makeQualified(targetPath);
           if (!FileUtils.equalsFileSystem(oldWhRootFs, curWhRootFs)) {
-            LOG.info("oldWarehouseRoot {} has a different FS than the current warehouse root {}."
-                + " Disabling shouldModifyManagedTableLocation",
-                runOptions.oldWarehouseRoot, curWarehouseRoot);
-            runOptions.shouldModifyManagedTableLocation = false;
+            LOG.info("oldWarehouseRoot {} has a different FS than the target path {}."
+                + " Disabling shouldModifyManagedTableLocation and shouldMoveExternal",
+                runOptions.oldWarehouseRoot, currentPathString);
+            shouldModifyManagedTableLocation = false;
+            shouldMoveExternal = false;
           } else {
             if (!isHdfs(oldWhRootFs)) {
-              LOG.info("Warehouse is using non-HDFS FileSystem {}. Disabling shouldModifyManagedTableLocation",
-                  oldWhRootFs.getUri());
-              runOptions.shouldModifyManagedTableLocation = false;
+              LOG.info("Warehouse is using non-HDFS FileSystem {}. Disabling shouldModifyManagedTableLocation and" +
+                      "shouldMoveExternal", oldWhRootFs.getUri());
+              shouldModifyManagedTableLocation = false;
+              shouldMoveExternal = false;
             } else {
               encryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(oldWhRootFs, conf);
-              if (!hasEquivalentEncryption(encryptionShim, oldWhRootPath, curWhRootPath)) {
-                LOG.info("oldWarehouseRoot {} and current warehouse root {} have different encryption zones." +
-                    " Disabling shouldModifyManagedTableLocation", oldWhRootPath, curWhRootPath);
-                runOptions.shouldModifyManagedTableLocation = false;
+              if (!hasEquivalentEncryption(encryptionShim, oldWhRootPath, targetPath)) {
+                LOG.info("oldWarehouseRoot {} and target path {} have different encryption zones." +
+                    " Disabling shouldModifyManagedTableLocation and shouldMoveExternal",
+                    oldWhRootPath, targetPath);
+                shouldModifyManagedTableLocation = false;
+                shouldMoveExternal = false;
+              } else {
+                ecShim = ShimLoader.getHadoopShims().createHdfsErasureCodingShim(oldWhRootFs, conf);
+                if (!hasEquivalentErasureCodingPolicy(ecShim, oldWhRootPath, targetPath)) {
+                  LOG.info("oldWarehouseRoot {} and target path {} have different erasure coding policies." +
+                          " Disabling shouldModifyManagedTableLocation and shouldMoveExternal",
+                      oldWhRootPath, targetPath);
+                  shouldModifyManagedTableLocation = false;
+                  shouldMoveExternal = false;
+                }
               }
             }
           }
@@ -358,14 +601,16 @@ public class HiveStrictManagedMigration {
       }
     }
 
-    if (runOptions.shouldModifyManagedTableLocation) {
-      Configuration oldWhConf = new Configuration(conf);
-      HiveConf.setVar(oldWhConf, HiveConf.ConfVars.METASTOREWAREHOUSE, runOptions.oldWarehouseRoot);
-      oldWh = new Warehouse(oldWhConf);
-    }
+    return new WarehouseRootCheckResult(shouldModifyManagedTableLocation, shouldMoveExternal,
+        targetPath, encryptionShim, ecShim);
   }
 
-  void checkOwnerPermsOptions() {
+  static OwnerPermsOptions checkOwnerPermsOptions(RunOptions runOptions, HiveConf conf) {
+    String ownerName = null;
+    String groupName = null;
+    FsPermission dirPerms = null;
+    FsPermission filePerms = null;
+
     if (runOptions.shouldModifyManagedTableOwner) {
       ownerName = conf.get("strict.managed.tables.migration.owner", "hive");
       groupName = conf.get("strict.managed.tables.migration.group", null);
@@ -380,62 +625,82 @@ public class HiveStrictManagedMigration {
         filePerms = new FsPermission(filePermsString);
       }
     }
+
+    return new OwnerPermsOptions(ownerName, groupName, dirPerms, filePerms);
   }
 
-  void checkExternalWarehouseDir() {
+  static boolean checkExternalWarehouseDir(HiveConf conf) {
     String externalWarehouseDir = conf.getVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL);
-    if (externalWarehouseDir != null && !externalWarehouseDir.isEmpty()) {
-      createExternalDirsForDbs = true;
+    return externalWarehouseDir != null && !externalWarehouseDir.isEmpty();
+  }
+
+  void processDatabase(String dbName, ForkJoinPool tablePool) {
+    try {
+      LOG.info("Processing database {}", dbName);
+      Database dbObj = hms.get().getDatabase(dbName);
+
+      if (createExternalDirsForDbs) {
+        createExternalDbDir(dbObj);
+      }
+
+      boolean modifyLocation = shouldModifyDatabaseLocation(dbObj);
+
+      if (modifyLocation) {
+        Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbName);
+
+        LOG.info("Changing location of database {} to {}", dbName, newDefaultDbLocation);
+        if (!runOptions.dryRun) {
+          FileSystem fs = newDefaultDbLocation.getFileSystem(conf);
+          FileUtils.mkdir(fs, newDefaultDbLocation, conf);
+          // Set appropriate owner/perms of the DB dir only, no need to recurse
+          checkAndSetFileOwnerPermissions(fs, newDefaultDbLocation,
+                  ownerName, groupName, dirPerms, null, runOptions.dryRun, false);
+        }
+      }
+
+      List<String> tableNames;
+      if (runOptions.tableType == null) {
+        tableNames = hms.get().getTables(dbName, runOptions.tableRegex);
+        LOG.debug("found {} tables in {}", tableNames.size(), dbName);
+      } else {
+        tableNames = hms.get().getTables(dbName, runOptions.tableRegex, runOptions.tableType);
+        LOG.debug("found {} {}s in {}", tableNames.size(), runOptions.tableType.name(), dbName);
+      }
+
+      boolean errorsInThisDb = !tablePool.submit(() -> tableNames.parallelStream()
+              .map(tableName -> processTable(dbObj, tableName, modifyLocation))
+              .reduce(true, (aBoolean, aBoolean2) -> aBoolean && aBoolean2)).get();
+      if (errorsInThisDb) {
+        failuresEncountered.set(true);
+      }
+
+      // Finally update the DB location. This would prevent subsequent runs of the migration from processing this DB.
+      if (modifyLocation) {
+        if (errorsInThisDb) {
+          LOG.error("Not updating database location for {} since an error was encountered. " +
+                          "The migration must be run again for this database.", dbObj.getName());
+        } else {
+          if (!runOptions.dryRun) {
+            Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbName);
+            // dbObj after this call would have the new DB location.
+            // Keep that in mind if anything below this requires the old DB path.
+            hiveUpdater.get().updateDbLocation(dbObj, newDefaultDbLocation);
+          }
+        }
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOG.info("Cancel processing " + dbName, e);
+    } catch (TException | IOException | HiveException | ExecutionException ex) {
+      LOG.error("Error processing database " + dbName, ex);
+      failuresEncountered.set(true);
     }
   }
 
-  void processDatabase(String dbName) throws IOException, HiveException, MetaException, TException {
-    LOG.info("Processing database {}", dbName);
-    Database dbObj = hms.getDatabase(dbName);
-
-    boolean modifyDefaultManagedLocation = shouldModifyDatabaseLocation(dbObj);
-    if (modifyDefaultManagedLocation) {
-      Path newDefaultDbLocation = wh.getDefaultDatabasePath(dbName);
-
-      LOG.info("Changing location of database {} to {}", dbName, newDefaultDbLocation);
-      if (!runOptions.dryRun) {
-        FileSystem fs = newDefaultDbLocation.getFileSystem(conf);
-        FileUtils.mkdir(fs, newDefaultDbLocation, conf);
-        // Set appropriate owner/perms of the DB dir only, no need to recurse
-        checkAndSetFileOwnerPermissions(fs, newDefaultDbLocation,
-            ownerName, groupName, dirPerms, null, runOptions.dryRun, false);
-      }
-    }
-
-    if (createExternalDirsForDbs) {
-      createExternalDbDir(dbObj);
-    }
-
-    boolean errorsInThisDb = false;
-    List<String> tableNames = hms.getTables(dbName, runOptions.tableRegex);
-    for (String tableName : tableNames) {
-      // If we did not change the DB location, there is no need to move the table directories.
-      try {
-        processTable(dbObj, tableName, modifyDefaultManagedLocation);
-      } catch (Exception err) {
-        LOG.error("Error processing table " + getQualifiedName(dbObj.getName(), tableName), err);
-        failuresEncountered = true;
-        errorsInThisDb = true;
-      }
-    }
-
-    // Finally update the DB location. This would prevent subsequent runs of the migration from processing this DB.
-    if (modifyDefaultManagedLocation) {
-      if (errorsInThisDb) {
-        LOG.error("Not updating database location for {} since an error was encountered. The migration must be run again for this database.",
-                dbObj.getName());
-      } else {
-        Path newDefaultDbLocation = wh.getDefaultDatabasePath(dbName);
-        // dbObj after this call would have the new DB location.
-        // Keep that in mind if anything below this requires the old DB path.
-        getHiveUpdater().updateDbLocation(dbObj, newDefaultDbLocation);
-      }
-    }
+  private Path getDefaultDbPathManagedOrExternal(String dbName) throws MetaException {
+    return runOptions.shouldMoveExternal ?
+        wh.get().getDefaultExternalDatabasePath(dbName) :
+        wh.get().getDefaultDatabasePath(dbName);
   }
 
   public static boolean migrateTable(Table tableObj, TableType tableType, TableMigrationOption migrationOption,
@@ -464,28 +729,44 @@ public class HiveStrictManagedMigration {
     return false;
   }
 
-  void processTable(Database dbObj, String tableName, boolean modifyDefaultManagedLocation)
-      throws HiveException, IOException, TException {
-    String dbName = dbObj.getName();
-    LOG.debug("Processing table {}", getQualifiedName(dbName, tableName));
+  boolean processTable(Database dbObj, String tableName, boolean modifyLocation) {
+    try {
+      String dbName = dbObj.getName();
+      LOG.debug("Processing table {}", getQualifiedName(dbName, tableName));
 
-    Table tableObj = hms.getTable(dbName, tableName);
-    TableType tableType = TableType.valueOf(tableObj.getTableType());
+      Table tableObj = hms.get().getTable(dbName, tableName);
+      TableType tableType = TableType.valueOf(tableObj.getTableType());
 
-    TableMigrationOption migrationOption = runOptions.migrationOption;
-    if (migrationOption == TableMigrationOption.AUTOMATIC) {
-      migrationOption = determineMigrationTypeAutomatically(tableObj, tableType, ownerName, conf, hms, null);
-    }
+      TableMigrationOption migrationOption = runOptions.migrationOption;
+      if (migrationOption == TableMigrationOption.AUTOMATIC) {
+        migrationOption = determineMigrationTypeAutomatically(
+                tableObj, tableType, ownerName, conf, hms.get(), null);
+      }
 
-    failedValidationChecks = migrateTable(tableObj, tableType, migrationOption, runOptions.dryRun,
-            getHiveUpdater(), hms, conf);
+      boolean failedValidationCheck = migrateTable(tableObj, tableType, migrationOption, runOptions.dryRun,
+              hiveUpdater.get(), hms.get(), conf);
 
-    if (!failedValidationChecks && (TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE)) {
-      Path tablePath = new Path(tableObj.getSd().getLocation());
-      if (modifyDefaultManagedLocation && shouldModifyTableLocation(dbObj, tableObj)) {
-        Path newTablePath = wh.getDnsPath(
-            new Path(wh.getDefaultDatabasePath(dbName),
-                MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+      if (failedValidationCheck) {
+        this.failedValidationChecks.set(true);
+        return true;
+      }
+
+      String tablePathString = tableObj.getSd().getLocation();
+      if (StringUtils.isEmpty(tablePathString)) {
+        // When using this tool in full automatic mode (no DB/table regexes and automatic migration option) we may
+        // encounter sysdb / information_schema databases. These should not be moved, they have null location.
+        return true;
+      }
+      Path tablePath = new Path(tablePathString);
+
+      boolean shouldMoveTable = modifyLocation && (
+          (MANAGED_TABLE.name().equals(tableObj.getTableType()) && runOptions.shouldModifyManagedTableLocation) ||
+          (EXTERNAL_TABLE.name().equals(tableObj.getTableType()) && runOptions.shouldMoveExternal));
+
+      if (shouldMoveTable && shouldModifyTableLocation(dbObj, tableObj)) {
+        Path newTablePath = wh.get().getDnsPath(
+                new Path(getDefaultDbPathManagedOrExternal(dbName),
+                        MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
         moveTableData(dbObj, tableObj, newTablePath);
         if (!runOptions.dryRun) {
           // File ownership/permission checks should be done on the new table path.
@@ -493,30 +774,41 @@ public class HiveStrictManagedMigration {
         }
       }
 
-      if (runOptions.shouldModifyManagedTableOwner || runOptions.shouldModifyManagedTablePermissions) {
-        FileSystem fs = tablePath.getFileSystem(conf);
-        if (isHdfs(fs)) {
-          // TODO: what about partitions not in the default location?
-          checkAndSetFileOwnerPermissions(fs, tablePath,
-              ownerName, groupName, dirPerms, filePerms, runOptions.dryRun, true);
+      if (MANAGED_TABLE.equals(tableType)) {
+        if (runOptions.shouldModifyManagedTableOwner || runOptions.shouldModifyManagedTablePermissions) {
+          FileSystem fs = tablePath.getFileSystem(conf);
+          if (isHdfs(fs)) {
+            // TODO: what about partitions not in the default location?
+            checkAndSetFileOwnerPermissions(fs, tablePath,
+                    ownerName, groupName, dirPerms, filePerms, runOptions.dryRun, true);
+          }
         }
       }
+    } catch (Exception ex) {
+      LOG.error("Error processing table " + getQualifiedName(dbObj.getName(), tableName), ex);
+      return false;
     }
+    return true;
   }
 
   boolean shouldModifyDatabaseLocation(Database dbObj) throws IOException, MetaException {
     String dbName = dbObj.getName();
-    if (runOptions.shouldModifyManagedTableLocation) {
+    if (runOptions.shouldModifyManagedTableLocation || runOptions.shouldMoveExternal) {
       // Check if the database location is in the default location based on the old warehouse root.
       // If so then change the database location to the default based on the current warehouse root.
       String dbLocation = dbObj.getLocationUri();
-      Path oldDefaultDbLocation = oldWh.getDefaultDatabasePath(dbName);
+      Path oldDefaultDbLocation = oldWh.get().getDefaultDatabasePath(dbName);
       if (arePathsEqual(conf, dbLocation, oldDefaultDbLocation.toString())) {
-        if (hasEquivalentEncryption(encryptionShim, oldDefaultDbLocation, curWhRootPath)) {
-          return true;
+        if (hasEquivalentEncryption(encryptionShim, oldDefaultDbLocation, targetPath)) {
+          if (hasEquivalentErasureCodingPolicy(ecShim, oldDefaultDbLocation, targetPath)) {
+            return true;
+          } else {
+            LOG.info("{} and {} have different EC policies. Will not change database location for {}",
+                oldDefaultDbLocation, targetPath, dbName);
+          }
         } else {
           LOG.info("{} and {} are on different encryption zones. Will not change database location for {}",
-              oldDefaultDbLocation, curWhRootPath, dbName);
+              oldDefaultDbLocation, targetPath, dbName);
         }
       }
     }
@@ -529,36 +821,38 @@ public class HiveStrictManagedMigration {
     // If so then change the table location to the default based on the current warehouse root.
     // The existing table directory will also be moved to the new default database directory.
     String tableLocation = tableObj.getSd().getLocation();
-    Path oldDefaultTableLocation = oldWh.getDefaultTablePath(dbObj, tableObj.getTableName());
+    Path oldDefaultTableLocation = oldWh.get().getDefaultTablePath(dbObj, tableObj.getTableName());
     if (arePathsEqual(conf, tableLocation, oldDefaultTableLocation.toString())) {
-      if (hasEquivalentEncryption(encryptionShim, oldDefaultTableLocation, curWhRootPath)) {
-        return true;
+      if (hasEquivalentEncryption(encryptionShim, oldDefaultTableLocation, targetPath)) {
+        if (hasEquivalentErasureCodingPolicy(ecShim, oldDefaultTableLocation, targetPath)) {
+          return true;
+        } else {
+          LOG.info("{} and {} have different EC policies. Will not change table location for {}",
+              oldDefaultTableLocation, targetPath, getQualifiedName(tableObj));
+        }
       } else {
         LOG.info("{} and {} are on different encryption zones. Will not change table location for {}",
-            oldDefaultTableLocation, curWhRootPath, getQualifiedName(tableObj));
+            oldDefaultTableLocation, targetPath, getQualifiedName(tableObj));
       }
     }
     return false;
   }
 
-  boolean shouldModifyPartitionLocation(Database dbObj, Table tableObj, Partition partObj, Map<String, String> partSpec)
-      throws IOException, MetaException {
-    String tableName = tableObj.getTableName();
+  boolean shouldModifyPartitionLocation(Database dbObj, Table tableObj, Partition partObj,
+      Map<String, String> partSpec) throws IOException, MetaException {
     String partLocation = partObj.getSd().getLocation();
-    Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableObj, partSpec);
+    Path oldDefaultPartLocation = runOptions.shouldMoveExternal  ?
+        oldWh.get().getPartitionPath(dbObj, tableObj, partSpec.values().stream().collect(toList())):
+        oldWh.get().getDefaultPartitionPath(dbObj, tableObj, partSpec);
     if (arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString())) {
-      if (hasEquivalentEncryption(encryptionShim, oldDefaultPartLocation, curWhRootPath)) {
-        return true;
-      } else {
-        LOG.info("{} and {} are on different encryption zones. Will not change partition location",
-            oldDefaultPartLocation, curWhRootPath);
-      }
+      // No need to check encryption zone and EC policy. Data was moved already along with the whole table.
+      return true;
     }
     return false;
   }
 
   void createExternalDbDir(Database dbObj) throws IOException, MetaException {
-    Path externalTableDbPath = wh.getDefaultExternalDatabasePath(dbObj.getName());
+    Path externalTableDbPath = wh.get().getDefaultExternalDatabasePath(dbObj.getName());
     FileSystem fs = externalTableDbPath.getFileSystem(conf);
     if (!fs.exists(externalTableDbPath)) {
       String dbOwner = ownerName;
@@ -621,19 +915,19 @@ public class HiveStrictManagedMigration {
     // locations to be in sync.
 
     if (isPartitionedTable(tableObj)) {
-      List<String> partNames = hms.listPartitionNames(dbName, tableName, Short.MAX_VALUE);
+      List<String> partNames = hms.get().listPartitionNames(dbName, tableName, Short.MAX_VALUE);
       // TODO: Fetch partitions in batches?
       // TODO: Threadpool to process partitions?
       for (String partName : partNames) {
-        Partition partObj = hms.getPartition(dbName, tableName, partName);
+        Partition partObj = hms.get().getPartition(dbName, tableName, partName);
         Map<String, String> partSpec =
             Warehouse.makeSpecFromValues(tableObj.getPartitionKeys(), partObj.getValues());
         if (shouldModifyPartitionLocation(dbObj, tableObj, partObj, partSpec)) {
           // Table directory (which includes the partition directory) has already been moved,
           // just update the partition location in the metastore.
           if (!runOptions.dryRun) {
-            Path newPartPath = wh.getPartitionPath(newTablePath, partSpec);
-            getHiveUpdater().updatePartitionLocation(dbName, tableObj, partName, partObj, newPartPath);
+            Path newPartPath = wh.get().getPartitionPath(newTablePath, partSpec);
+            hiveUpdater.get().updatePartitionLocation(dbName, tableObj, partName, partObj, newPartPath);
           }
         }
       }
@@ -642,7 +936,7 @@ public class HiveStrictManagedMigration {
     // Finally update the table location. This would prevent this tool from processing this table again
     // on subsequent runs of the migration.
     if (!runOptions.dryRun) {
-      getHiveUpdater().updateTableLocation(tableObj, newTablePath);
+      hiveUpdater.get().updateTableLocation(tableObj, newTablePath);
     }
   }
 
@@ -711,6 +1005,8 @@ public class HiveStrictManagedMigration {
   private static final Map<String, String> convertToExternalTableProps = new HashMap<>();
   private static final Map<String, String> convertToAcidTableProps = new HashMap<>();
   private static final Map<String, String> convertToMMTableProps = new HashMap<>();
+  private static final String KUDU_LEGACY_STORAGE_HANDLER = "com.cloudera.kudu.hive.KuduStorageHandler";
+  private static final String KUDU_STORAGE_HANDLER = "org.apache.hadoop.hive.kudu.KuduStorageHandler";
 
   static {
     convertToExternalTableProps.put("EXTERNAL", "TRUE");
@@ -735,11 +1031,13 @@ public class HiveStrictManagedMigration {
       }
       LOG.info("Converting {} to external table ...", getQualifiedName(tableObj));
       if (!dryRun) {
-        tableObj.setTableType(TableType.EXTERNAL_TABLE.toString());
+        tableObj.setTableType(EXTERNAL_TABLE.toString());
         hiveUpdater.updateTableProperties(tableObj, convertToExternalTableProps);
       }
       return true;
     case EXTERNAL_TABLE:
+      // Might need to update storage_handler
+      hiveUpdater.updateTableProperties(tableObj, new HashMap<>());
       msg = createExternalConversionExcuse(tableObj,
           "Table is already an external table");
       LOG.debug(msg);
@@ -907,6 +1205,7 @@ public class HiveStrictManagedMigration {
   }
 
   void cleanup() {
+    hms.close();
     if (hiveUpdater != null) {
       runAndLogErrors(() -> hiveUpdater.close());
       hiveUpdater = null;
@@ -915,13 +1214,6 @@ public class HiveStrictManagedMigration {
 
   public static HiveUpdater getHiveUpdater(HiveConf conf) throws HiveException {
     return new HiveUpdater(conf, false);
-  }
-
-  HiveUpdater getHiveUpdater() throws HiveException {
-    if (hiveUpdater == null) {
-      hiveUpdater = new HiveUpdater(conf, true);
-    }
-    return hiveUpdater;
   }
 
   private static final class TxnCtx {
@@ -936,7 +1228,7 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  public static class HiveUpdater {
+  private static class HiveUpdater implements AutoCloseable {
     Hive hive;
     boolean doFileRename;
 
@@ -946,9 +1238,10 @@ public class HiveStrictManagedMigration {
       doFileRename = fileRename;
     }
 
-    void close() {
+    @Override
+    public void close() {
       if (hive != null) {
-        runAndLogErrors(() -> Hive.closeCurrent());
+        runAndLogErrors(Hive::closeCurrent);
         hive = null;
       }
     }
@@ -1081,7 +1374,9 @@ public class HiveStrictManagedMigration {
       alterPartitionInternal(table, modifiedPart);
     }
 
-    void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
+    void updateTableProperties(Table table, Map<String, String> propsToApply) throws HiveException {
+      Map<String, String> props = new HashMap<>(propsToApply);
+      migrateKuduStorageHandlerType(table, props);
       StringBuilder sb = new StringBuilder();
       boolean isTxn = TxnUtils.isTransactionalTable(table);
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable = doFileRename ?
@@ -1122,8 +1417,6 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  HiveUpdater hiveUpdater;
-
   interface ThrowableRunnable {
     void run() throws Exception;
   }
@@ -1157,7 +1450,7 @@ public class HiveStrictManagedMigration {
   }
 
   static boolean isHdfs(FileSystem fs) {
-    return fs.getScheme().equals("hdfs");
+    return scheme.equals(fs.getScheme());
   }
 
   static String getQualifiedName(Table tableObj) {
@@ -1335,4 +1628,42 @@ public class HiveStrictManagedMigration {
     }
     return true;
   }
+
+  static boolean hasEquivalentErasureCodingPolicy(HadoopShims.HdfsErasureCodingShim ecShim,
+      Path path1, Path path2) throws IOException {
+    HadoopShims.HdfsFileErasureCodingPolicy policy1 = ecShim.getErasureCodingPolicy(path1);
+    HadoopShims.HdfsFileErasureCodingPolicy policy2 = ecShim.getErasureCodingPolicy(path2);
+    if (policy1 != null) {
+      return policy1.equals(policy2);
+    } else {
+      if (policy2 == null) {
+        return true;
+      }
+      return false;
+    }
+  }
+
+  /**
+   * While upgrading from earlier versions we need to amend storage_handler value for Kudu tables that might
+   * have the legacy value set.
+   * @param table
+   * @param props
+   */
+  private static void migrateKuduStorageHandlerType(Table table, Map<String, String> props) {
+    Map<String, String> tableProperties = table.getParameters();
+    if (tableProperties != null) {
+      String storageHandler = tableProperties.get(META_TABLE_STORAGE);
+      if (KUDU_LEGACY_STORAGE_HANDLER.equals(storageHandler)) {
+        props.put(META_TABLE_STORAGE, KUDU_STORAGE_HANDLER);
+      }
+    }
+  }
+
+  /**
+   * can set it from tests to test when config needs something other than default values.
+   */
+  @VisibleForTesting
+  static HiveConf hiveConf = null;
+  @VisibleForTesting
+  static String scheme = "hdfs";
 }

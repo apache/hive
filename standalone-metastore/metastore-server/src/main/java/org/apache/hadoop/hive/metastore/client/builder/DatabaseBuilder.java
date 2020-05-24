@@ -37,7 +37,7 @@ import java.util.Map;
  * selects reasonable defaults.
  */
 public class DatabaseBuilder {
-  private String name, description, location, catalogName;
+  private String name, description, location, managedLocation, catalogName;
   private Map<String, String> params = new HashMap<>();
   private String ownerName;
   private PrincipalType ownerType;
@@ -68,6 +68,11 @@ public class DatabaseBuilder {
 
   public DatabaseBuilder setLocation(String location) {
     this.location = location;
+    return this;
+  }
+
+  public DatabaseBuilder setManagedLocation(String location) {
+    this.managedLocation = location;
     return this;
   }
 
@@ -102,6 +107,8 @@ public class DatabaseBuilder {
     Database db = new Database(name, description, location, params);
     db.setCatalogName(catalogName);
     db.setCreateTime(createTime);
+    if (managedLocation != null)
+      db.setManagedLocationUri(managedLocation);
     try {
       if (ownerName == null) ownerName = SecurityUtils.getUser();
       db.setOwnerName(ownerName);
@@ -111,6 +118,21 @@ public class DatabaseBuilder {
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);
     }
+  }
+
+  public Database buildNoModification(Configuration conf) throws MetaException {
+    if (name == null) {
+      throw new MetaException("You must name the database");
+    }
+    if (catalogName == null) {
+      catalogName = MetaStoreUtils.getDefaultCatalog(conf);
+    }
+    Database db = new Database(name, description, location, params);
+    db.setCatalogName(catalogName);
+    db.setCreateTime(createTime);
+    if (managedLocation != null)
+      db.setManagedLocationUri(managedLocation);
+    return db;
   }
 
   /**
@@ -123,6 +145,12 @@ public class DatabaseBuilder {
    */
   public Database create(IMetaStoreClient client, Configuration conf) throws TException {
     Database db = build(conf);
+    client.createDatabase(db);
+    return db;
+  }
+
+  public Database createNoModification(IMetaStoreClient client, Configuration conf) throws TException {
+    Database db = buildNoModification(conf);
     client.createDatabase(db);
     return db;
   }

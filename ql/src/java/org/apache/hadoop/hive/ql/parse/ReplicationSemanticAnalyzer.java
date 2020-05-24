@@ -18,10 +18,12 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -30,50 +32,45 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Base64;
+import java.util.List;
+import java.util.Collections;
 
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
-import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
-  // Database name or pattern
-  private String dbNameOrPattern;
-  // Table name or pattern
-  private String tblNameOrPattern;
-  private Long eventFrom;
-  private Long eventTo;
-  private Integer maxEventLimit;
-  // Base path for REPL LOAD
-  private String path;
+  // Replication Scope
+  private ReplScope replScope = new ReplScope();
+  private ReplScope oldReplScope = null;
+
+  // Source DB Name for REPL LOAD
+  private String sourceDbNameOrPattern;
   // Added conf member to set the REPL command specific config entries without affecting the configs
   // of any other queries running in the session
   private HiveConf conf;
@@ -82,7 +79,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
   private Hive db;
 
-  private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -101,23 +97,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-        try {
-          initReplDump(ast);
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage(), e);
-        }
         analyzeReplDump(ast);
         break;
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        initReplLoad(ast);
         analyzeReplLoad(ast);
         break;
       }
       case TOK_REPL_STATUS: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: status");
-        initReplStatus(ast);
         analyzeReplStatus(ast);
         break;
       }
@@ -134,50 +123,89 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void setReplDumpTablesList(Tree replTablesNode, ReplScope replScope) throws HiveException {
+    int childCount = replTablesNode.getChildCount();
+    assert(childCount <= 2);
+
+    // Traverse the children which can be either just include tables list or both include
+    // and exclude tables lists.
+    String replScopeType = (replScope == this.replScope) ? "Current" : "Old";
+    for (int listIdx = 0; listIdx < childCount; listIdx++) {
+      String tableList = unescapeSQLString(replTablesNode.getChild(listIdx).getText());
+      if (tableList == null || tableList.isEmpty()) {
+        throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN);
+      }
+      if (listIdx == 0) {
+        LOG.info("{} ReplScope: Set Included Tables List: {}", replScopeType, tableList);
+        replScope.setIncludedTablePatterns(tableList);
+      } else {
+        LOG.info("{} ReplScope: Set Excluded Tables List: {}", replScopeType, tableList);
+        replScope.setExcludedTablePatterns(tableList);
+      }
+    }
+  }
+
+  private void setOldReplPolicy(Tree oldReplPolicyTree) throws HiveException {
+    oldReplScope = new ReplScope();
+    int childCount = oldReplPolicyTree.getChildCount();
+
+    // First child is DB name and optional second child is tables list.
+    assert(childCount <= 2);
+
+    // First child is always the DB name. So set it.
+    oldReplScope.setDbName(oldReplPolicyTree.getChild(0).getText());
+    LOG.info("Old ReplScope: Set DB Name: {}", oldReplScope.getDbName());
+    if (!oldReplScope.getDbName().equalsIgnoreCase(replScope.getDbName())) {
+      LOG.error("DB name {} cannot be replaced to {} in the replication policy.",
+              oldReplScope.getDbName(), replScope.getDbName());
+      throw new SemanticException("DB name cannot be replaced in the replication policy.");
+    }
+
+    // If the old policy is just <db_name>, then tables list won't be there.
+    if (childCount <= 1) {
+      return;
+    }
+
+    // Traverse the children which can be either just include tables list or both include
+    // and exclude tables lists.
+    Tree oldPolicyTablesListNode = oldReplPolicyTree.getChild(1);
+    assert(oldPolicyTablesListNode.getType() == TOK_REPL_TABLES);
+    setReplDumpTablesList(oldPolicyTablesListNode, oldReplScope);
+  }
+
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     boolean isMetaDataOnly = false;
-    dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
 
-    // skip the first node, which is always required
-    int currNode = 1;
-    while (currNode < numChildren) {
-      if (ast.getChild(currNode).getType() == TOK_REPL_CONFIG) {
-        Map<String, String> replConfigs
-            = DDLSemanticAnalyzer.getProps((ASTNode) ast.getChild(currNode).getChild(0));
+    String dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
+    LOG.info("Current ReplScope: Set DB Name: {}", dbNameOrPattern);
+    replScope.setDbName(dbNameOrPattern);
+
+    // Skip the first node, which is always required
+    int childIdx = 1;
+    while (childIdx < numChildren) {
+      Tree currNode = ast.getChild(childIdx);
+      switch (currNode.getType()) {
+      case TOK_REPL_CONFIG:
+        Map<String, String> replConfigs = getProps((ASTNode) currNode.getChild(0));
         if (null != replConfigs) {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
           }
           isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
-      } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
-        // optional tblName was specified.
-        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getChild(0).getText());
-      } else {
-        // TOK_FROM subtree
-        Tree fromNode = ast.getChild(currNode);
-        eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
-        // skip the first, which is always required
-        int numChild = 1;
-        while (numChild < fromNode.getChildCount()) {
-          if (fromNode.getChild(numChild).getType() == TOK_TO) {
-            eventTo =
-                Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
-            // skip the next child, since we already took care of it
-            numChild++;
-          } else if (fromNode.getChild(numChild).getType() == TOK_LIMIT) {
-            maxEventLimit =
-                Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
-            // skip the next child, since we already took care of it
-            numChild++;
-          }
-          // move to the next child in FROM tree
-          numChild++;
-        }
+        break;
+      case TOK_REPL_TABLES:
+        setReplDumpTablesList(currNode, replScope);
+        break;
+      case TOK_REPLACE:
+        setOldReplPolicy(currNode);
+        break;
+      default:
+        throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
       }
-      // move to the next root node
-      currNode++;
+      // Move to the next root node
+      childIdx++;
     }
 
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
@@ -196,31 +224,29 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // REPL DUMP
   private void analyzeReplDump(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplDump: " + String.valueOf(dbNameOrPattern)
-        + "." + String.valueOf(tblNameOrPattern) + " from " + String.valueOf(eventFrom) + " to "
-        + String.valueOf(eventTo) + " maxEventLimit " + String.valueOf(maxEventLimit));
+    try {
+      initReplDump(ast);
+    } catch (HiveException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+
     try {
       ctx.setResFile(ctx.getLocalTmpPath());
       Task<ReplDumpWork> replDumpWorkTask = TaskFactory
           .get(new ReplDumpWork(
-              dbNameOrPattern,
-              tblNameOrPattern,
-              eventFrom,
-              eventTo,
-              ErrorMsg.INVALID_PATH.getMsg(ast),
-              maxEventLimit,
+              replScope,
+              oldReplScope,
+              ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               ctx.getResFile().toUri().toString()
       ), conf);
       rootTasks.add(replDumpWorkTask);
-      if (dbNameOrPattern != null) {
-        for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
-          if (tblNameOrPattern != null) {
-            for (String tblName : Utils.matchesTbl(db, dbName, tblNameOrPattern)) {
-              inputs.add(new ReadEntity(db.getTable(dbName, tblName)));
-            }
-          } else {
-            inputs.add(new ReadEntity(db.getDatabase(dbName)));
+      for (String dbName : Utils.matchesDb(db, replScope.getDbName())) {
+        if (!replScope.includeAllTables()) {
+          for (String tblName : Utils.matchesTbl(db, dbName, replScope)) {
+            inputs.add(new ReadEntity(db.getTable(dbName, tblName)));
           }
+        } else {
+          inputs.add(new ReadEntity(db.getDatabase(dbName)));
         }
       }
       setFetchTask(createFetchTask(dumpSchema));
@@ -255,23 +281,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // REPL LOAD
-  private void initReplLoad(ASTNode ast) throws SemanticException {
-    path = PlanUtils.stripQuotes(ast.getChild(0).getText());
+  private void initReplLoad(ASTNode ast) throws HiveException {
+    sourceDbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
       switch (childNode.getToken().getType()) {
-        case TOK_DBNAME:
-          dbNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
-          break;
-        case TOK_TABNAME:
-          tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
-          break;
-        case TOK_REPL_CONFIG:
-          setConfigs((ASTNode) childNode.getChild(0));
-          break;
+      case TOK_DBNAME:
+        replScope.setDbName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
+        break;
+      case TOK_REPL_CONFIG:
+        setConfigs((ASTNode) childNode.getChild(0));
+        break;
+      case TOK_REPL_TABLES: //Accept TOK_REPL_TABLES for table level repl.Needn't do anything as dump path needs db only
+        break;
         default:
-          throw new SemanticException("Unrecognized token in REPL LOAD statement");
+          throw new SemanticException("Unrecognized token in REPL LOAD statement.");
       }
     }
   }
@@ -319,27 +344,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
    *    36/
    */
   private void analyzeReplLoad(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplSemanticAnalyzer.analyzeReplLoad: " + String.valueOf(dbNameOrPattern) + "."
-        + String.valueOf(tblNameOrPattern) + " from " + String.valueOf(path));
+    try {
+      initReplLoad(ast);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
 
-    // for analyze repl load, we walk through the dir structure available in the path,
+    // For analyze repl load, we walk through the dir structure available in the path,
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
-
     try {
-      assert(path != null);
-      Path loadPath = new Path(path);
-      final FileSystem fs = loadPath.getFileSystem(conf);
-
-      // Make fully qualified path for further use.
-      loadPath = fs.makeQualified(loadPath);
-
-      if (!fs.exists(loadPath)) {
-        // supposed dump path does not exist.
-        LOG.error("File not found " + loadPath.toUri().toString());
-        throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
-      }
-
+      assert(sourceDbNameOrPattern != null);
+      Path loadPath = getCurrentLoadPath();
       // Ths config is set to make sure that in case of s3 replication, move is skipped.
       try {
         Warehouse wh = new Warehouse(conf);
@@ -367,48 +383,62 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // At this point, all dump dirs should contain a _dumpmetadata file that
       // tells us what is inside that dumpdir.
 
-      DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+      //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
+      if (loadPath != null) {
+        DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
-      boolean evDump = false;
-      // we will decide what hdfs locations needs to be copied over here as well.
-      if (dmd.isIncrementalDump()) {
-        LOG.debug("{} contains an incremental dump", loadPath);
-        evDump = true;
+        boolean evDump = false;
+        // we will decide what hdfs locations needs to be copied over here as well.
+        if (dmd.isIncrementalDump()) {
+          LOG.debug("{} contains an incremental dump", loadPath);
+          evDump = true;
+        } else {
+          LOG.debug("{} contains an bootstrap dump", loadPath);
+        }
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+                replScope.getDbName(),
+                dmd.getReplScope(),
+                queryState.getLineageState(), evDump, dmd.getEventTo());
+        rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
-        LOG.debug("{} contains an bootstrap dump", loadPath);
+        LOG.warn("Previous Dump Already Loaded");
       }
-      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-          tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo(),
-          dirLocationsToCopy(loadPath, evDump));
-      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
   }
 
-  private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
-      throws HiveException, IOException {
-    List<DirCopyWork> list = new ArrayList<>();
-    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    // this is done to remove any scheme related information that will be present in the base path
-    // specifically when we are replicating to cloud storage
-    Path basePath = new Path(baseDir);
-
-    for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
-      Path sourcePath = new Path(location);
-      String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + sourcePath.toUri().getPath();
-      Path fullyQualifiedTargetUri = PathBuilder.fullyQualifiedHDFSUri(
-          new Path(targetPathWithoutSchemeAndAuth),
-          basePath.getFileSystem(conf)
-      );
-      list.add(new DirCopyWork(sourcePath, fullyQualifiedTargetUri));
+  private Path getCurrentLoadPath() throws IOException, SemanticException {
+    Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+            Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
+                    .getBytes(StandardCharsets.UTF_8.name())));
+    final FileSystem fs = loadPathBase.getFileSystem(conf);
+    // Make fully qualified path for further use.
+    loadPathBase = fs.makeQualified(loadPathBase);
+    if (fs.exists(loadPathBase)) {
+      FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
+      if (statuses.length > 0) {
+        //sort based on last modified. Recent one is at the beginning
+        FileStatus latestUpdatedStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+            latestUpdatedStatus = status;
+          }
+        }
+        Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath,
+                ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
+                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()))) {
+          return hiveDumpPath;
+        }
+      }
     }
-    return list;
+    return null;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {
-    Map<String, String> replConfigs = DDLSemanticAnalyzer.getProps(node);
+    Map<String, String> replConfigs = getProps(node);
     if (null != replConfigs) {
       for (Map.Entry<String, String> config : replConfigs.entrySet()) {
         String key = config.getKey();
@@ -435,60 +465,44 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // REPL STATUS
   private void initReplStatus(ASTNode ast) throws SemanticException{
-    dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
+    replScope.setDbName(PlanUtils.stripQuotes(ast.getChild(0).getText()));
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
-      switch (childNode.getToken().getType()) {
-      case TOK_TABNAME:
-        tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
-        break;
-      case TOK_REPL_CONFIG:
+      if (childNode.getToken().getType() == TOK_REPL_CONFIG) {
         setConfigs((ASTNode) childNode.getChild(0));
-        break;
-      default:
-        throw new SemanticException("Unrecognized token in REPL STATUS statement");
+      } else {
+        throw new SemanticException("Unrecognized token in REPL STATUS statement.");
       }
     }
   }
 
   private void analyzeReplStatus(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: " + String.valueOf(dbNameOrPattern)
-        + "." + String.valueOf(tblNameOrPattern));
+    initReplStatus(ast);
+    String dbNameOrPattern = replScope.getDbName();
+    String replLastId = getReplStatus(dbNameOrPattern);
+    prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
+    setFetchTask(createFetchTask("last_repl_id#string"));
+    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {} using configuration {}",
+        replLastId, ctx.getResFile(), conf);
+  }
 
-    String replLastId = null;
-
+  private String getReplStatus(String dbNameOrPattern) throws SemanticException {
     try {
-      if (tblNameOrPattern != null) {
-        // Checking for status of table
-        Table tbl = db.getTable(dbNameOrPattern, tblNameOrPattern);
-        if (tbl != null) {
-          inputs.add(new ReadEntity(tbl));
-          Map<String, String> params = tbl.getParameters();
-          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-          }
-        }
-      } else {
-        // Checking for status of a db
-        Database database = db.getDatabase(dbNameOrPattern);
-        if (database != null) {
-          inputs.add(new ReadEntity(database));
-          Map<String, String> params = database.getParameters();
-          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-          }
+      // Checking for status of a db
+      Database database = db.getDatabase(dbNameOrPattern);
+      if (database != null) {
+        inputs.add(new ReadEntity(database));
+        Map<String, String> params = database.getParameters();
+        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+          return params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
         }
       }
     } catch (HiveException e) {
       throw new SemanticException(e); // TODO : simple wrap & rethrow for now, clean up with error
-                                      // codes
+      // codes
     }
-
-    prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
-    setFetchTask(createFetchTask("last_repl_id#string"));
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {}",
-        String.valueOf(replLastId), ctx.getResFile(), conf);
+    return null;
   }
 
   private void prepareReturnValues(List<String> values, String schema) throws SemanticException {
@@ -497,6 +511,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("    > " + s);
     }
     ctx.setResFile(ctx.getLocalTmpPath());
-    Utils.writeOutput(values, ctx.getResFile(), conf);
+    Utils.writeOutput(Collections.singletonList(values), ctx.getResFile(), conf);
   }
 }

@@ -154,7 +154,7 @@ public abstract class VectorMapJoinFastBytesHashMap
 
   public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue) {
 
-    if (resizeThreshold <= keysAssigned) {
+    if (checkResize()) {
       expandAndRehash();
     }
 

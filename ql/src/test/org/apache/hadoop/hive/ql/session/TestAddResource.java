@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.session;
 
-import static org.junit.Assert.assertEquals;
-
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
@@ -31,23 +31,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.junit.After;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.Shell;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import static org.junit.Assert.assertEquals;
 
 
 public class TestAddResource {
 
-  private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + File.pathSeparator;
+  private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + File.separator;
   private HiveConf conf;
   private ResourceType t;
 
@@ -58,13 +54,43 @@ public class TestAddResource {
 
     //Generate test jar files
     for (int i = 1; i <= 5; i++) {
-      Writer output = null;
-      String dataFile = TEST_JAR_DIR + "testjar" + i + ".jar";
-      File file = new File(dataFile);
-      output = new BufferedWriter(new FileWriter(file));
-      output.write("sample");
-      output.close();
+      writeTestJarFile(TEST_JAR_DIR + "testjar" + i + ".jar", "sample");
     }
+  }
+
+  private static void writeTestJarFile(String dataFile, String content) throws IOException {
+    File file = new File(dataFile);
+    file.deleteOnExit();
+    Writer output = new BufferedWriter(new FileWriter(file));
+    output.write(content);
+    output.close();
+  }
+
+  /**
+   * Tests adding jar with special chars in the path:
+   * - works if it's given in URL encoded format
+   * - fails if it's not encoded (user should have done it).
+   * @throws Exception
+   */
+  @Test
+  public void testSpecialCharsInPath() throws Exception {
+    String filePath = TEST_JAR_DIR + "testjar-[specialchars].jar";
+    String filePathEncoded = TEST_JAR_DIR + "testjar-%5Bspecialchars%5D.jar";
+    writeTestJarFile(filePath, "sample");
+
+    SessionState ss = Mockito.spy(SessionState.start(conf).get());
+    try {
+      ss.add_resource(t, filePath);
+    } catch (RuntimeException e) {
+      assertEquals(URISyntaxException.class, e.getCause().getClass());
+    }
+    ss.add_resource(t, filePathEncoded);
+
+    Set<String> result = ss.list_resource(t, null);
+    assertEquals(1, result.size());
+    assertEquals(filePath, result.stream().findFirst().get());
+
+    ss.close();
   }
 
   // Check that all the jars are added to the classpath
@@ -319,19 +345,6 @@ public class TestAddResource {
     assertEquals(dependencies.isEmpty(), true);
 
     ss.close();
-  }
-
-  @After
-  public void tearDown() {
-    // delete sample jars
-    for (int i = 1; i <= 5; i++) {
-      String dataFile = TEST_JAR_DIR + "testjar" + i + ".jar";
-
-      File f = new File(dataFile);
-      if (!f.delete()) {
-        throw new RuntimeException("Could not delete the data file");
-      }
-    }
   }
 
   private <T> List<T> union(List<T> list1, List<T> list2) {

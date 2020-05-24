@@ -69,7 +69,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cbigint > -23L) and ((cdouble <> 988888.0D) or (CAST( cint AS decimal(13,3)) > -863.257)) and ((ctinyint >= 33Y) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble))) (type: boolean)
+                  filterExpr: ((cbigint > -23L) and ((ctinyint >= 33Y) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble)) and ((cdouble <> 988888.0D) or (CAST( cint AS decimal(13,3)) > -863.257))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -78,8 +78,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -23), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5:double, val 988888.0), FilterDecimalColGreaterDecimalScalar(col 13:decimal(13,3), val -863.257)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3))), FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0:tinyint, val 33), FilterLongColGreaterEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterDoubleColEqualDoubleColumn(col 4:double, col 5:double)(children: col 4:float)))
-                    predicate: (((cdouble <> 988888.0D) or (CAST( cint AS decimal(13,3)) > -863.257)) and ((ctinyint >= 33Y) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble)) and (cbigint > -23L)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -23), FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0:tinyint, val 33), FilterLongColGreaterEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterDoubleColEqualDoubleColumn(col 4:double, col 5:double)(children: col 4:float)), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5:double, val 988888.0), FilterDecimal64ColGreaterDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val -863257)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64)))
+                    predicate: ((cbigint > -23L) and ((ctinyint >= 33Y) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble)) and ((cdouble <> 988888.0D) or (CAST( cint AS decimal(13,3)) > -863.257))) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cfloat (type: float), cstring1 (type: string), cint (type: int), ctimestamp1 (type: timestamp), cdouble (type: double), cbigint (type: bigint), (UDFToDouble(cfloat) / UDFToDouble(ctinyint)) (type: double), (UDFToLong(cint) % cbigint) (type: bigint), (- cdouble) (type: double), (cdouble + (UDFToDouble(cfloat) / UDFToDouble(ctinyint))) (type: double), (cdouble / UDFToDouble(cint)) (type: double), (- (- cdouble)) (type: double), (9763215.5639 % CAST( cbigint AS decimal(19,0))) (type: decimal(11,4)), (2563.58D + (- (- cdouble))) (type: double)
@@ -92,6 +92,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col5 (type: bigint), _col0 (type: float)
+                        null sort order: zz
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -116,7 +117,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 6, 8]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(13,3), double, double, bigint, double, double, double, double, double, double, double, double, decimal(19,0), decimal(11,4), double, double, double]
+                    scratchColumnTypeNames: [decimal(13,3)/DECIMAL_64, double, double, bigint, double, double, double, double, double, double, double, double, decimal(19,0), decimal(11,4), double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -129,7 +130,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 14
-                    dataColumns: KEY.reducesinkkey0:bigint, KEY.reducesinkkey1:float, VALUE._col0:string, VALUE._col1:int, VALUE._col2:timestamp, VALUE._col3:double, VALUE._col4:double, VALUE._col5:bigint, VALUE._col6:double, VALUE._col7:double, VALUE._col8:double, VALUE._col9:double, VALUE._col10:decimal(11,4), VALUE._col11:double
+                    dataColumns: KEY.reducesinkkey0:bigint, KEY.reducesinkkey1:float, VALUE._col0:string, VALUE._col1:int, VALUE._col2:timestamp, VALUE._col3:double, VALUE._col4:double, VALUE._col5:bigint, VALUE._col6:double, VALUE._col7:double, VALUE._col8:double, VALUE._col9:double, VALUE._col10:decimal(11,4)/DECIMAL_64, VALUE._col11:double
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:

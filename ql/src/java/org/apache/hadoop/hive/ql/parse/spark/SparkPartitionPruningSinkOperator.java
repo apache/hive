@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -161,7 +161,8 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
     fs.mkdirs(path);
 
     while (true) {
-      path = new Path(path, String.valueOf(Utilities.randGen.nextInt()));
+      path = new Path(path, String
+          .valueOf(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE)));
       if (!fs.exists(path)) {
         break;
       }

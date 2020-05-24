@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,4 +34,13 @@ public interface MetastoreTaskThread extends Configurable, Runnable {
    * @return frequency
    */
   long runFrequency(TimeUnit unit);
+
+  /**
+   * Gets the initial delay before the first execution.
+   *
+   * Defaults to {@link #runFrequency(TimeUnit)}
+   */
+  default long initialDelay(TimeUnit unit) {
+    return runFrequency(unit);
+  }
 }

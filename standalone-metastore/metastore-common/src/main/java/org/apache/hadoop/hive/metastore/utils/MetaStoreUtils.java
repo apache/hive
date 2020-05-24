@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +32,18 @@ import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import static java.util.regex.Pattern.compile;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -108,8 +108,14 @@ public class MetaStoreUtils {
   // NOTE:
   // If the following array is updated, please also be sure to update the
   // configuration parameter documentation
-  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
-  private static final char[] specialCharactersInTableNames = new char[] { '/' };
+  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in MetastoreConf as well.
+  private static final char[] SPECIAL_CHARACTERS_IN_TABLE_NAMES = new char[] {
+      // standard
+      ' ', '"', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '[', ']',
+      '_', '|', '{', '}', '$', '^',
+      // non-standard
+      '!', '~', '#', '@', '`'
+  };
 
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
@@ -189,15 +195,15 @@ public class MetaStoreUtils {
    */
   public static boolean validateName(String name, Configuration conf) {
     Pattern tpat;
-    String allowedCharacters = "\\w_";
+    String allowedSpecialCharacters = "";
     if (conf != null
         && MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
-      for (Character c : specialCharactersInTableNames) {
-        allowedCharacters += c;
+      for (Character c : SPECIAL_CHARACTERS_IN_TABLE_NAMES) {
+        allowedSpecialCharacters += c;
       }
     }
-    tpat = Pattern.compile("[" + allowedCharacters + "]+");
+    tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters) + "]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
   }
@@ -379,14 +385,26 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Returns currently known class paths as best effort. For system class loader, this may return
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLo
+   * so all new class paths will be added and next time we will have a URLClassLoader to work wit
+   */
+  private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
+    if(parentLoader instanceof URLClassLoader) {
+      return Lists.newArrayList(((URLClassLoader) parentLoader).getURLs());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  /**
    * Add new elements to the classpath.
    *
    * @param newPaths
    *          Array of classpath elements
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
-    URLClassLoader loader = (URLClassLoader) cloader;
-    List<URL> curPath = Arrays.asList(loader.getURLs());
+    List<URL> curPath = getCurrentClassPaths(cloader);
     ArrayList<URL> newPath = new ArrayList<>(curPath.size());
 
     // get a list with the current classpath components
@@ -402,7 +420,7 @@ public class MetaStoreUtils {
       }
     }
 
-    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+    return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
   }
 
   /**
@@ -644,9 +662,12 @@ public class MetaStoreUtils {
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
           sd.getLocation());
     }
-    schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT, Integer
-            .toString(sd.getNumBuckets()));
+    int bucket_cnt = sd.getNumBuckets();
+    if (bucket_cnt > 0) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT,
+          Integer.toString(bucket_cnt));
+    }
+
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
@@ -660,10 +681,6 @@ public class MetaStoreUtils {
       if (sd.getSerdeInfo().getSerializationLib() != null) {
         schema.setProperty(ColumnType.SERIALIZATION_LIB, sd .getSerdeInfo().getSerializationLib());
       }
-    }
-
-    if (sd.getCols() != null) {
-      schema.setProperty(ColumnType.SERIALIZATION_DDL, getDDLFromFieldSchema(tableName, sd.getCols()));
     }
 
     String partString = StringUtils.EMPTY;
@@ -694,7 +711,13 @@ public class MetaStoreUtils {
     if (parameters != null) {
       for (Map.Entry<String, String> e : parameters.entrySet()) {
         // add non-null parameters to the schema
-        if ( e.getValue() != null) {
+        String key = e.getKey();
+        if (!StatsSetupConst.COLUMN_STATS_ACCURATE.equals(key) &&
+            !hive_metastoreConstants.DDL_TIME.equals(key) &&
+            !StatsSetupConst.TOTAL_SIZE.equals(key) &&
+            !StatsSetupConst.RAW_DATA_SIZE.equals(key) &&
+            !StatsSetupConst.NUM_FILES.equals(key) &&
+            !StatsSetupConst.ROW_COUNT.equals(key) && e.getValue() != null) {
           schema.setProperty(e.getKey(), e.getValue());
         }
       }
@@ -945,5 +968,31 @@ public class MetaStoreUtils {
    */
   public static List<Predicate<String>> compilePatternsToPredicates(List<String> patterns) {
     return patterns.stream().map(pattern -> compile(pattern).asPredicate()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get order specs from a represented string.
+   * @param order specified in partColIndex[,partColIndex]*:[-|\+]+ pattern
+   * @return the order specs
+   */
+  public static List<Object[]> makeOrderSpecs(String order) {
+    if (StringUtils.isBlank(order) || order.split(":").length != 2) {
+      return new ArrayList<Object[]>();
+    }
+    String[] parts = order.split(":");
+    String[] poses = parts[0].split(",");
+    char[] chars = parts[1].toCharArray();
+    List<Object[]> orderSpecs = new ArrayList<Object[]>(chars.length);
+    if (poses.length != chars.length) {
+      throw new IllegalArgumentException("The length of partition keys and sort order" +
+          " do not mismatch, order: " + order);
+    }
+    for (int i = 0; i < poses.length; i++) {
+      Object[] spec = new Object[2];
+      spec[0] = Integer.parseInt(poses[i]);
+      spec[1] = ('+' == chars[i]) ? "ASC" : "DESC";
+      orderSpecs.add(spec);
+    }
+    return orderSpecs;
   }
 }

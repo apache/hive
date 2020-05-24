@@ -6,7 +6,6 @@ set hive.merge.sparkfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 -- SORT_QUERY_RESULTS

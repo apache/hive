@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -45,6 +46,7 @@ import java.io.InputStream;
  * GenericUDF to lookup a value in BloomFilter
  */
 @VectorizedExpressions({VectorInBloomFilterColDynamicValue.class})
+@Description(name = "in_bloom_filter")
 public class GenericUDFInBloomFilter extends GenericUDF {
 
   private transient ObjectInspector valObjectInspector;

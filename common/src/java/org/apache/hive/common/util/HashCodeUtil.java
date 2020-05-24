@@ -47,7 +47,9 @@ public class HashCodeUtil {
     }
   }
 
+  @Deprecated
   public static int calculateBytesHashCode(byte[] keyBytes, int keyStart, int keyLength) {
+    // Don't use this for ReduceSinkOperators
     return murmurHash(keyBytes, keyStart, keyLength);
   }
 

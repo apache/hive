@@ -41,4 +41,23 @@ public class DB2DatabaseAccessor extends GenericJdbcDatabaseAccessor {
     }
     return sql + " LIMIT " + limit;
   }
+
+  @Override
+  protected String constructQuery(String table, String[] columnNames) {
+    if(columnNames == null) {
+      throw new IllegalArgumentException("Column names may not be null");
+    }
+
+    StringBuilder query = new StringBuilder();
+    query.append("INSERT INTO ").append(table).append(" VALUES (");
+
+    for (int i = 0; i < columnNames.length; i++) {
+      query.append("?");
+      if(i != columnNames.length - 1) {
+        query.append(",");
+      }
+    }
+    query.append(")");
+    return query.toString();
+  }
 }

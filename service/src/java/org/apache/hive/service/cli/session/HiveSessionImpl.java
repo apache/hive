@@ -34,7 +34,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,11 +76,14 @@ import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.KillQueryImpl;
+import org.apache.hive.service.server.KillQueryZookeeperManager;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * HiveSession
@@ -134,16 +137,6 @@ public class HiveSessionImpl implements HiveSession {
     this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
-    try {
-      // In non-impersonation mode, map scheduler queue to current user
-      // if fair scheduler is configured.
-      if (! sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
-        sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
-        ShimLoader.getHadoopShims().refreshDefaultQueue(sessionConf, username);
-      }
-    } catch (IOException e) {
-      LOG.warn("Error setting scheduler queue: " + e, e);
-    }
     // Set an explicit session name to control the download directory name
     sessionConf.set(ConfVars.HIVESESSIONID.varname,
         this.sessionHandle.getHandleIdentifier().toString());
@@ -175,7 +168,11 @@ public class HiveSessionImpl implements HiveSession {
     } catch (Exception e) {
       throw new HiveSQLException(e);
     }
-    sessionState.setKillQuery(new KillQueryImpl(operationManager));
+    KillQueryZookeeperManager killQueryZookeeperManager = null;
+    if (sessionManager != null) {
+      killQueryZookeeperManager = sessionManager.getKillQueryZookeeperManager();
+    }
+    sessionState.setKillQuery(new KillQueryImpl(operationManager, killQueryZookeeperManager));
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();
@@ -191,8 +188,6 @@ public class HiveSessionImpl implements HiveSession {
 
     // Process global init file: .hiverc
     processGlobalInitFile();
-    // Set fetch size in session conf map
-    sessionConfMap = setFetchSize(sessionConfMap);
 
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
@@ -283,22 +278,6 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
-  private Map<String, String> setFetchSize(Map<String, String> sessionConfMap) {
-    int maxFetchSize =
-      sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
-    String confFetchSize = sessionConfMap != null ?
-      sessionConfMap.get(
-        "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname) :
-        null;
-    if (confFetchSize != null && !confFetchSize.isEmpty()) {
-        int fetchSize = Integer.parseInt(confFetchSize);
-        sessionConfMap.put(
-          "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-          Integer.toString(fetchSize > maxFetchSize ? maxFetchSize : fetchSize));
-    }
-    return sessionConfMap;
-  }
-
   private void configureSession(Map<String, String> sessionConfMap) throws HiveSQLException {
     SessionState.setCurrentSessionState(sessionState);
     for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
@@ -311,7 +290,8 @@ public class HiveSessionImpl implements HiveSession {
         }
       } else if (key.startsWith("use:")) {
         try {
-          if (sessionHive.getDatabase(entry.getValue()) == null) {
+          if (!(StringUtils.equals(DEFAULT_DATABASE_NAME, entry.getValue()))
+              && sessionHive.getDatabase(entry.getValue()) == null) {
             throw new HiveSQLException("Database " + entry.getValue() + " does not exist");
           }
         } catch (HiveException e) {

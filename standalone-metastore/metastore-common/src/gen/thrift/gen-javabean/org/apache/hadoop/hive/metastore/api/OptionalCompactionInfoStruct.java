@@ -112,7 +112,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.CI, new org.apache.thrift.meta_data.FieldMetaData("ci", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "CompactionInfoStruct")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CompactionInfoStruct.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(OptionalCompactionInfoStruct.class, metaDataMap);
   }
@@ -125,7 +125,7 @@ import org.slf4j.LoggerFactory;
    */
   public OptionalCompactionInfoStruct(OptionalCompactionInfoStruct other) {
     if (other.isSetCi()) {
-      this.ci = other.ci;
+      this.ci = new CompactionInfoStruct(other.ci);
     }
   }
 
@@ -287,6 +287,9 @@ import org.slf4j.LoggerFactory;
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (ci != null) {
+      ci.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {

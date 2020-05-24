@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -137,9 +137,10 @@ public class VectorizedBatchUtil {
         case SHORT:
         case INT:
         case LONG:
-        case DATE:
         case INTERVAL_YEAR_MONTH:
           return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case DATE:
+          return new DateColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case TIMESTAMP:
           return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case INTERVAL_DAY_TIME:
@@ -574,13 +575,14 @@ public class VectorizedBatchUtil {
     return typeInfoList.toArray(new TypeInfo[0]);
   }
 
-  public static ColumnVector makeLikeColumnVector(ColumnVector source
-                                        ) throws HiveException{
+  public static ColumnVector makeLikeColumnVector(ColumnVector source) throws HiveException{
     if (source instanceof Decimal64ColumnVector) {
       Decimal64ColumnVector dec64ColVector = (Decimal64ColumnVector) source;
-      return new DecimalColumnVector(dec64ColVector.vector.length,
+      return new Decimal64ColumnVector(dec64ColVector.vector.length,
           dec64ColVector.precision,
           dec64ColVector.scale);
+    } else if (source instanceof DateColumnVector) {
+      return new DateColumnVector(((DateColumnVector) source).vector.length);
     } else if (source instanceof LongColumnVector) {
       return new LongColumnVector(((LongColumnVector) source).vector.length);
     } else if (source instanceof DoubleColumnVector) {
@@ -619,6 +621,8 @@ public class VectorizedBatchUtil {
         copy[i] = makeLikeColumnVector(src.fields[i]);
       }
       return new UnionColumnVector(src.tags.length, copy);
+    } else if (source instanceof VoidColumnVector) {
+      return new VoidColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     } else
       throw new HiveException("Column vector class " +
           source.getClass().getName() +

@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -44,9 +45,10 @@ import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,8 +67,9 @@ import com.google.common.collect.Lists;
 public class TestAppendPartitions extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
+  private Configuration conf;
 
-  private static final String DB_NAME = "test_append_part_db";
+  protected static final String DB_NAME = "test_append_part_db";
   private static Table tableWithPartitions;
   private static Table externalTable;
   private static Table tableNoPartColumns;
@@ -78,20 +81,15 @@ public class TestAppendPartitions extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    conf = org.apache.hadoop.hive.metastore.conf.MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, true);
     // Get new client
     client = metaStore.getClient();
 
     // Clean up the database
-    client.dropDatabase(DB_NAME, true, true, true);
-    metaStore.cleanWarehouseDirs();
-    new DatabaseBuilder()
-        .setName(DB_NAME)
-        .create(client, metaStore.getConf());
+    cleanUpDatabase();
 
-    tableWithPartitions = createTableWithPartitions();
-    externalTable = createExternalTable();
-    tableNoPartColumns = createTableNoPartitionColumns();
-    tableView = createView();
+    createTables();
   }
 
   @After
@@ -109,6 +107,33 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     }
   }
 
+  protected void cleanUpDatabase() throws Exception{
+    client.dropDatabase(DB_NAME, true, true, true);
+    metaStore.cleanWarehouseDirs();
+    new DatabaseBuilder()
+        .setName(DB_NAME)
+        .create(client, metaStore.getConf());
+  }
+
+  protected void createTables() throws Exception{
+    tableWithPartitions = createTableWithPartitions();
+    externalTable = createExternalTable();
+    tableNoPartColumns = createTableNoPartitionColumns();
+    tableView = createView();
+  }
+
+  protected void setClient(IMetaStoreClient client) {
+    this.client = client;
+  }
+
+  protected IMetaStoreClient getClient() {
+    return client;
+  }
+
+  protected AbstractMetaStoreService getMetaStore() {
+    return metaStore;
+  }
+
   // Tests for Partition appendPartition(String tableName, String dbName, List<String> partVals) method
 
   @Test
@@ -124,6 +149,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Partition partition =
         client.getPartition(table.getDbName(), table.getTableName(), partitionValues);
     appendedPart.setWriteId(partition.getWriteId());
+    partition.setWriteIdIsSet(true);
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, partitionValues, "year=2017/month=may");
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=march", "year=2017/month=april",
@@ -143,6 +169,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Partition partition =
         client.getPartition(table.getDbName(), table.getTableName(), partitionValues);
     appendedPart.setWriteId(partition.getWriteId());
+    partition.setWriteIdIsSet(true);
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, partitionValues, "year=2017/month=may");
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=may"));
@@ -175,6 +202,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAppendPartitionToView() throws Exception {
 
     List<String> partitionValues = Lists.newArrayList("2017", "may");
@@ -297,6 +325,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Partition partition = client.getPartition(table.getDbName(), table.getTableName(),
         getPartitionValues(partitionName));
     appendedPart.setWriteId(partition.getWriteId());
+    partition.setWriteIdIsSet(true);
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, getPartitionValues(partitionName), partitionName);
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=march", "year=2017/month=april",
@@ -316,6 +345,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Partition partition = client.getPartition(table.getDbName(), table.getTableName(),
         getPartitionValues(partitionName));
     appendedPart.setWriteId(partition.getWriteId());
+    partition.setWriteIdIsSet(true);
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, getPartitionValues(partitionName), partitionName);
     verifyPartitionNames(table, Lists.newArrayList(partitionName));
@@ -346,6 +376,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAppendPartToView() throws Exception {
 
     String partitionName = "year=2017/month=may";
@@ -450,6 +481,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void otherCatalog() throws TException {
     String catName = "append_partition_catalog";
     Catalog cat = new CatalogBuilder()
@@ -491,12 +523,14 @@ public class TestAppendPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidObjectException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAppendPartitionBogusCatalog() throws Exception {
     client.appendPartition("nosuch", DB_NAME, tableWithPartitions.getTableName(),
         Lists.newArrayList("2017", "may"));
   }
 
   @Test(expected = InvalidObjectException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAppendPartitionByNameBogusCatalog() throws Exception {
     client.appendPartition("nosuch", DB_NAME, tableWithPartitions.getTableName(),
         "year=2017/month=april");
@@ -525,7 +559,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     tableParams.put("EXTERNAL", "TRUE");
     Table table = createTable("test_append_part_external_table", getYearAndMonthPartCols(),
         tableParams, TableType.EXTERNAL_TABLE.name(),
-        metaStore.getWarehouseRoot() + "/test_append_part_external_table");
+        metaStore.getExternalWarehouseRoot() + "/test_append_part_external_table");
     return table;
   }
 
@@ -535,7 +569,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     return table;
   }
 
-  private Table createTable(String tableName, List<FieldSchema> partCols, Map<String,
+  protected Table createTable(String tableName, List<FieldSchema> partCols, Map<String,
       String> tableParams, String tableType, String location) throws Exception {
     new TableBuilder()
         .setDbName(DB_NAME)
@@ -574,14 +608,14 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     return values;
   }
 
-  private void verifyPartition(Partition partition, Table table, List<String> expectedPartValues,
+  protected void verifyPartition(Partition partition, Table table, List<String> expectedPartValues,
       String partitionName) throws Exception {
     Assert.assertEquals(table.getTableName(), partition.getTableName());
     Assert.assertEquals(table.getDbName(), partition.getDbName());
     Assert.assertEquals(expectedPartValues, partition.getValues());
     Assert.assertNotEquals(0, partition.getCreateTime());
     Assert.assertEquals(0, partition.getLastAccessTime());
-    Assert.assertEquals(1, partition.getParameters().size());
+    Assert.assertTrue("Expect atleast transient_lastDdlTime to be set in params", (partition.getParameters().size() > 0));
     Assert.assertTrue(partition.getParameters().containsKey("transient_lastDdlTime"));
     StorageDescriptor partitionSD = partition.getSd();
     Assert.assertEquals(table.getSd().getLocation() + "/" + partitionName,

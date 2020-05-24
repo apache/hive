@@ -228,10 +228,6 @@
       <includes>
         <include>**/*</include>
       </includes>
-      <excludes>
-        <!-- pick up upgrade order from standalone metastore, except hive, which does not exist in standalone metastore -->
-        <exclude>%regex[(!hive)/upgrade.order.*]</exclude>
-      </excludes>
       <outputDirectory>scripts/metastore/upgrade</outputDirectory>
     </fileSet>
 

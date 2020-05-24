@@ -51,11 +51,11 @@ STAGE PLANS:
   Stage: Stage-3
     Create Table
       columns: key string, value string
+      name: default.foo
       input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.foo
       isTemporary: true
 
   Stage: Stage-2
@@ -125,11 +125,11 @@ STAGE PLANS:
   Stage: Stage-3
     Create Table
       columns: key string, value string
+      name: default.bar
       input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.bar
       isTemporary: true
 
   Stage: Stage-2
@@ -218,6 +218,7 @@ STAGE PLANS:
                     Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -297,6 +298,7 @@ STAGE PLANS:
                     Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -313,6 +315,7 @@ STAGE PLANS:
                     Statistics: Num rows: 253 Data size: 2703 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1

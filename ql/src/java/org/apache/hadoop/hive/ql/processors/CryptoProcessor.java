@@ -49,11 +49,8 @@ public class CryptoProcessor implements CommandProcessor {
 
   private int DEFAULT_BIT_LENGTH = 128;
 
-  private HiveConf conf;
-
   public CryptoProcessor(HadoopShims.HdfsEncryptionShim encryptionShim, HiveConf conf) {
     this.encryptionShim = encryptionShim;
-    this.conf = conf;
 
     CREATE_KEY_OPTIONS = new Options();
     CREATE_KEY_OPTIONS.addOption(OptionBuilder.hasArg().withLongOpt("keyName").isRequired().create());
@@ -72,24 +69,21 @@ public class CryptoProcessor implements CommandProcessor {
     return parser.parse(opts, args);
   }
 
-  private CommandProcessorResponse returnErrorResponse(final String errmsg) {
-    return new CommandProcessorResponse(1, "Encryption Processor Helper Failed:" + errmsg, null);
-  }
-
   private void writeTestOutput(final String msg) {
     SessionState.get().out.println(msg);
   }
 
   @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
     String[] args = command.split("\\s+");
 
     if (args.length < 1) {
-      return returnErrorResponse("Command arguments are empty.");
+      throw new CommandProcessorException("Encryption Processor Helper Failed: Command arguments are empty.");
     }
 
     if (encryptionShim == null) {
-      return returnErrorResponse("Hadoop encryption shim is not initialized.");
+      throw new CommandProcessorException(
+          "Encryption Processor Helper Failed: Hadoop encryption shim is not initialized.");
     }
 
     String action = args[0];
@@ -103,13 +97,13 @@ public class CryptoProcessor implements CommandProcessor {
       } else if (action.equalsIgnoreCase("delete_key")) {
         deleteEncryptionKey(params);
       } else {
-        return returnErrorResponse("Unknown command action: " + action);
+        throw new CommandProcessorException("Encryption Processor Helper Failed: Unknown command action: " + action);
       }
     } catch (Exception e) {
-      return returnErrorResponse(e.getMessage());
+      throw new CommandProcessorException("Encryption Processor Helper Failed: " + e.getMessage());
     }
 
-    return new CommandProcessorResponse(0);
+    return new CommandProcessorResponse();
   }
 
   /**

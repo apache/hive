@@ -81,6 +81,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: s (type: string), si (type: smallint)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: s (type: string)
                     Reduce Sink Vectorization:
@@ -10260,6 +10261,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), dec (type: decimal(4,2))
+                      null sort order: az
                       sort order: +-
                       Map-reduce partition columns: s (type: string)
                       Reduce Sink Vectorization:
@@ -10356,6 +10358,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col7 (type: string), _col8 (type: timestamp)
+                      null sort order: az
                       sort order: +-
                       Map-reduce partition columns: _col7 (type: string)
                       Reduce Sink Vectorization:
@@ -10542,6 +10545,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: s (type: string)
                       Reduce Sink Vectorization:
@@ -10635,6 +10639,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col1 (type: smallint)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col1 (type: smallint)
                       Reduce Sink Vectorization:
@@ -10813,6 +10818,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), bo (type: boolean)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: s (type: string)
                       Reduce Sink Vectorization:
@@ -10909,6 +10915,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col1 (type: smallint), _col10 (type: binary)
+                      null sort order: az
                       sort order: +-
                       Map-reduce partition columns: _col1 (type: smallint)
                       Reduce Sink Vectorization:
@@ -11090,6 +11097,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: i (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: i (type: int)
                       Reduce Sink Vectorization:
@@ -11183,6 +11191,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: 0 (type: int), _col4 (type: float)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: 0 (type: int)
                       Reduce Sink Vectorization:
@@ -11374,6 +11383,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), dec (type: decimal(4,2))
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: s (type: string)
                       Reduce Sink Vectorization:
@@ -11470,6 +11480,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col1 (type: smallint), _col4 (type: float)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: _col1 (type: smallint)
                       Reduce Sink Vectorization:

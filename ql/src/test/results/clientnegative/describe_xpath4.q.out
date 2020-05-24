@@ -1,4 +1,4 @@
 PREHOOK: query: describe src_thrift mStringString.abc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error in getting fields from serde.Unknown type for abc
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error in getting fields from serde.Unknown type for abc

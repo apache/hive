@@ -1,0 +1,227 @@
+PREHOOK: query: CREATE TABLE avro_extschema_literal_n0
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"col1", "type":"string" },
+    { "name":"col2", "type":"long" },
+    { "name":"col3", "type":"string" }
+  ] }')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_literal_n0
+POSTHOOK: query: CREATE TABLE avro_extschema_literal_n0
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"col1", "type":"string" },
+    { "name":"col2", "type":"long" },
+    { "name":"col3", "type":"string" }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_literal_n0
+PREHOOK: query: INSERT INTO TABLE avro_extschema_literal_n0 VALUES('s1', 1, 's2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@avro_extschema_literal_n0
+POSTHOOK: query: INSERT INTO TABLE avro_extschema_literal_n0 VALUES('s1', 1, 's2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@avro_extschema_literal_n0
+POSTHOOK: Lineage: avro_extschema_literal_n0.col1 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_literal_n0.col2 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_literal_n0.col3 SCRIPT []
+PREHOOK: query: DESCRIBE EXTENDED avro_extschema_literal_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_literal_n0
+POSTHOOK: query: DESCRIBE EXTENDED avro_extschema_literal_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_literal_n0
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM avro_extschema_literal_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_literal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_extschema_literal_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_literal_n0
+#### A masked pattern was here ####
+s1	1	s2
+PREHOOK: query: CREATE TABLE avro_extschema_url_n0
+STORED AS AVRO
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_url_n0
+POSTHOOK: query: CREATE TABLE avro_extschema_url_n0
+STORED AS AVRO
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_url_n0
+PREHOOK: query: INSERT INTO TABLE avro_extschema_url_n0 VALUES('s1', 1, 's2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@avro_extschema_url_n0
+POSTHOOK: query: INSERT INTO TABLE avro_extschema_url_n0 VALUES('s1', 1, 's2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@avro_extschema_url_n0
+POSTHOOK: Lineage: avro_extschema_url_n0.col1 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_url_n0.col2 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_url_n0.col3 SCRIPT []
+PREHOOK: query: DESCRIBE EXTENDED avro_extschema_url_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_url_n0
+POSTHOOK: query: DESCRIBE EXTENDED avro_extschema_url_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_url_n0
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM avro_extschema_url_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_url_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_extschema_url_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_url_n0
+#### A masked pattern was here ####
+s1	1	s2
+PREHOOK: query: CREATE TABLE avro_extschema_literal1
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+WITH SERDEPROPERTIES (
+'avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"col1", "type":"string" },
+    { "name":"col2", "type":"long" },
+    { "name":"col3", "type":"string" }
+  ] }')
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_literal1
+POSTHOOK: query: CREATE TABLE avro_extschema_literal1
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+WITH SERDEPROPERTIES (
+'avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"col1", "type":"string" },
+    { "name":"col2", "type":"long" },
+    { "name":"col3", "type":"string" }
+  ] }')
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_literal1
+PREHOOK: query: INSERT INTO TABLE avro_extschema_literal1 VALUES('s1', 1, 's2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@avro_extschema_literal1
+POSTHOOK: query: INSERT INTO TABLE avro_extschema_literal1 VALUES('s1', 1, 's2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@avro_extschema_literal1
+POSTHOOK: Lineage: avro_extschema_literal1.col1 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_literal1.col2 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_literal1.col3 SCRIPT []
+PREHOOK: query: DESCRIBE EXTENDED avro_extschema_literal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_literal1
+POSTHOOK: query: DESCRIBE EXTENDED avro_extschema_literal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_literal1
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM avro_extschema_literal1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_literal1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_extschema_literal1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_literal1
+#### A masked pattern was here ####
+s1	1	s2
+PREHOOK: query: CREATE TABLE avro_extschema_url1
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+#### A masked pattern was here ####
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_url1
+POSTHOOK: query: CREATE TABLE avro_extschema_url1
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+#### A masked pattern was here ####
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_url1
+PREHOOK: query: INSERT INTO TABLE avro_extschema_url1 VALUES('s1', 1, 's2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@avro_extschema_url1
+POSTHOOK: query: INSERT INTO TABLE avro_extschema_url1 VALUES('s1', 1, 's2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@avro_extschema_url1
+POSTHOOK: Lineage: avro_extschema_url1.col1 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_url1.col2 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_url1.col3 SCRIPT []
+PREHOOK: query: DESCRIBE EXTENDED avro_extschema_url1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_url1
+POSTHOOK: query: DESCRIBE EXTENDED avro_extschema_url1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_url1
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM avro_extschema_url1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_url1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_extschema_url1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_url1
+#### A masked pattern was here ####
+s1	1	s2
+#### A masked pattern was here ####

@@ -31,6 +31,8 @@ public interface OpTreeSignatureFactory {
 
   OpTreeSignature getSignature(Operator<? extends OperatorDesc> op);
 
+  void clear();
+
   OpTreeSignatureFactory DIRECT = new Direct();
 
   static OpTreeSignatureFactory direct() {
@@ -51,6 +53,10 @@ public interface OpTreeSignatureFactory {
       return OpTreeSignature.of(op, this);
     }
 
+    @Override
+    public void clear() {
+    }
+
   }
 
   class CachedFactory implements OpTreeSignatureFactory {
@@ -62,6 +68,12 @@ public interface OpTreeSignatureFactory {
       return cache.computeIfAbsent(op, k -> OpTreeSignature.of(op, this));
     }
 
+    @Override
+    public void clear() {
+      cache.clear();
+    }
+
   }
+
 
 }

@@ -1,0 +1,208 @@
+PREHOOK: query: create table src_stat_part_one(key string, value string) partitioned by (partitionId int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_part_one
+POSTHOOK: query: create table src_stat_part_one(key string, value string) partitioned by (partitionId int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_part_one
+PREHOOK: query: insert overwrite table src_stat_part_one partition (partitionId=1)
+  select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@src_stat_part_one@partitionid=1
+POSTHOOK: query: insert overwrite table src_stat_part_one partition (partitionId=1)
+  select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src_stat_part_one@partitionid=1
+POSTHOOK: Lineage: src_stat_part_one PARTITION(partitionid=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_one PARTITION(partitionid=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ANALYZE TABLE src_stat_part_one PARTITION(partitionId=1) COMPUTE STATISTICS for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_stat_part_one
+PREHOOK: Input: default@src_stat_part_one@partitionid=1
+PREHOOK: Output: default@src_stat_part_one
+PREHOOK: Output: default@src_stat_part_one@partitionid=1
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_part_one PARTITION(partitionId=1) COMPUTE STATISTICS for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_stat_part_one
+POSTHOOK: Input: default@src_stat_part_one@partitionid=1
+POSTHOOK: Output: default@src_stat_part_one
+POSTHOOK: Output: default@src_stat_part_one@partitionid=1
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_one
+POSTHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_one
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	1.72                
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_one
+PREHOOK: Output: default@src_stat_part_one@partitionid=1
+POSTHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_one
+POSTHOOK: Output: default@src_stat_part_one@partitionid=1
+PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_one
+POSTHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_one
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	11                  
+avg_col_len         	2.2                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_part_two
+POSTHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_part_two
+PREHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='a')
+  select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
+POSTHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='a')
+  select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
+POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=a).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=a).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ANALYZE TABLE src_stat_part_two PARTITION(px=1) COMPUTE STATISTICS for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_stat_part_two
+PREHOOK: Input: default@src_stat_part_two@px=1/py=a
+PREHOOK: Output: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_part_two PARTITION(px=1) COMPUTE STATISTICS for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_stat_part_two
+POSTHOOK: Input: default@src_stat_part_two@px=1/py=a
+POSTHOOK: Output: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_two
+POSTHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_two
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	1.72                
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
+POSTHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
+PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_two
+POSTHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_two
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	30                  
+avg_col_len         	1.72                
+max_col_len         	40                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
+POSTHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
+PREHOOK: query: describe formatted default.src_stat_part_two PARTITION(px=1, py='a') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_two
+POSTHOOK: query: describe formatted default.src_stat_part_two PARTITION(px=1, py='a') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_two
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	40                  
+avg_col_len         	1.72                
+max_col_len         	50                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb

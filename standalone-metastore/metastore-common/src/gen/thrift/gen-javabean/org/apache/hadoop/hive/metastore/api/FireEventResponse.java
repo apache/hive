@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class FireEventResponse implements org.apache.thrift.TBase<FireEventResponse, FireEventResponse._Fields>, java.io.Serializable, Cloneable, Comparable<FireEventResponse> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FireEventResponse");
 
+  private static final org.apache.thrift.protocol.TField EVENT_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("eventIds", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,10 +46,11 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new FireEventResponseTupleSchemeFactory());
   }
 
+  private List<Long> eventIds; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+    EVENT_IDS((short)1, "eventIds");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -63,6 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
+        case 1: // EVENT_IDS
+          return EVENT_IDS;
         default:
           return null;
       }
@@ -101,9 +105,14 @@ import org.slf4j.LoggerFactory;
       return _fieldName;
     }
   }
+
+  // isset id assignments
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.EVENT_IDS, new org.apache.thrift.meta_data.FieldMetaData("eventIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FireEventResponse.class, metaDataMap);
   }
@@ -111,10 +120,21 @@ import org.slf4j.LoggerFactory;
   public FireEventResponse() {
   }
 
+  public FireEventResponse(
+    List<Long> eventIds)
+  {
+    this();
+    this.eventIds = eventIds;
+  }
+
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public FireEventResponse(FireEventResponse other) {
+    if (other.isSetEventIds()) {
+      List<Long> __this__eventIds = new ArrayList<Long>(other.eventIds);
+      this.eventIds = __this__eventIds;
+    }
   }
 
   public FireEventResponse deepCopy() {
@@ -123,15 +143,65 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.eventIds = null;
+  }
+
+  public int getEventIdsSize() {
+    return (this.eventIds == null) ? 0 : this.eventIds.size();
+  }
+
+  public java.util.Iterator<Long> getEventIdsIterator() {
+    return (this.eventIds == null) ? null : this.eventIds.iterator();
+  }
+
+  public void addToEventIds(long elem) {
+    if (this.eventIds == null) {
+      this.eventIds = new ArrayList<Long>();
+    }
+    this.eventIds.add(elem);
+  }
+
+  public List<Long> getEventIds() {
+    return this.eventIds;
+  }
+
+  public void setEventIds(List<Long> eventIds) {
+    this.eventIds = eventIds;
+  }
+
+  public void unsetEventIds() {
+    this.eventIds = null;
+  }
+
+  /** Returns true if field eventIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetEventIds() {
+    return this.eventIds != null;
+  }
+
+  public void setEventIdsIsSet(boolean value) {
+    if (!value) {
+      this.eventIds = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case EVENT_IDS:
+      if (value == null) {
+        unsetEventIds();
+      } else {
+        setEventIds((List<Long>)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case EVENT_IDS:
+      return getEventIds();
+
     }
     throw new IllegalStateException();
   }
@@ -143,6 +213,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case EVENT_IDS:
+      return isSetEventIds();
     }
     throw new IllegalStateException();
   }
@@ -160,12 +232,26 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
+    boolean this_present_eventIds = true && this.isSetEventIds();
+    boolean that_present_eventIds = true && that.isSetEventIds();
+    if (this_present_eventIds || that_present_eventIds) {
+      if (!(this_present_eventIds && that_present_eventIds))
+        return false;
+      if (!this.eventIds.equals(that.eventIds))
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
+
+    boolean present_eventIds = true && (isSetEventIds());
+    list.add(present_eventIds);
+    if (present_eventIds)
+      list.add(eventIds);
 
     return list.hashCode();
   }
@@ -178,6 +264,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetEventIds()).compareTo(other.isSetEventIds());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEventIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.eventIds, other.eventIds);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -198,6 +294,13 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("FireEventResponse(");
     boolean first = true;
 
+    sb.append("eventIds:");
+    if (this.eventIds == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.eventIds);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -241,6 +344,24 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
+          case 1: // EVENT_IDS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list852 = iprot.readListBegin();
+                struct.eventIds = new ArrayList<Long>(_list852.size);
+                long _elem853;
+                for (int _i854 = 0; _i854 < _list852.size; ++_i854)
+                {
+                  _elem853 = iprot.readI64();
+                  struct.eventIds.add(_elem853);
+                }
+                iprot.readListEnd();
+              }
+              struct.setEventIdsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -254,6 +375,18 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.eventIds != null) {
+        oprot.writeFieldBegin(EVENT_IDS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.eventIds.size()));
+          for (long _iter855 : struct.eventIds)
+          {
+            oprot.writeI64(_iter855);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -271,11 +404,39 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, FireEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      BitSet optionals = new BitSet();
+      if (struct.isSetEventIds()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetEventIds()) {
+        {
+          oprot.writeI32(struct.eventIds.size());
+          for (long _iter856 : struct.eventIds)
+          {
+            oprot.writeI64(_iter856);
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, FireEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        {
+          org.apache.thrift.protocol.TList _list857 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.eventIds = new ArrayList<Long>(_list857.size);
+          long _elem858;
+          for (int _i859 = 0; _i859 < _list857.size; ++_i859)
+          {
+            _elem858 = iprot.readI64();
+            struct.eventIds.add(_elem858);
+          }
+        }
+        struct.setEventIdsIsSet(true);
+      }
     }
   }
 

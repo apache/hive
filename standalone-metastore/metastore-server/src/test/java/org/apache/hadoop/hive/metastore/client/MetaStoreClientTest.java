@@ -22,7 +22,9 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
@@ -31,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -45,14 +46,17 @@ public abstract class MetaStoreClientTest {
   // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
   // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
   // Then we should remove our own copy
-  private static Set<AbstractMetaStoreService> metaStoreServices = null;
+  private static List<AbstractMetaStoreService> metaStoreServices = null;
+
+  @Rule
+  public TestRule ignoreRule;
 
   @Parameterized.Parameters(name = "{0}")
   public static List<Object[]> getMetaStoreToTest() throws Exception {
     List<Object[]> result = MetaStoreFactoryForTests.getMetaStores();
     metaStoreServices = result.stream()
-                            .map(test -> (AbstractMetaStoreService)test[1])
-                            .collect(Collectors.toSet());
+        .map(test -> (AbstractMetaStoreService)test[1])
+        .collect(Collectors.toList());
     return result;
   }
 
@@ -68,14 +72,12 @@ public abstract class MetaStoreClientTest {
    * @param extraConf Specific other configuration values
    */
   public static void startMetaStores(Map<MetastoreConf.ConfVars, String> msConf,
-                              Map<String, String> extraConf) {
+      Map<String, String> extraConf) {
     for(AbstractMetaStoreService metaStoreService : metaStoreServices) {
       try {
         metaStoreService.start(msConf, extraConf);
       } catch(Exception e) {
-        // Catch the exceptions, so every other metastore could be stopped as well
-        // Log it, so at least there is a slight possibility we find out about this :)
-        LOG.error("Error starting MetaStoreService", e);
+        throw new RuntimeException("Error starting MetaStoreService", e);
       }
     }
   }
@@ -86,9 +88,7 @@ public abstract class MetaStoreClientTest {
       try {
         metaStoreService.stop();
       } catch(Exception e) {
-        // Catch the exceptions, so every other metastore could be stopped as well
-        // Log it, so at least there is a slight possibility we find out about this :)
-        LOG.error("Error stopping MetaStoreService", e);
+        throw new RuntimeException("Error stopping MetaStoreService", e);
       }
     }
   }

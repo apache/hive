@@ -168,6 +168,7 @@ class StageType:
   REPL_STATE_LOG = 14
   REPL_TXN = 15
   REPL_INCREMENTAL_LOAD = 16
+  SCHEDULED_QUERY_MAINT = 17
 
   _VALUES_TO_NAMES = {
     0: "CONDITIONAL",
@@ -187,6 +188,7 @@ class StageType:
     14: "REPL_STATE_LOG",
     15: "REPL_TXN",
     16: "REPL_INCREMENTAL_LOAD",
+    17: "SCHEDULED_QUERY_MAINT",
   }
 
   _NAMES_TO_VALUES = {
@@ -207,6 +209,7 @@ class StageType:
     "REPL_STATE_LOG": 14,
     "REPL_TXN": 15,
     "REPL_INCREMENTAL_LOAD": 16,
+    "SCHEDULED_QUERY_MAINT": 17,
   }
 
 

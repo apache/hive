@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,12 +49,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestRCFile.
  *
  */
-public class TestRCFileMapReduceInputFormat extends TestCase {
+public class TestRCFileMapReduceInputFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestRCFileMapReduceInputFormat.class);
 
@@ -173,6 +175,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
   }
 
 
+  @Test
   public void testSynAndSplit() throws IOException, InterruptedException {
     splitBeforeSync();
     splitRightBeforeSync();

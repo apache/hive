@@ -263,7 +263,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void startTask(String queryId, Task<? extends Serializable> task,
+  public void startTask(String queryId, Task<?> task,
       String taskName) {
     TaskInfo ti = new TaskInfo();
 
@@ -279,7 +279,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void endTask(String queryId, Task<? extends Serializable> task) {
+  public void endTask(String queryId, Task<?> task) {
     String id = queryId + ":" + task.getId();
     TaskInfo ti = taskInfoMap.get(id);
 
@@ -291,7 +291,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void progressTask(String queryId, Task<? extends Serializable> task) {
+  public void progressTask(String queryId, Task<?> task) {
     String id = queryId + ":" + task.getId();
     TaskInfo ti = taskInfoMap.get(id);
     if (ti == null) {

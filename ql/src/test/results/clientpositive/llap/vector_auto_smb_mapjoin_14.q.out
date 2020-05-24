@@ -83,6 +83,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -109,6 +110,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -225,6 +227,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -253,6 +256,7 @@ STAGE PLANS:
                           Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
@@ -301,6 +305,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
@@ -425,7 +430,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -442,6 +447,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -471,6 +477,7 @@ STAGE PLANS:
                           Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
@@ -492,6 +499,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -521,6 +529,7 @@ STAGE PLANS:
                           Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
@@ -554,10 +563,11 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkObjectHashOperator
+                      className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -612,10 +622,11 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkObjectHashOperator
+                      className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -720,6 +731,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -746,6 +758,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -869,6 +882,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -895,6 +909,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -1040,6 +1055,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1066,6 +1082,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -1201,6 +1218,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1227,6 +1245,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -1354,6 +1373,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
@@ -1398,6 +1418,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
@@ -1433,6 +1454,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1541,6 +1563,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1567,6 +1590,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -1683,6 +1707,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1705,6 +1730,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
@@ -1737,6 +1763,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
@@ -1772,6 +1799,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1902,6 +1930,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1928,6 +1957,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -2072,6 +2102,7 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2308,6 +2339,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2349,6 +2381,7 @@ STAGE PLANS:
                             Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: int)
+                              null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: int)
                               Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE

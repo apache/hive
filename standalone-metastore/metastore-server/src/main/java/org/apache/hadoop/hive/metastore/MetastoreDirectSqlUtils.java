@@ -20,7 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -57,7 +57,14 @@ class MetastoreDirectSqlUtils {
   }
   @SuppressWarnings("unchecked")
   static <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
+    return (T)executeWithArray(query, params, sql, -1);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> T executeWithArray(Query query, Object[] params, String sql, int limit) throws MetaException {
     try {
+      if (limit >= 0)
+        query.setRange(0, limit);
       return (T)((params == null) ? query.execute() : query.executeWithArray(params));
     } catch (Exception ex) {
       StringBuilder errorBuilder = new StringBuilder("Failed to execute [" + sql + "] with parameters [");

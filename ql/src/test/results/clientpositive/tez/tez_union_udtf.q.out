@@ -1,0 +1,153 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x
+POSTHOOK: query: EXPLAIN
+CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x
+Plan not optimized by CBO because the statement has lateral views
+
+Vertex dependency in root stage
+Map 1 <- Union 2 (CONTAINS)
+Map 4 <- Union 2 (CONTAINS)
+Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-9
+      Create Table{"name:":"default.x"}
+        Stage-0
+          Move Operator
+            Stage-5(CONDITIONAL)
+              Move Operator
+                Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+                  Conditional Operator
+                    Stage-1
+                      Reducer 3
+                      File Output Operator [FS_23]
+                        Group By Operator [GBY_21] (rows=1 width=880)
+                          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                        <-Union 2 [CUSTOM_SIMPLE_EDGE]
+                          <-Map 1 [CONTAINS]
+                            File Output Operator [FS_31]
+                              table:{"name:":"default.x"}
+                              Select Operator [SEL_30] (rows=6 width=91)
+                                Output:["_col0","_col1"]
+                                Select Operator [SEL_28] (rows=2 width=91)
+                                  Output:["_col1"]
+                                  Filter Operator [FIL_27] (rows=2 width=87)
+                                    predicate:(key = '238')
+                                    TableScan [TS_26] (rows=500 width=87)
+                                      Output:["key"]
+                            Reduce Output Operator [RS_34]
+                              Group By Operator [GBY_33] (rows=1 width=864)
+                                Output:["_col0","_col1"],aggregations:["compute_stats(col1, 'hll')","compute_stats(col2, 'hll')"]
+                                Select Operator [SEL_32] (rows=6 width=91)
+                                  Output:["col1","col2"]
+                                   Please refer to the previous Select Operator [SEL_30]
+                          <-Map 4 [CONTAINS]
+                            File Output Operator [FS_45]
+                              table:{"name:":"default.x"}
+                              Select Operator [SEL_44] (rows=6 width=91)
+                                Output:["_col0","_col1"]
+                                Select Operator [SEL_42] (rows=4 width=87)
+                                  Output:["_col1"]
+                                  Lateral View Join Operator [LVJ_40] (rows=4 width=239)
+                                    Output:["_col5"]
+                                    Select Operator [SEL_38] (rows=2 width=431)
+                                      Lateral View Forward [LVF_37] (rows=2 width=86)
+                                        Filter Operator [FIL_36] (rows=2 width=86)
+                                          predicate:(key = '238')
+                                          TableScan [TS_35] (rows=25 width=86)
+                                            Output:["key"]
+                            Reduce Output Operator [RS_48]
+                              Group By Operator [GBY_47] (rows=1 width=864)
+                                Output:["_col0","_col1"],aggregations:["compute_stats(col1, 'hll')","compute_stats(col2, 'hll')"]
+                                Select Operator [SEL_46] (rows=6 width=91)
+                                  Output:["col1","col2"]
+                                   Please refer to the previous Select Operator [SEL_44]
+                            File Output Operator [FS_45]
+                              table:{"name:":"default.x"}
+                              Select Operator [SEL_44] (rows=6 width=91)
+                                Output:["_col0","_col1"]
+                                Select Operator [SEL_42] (rows=4 width=87)
+                                  Output:["_col1"]
+                                  Lateral View Join Operator [LVJ_40] (rows=4 width=239)
+                                    Output:["_col5"]
+                                    UDTF Operator [UDTF_41] (rows=2 width=48)
+                                      function name:explode
+                                      Select Operator [SEL_39] (rows=2 width=48)
+                                        Output:["_col0"]
+                                         Please refer to the previous Lateral View Forward [LVF_37]
+                            Reduce Output Operator [RS_48]
+                              Group By Operator [GBY_47] (rows=1 width=864)
+                                Output:["_col0","_col1"],aggregations:["compute_stats(col1, 'hll')","compute_stats(col2, 'hll')"]
+                                Select Operator [SEL_46] (rows=6 width=91)
+                                  Output:["col1","col2"]
+                                   Please refer to the previous Select Operator [SEL_44]
+            Stage-4(CONDITIONAL)
+              File Merge
+                 Please refer to the previous Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+            Stage-7
+              Move Operator
+                Stage-6(CONDITIONAL)
+                  File Merge
+                     Please refer to the previous Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+        Stage-2
+          Dependency Collection{}
+             Please refer to the previous Stage-5(CONDITIONAL)
+             Please refer to the previous Stage-4(CONDITIONAL)
+             Please refer to the previous Stage-7
+
+PREHOOK: query: CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x
+POSTHOOK: query: CREATE TABLE x AS
+  SELECT key, 1 as tag FROM src WHERE key = '238'
+  UNION ALL
+  SELECT key, tag FROM src1
+  LATERAL VIEW EXPLODE(array(2)) tf as tag
+  WHERE key = '238'
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x
+POSTHOOK: Lineage: x.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: x.tag EXPRESSION []
+PREHOOK: query: SELECT * FROM x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+238	1
+238	1
+238	2

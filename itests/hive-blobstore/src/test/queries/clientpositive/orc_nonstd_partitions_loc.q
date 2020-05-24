@@ -36,7 +36,6 @@ STORED AS ORC
 LOCATION '${hiveconf:test.blobstore.path.unique}/orc_nonstd_partitions_loc/orc_events/';
 
 SET hive.exec.dynamic.partition=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT OVERWRITE TABLE orc_events PARTITION (run_date, game_id, event_name)
 SELECT * FROM src_events;

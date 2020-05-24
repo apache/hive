@@ -26,12 +26,12 @@ ADD COLUMNS (age int);
 
 DESCRIBE avro_extschema_literal;
 
-dfs -cp ${system:hive.root}data/files/grad.avsc ${system:test.tmp.dir}/;
+dfs -cp ${system:hive.root}data/files/grad.avsc ${system:test.tmp.dir}/avro_add_column_extschema.avsc;
 
 
 CREATE TABLE avro_extschema_url
 STORED AS AVRO
-TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad.avsc');
+TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/avro_add_column_extschema.avsc');
 
 DESCRIBE avro_extschema_url;
 
@@ -46,3 +46,5 @@ ALTER TABLE avro_extschema_url
 ADD COLUMNS (col7 int);
 
 DESCRIBE avro_extschema_url;
+
+dfs -rm ${system:test.tmp.dir}/avro_add_column_extschema.avsc;

@@ -63,10 +63,11 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key = '8') and key is not null) (type: boolean)
+              predicate: (key is not null and (key = '8')) (type: boolean)
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -75,10 +76,11 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key = '8') and key is not null) (type: boolean)
+              predicate: (key is not null and (key = '8')) (type: boolean)
               Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
@@ -186,10 +188,11 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not (key = '8')) and key is not null) (type: boolean)
+              predicate: (key is not null and (not (key = '8'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -197,10 +200,11 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not (key = '8')) and key is not null) (type: boolean)
+              predicate: (key is not null and (not (key = '8'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 2104 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 1 Data size: 2104 Basic stats: COMPLETE Column stats: NONE

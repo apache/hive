@@ -38,6 +38,14 @@ import org.slf4j.LoggerFactory;
 
   public static final String DDL_TIME = "transient_lastDdlTime";
 
+  public static final byte ACCESSTYPE_NONE = (byte)1;
+
+  public static final byte ACCESSTYPE_READONLY = (byte)2;
+
+  public static final byte ACCESSTYPE_WRITEONLY = (byte)4;
+
+  public static final byte ACCESSTYPE_READWRITE = (byte)8;
+
   public static final String HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__";
 
   public static final String HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__";

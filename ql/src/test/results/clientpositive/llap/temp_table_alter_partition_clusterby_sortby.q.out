@@ -1,0 +1,201 @@
+PREHOOK: query: create temporary table alter_table_partition_clusterby_sortby_temp (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: create temporary table alter_table_partition_clusterby_sortby_temp (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: query: alter table alter_table_partition_clusterby_sortby_temp add partition(c='abc')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: alter table alter_table_partition_clusterby_sortby_temp add partition(c='abc')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+PREHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') not sorted
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') not sorted
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[abc]               	 
+Database:           	default             	 
+Table:              	alter_table_partition_clusterby_sortby_temp	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a, b]              	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') clustered by (b) sorted by (b desc) into 4 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') clustered by (b) sorted by (b desc) into 4 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[abc]               	 
+Database:           	default             	 
+Table:              	alter_table_partition_clusterby_sortby_temp	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[b]                 	 
+Sort Columns:       	[Order(col:b, order:0)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') not clustered
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: query: alter table alter_table_partition_clusterby_sortby_temp partition(c='abc') not clustered
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp@c=abc
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp@c=abc
+PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp partition(c='abc')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[abc]               	 
+Database:           	default             	 
+Table:              	alter_table_partition_clusterby_sortby_temp	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby_temp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a, b]              	 
+Sort Columns:       	[Order(col:a, order:0), Order(col:b, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table alter_table_partition_clusterby_sortby_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: query: drop table alter_table_partition_clusterby_sortby_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby_temp
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby_temp

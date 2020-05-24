@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.thrift;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.HttpMethod;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -65,6 +67,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
     this.oomHook = oomHook;
   }
 
+  @Override
+  protected HiveServer2TransportMode getTransportMode() {
+    return HiveServer2TransportMode.http;
+  }
+
   /**
    * Configure Jetty to serve http requests. Example of a client connection URL:
    * http://localhost:10000/servlets/thrifths2/ A gateway may cause actual target
@@ -80,7 +87,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       ExecutorService executorService = new ThreadPoolExecutorWithOomHook(minWorkerThreads,
           maxWorkerThreads,workerKeepAliveTime, TimeUnit.SECONDS,
           new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
-      ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
+
+      ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
 
       // HTTP Server
       server = new Server(threadPool);

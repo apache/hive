@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.merge.DateColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,17 +100,19 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         ColumnStatisticsObj cso = csp.getColStatsObj();
         DateColumnStatsDataInspector newData = dateInspectorFromStats(cso);
         higherBound += newData.getNumDVs();
-        densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue()))
-            / newData.getNumDVs();
+        if (newData.isSetLowValue() && newData.isSetHighValue()) {
+          densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs();
+        }
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          aggregateData.setLowValue(min(aggregateData.getLowValue(), newData.getLowValue()));
-          aggregateData
-              .setHighValue(max(aggregateData.getHighValue(), newData.getHighValue()));
+          DateColumnStatsMerger merger = new DateColumnStatsMerger();
+          merger.setLowValue(aggregateData, newData);
+          merger.setHighValue(aggregateData, newData);
+
           aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }

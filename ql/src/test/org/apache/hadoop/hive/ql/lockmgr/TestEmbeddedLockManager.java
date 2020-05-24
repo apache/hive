@@ -18,17 +18,23 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.junit.Assert;
+import org.junit.Test;
 
-public class TestEmbeddedLockManager extends TestCase {
+/**
+ * TestEmbeddedLockManager.
+ *
+ */
+public class TestEmbeddedLockManager {
 
   private int counter;
   private HiveConf conf = new HiveConf();
 
+  @Test
   public void testLocking() throws LockException {
     HiveConf conf = new HiveConf();
     conf.set("hive.lock.numretries", "0");

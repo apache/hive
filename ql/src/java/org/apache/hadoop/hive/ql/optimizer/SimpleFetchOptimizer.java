@@ -117,7 +117,7 @@ public class SimpleFetchOptimizer extends Transform {
         }
       } catch (Exception e) {
         // Has to use full name to make sure it does not conflict with
-        // org.apache.commons.lang.StringUtils
+        // org.apache.commons.lang3.StringUtils
         LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
         if (e instanceof SemanticException) {
           throw (SemanticException) e;

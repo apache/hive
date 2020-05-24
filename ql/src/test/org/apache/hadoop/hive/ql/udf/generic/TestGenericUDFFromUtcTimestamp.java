@@ -26,9 +26,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFFromUtcTimestamp extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+/**
+ * TestGenericUDFFromUtcTimestamp.
+ */
+public class TestGenericUDFFromUtcTimestamp {
   public static void runAndVerify(GenericUDF udf,
       Object arg1, Object arg2, Object expected) throws HiveException {
     DeferredObject[] args = { new DeferredJavaObject(arg1), new DeferredJavaObject(arg2) };
@@ -41,6 +47,7 @@ public class TestGenericUDFFromUtcTimestamp extends TestCase {
     }
   }
 
+  @Test
   public void testFromUtcTimestamp() throws Exception {
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     GenericUDFFromUtcTimestamp udf = new GenericUDFFromUtcTimestamp();
@@ -63,6 +70,7 @@ public class TestGenericUDFFromUtcTimestamp extends TestCase {
         Timestamp.valueOf("2015-03-28 18:00:00.123456789"));
   }
 
+  @Test
   public void testToUtcTimestamp() throws Exception {
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     GenericUDFToUtcTimestamp udf = new GenericUDFToUtcTimestamp();

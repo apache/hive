@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -610,5 +612,24 @@ public class OperatorUtils {
       }
     }
     return null;
+  }
+
+  /**
+   *  Determines if the two trees are using independent inputs.
+   */
+  public static boolean treesWithIndependentInputs(Operator<?> tree1, Operator<?> tree2) {
+    Set<String> tables1 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree1, TableScanOperator.class));
+    Set<String> tables2 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree2, TableScanOperator.class));
+
+    tables1.retainAll(tables2);
+    return tables1.isEmpty();
+  }
+
+  private static Set<String> signaturesOf(Set<TableScanOperator> ops) {
+    Set<String> ret = new HashSet<>();
+    for (TableScanOperator o : ops) {
+      ret.add(o.getConf().getQualifiedTable());
+    }
+    return ret;
   }
 }

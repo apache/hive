@@ -20,13 +20,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <artifactId>hive-it</artifactId>
     <groupId>org.apache.hive</groupId>
     <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
 
   <artifactId>hive-it-druid</artifactId>
 
@@ -34,16 +35,18 @@
   <name>Hive Integration - QFile Druid Tests</name>
 
   <!-- dependencies are always listed in sorted order by groupId, artifectId -->
-  <!-- test intra-project -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
     <druid.jetty.version>9.4.10.v20180503</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.version>2.0.0</kafka.version>
+    <kafka.test.version>2.0.0</kafka.test.version>
+    <druid.guice.version>4.1.0</druid.guice.version>
+    <slf4j.version>1.7.30</slf4j.version>
   </properties>
       <dependencies>
         <dependency>
@@ -63,6 +66,10 @@
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
             </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
         <dependency>
@@ -81,6 +88,10 @@
             <exclusion>
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
@@ -103,6 +114,11 @@
               <artifactId>jersey-client</artifactId>
             </exclusion>
           </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.druid.extensions</groupId>
+          <artifactId>druid-bloom-filter</artifactId>
+          <version>${druid.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.druid.extensions</groupId>
@@ -149,6 +165,26 @@
           <groupId>org.apache.curator</groupId>
           <artifactId>curator-recipes</artifactId>
           <version>${druid.curator.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-metrics</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-server</artifactId>
+          <version>${avatica.version}</version>
         </dependency>
        <dependency>
           <groupId>com.sun.jersey</groupId>
@@ -206,22 +242,19 @@
           <artifactId>guice</artifactId>
           <version>${druid.guice.version}</version>
         </dependency>
-        <!-- inter-project -->
         <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>${junit.version}</version>
-          <scope>test</scope>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka_2.12</artifactId>
+          <version>${kafka.test.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka_2.11</artifactId>
-          <version>${kafka.version}</version>
+          <artifactId>kafka-clients</artifactId>
+          <version>${kafka.test.version}</version>
         </dependency>
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <version>1.7.25</version>
         </dependency>
       </dependencies>
   <build>
@@ -231,7 +264,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven.shade.plugin.version}</version>
         <executions>
           <!-- Run shade goal on package phase -->
           <execution>
@@ -239,8 +271,6 @@
             <goals>
               <goal>shade</goal>
             </goals>
-
-
             <configuration>
               <shadeTestJar>false</shadeTestJar>
               <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -261,6 +291,16 @@
                   <exclude>*:jsp-api*</exclude>
                 </excludes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.kafka</pattern>
+                  <shadedPattern>org.apache.kafkatests</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.jboss.netty</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
+                </relocation>
+              </relocations>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -268,6 +308,7 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/versions/**</exclude>
                   </excludes>
                 </filter>
               </filters>
@@ -275,8 +316,30 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
-
 </project>

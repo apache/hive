@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -29,13 +29,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  * TestObjectInspectorUtils.
  *
  */
-public class TestObjectInspectorUtils extends TestCase {
+public class TestObjectInspectorUtils {
 
+  @Test
   public void testCompareFloatingNumberSignedZero() {
     PrimitiveObjectInspector doubleOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.DOUBLE);
@@ -58,6 +62,7 @@ public class TestObjectInspectorUtils extends TestCase {
     assertEquals(0, ObjectInspectorUtils.compare(f2, floatOI, f2, floatOI));
   }
 
+  @Test
   public void testObjectInspectorUtils() throws Throwable {
     try {
       ObjectInspector oi1 = ObjectInspectorFactory
@@ -133,7 +138,7 @@ public class TestObjectInspectorUtils extends TestCase {
     }
 
   }
-
+  @Test
   public void testBucketIdGeneration() {
     ArrayList<String> fieldNames = new ArrayList<String>();
     fieldNames.add("firstInteger");
@@ -160,6 +165,7 @@ public class TestObjectInspectorUtils extends TestCase {
     assertEquals("", bucketId, ObjectInspectorUtils.getBucketNumber(hashCode, 16));
   }
 
+  @Test
   public void testBucketHashGeneration() {
     ArrayList<String> fieldNames = new ArrayList<String>();
     fieldNames.add("d");

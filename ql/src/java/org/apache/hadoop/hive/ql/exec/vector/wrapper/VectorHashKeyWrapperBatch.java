@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.wrapper;
 
+import java.util.Comparator;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -1071,6 +1073,21 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     return variableSize;
+  }
+
+  public Comparator<VectorHashKeyWrapperBase> getComparator(String columnSortOrder, String nullOrder) {
+    VectorHashKeyWrapperGeneralComparator comparator =
+            new VectorHashKeyWrapperGeneralComparator(columnVectorTypes.length);
+    for (int i = 0; i < columnVectorTypes.length; ++i) {
+      final int columnTypeSpecificIndex = columnTypeSpecificIndices[i];
+      ColumnVector.Type columnVectorType = columnVectorTypes[i];
+      comparator.addColumnComparator(
+              i, columnTypeSpecificIndex, columnVectorType, columnSortOrder.charAt(i), nullOrder.charAt(i));
+    }
+    if (comparator.getComparators().length == 1) { // don't use the composite comparator for n=1
+      return comparator.getComparators()[0];
+    }
+    return comparator;
   }
 }
 

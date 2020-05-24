@@ -1,0 +1,254 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.ql.exec.repl;
+
+import com.google.gson.Gson;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
+import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
+import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
+
+/**
+ * Unit test class for testing Ranger Dump.
+ */
+@RunWith(MockitoJUnitRunner.class)
+public class TestRangerLoadTask {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(TestRangerLoadTask.class);
+  private RangerLoadTask task;
+
+  @Mock
+  private RangerRestClientImpl mockClient;
+
+  @Mock
+  private HiveConf conf;
+
+  @Mock
+  private RangerLoadWork work;
+
+  @Before
+  public void setup() throws Exception {
+    task = new RangerLoadTask(mockClient, conf, work);
+    Mockito.when(mockClient.changeDataSet(Mockito.anyList(), Mockito.anyString(), Mockito.anyString()))
+      .thenCallRealMethod();
+    Mockito.when(mockClient.addDenyPolicies(Mockito.anyList(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.anyString())).thenCallRealMethod();
+    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+  }
+
+  @Test
+  public void testFailureInvalidAuthProviderEndpoint() {
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn(null);
+    int status = task.execute();
+    Assert.assertEquals(40000, status);
+  }
+
+  @Test
+  public void testSuccessValidAuthProviderEndpoint() {
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+  }
+
+  @Test
+  public void testSuccessNonEmptyRangerPolicies() throws Exception {
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"hive\",\"name\":\"db-level\",\"policyType\":0,"
+        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Path rangerDumpPath = new Path("/tmp");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+  }
+
+  @Test
+  public void testSuccessRangerDumpMetrics() throws Exception {
+    Logger logger = Mockito.mock(Logger.class);
+    Whitebox.setInternalState(ReplState.class, logger);
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
+        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Path rangerDumpPath = new Path("/tmp");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
+    Mockito.verify(logger,
+        Mockito.times(2)).info(replStateCaptor.capture(),
+        eventCaptor.capture(), eventDetailsCaptor.capture());
+    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
+    Assert.assertEquals("RANGER_LOAD_START", eventCaptor.getAllValues().get(0));
+    Assert.assertEquals("RANGER_LOAD_END", eventCaptor.getAllValues().get(1));
+    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
+        .toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\":\"tgtdb\""
+        + ",\"estimatedNumPolicies\":1,\"loadStartTime\":"));
+    Assert.assertTrue(eventDetailsCaptor
+        .getAllValues().get(1).toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\""
+        + ":\"tgtdb\",\"actualNumPolicies\":1,\"loadEndTime\""));
+  }
+
+  @Test
+  public void testSuccessAddDenyRangerPolicies() throws Exception {
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"hive\",\"name\":\"db-level\",\"policyType\":0,"
+        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(true);
+    Path rangerDumpPath = new Path("/tmp");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+    ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
+    ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    Mockito.verify(mockClient,
+        Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+    Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
+    Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
+    Assert.assertEquals("hive", serviceName.getAllValues().get(0));
+    RangerExportPolicyList actualPolicyList = rangerPolicyCapture.getAllValues().get(0);
+    Assert.assertEquals(rangerPolicyList.getMetaDataInfo(), actualPolicyList.getMetaDataInfo());
+    //Deny policy is added
+    Assert.assertEquals(2, actualPolicyList.getListSize());
+    RangerPolicy denyPolicy = actualPolicyList.getPolicies().get(1);
+    Assert.assertEquals("hive", denyPolicy.getService());
+    Assert.assertEquals("srcdb_replication deny policy for tgtdb", denyPolicy.getName());
+    Assert.assertEquals(1, denyPolicy.getDenyExceptions().size());
+    Assert.assertEquals("public", denyPolicy.getDenyPolicyItems().get(0).getGroups().get(0));
+    Assert.assertEquals(8, denyPolicy.getDenyPolicyItems().get(0).getAccesses().size());
+    boolean isReplAdminDenied = false;
+    for (RangerPolicy.RangerPolicyItemAccess access : denyPolicy.getDenyPolicyItems().get(0).getAccesses()) {
+      if (access.getType().equalsIgnoreCase("ReplAdmin")) {
+        isReplAdminDenied = true;
+      }
+    }
+    Assert.assertTrue(isReplAdminDenied);
+    //Deny exception is for hive user. Deny exception is not for repl admin permission
+    Assert.assertEquals("hive", denyPolicy.getDenyExceptions().get(0).getUsers().get(0));
+    Assert.assertEquals(10, denyPolicy.getDenyExceptions().get(0).getAccesses().size());
+    isReplAdminDenied = false;
+    for (RangerPolicy.RangerPolicyItemAccess access : denyPolicy.getDenyExceptions().get(0).getAccesses()) {
+      if (access.getType().equalsIgnoreCase("ReplAdmin")) {
+        isReplAdminDenied = true;
+      }
+    }
+    Assert.assertTrue(isReplAdminDenied);
+  }
+
+  @Test
+  public void testSuccessDisableDenyRangerPolicies() throws Exception {
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"hive\",\"name\":\"db-level\",\"policyType\":0,"
+        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
+    Path rangerDumpPath = new Path("/tmp");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+    ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
+    ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    Mockito.verify(mockClient,
+        Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+    Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
+    Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
+    Assert.assertEquals("hive", serviceName.getAllValues().get(0));
+    RangerExportPolicyList actualPolicyList = rangerPolicyCapture.getAllValues().get(0);
+    Assert.assertEquals(rangerPolicyList.getMetaDataInfo(), actualPolicyList.getMetaDataInfo());
+    //Deny policy is added
+    Assert.assertEquals(1, actualPolicyList.getListSize());
+  }
+}

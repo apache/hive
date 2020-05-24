@@ -2,7 +2,6 @@
 
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.reducers.max=10;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 DROP TABLE blobstore_source;
 CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -89,12 +90,13 @@ public class TestCopyUtils {
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
-      put(ConfVars.HIVE_IN_TEST.varname, "false");
+      put(ConfVars.HIVE_IN_TEST.varname, "true");
       put(ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, "1");
       put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
       put(ConfVars.HIVE_DISTCP_DOAS_USER.varname, currentUser);
     }};
     primary = new WarehouseInstanceWithMR(LOG, miniDFSCluster, overridesForHiveConf);
+    overridesForHiveConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstanceWithMR(LOG, miniDFSCluster, overridesForHiveConf);
   }
 
@@ -121,18 +123,18 @@ public class TestCopyUtils {
    */
   @Test
   public void testPrivilegedDistCpWithSameUserAsCurrentDoesNotTryToImpersonate() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary
+    primary
         .run("use " + primaryDbName)
         .run("create table t1 (id int)")
         .run("insert into t1 values (1),(2),(3)")
         .run("insert into t1 values (11),(12),(13)")
-        .dump(primaryDbName, null);
+        .dump(primaryDbName);
 
     /*
       We have to do a comparision on the data of table t1 in replicated database because even though the file
       copy will fail due to impersonation failure the driver will return a success code 0. May be something to look at later
     */
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("select * from " + replicatedDbName + ".t1")
         .verifyResults(Arrays.asList("1", "2", "3", "12", "11", "13"));
   }

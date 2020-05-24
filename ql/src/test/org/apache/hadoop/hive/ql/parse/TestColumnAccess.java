@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 
@@ -39,12 +39,9 @@ public class TestColumnAccess {
   @BeforeClass
   public static void Setup() throws Exception {
     Driver driver = createDriver();
-    int ret = driver.run("create table t1(id1 int, name1 string)").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create table t2(id2 int, id1 int, name2 string)").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create view v1 as select * from t1").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(id1 int, name1 string)");
+    driver.run("create table t2(id2 int, id1 int, name2 string)");
+    driver.run("create view v1 as select * from t1");
   }
 
   @AfterClass
@@ -59,7 +56,7 @@ public class TestColumnAccess {
   public void testQueryTable1() throws ParseException {
     String query = "select * from t1";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
@@ -83,7 +80,7 @@ public class TestColumnAccess {
   public void testJoinTable1AndTable2() throws ParseException {
     String query = "select * from t1 join t2 on (t1.id1 = t2.id1)";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
@@ -120,7 +117,7 @@ public class TestColumnAccess {
   public void testJoinView1AndTable2() throws ParseException {
     String query = "select * from v1 join t2 on (v1.id1 = t2.id1)";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
@@ -159,7 +156,7 @@ public class TestColumnAccess {
     Assert.assertNotNull(cols.contains("name1"));
   }
 
-  private Map<String, List<String>> getColsFromReadEntity(HashSet<ReadEntity> inputs) {
+  private Map<String, List<String>> getColsFromReadEntity(Set<ReadEntity> inputs) {
     Map<String, List<String>> tableColsMap = new HashMap<String, List<String>>();
     for(ReadEntity entity: inputs) {
       switch (entity.getType()) {

@@ -29,9 +29,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -51,7 +50,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -63,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,15 +227,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return;
     }
 
-    Context ctx = driverContext.getCtx();
-    if (ctx.getHiveTxnManager().supportsAcid()) {
+    if (context.getHiveTxnManager().supportsAcid()) {
       //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes logic more explicit
       return;
     }
 
-    HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
-    WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
-    List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
+    HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
+    WriteEntity output = context.getLoadTableOutputMap().get(ltd);
+    List<HiveLockObj> lockObjects = context.getOutputLockObjects().get(output);
     if (CollectionUtils.isEmpty(lockObjects)) {
       LOG.debug("No locks found to release");
       return;
@@ -247,7 +245,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
-          if (ctx.getHiveLocks().remove(lock)) {
+          if (context.getHiveLocks().remove(lock)) {
             try {
               lockMgr.unlock(lock);
             } catch (LockException le) {
@@ -284,9 +282,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     // If we are loading a table during replication, the stats will also be replicated
-    // and hence accurate if it's a non-transactional table. For transactional table we
-    // do not replicate stats yet.
-    return AcidUtils.isTransactionalTable(table.getParameters());
+    // and hence accurate. No need to reset those.
+    return false;
   }
 
   private final static class TaskInformation {
@@ -302,7 +299,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
@@ -310,7 +307,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     try {
-      if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+      if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;
       }
       Hive db = getHive();
@@ -399,12 +396,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
         // to false then set it now.
         if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
-          String writeId = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
           if (writeId == null) {
             throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
           }
-          tbd.setWriteId(Long.parseLong(writeId));
-          tbd.setStmtId(driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement());
+          tbd.setWriteId(writeId);
+          tbd.setStmtId(context.getHiveTxnManager().getStmtIdAndIncrement());
         }
 
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
@@ -422,9 +419,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
                   work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
                   resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
-                  tbd.isInsertOverwrite());
+                  tbd.isInsertOverwrite(), tbd.isDirectInsert());
           if (work.getOutputs() != null) {
-            DDLTask.addIfAbsentByName(new WriteEntity(table,
+            DDLUtils.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
           }
         } else {
@@ -524,7 +521,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
                     !tbd.isMmTable(),
             resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
-            tbd.isInsertOverwrite());
+            tbd.isInsertOverwrite(), tbd.isDirectInsert());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -536,7 +533,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     DataContainer dc = new DataContainer(table.getTTable(), partn.getTPartition());
     // add this partition to post-execution hook
     if (work.getOutputs() != null) {
-      DDLTask.addIfAbsentByName(new WriteEntity(partn,
+      DDLUtils.addIfAbsentByName(new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
     }
     return dc;
@@ -571,7 +568,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getStmtId(),
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
-        tbd.isInsertOverwrite());
+        tbd.isInsertOverwrite(),
+        tbd.isDirectInsert()
+        );
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {
@@ -603,7 +602,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       WriteEntity enty = new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType()));
       if (work.getOutputs() != null) {
-        DDLTask.addIfAbsentByName(enty, work.getOutputs());
+        DDLUtils.addIfAbsentByName(enty, work.getOutputs());
       }
       // Need to update the queryPlan's output as well so that post-exec hook get executed.
       // This is only needed for dynamic partitioning since for SP the the WriteEntity is
@@ -819,9 +818,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       for (SortCol sortCol : sortCols) {
         if (sortCol.getIndexes().get(0) < partn.getCols().size()) {
           newSortCols.add(new Order(
-            partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
-            sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
-              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
+              partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
+              DirectionUtils.signToCode(sortCol.getSortOrder())));
         } else {
           // If the table is sorted on a partition column, not valid for sorting
           updateSortCols = false;

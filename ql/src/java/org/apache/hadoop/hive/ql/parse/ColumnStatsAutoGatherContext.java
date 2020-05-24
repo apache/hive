@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -102,9 +105,9 @@ public class ColumnStatsAutoGatherContext {
    * However, we do not need to specify the partition-spec because (1) the data is going to be inserted to that specific partition
    * (2) we can compose the static/dynamic partition using a select operator in replaceSelectOperatorProcess.
    */
-  public void insertAnalyzePipeline() throws SemanticException{
-    String analyzeCommand = "analyze table `" + tbl.getDbName() + "`.`" + tbl.getTableName() + "`"
-        + " compute statistics for columns ";
+  public void insertAnalyzePipeline() throws SemanticException {
+    String analyzeCommand = "analyze table " + unparseIdentifier(tbl.getDbName(), conf)
+        + "." + unparseIdentifier(tbl.getTableName(), conf) + " compute statistics for columns ";
     insertAnalyzePipeline(analyzeCommand, false);
   }
 
@@ -158,6 +161,7 @@ public class ColumnStatsAutoGatherContext {
       throws IOException, ParseException, SemanticException {
     // 1. initialization
     Context ctx = new Context(conf);
+    origCtx.addSubContext(ctx);
     ctx.setOpContext(origCtx.getOpContext());
     ctx.setExplainConfig(origCtx.getExplainConfig());
 
@@ -234,12 +238,12 @@ public class ColumnStatsAutoGatherContext {
   private void replaceSelectOperatorProcess(SelectOperator operator, Operator<? extends OperatorDesc> input)
       throws HiveException {
     RowSchema selRS = operator.getSchema();
-    ArrayList<ColumnInfo> signature = new ArrayList<>();
+    List<ColumnInfo> signature = new ArrayList<>();
     OpParseContext inputCtx = sa.opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
-    ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
-    ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    ArrayList<String> columnNames = new ArrayList<String>();
+    List<ColumnInfo> columns = inputRR.getColumnInfos();
+    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    List<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> columnExprMap =
         new HashMap<String, ExprNodeDesc>();
     // the column positions in the operator should be like this
@@ -276,7 +280,7 @@ public class ColumnStatsAutoGatherContext {
         TypeInfo destType = selRS.getSignature().get(this.columns.size() + i).getType();
         if (!srcType.equals(destType)) {
           // This may be possible when srcType is string but destType is integer
-          exprNodeDesc = ParseUtils
+          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
               .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
         }
       }
@@ -288,7 +292,7 @@ public class ColumnStatsAutoGatherContext {
         TypeInfo destType = selRS.getSignature().get(this.columns.size() + i).getType();
         exprNodeDesc = new ExprNodeColumnDesc(col);
         if (!srcType.equals(destType)) {
-          exprNodeDesc = ParseUtils
+          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
               .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
         }
       }

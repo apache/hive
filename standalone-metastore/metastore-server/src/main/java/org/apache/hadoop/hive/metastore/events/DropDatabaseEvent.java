@@ -28,10 +28,12 @@ import org.apache.hadoop.hive.metastore.api.Database;
 public class DropDatabaseEvent extends ListenerEvent {
 
   private final Database db;
+  private final boolean isReplicated;
 
-  public DropDatabaseEvent(Database db, boolean status, IHMSHandler handler) {
+  public DropDatabaseEvent(Database db, boolean status, IHMSHandler handler, boolean isReplicated) {
     super (status, handler);
     this.db = db;
+    this.isReplicated = isReplicated;
   }
 
   /**
@@ -40,4 +42,9 @@ public class DropDatabaseEvent extends ListenerEvent {
   public Database getDatabase() {
     return db;
   }
+
+  /**
+   * @return where this event is caused by replication
+   */
+  public boolean isReplicated() { return isReplicated; }
 }

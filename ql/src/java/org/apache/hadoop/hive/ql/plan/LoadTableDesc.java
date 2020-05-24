@@ -43,6 +43,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private int stmtId;
   private Long currentWriteId;
   private boolean isInsertOverwrite;
+  private boolean isDirectInsert;
 
   // TODO: the below seem like they should just be combined into partitionDesc
   private Table mdTable;
@@ -233,6 +234,14 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
 
   public void setInsertOverwrite(boolean v) {
    this.isInsertOverwrite = v;
+  }
+
+  public void setIsDirectInsert(boolean isDirectInsert) {
+    this.isDirectInsert = isDirectInsert;
+  }
+
+  public boolean isDirectInsert() {
+    return this.isDirectInsert;
   }
 
   /**

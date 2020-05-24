@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,20 +52,20 @@ import java.util.TreeMap;
  * If the keys expr list on the mapJoin Desc is an empty list for any input,
  * this implies a cross product.
  */
-public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher {
+public class SparkCrossProductCheck implements PhysicalPlanResolver, SemanticDispatcher {
 
   @Override
   public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     @SuppressWarnings("unchecked")
-    Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+    Task<?> currTask = (Task<?>) nd;
     if (currTask instanceof SparkTask) {
       SparkWork sparkWork = ((SparkTask) currTask).getWork();
       checkShuffleJoin(sparkWork);
       checkMapJoin((SparkTask) currTask);
     } else if (currTask instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
-      for (Task<? extends Serializable> task : taskList) {
+      List<Task<?>> taskList = ((ConditionalTask) currTask).getListTasks();
+      for (Task<?> task : taskList) {
         dispatch(task, stack, nodeOutputs);
       }
     }

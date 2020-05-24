@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -30,12 +30,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * TestLazyPrimitive.
  *
  */
-public class TestLazyPrimitive extends TestCase {
+public class TestLazyPrimitive {
 
   /**
    * Initialize the LazyObject with the parameters, wrapping the byte[]
@@ -51,6 +55,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyByte class.
    */
+  @Test
   public void testLazyByte() throws Throwable {
     try {
       LazyByte b = new LazyByte(
@@ -94,6 +99,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyShort class.
    */
+  @Test
   public void testLazyShort() throws Throwable {
     try {
       LazyShort b = new LazyShort(
@@ -141,6 +147,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyInteger class.
    */
+  @Test
   public void testLazyInteger() throws Throwable {
     try {
       LazyInteger b = new LazyInteger(
@@ -196,6 +203,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyLong class.
    */
+  @Test
   public void testLazyLong() throws Throwable {
     try {
       LazyLong b = new LazyLong(
@@ -259,6 +267,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyDouble class.
    */
+  @Test
   public void testLazyDouble() throws Throwable {
     try {
       LazyDouble b = new LazyDouble(
@@ -359,6 +368,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyString class.
    */
+  @Test
   public void testLazyString() throws Throwable {
     try {
       LazyString b = new LazyString(LazyPrimitiveObjectInspectorFactory
@@ -376,6 +386,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyBinary() {
     LazyBinary ba = new LazyBinary(LazyPrimitiveObjectInspectorFactory.LAZY_BINARY_OBJECT_INSPECTOR);
     initLazyObject(ba, new byte[] {}, 0, 0);
@@ -390,6 +401,7 @@ public class TestLazyPrimitive extends TestCase {
     assertEquals(new BytesWritable(new byte[] {'\n'}), ba.getWritableObject());
   }
 
+  @Test
   public void testLazyTimestamp() throws Throwable {
     LazyTimestamp t = new LazyTimestamp(LazyPrimitiveObjectInspectorFactory.LAZY_TIMESTAMP_OBJECT_INSPECTOR);
     String nullDate = "NULL";
@@ -408,6 +420,7 @@ public class TestLazyPrimitive extends TestCase {
     assertEquals(true, t.isNull);
   }
 
+  @Test
   public void testLazyDate() throws Throwable {
     LazyDate t = new LazyDate(LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
     String nullDate = "NULL";
@@ -427,6 +440,7 @@ public class TestLazyPrimitive extends TestCase {
 
   }
 
+  @Test
   public void testLazyIntegerWrite() throws Throwable {
     try {
       ByteStream.Output out = new ByteStream.Output();
@@ -447,6 +461,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyLongWrite() throws Throwable {
     try {
       ByteStream.Output out = new ByteStream.Output();
@@ -501,6 +516,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyIntWithSpaces() throws Throwable {
     Object[][] casesWithoutSpaces = {
         {"0", 0},
@@ -583,6 +599,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyLongWithSpaces() throws Throwable {
     Object[][] casesWithoutSpaces = {
         {"0", 0},

@@ -15,36 +15,42 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.ParquetTimestampUtils;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.junit.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 
 
 /**
  * Tests util-libraries used for parquet-timestamp.
  */
-public class TestParquetTimestampUtils extends TestCase {
+public class TestParquetTimestampUtils {
 
   public static final ZoneId GMT = ZoneId.of("GMT");
   public static final ZoneId US_PACIFIC = ZoneId.of("US/Pacific");
   public static final ZoneId NEW_YORK = ZoneId.of("America/New_York");
 
+  @Test
   public void testJulianDay() {
     //check if May 23, 1968 is Julian Day 2440000
-    Calendar cal = Calendar.getInstance();
+    GregorianCalendar cal = new GregorianCalendar();
+    cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal.set(Calendar.YEAR,  1968);
     cal.set(Calendar.MONTH, Calendar.MAY);
     cal.set(Calendar.DAY_OF_MONTH, 23);
     cal.set(Calendar.HOUR_OF_DAY, 0);
-    cal.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis());
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
@@ -54,12 +60,13 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(tsFetched, ts);
 
     //check if 30 Julian Days between Jan 1, 2005 and Jan 31, 2005.
-    Calendar cal1 = Calendar.getInstance();
+    GregorianCalendar cal1 = new GregorianCalendar();
+    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal1.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal1.set(Calendar.YEAR,  2005);
     cal1.set(Calendar.MONTH, Calendar.JANUARY);
     cal1.set(Calendar.DAY_OF_MONTH, 1);
     cal1.set(Calendar.HOUR_OF_DAY, 0);
-    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, false);
@@ -67,12 +74,13 @@ public class TestParquetTimestampUtils extends TestCase {
     Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
     Assert.assertEquals(ts1Fetched, ts1);
 
-    Calendar cal2 = Calendar.getInstance();
+    GregorianCalendar cal2 = new GregorianCalendar();
+    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
+    cal2.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal2.set(Calendar.YEAR,  2005);
     cal2.set(Calendar.MONTH, Calendar.JANUARY);
     cal2.set(Calendar.DAY_OF_MONTH, 31);
     cal2.set(Calendar.HOUR_OF_DAY, 0);
-    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     Timestamp ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, false);
@@ -84,12 +92,13 @@ public class TestParquetTimestampUtils extends TestCase {
     // check if 730517 Julian Days between Jan 1, 0005 and Jan 31, 2005.
     // This method used to test Julian Days between Jan 1, 2005 BCE and Jan 1, 2005 CE. Since BCE
     // timestamps are not supported, both dates were changed to CE.
-    cal1 = Calendar.getInstance();
+    cal1 = new GregorianCalendar();
+    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal1.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal1.set(Calendar.YEAR,  0005);
     cal1.set(Calendar.MONTH, Calendar.JANUARY);
     cal1.set(Calendar.DAY_OF_MONTH, 1);
     cal1.set(Calendar.HOUR_OF_DAY, 0);
-    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     nt1 = NanoTimeUtils.getNanoTime(ts1, false);
@@ -97,21 +106,29 @@ public class TestParquetTimestampUtils extends TestCase {
     ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
     Assert.assertEquals(ts1Fetched, ts1);
 
-    cal2 = Calendar.getInstance();
+    cal2 = new GregorianCalendar();
+    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
+    cal2.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal2.set(Calendar.YEAR,  2005);
     cal2.set(Calendar.MONTH, Calendar.JANUARY);
     cal2.set(Calendar.DAY_OF_MONTH, 31);
     cal2.set(Calendar.HOUR_OF_DAY, 0);
-    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     nt2 = NanoTimeUtils.getNanoTime(ts2, false);
 
     ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
     Assert.assertEquals(ts2Fetched, ts2);
-    Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 730517);
-}
+    Assert.assertEquals(730517, nt2.getJulianDay() - nt1.getJulianDay());
 
+    Date d1 = Date.ofEpochMilli(cal1.getTimeInMillis());
+    Assert.assertEquals("0005-01-01", d1.toString());
+
+    Date d2 = Date.ofEpochMilli(cal2.getTimeInMillis());
+    Assert.assertEquals("2005-01-31", d2.toString());
+  }
+
+  @Test
   public void testNanos() {
     //case 1: 01:01:01.0000000001
     Calendar cal = Calendar.getInstance();
@@ -175,6 +192,7 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT));
   }
 
+  @Test
   public void testTimezone() {
     Calendar cal = Calendar.getInstance();
     cal.set(Calendar.YEAR,  1968);
@@ -202,14 +220,17 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(nt.getJulianDay(), 2440001);
   }
 
+  @Test
   public void testTimezoneValues() {
     valueTest(false);
   }
 
+  @Test
   public void testTimezonelessValues() {
     valueTest(true);
   }
 
+  @Test
   public void testTimezoneless() {
     Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:30.111111111");
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, true);
@@ -262,6 +283,7 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(tsString, tsFetched.toString());
   }
 
+  @Test
   public void testConvertTimestampToZone() {
     Timestamp ts = Timestamp.valueOf("2018-01-01 00:00:00");
     Timestamp ts1 = TimestampTZUtil.convertTimestampToZone(ts, NEW_YORK, US_PACIFIC);
@@ -269,5 +291,131 @@ public class TestParquetTimestampUtils extends TestCase {
 
     Timestamp ts2 = TimestampTZUtil.convertTimestampToZone(ts, US_PACIFIC, NEW_YORK);
     Assert.assertTrue(Timestamp.valueOf("2018-01-01 03:00:00").equals(ts2));
+  }
+
+  ///////////// INT64/LogicalTypes Timestamp tests /////////////
+
+  @Test
+  public void testInt64ExactValue() {
+
+    // basic value
+    Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:00.000000001");
+    long millis = ParquetTimestampUtils.getInt64(ts1, LogicalTypeAnnotation.TimeUnit.MILLIS);
+    Assert.assertEquals(1293841800_000L, millis);
+    long micros = ParquetTimestampUtils.getInt64(ts1, LogicalTypeAnnotation.TimeUnit.MICROS);
+    Assert.assertEquals(1293841800000_000L, micros);
+    long nanos = ParquetTimestampUtils.getInt64(ts1, LogicalTypeAnnotation.TimeUnit.NANOS);
+    Assert.assertEquals(1293841800000_000_001L, nanos);
+
+    // test correct conversion to time units
+    Timestamp ts2 = Timestamp.valueOf("2011-01-01 00:30:00.55555");
+    millis = ParquetTimestampUtils.getInt64(ts2, LogicalTypeAnnotation.TimeUnit.MILLIS);
+    Assert.assertEquals(1293841800_555L, millis);
+    micros = ParquetTimestampUtils.getInt64(ts2, LogicalTypeAnnotation.TimeUnit.MICROS);
+    Assert.assertEquals(1293841800_555_550L, micros);
+    nanos = ParquetTimestampUtils.getInt64(ts2, LogicalTypeAnnotation.TimeUnit.NANOS);
+    Assert.assertEquals(1293841800_555_550_000L, nanos);
+
+    // test max nanos
+    Timestamp ts3 = Timestamp.valueOf("2018-12-31 23:59:59.999999999");
+    millis = ParquetTimestampUtils.getInt64(ts3, LogicalTypeAnnotation.TimeUnit.MILLIS);
+    Assert.assertEquals(1546300799_999L, millis);
+    micros = ParquetTimestampUtils.getInt64(ts3, LogicalTypeAnnotation.TimeUnit.MICROS);
+    Assert.assertEquals(1546300799_999_999L, micros);
+    nanos = ParquetTimestampUtils.getInt64(ts3, LogicalTypeAnnotation.TimeUnit.NANOS);
+    Assert.assertEquals(1546300799_999_999_999L, nanos);
+
+    // test pre-epoch date
+    Timestamp ts4 = Timestamp.valueOf("1968-01-31 00:30:00.000000001");
+    millis = ParquetTimestampUtils.getInt64(ts4, LogicalTypeAnnotation.TimeUnit.MILLIS);
+    Assert.assertEquals(-60564600_000L, millis);
+    micros = ParquetTimestampUtils.getInt64(ts4, LogicalTypeAnnotation.TimeUnit.MICROS);
+    Assert.assertEquals(-60564600000_000L, micros);
+    nanos = ParquetTimestampUtils.getInt64(ts4, LogicalTypeAnnotation.TimeUnit.NANOS);
+    Assert.assertEquals(-60564599999_999_999L, nanos);
+  }
+
+  @Test
+  public void testLegalInt64TimestampStrings() {
+    //exercise a broad range of timestamps close to the present.
+    verifyInt64TimestampValue("2011-01-01 01:01:01.111111111", true);
+    verifyInt64TimestampValue("2012-02-02 02:02:02.222222222", true);
+    verifyInt64TimestampValue("2013-03-03 03:03:03.333333333", true);
+    verifyInt64TimestampValue("2014-04-04 04:04:04.444444444", true);
+    verifyInt64TimestampValue("2015-05-05 05:05:05.555555555", true);
+    verifyInt64TimestampValue("2016-06-06 06:06:06.666666666", true);
+    verifyInt64TimestampValue("2017-07-07 07:07:07.777777777", true);
+    verifyInt64TimestampValue("2018-08-08 08:08:08.888888888", true);
+    verifyInt64TimestampValue("2019-09-09 09:09:09.999999999", true);
+    verifyInt64TimestampValue("2020-10-10 10:10:10.101010101", true);
+    verifyInt64TimestampValue("2021-11-11 11:11:11.111111111", true);
+    verifyInt64TimestampValue("2022-12-12 12:12:12.121212121", true);
+    verifyInt64TimestampValue("2023-01-02 13:13:13.131313131", true);
+    verifyInt64TimestampValue("2024-02-02 14:14:14.141414141", true);
+    verifyInt64TimestampValue("2025-03-03 15:15:15.151515151", true);
+    verifyInt64TimestampValue("2026-04-04 16:16:16.161616161", true);
+    verifyInt64TimestampValue("2027-05-05 17:17:17.171717171", true);
+    verifyInt64TimestampValue("2028-06-06 18:18:18.181818181", true);
+    verifyInt64TimestampValue("2029-07-07 19:19:19.191919191", true);
+    verifyInt64TimestampValue("2030-08-08 20:20:20.202020202", true);
+    verifyInt64TimestampValue("2031-09-09 21:21:21.212121212", true);
+
+    //test values around epoch
+    verifyInt64TimestampValue("1969-12-31 23:59:58.123456789", true);
+    verifyInt64TimestampValue("1969-12-31 23:59:59.999999999", true);
+    verifyInt64TimestampValue("1970-01-01 00:00:00.0", true);
+    verifyInt64TimestampValue("1970-01-01 00:00:00.000000001", true);
+
+    //test min and max values for nano
+    verifyInt64TimestampValue("1677-09-21 00:12:43.145224192", LogicalTypeAnnotation.TimeUnit.NANOS, true);
+    verifyInt64TimestampValue("2262-04-11 23:47:16.854775807", LogicalTypeAnnotation.TimeUnit.NANOS, true);
+
+    //test some extreme cases.
+    verifyInt64TimestampValue("0001-01-01 00:00:00.001001001", LogicalTypeAnnotation.TimeUnit.MILLIS, true);
+    verifyInt64TimestampValue("0001-01-01 00:00:00.001001001", LogicalTypeAnnotation.TimeUnit.MICROS, true);
+    verifyInt64TimestampValue("9999-09-09 09:09:09.999999999", LogicalTypeAnnotation.TimeUnit.MILLIS, true);
+    verifyInt64TimestampValue("9999-09-09 09:09:09.999999999", LogicalTypeAnnotation.TimeUnit.MICROS, true);
+  }
+
+  /**
+   * Timestamps 1 nanosecond out of nano range should return null.
+   */
+  @Test
+  public void testIllegalInt64TimestampStrings() {
+    verifyInt64TimestampValue("1677-09-21 00:12:43.145224191", LogicalTypeAnnotation.TimeUnit.NANOS, false);
+    verifyInt64TimestampValue("2262-04-11 23:47:16.854775808", LogicalTypeAnnotation.TimeUnit.NANOS, false);
+  }
+
+  private void verifyInt64TimestampValue(String tsString, boolean legal) {
+    verifyInt64TimestampValue(tsString, LogicalTypeAnnotation.TimeUnit.MILLIS, legal);
+    verifyInt64TimestampValue(tsString, LogicalTypeAnnotation.TimeUnit.MICROS, legal);
+    verifyInt64TimestampValue(tsString, LogicalTypeAnnotation.TimeUnit.NANOS, legal);
+  }
+
+  private void verifyInt64TimestampValue(String tsString, LogicalTypeAnnotation.TimeUnit timeUnit, boolean legal) {
+    Timestamp ts = truncateTimestampString(tsString, timeUnit);
+    String truncatedTsString = ts.toString();
+    Long int64Value = ParquetTimestampUtils.getInt64(ts, timeUnit);
+    if (legal) {
+      Timestamp tsFetched = ParquetTimestampUtils.getTimestamp(int64Value, timeUnit, false);
+      Assert.assertEquals(truncatedTsString, tsFetched.toString());
+    } else {
+      Assert.assertEquals(null, int64Value);
+    }
+  }
+
+  private Timestamp truncateTimestampString(String tsString, LogicalTypeAnnotation.TimeUnit timeUnit) {
+    Timestamp ts = Timestamp.valueOf(tsString);
+    switch (timeUnit) {
+    case MILLIS:
+      ts.setNanos(ts.getNanos() / 1_000_000 * 1_000_000);
+      break;
+    case MICROS:
+      ts.setNanos(ts.getNanos() / 1_000 * 1_000);
+      break;
+    default:
+      break;
+    }
+    return ts;
   }
 }

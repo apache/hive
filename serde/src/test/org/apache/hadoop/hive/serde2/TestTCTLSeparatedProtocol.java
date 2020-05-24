@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -32,16 +32,22 @@ import org.apache.thrift.protocol.TStruct;
 import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * TestTCTLSeparatedProtocol.
  *
  */
-public class TestTCTLSeparatedProtocol extends TestCase {
+public class TestTCTLSeparatedProtocol {
 
   public TestTCTLSeparatedProtocol() throws Exception {
   }
 
+  @Test
   public void testReads() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     String foo = "Hello";
@@ -114,6 +120,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readStructEnd();
   }
 
+  @Test
   public void testWrites() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 1024);
@@ -236,6 +243,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readStructEnd();
   }
 
+  @Test
   public void testQuotedWrites() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(4096);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 4096);
@@ -308,6 +316,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
    * with a more TRegexLike protocol, but for this case, TCTLSeparatedProtocol
    * can do it.
    */
+  @Test
   public void test1ApacheLogFormat() throws Exception {
     final String sample =
       "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
@@ -382,6 +391,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readStructEnd();
   }
 
+  @Test
   public void testNulls() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 10);
@@ -476,6 +486,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     assertTrue(ret1 == 0);
   }
 
+  @Test
   public void testShouldThrowRunTimeExceptionIfUnableToInitializeTokenizer() throws Exception {
     TCTLSeparatedProtocol separatedProtocol = new TCTLSeparatedProtocol(new TTransport() {
       @Override

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +64,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
 
   private static final Logger LOG = LoggerFactory.getLogger(TransactionalKafkaWriter.class);
   private static final String TRANSACTION_DIR = "transaction_states";
+  private static final Duration DURATION_0 = Duration.ofMillis(0);
 
   private final String topic;
   private final HiveKafkaProducer<byte[], byte[]> producer;
@@ -178,7 +180,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
       } catch (Exception e) {
         LOG.error("Aborting Transaction {} failed due to [{}]", writerIdTopicId, e.getMessage());
       }
-      producer.close(0, TimeUnit.MILLISECONDS);
+      producer.close(DURATION_0);
       return;
     }
 
@@ -209,11 +211,11 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
       persistTxState();
     }
     checkExceptions();
-    producer.close();
     LOG.info("Closed writerId [{}], Sent [{}] records to Topic [{}]",
         producer.getTransactionalId(),
         sentRecords,
         topic);
+    producer.close(Duration.ZERO);
   }
 
   private void commitTransaction() {

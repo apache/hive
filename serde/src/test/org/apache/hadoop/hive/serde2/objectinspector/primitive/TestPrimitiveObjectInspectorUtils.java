@@ -31,11 +31,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class TestPrimitiveObjectInspectorUtils extends TestCase {
+/**
+ * PrimitiveObjectInspectorUtils Test.
+ */
+public class TestPrimitiveObjectInspectorUtils {
 
   @Test
   public void testGetPrimitiveGrouping() {

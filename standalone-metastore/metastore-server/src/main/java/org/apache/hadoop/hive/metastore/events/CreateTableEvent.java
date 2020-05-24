@@ -28,10 +28,12 @@ import org.apache.hadoop.hive.metastore.api.Table;
 public class CreateTableEvent extends ListenerEvent {
 
   private final Table table;
+  private final boolean isReplicated;
 
-  public CreateTableEvent (Table table, boolean status, IHMSHandler handler) {
+  public CreateTableEvent(Table table, boolean status, IHMSHandler handler, boolean isReplicated) {
     super (status, handler);
     this.table = table;
+    this.isReplicated = isReplicated;
   }
 
   /**
@@ -40,4 +42,11 @@ public class CreateTableEvent extends ListenerEvent {
   public Table getTable () {
     return table;
   }
+
+  /**
+   * @return whether this event was created by replication
+   */
+  public boolean isReplicated() { return isReplicated; }
 }
+
+

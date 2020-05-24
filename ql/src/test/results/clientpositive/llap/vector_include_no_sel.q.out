@@ -204,6 +204,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkOperator
@@ -231,6 +232,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkOperator
@@ -268,11 +270,12 @@ STAGE PLANS:
                     Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(1)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)

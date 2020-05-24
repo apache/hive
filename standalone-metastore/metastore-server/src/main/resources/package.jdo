@@ -69,6 +69,10 @@
         <!-- allows null is true to keep backwards compatibility with old releases -->
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="managedLocationUri">
+        <column name="DB_MANAGED_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+
     </class>
 
     <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
@@ -139,7 +143,7 @@
       </field>
     </class>
 
-    <class name="MTable" table="TBLS" identity-type="application" detachable="true">
+    <class name="MTable" table="TBLS" identity-type="application" detachable="true" objectid-class="MTable$PK">
       <field name="id" primary-key="true" value-strategy="native">
         <column name="TBL_ID" jdbc-type="BIGINT" />
       </field>
@@ -273,9 +277,9 @@
         <column name="PARENT_CD_ID"/>
       </field>
       <field name="parentIntegerIndex">
-    <column name="PARENT_INTEGER_IDX"/>
+        <column name="PARENT_INTEGER_IDX"/>
       </field>
-      <field name="parentTable">
+      <field name="parentTable" primary-key="true">
         <column name="PARENT_TBL_ID"/>
       </field>
       <field name="constraintType">
@@ -343,6 +347,7 @@
       </datastore-identity>
       <field name="cols" table="COLUMNS_V2" >
         <collection element-type="MFieldSchema"/>
+        <foreign-key name="COLUMNS_V2_FK" delete-action="cascade"/>
         <join>
           <primary-key name="COLUMNS_PK">
             <column name="COLUMN_NAME"/>
@@ -502,7 +507,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="writeId">
@@ -552,7 +557,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
     </class>
@@ -1008,6 +1013,9 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
+      <field name="engine">
+        <column name="ENGINE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
@@ -1078,7 +1086,11 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
+      <field name="engine">
+        <column name="ENGINE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
     </class>
+
     <class name="MVersionTable" table="VERSION" identity-type="datastore" detachable="true">
       <datastore-identity>
         <column name="VER_ID"/>
@@ -1437,6 +1449,79 @@
       <field name="payload">
         <column name="PAYLOAD" jdbc-type="BLOB" allows-null="true"/>
       </field>
+    </class>
+    <class name="MScheduledQuery" identity-type="datastore" table="SCHEDULED_QUERIES" detachable="true">
+      <datastore-identity>
+        <column name="SCHEDULED_QUERY_ID"/>
+      </datastore-identity>
+      <field name="scheduleName">
+        <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="enabled">
+        <column name="ENABLED"/>
+      </field>
+      <field name="clusterNamespace">
+        <column name="CLUSTER_NAMESPACE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="schedule">
+        <column name="SCHEDULE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="user">
+        <column name="USER" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="query">
+        <column name="QUERY" jdbc-type="varchar" length="4000" allows-null="true"/>
+      </field>
+      <field name="nextExecution">
+        <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="activeExecution">
+        <column name="ACTIVE_EXECUTION_ID" allows-null="true"/>
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_ACTIVE" delete-action="cascade"/>
+      </field>
+      <field name="executions" mapped-by="scheduledQuery" dependent-element="true">
+        <collection element-type="MScheduledExecution" dependent-element="true" />
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
+      </field>
+      <index name="UniqueSchedule" unique="true">
+        <column name="SCHEDULE_NAME"/>
+        <column name="CLUSTER_NAMESPACE"/>
+      </index>
+      <index name="NextExecutionIndex">
+        <column name="ENABLED"/>
+        <column name="CLUSTER_NAMESPACE"/>
+        <column name="NEXT_EXECUTION"/>
+      </index>
+   </class>
+    <class name="MScheduledExecution" identity-type="application" table="SCHEDULED_EXECUTIONS" detachable="true">
+      <field name="scheduledExecutionId" primary-key="true" value-strategy="native">
+        <column name="SCHEDULED_EXECUTION_ID" jdbc-type="bigint" />
+      </field>
+      <field name="scheduledQuery">
+        <column name="SCHEDULED_QUERY_ID" />
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
+      </field>
+      <field name="executorQueryId">
+        <column name="EXECUTOR_QUERY_ID" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="state">
+        <column name="STATE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="startTime">
+        <column name="START_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="endTime">
+        <column name="END_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="errorMessage">
+        <column name="ERROR_MESSAGE" jdbc-type="varchar" length="2000" allows-null="true"/>
+      </field>
+      <field name="lastUpdateTime">
+        <column name="LAST_UPDATE_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+	  <index name="LastUpdateTimeIndex">
+        <column name="LAST_UPDATE_TIME"/>
+      </index>
    </class>
   </package>
 </jdo>

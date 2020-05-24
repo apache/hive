@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * (dispatchedList) and a list of operators that are discovered but not yet
  * dispatched
  */
-public class TaskGraphWalker implements GraphWalker {
+public class TaskGraphWalker implements SemanticGraphWalker {
 
 
   public class TaskGraphWalkerContext{
@@ -56,7 +55,7 @@ public class TaskGraphWalker implements GraphWalker {
   protected Stack<Node> opStack;
   private final List<Node> toWalk = new ArrayList<Node>();
   private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
-  private final Dispatcher dispatcher;
+  private final SemanticDispatcher dispatcher;
   private final  TaskGraphWalkerContext walkerCtx;
 
   /**
@@ -65,7 +64,7 @@ public class TaskGraphWalker implements GraphWalker {
    * @param disp
    *          dispatcher to call for each op encountered
    */
-  public TaskGraphWalker(Dispatcher disp) {
+  public TaskGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
     opStack = new Stack<Node>();
     walkerCtx = new TaskGraphWalkerContext(retMap);
@@ -148,31 +147,31 @@ public class TaskGraphWalker implements GraphWalker {
         opStack.push(nd);
       }
 
-      List<Task<? extends Serializable>> nextTaskList = null;
-      Set<Task<? extends Serializable>> nextTaskSet = new HashSet<Task<? extends Serializable>>();
-      List<Task<? extends Serializable>> taskListInConditionalTask = null;
+      List<Task<?>> nextTaskList = null;
+      Set<Task<?>> nextTaskSet = new HashSet<Task<?>>();
+      List<Task<?>> taskListInConditionalTask = null;
 
 
       if(nd instanceof ConditionalTask ){
         //for conditional task, next task list should return the children tasks of each task, which
         //is contained in the conditional task.
         taskListInConditionalTask = ((ConditionalTask) nd).getListTasks();
-        for(Task<? extends Serializable> tsk: taskListInConditionalTask){
-          List<Task<? extends Serializable>> childTask = tsk.getChildTasks();
+        for(Task<?> tsk: taskListInConditionalTask){
+          List<Task<?>> childTask = tsk.getChildTasks();
           if(childTask != null){
             nextTaskSet.addAll(tsk.getChildTasks());
           }
         }
         //convert the set into list
         if(nextTaskSet.size()>0){
-          nextTaskList = new ArrayList<Task<? extends Serializable>>();
-          for(Task<? extends Serializable> tsk:nextTaskSet ){
+          nextTaskList = new ArrayList<Task<?>>();
+          for(Task<?> tsk:nextTaskSet ){
             nextTaskList.add(tsk);
           }
         }
       }else{
         //for other tasks, just return its children tasks
-        nextTaskList = ((Task<? extends Serializable>)nd).getChildTasks();
+        nextTaskList = ((Task<?>)nd).getChildTasks();
       }
 
       if ((nextTaskList == null)

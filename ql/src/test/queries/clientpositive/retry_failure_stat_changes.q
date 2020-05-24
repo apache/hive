@@ -1,4 +1,5 @@
 SET hive.vectorized.execution.enabled=false;
+set hive.stats.filter.range.uniform=false;
 
 create table tx_n2(a int,u int);
 insert into tx_n2 values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10);

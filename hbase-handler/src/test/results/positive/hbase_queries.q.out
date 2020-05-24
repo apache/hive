@@ -49,12 +49,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.hbase_table_1
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      table name: default.hbase_table_1
+      properties:
+        COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
     Pre-Insert task
@@ -154,6 +152,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -170,6 +169,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -200,6 +200,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -305,7 +306,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 120) and (key > 100)) (type: boolean)
+              predicate: ((key > 100) and (key < 120)) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -313,6 +314,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -328,6 +330,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -358,6 +361,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: string)
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -534,12 +538,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.hbase_table_3
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      table name: default.hbase_table_3
+      properties:
+        COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
     Pre-Insert task
@@ -563,6 +565,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -601,6 +604,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: double)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col2 (type: double)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -608,6 +612,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -989,6 +994,7 @@ WITH SERDEPROPERTIES (
   'hbase.columns.mapping'='cf:string', 
   'serialization.format'='1')
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'hbase.table.name'='hbase_table_0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9

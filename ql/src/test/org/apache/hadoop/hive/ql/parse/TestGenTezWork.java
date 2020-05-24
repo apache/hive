@@ -80,7 +80,7 @@ public class TestGenTezWork {
         conf,
         pctx,
         Collections.EMPTY_LIST,
-        new ArrayList<Task<? extends Serializable>>(),
+        new ArrayList<Task<?>>(),
         Collections.EMPTY_SET,
         Collections.EMPTY_SET);
 

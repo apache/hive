@@ -17,14 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import com.cronutils.utils.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -35,14 +38,16 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,6 +62,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +75,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -87,11 +95,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   static final private String CLASS_NAME = DbTxnManager.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static final String GLOBAL_LOCKS = "__GLOBAL_LOCKS";
 
   private volatile DbLockManager lockMgr = null;
   /**
-   * The Metastore NEXT_TXN_ID.NTXN_NEXT is initialized to 1; it contains the next available
-   * transaction id.  Thus is 1 is first transaction id.
+   * The Metastore TXNS sequence is initialized to 1.
+   * Thus is 1 is first transaction id.
    */
   private volatile long txnId = 0;
 
@@ -160,6 +169,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private ScheduledFuture<?> heartbeatTask = null;
   private Runnable shutdownRunner = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -220,11 +230,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public long openTxn(Context ctx, String user) throws LockException {
-    return openTxn(ctx, user, 0);
+    return openTxn(ctx, user, TxnType.DEFAULT, 0);
+  }
+
+  @Override
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+    return openTxn(ctx, user, txnType, 0);
   }
 
   @VisibleForTesting
-  long openTxn(Context ctx, String user, long delay) throws LockException {
+  long openTxn(Context ctx, String user, TxnType txnType, long delay) throws LockException {
     /*Q: why don't we lock the snapshot here???  Instead of having client make an explicit call
     whenever it chooses
     A: If we want to rely on locks for transaction scheduling we must get the snapshot after lock
@@ -236,7 +251,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("Transaction already opened. " + JavaUtils.txnIdToString(txnId));
     }
     try {
-      txnId = getMS().openTxn(user);
+      txnId = getMS().openTxn(user, txnType);
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();
@@ -270,9 +285,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     catch(LockException e) {
       if(e.getCause() instanceof TxnAbortedException) {
-        txnId = 0;
-        stmtId = -1;
-        tableWriteIds.clear();
+        resetTxnInfo();
       }
       throw e;
     }
@@ -310,7 +323,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         " for " + getQueryIdWaterMark(queryPlan));
     }
     if(queryPlan.getOperation() == null) {
-      throw new IllegalStateException("Unkown HiverOperation for " + getQueryIdWaterMark(queryPlan));
+      throw new IllegalStateException("Unknown HiveOperation(null) for " + getQueryIdWaterMark(queryPlan));
     }
     numStatements++;
     switch (queryPlan.getOperation()) {
@@ -399,6 +412,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
+    rqstBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
 
     // Make sure we need locks.  It's possible there's nothing to lock in
     // this operation.
@@ -406,9 +421,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
-    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(), conf);
+    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(),
+        ctx.getOperation(), conf);
+    lockComponents.addAll(getGlobalLocks(ctx.getConf()));
+
     //It's possible there's nothing to lock even if we have w/r entities.
-    if(lockComponents.isEmpty()) {
+    if (lockComponents.isEmpty()) {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
@@ -418,6 +436,28 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     LockState lockState = lockMgr.lock(rqstBuilder.build(), queryId, isBlocking, locks);
     ctx.setHiveLocks(locks);
     return lockState;
+  }
+
+  private Collection<LockComponent> getGlobalLocks(Configuration conf) {
+    String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
+    if (StringUtils.isEmpty(lockNames)) {
+      return Collections.emptyList();
+    }
+    List<LockComponent> globalLocks = new ArrayList<LockComponent>();
+    for (String lockName : lockNames.split(",")) {
+      lockName = lockName.trim();
+      if (StringUtils.isEmpty(lockName)) {
+        continue;
+      }
+      LockComponentBuilder compBuilder = new LockComponentBuilder();
+      compBuilder.setExclusive();
+      compBuilder.setOperationType(DataOperationType.UPDATE);
+      compBuilder.setDbName(GLOBAL_LOCKS);
+      compBuilder.setTableName(lockName);
+      globalLocks.add(compBuilder.build());
+      LOG.debug("Adding global lock: " + lockName);
+    }
+    return globalLocks;
   }
 
   /**
@@ -529,11 +569,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
+    stopHeartbeat();
+
     try {
       lockMgr.clearLocalLockRecords();
-      stopHeartbeat();
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
-      getMS().rollbackTxn(txnId);
+
+      // Re-checking as txn could have been closed, in the meantime, by a competing thread.
+      if (isTxnOpen()) {
+        getMS().rollbackTxn(txnId);
+      } else {
+        LOG.warn("Transaction is already closed.");
+      }
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -543,10 +590,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
     } finally {
-      txnId = 0;
-      stmtId = -1;
-      numStatements = 0;
-      tableWriteIds.clear();
+      resetTxnInfo();
     }
   }
 
@@ -629,11 +673,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("error while getting current user,", e);
     }
 
-    Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
-    heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
-    LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
-        " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
-    return heartbeater;
+    try {
+      heartbeatTaskLock.lock();
+      if (heartbeatTask != null) {
+        throw new IllegalStateException("Heartbeater is already started.");
+      }
+
+      Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
+      heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
+      LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
+          " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
+
+      return heartbeater;
+    } finally {
+      heartbeatTaskLock.unlock();
+    }
   }
 
   private ScheduledFuture<?> startHeartbeat(long initialDelay, long heartbeatInterval, Runnable heartbeater) {
@@ -651,30 +705,49 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return task;
   }
 
-  private void stopHeartbeat() throws LockException {
-    if (heartbeatTask != null) {
-      heartbeatTask.cancel(true);
-      long startTime = System.currentTimeMillis();
-      long sleepInterval = 100;
-      while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
-        // We will wait for 30 seconds for the task to be cancelled.
-        // If it's still not cancelled (unlikely), we will just move on.
-        long now = System.currentTimeMillis();
-        if (now - startTime > 30000) {
-          LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
-          break;
+  private void stopHeartbeat() {
+    if (heartbeatTask == null) {
+      // avoid unnecessary locking if the field is null
+      return;
+    }
+
+    boolean isLockAcquired = false;
+    try {
+      // The lock should not be held by other thread trying to stop the heartbeat for more than 31 seconds
+      isLockAcquired = heartbeatTaskLock.tryLock(31000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      // safe to go on
+    }
+
+    try {
+      if (isLockAcquired && heartbeatTask != null) {
+        heartbeatTask.cancel(true);
+        long startTime = System.currentTimeMillis();
+        long sleepInterval = 100;
+        while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
+          // We will wait for 30 seconds for the task to be cancelled.
+          // If it's still not cancelled (unlikely), we will just move on.
+          long now = System.currentTimeMillis();
+          if (now - startTime > 30000) {
+            LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
+            break;
+          }
+          try {
+            Thread.sleep(sleepInterval);
+          } catch (InterruptedException e) {
+          }
+          sleepInterval *= 2;
         }
-        try {
-          Thread.sleep(sleepInterval);
-        } catch (InterruptedException e) {
+        if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
+          LOG.info("Stopped heartbeat for query: " + queryId);
         }
-        sleepInterval *= 2;
+        heartbeatTask = null;
+        queryId = null;
       }
-      if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
-        LOG.info("Stopped heartbeat for query: " + queryId);
+    } finally {
+      if (isLockAcquired) {
+        heartbeatTaskLock.unlock();
       }
-      heartbeatTask = null;
-      queryId = null;
     }
   }
 
@@ -787,8 +860,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (shutdownRunner != null) {
         ShutdownHookManager.removeShutdownHook(shutdownRunner);
       }
-      if (isTxnOpen()) rollbackTxn();
-      if (lockMgr != null) lockMgr.close();
+      if (isTxnOpen()) {
+        rollbackTxn();
+      }
+      if (lockMgr != null) {
+        lockMgr.close();
+      }
     } catch (Exception e) {
       LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
       + ">, swallowing as there is nothing we can do with it.");
@@ -915,6 +992,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
+  @Override
   public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                              List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
     try {

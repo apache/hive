@@ -69,6 +69,9 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
   // Due to HIVE-6404, define our own constant
   private static final String COLLECTION_DELIM = "collection.delim";
 
+  // actual delimiter(fieldDelimited) is replaced by REPLACEMENT_DELIM in row.
+  private static final String REPLACEMENT_DELIM = "\1";
+
   private int numColumns;
   private String fieldDelimited;
   // we don't support using multiple chars as delimiters within complex types
@@ -90,6 +93,8 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
   private final ByteStream.Output serializeStream = new ByteStream.Output();
   // The Writable to return in serialize
   private final Text serializeCache = new Text();
+  // pattern for delimiter
+  private Pattern delimiterPattern;
 
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -101,7 +106,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     if (fieldDelimited == null || fieldDelimited.isEmpty()) {
       throw new SerDeException("This table does not have serde property \"field.delim\"!");
     }
-
+    delimiterPattern = Pattern.compile(fieldDelimited, Pattern.LITERAL);
     // get the collection separator and map key separator
     // TODO: use serdeConstants.COLLECTION_DELIM when the typo is fixed
     collSep = LazyUtils.getByte(tbl.getProperty(COLLECTION_DELIM),
@@ -154,10 +159,10 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     } else {
       throw new SerDeException(getClass() + ": expects either BytesWritable or Text object!");
     }
-    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), "\1").getBytes());
+    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM).getBytes());
     cachedLazyStruct.init(byteArrayRef, 0, byteArrayRef.getData().length);
     // use the multi-char delimiter to parse the lazy struct
-    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(), fieldDelimited.getBytes());
+    cachedLazyStruct.parseMultiDelimit(rowStr, delimiterPattern, REPLACEMENT_DELIM);
     return cachedLazyStruct;
   }
 

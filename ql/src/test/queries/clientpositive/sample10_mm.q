@@ -3,7 +3,6 @@ set hive.mapred.mode=nonstrict;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 set hive.exec.reducers.max=4;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;

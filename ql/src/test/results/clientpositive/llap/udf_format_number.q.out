@@ -1,0 +1,247 @@
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DESCRIBE FUNCTION format_number
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION format_number
+POSTHOOK: type: DESCFUNCTION
+format_number(X, D or F) - Formats the number X to a format like '#,###,###.##', rounded to D decimal places, Or Uses the format specified F to format, and returns the result as a string. If D is 0, the result has no decimal point or fractional part. This is supposed to function like MySQL's FORMAT
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED format_number
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED format_number
+POSTHOOK: type: DESCFUNCTION
+format_number(X, D or F) - Formats the number X to a format like '#,###,###.##', rounded to D decimal places, Or Uses the format specified F to format, and returns the result as a string. If D is 0, the result has no decimal point or fractional part. This is supposed to function like MySQL's FORMAT
+Example:
+  > SELECT format_number(12332.123456, 4) FROM src LIMIT 1;
+  '12,332.1235'
+  > SELECT format_number(12332.123456, '##################.###') FROM src LIMIT 1;
+  '12332.123'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFFormatNumber
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT format_number(12332.123456, 4),
+    format_number(12332.1,4),
+    format_number(12332.2,0),
+    format_number(12332.2,'##################.###')
+    FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT format_number(12332.123456, 4),
+    format_number(12332.1,4),
+    format_number(12332.2,0),
+    format_number(12332.2,'##################.###')
+    FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '12,332.1235' (type: string), '12,332.1000' (type: string), '12,332' (type: string), '12332.2' (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: SELECT format_number(12332.123456, 4),
+    format_number(12332.1,4),
+    format_number(12332.2,0),
+    format_number(12332.2,'##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(12332.123456, 4),
+    format_number(12332.1,4),
+    format_number(12332.2,0),
+    format_number(12332.2,'##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12,332.1235	12,332.1000	12,332	12332.2
+PREHOOK: query: SELECT format_number(0.123456789, 12),
+    format_number(12345678.123456789, 5),
+    format_number(1234567.123456789, 7),
+    format_number(123456.123456789, 0),
+    format_number(123456.123456789, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(0.123456789, 12),
+    format_number(12345678.123456789, 5),
+    format_number(1234567.123456789, 7),
+    format_number(123456.123456789, 0),
+    format_number(123456.123456789, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.123456789000	12,345,678.12346	1,234,567.1234568	123,456	123456.123
+PREHOOK: query: SELECT format_number(-123456.123456789, 0),
+    format_number(-1234567.123456789, 2),
+    format_number(-0.123456789, 15),
+    format_number(-0.123456789, '##################.###'),
+    format_number(-12345.123456789, 4),
+    format_number(-12345.123456789, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(-123456.123456789, 0),
+    format_number(-1234567.123456789, 2),
+    format_number(-0.123456789, 15),
+    format_number(-0.123456789, '##################.###'),
+    format_number(-12345.123456789, 4),
+    format_number(-12345.123456789, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-123,456	-1,234,567.12	-0.123456789000000	-0.123	-12,345.1235	-12345.123
+PREHOOK: query: SELECT format_number(0.0, 4),
+    format_number(0.000000, 1),
+    format_number(000.0000, 1),
+    format_number(00000.0000, 1),
+    format_number(00000.0000, '##################.###'),
+    format_number(-00.0, 4),
+    format_number(-00.0, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(0.0, 4),
+    format_number(0.000000, 1),
+    format_number(000.0000, 1),
+    format_number(00000.0000, 1),
+    format_number(00000.0000, '##################.###'),
+    format_number(-00.0, 4),
+    format_number(-00.0, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.0000	0.0	0.0	0.0	0	0.0000	0
+PREHOOK: query: SELECT format_number(0, 0),
+    format_number(1, 4),
+    format_number(12, 2),
+    format_number(123, 5),
+    format_number(1234, 7),
+    format_number(1234, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(0, 0),
+    format_number(1, 4),
+    format_number(12, 2),
+    format_number(123, 5),
+    format_number(1234, 7),
+    format_number(1234, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	1.0000	12.00	123.00000	1,234.0000000	1234
+PREHOOK: query: SELECT format_number(-9223372036854775807, 10),
+    format_number(9223372036854775807, 20),
+    format_number(4.9E-324, 324),
+    format_number(1.7976931348623157E308, 308)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(-9223372036854775807, 10),
+    format_number(9223372036854775807, 20),
+    format_number(4.9E-324, 324),
+    format_number(1.7976931348623157E308, 308)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-9,223,372,036,854,775,807.0000000000	9,223,372,036,854,775,807.00000000000000000000	0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005	179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+PREHOOK: query: SELECT format_number(CAST(12332.123456 AS FLOAT), 4),
+    format_number(CAST(12332.1 AS FLOAT), 4),
+    format_number(CAST(-12332.2 AS FLOAT), 0),
+    format_number(CAST(-12332.2 AS FLOAT), '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(CAST(12332.123456 AS FLOAT), 4),
+    format_number(CAST(12332.1 AS FLOAT), 4),
+    format_number(CAST(-12332.2 AS FLOAT), 0),
+    format_number(CAST(-12332.2 AS FLOAT), '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12,332.1230	12,332.0996	-12,332	-12332.2
+PREHOOK: query: SELECT format_number(12332.123456BD, 4),
+    format_number(12332.123456BD, 2),
+    format_number(12332.1BD, 4),
+    format_number(-12332.2BD, 0),
+    format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4),
+    format_number(12332.1BD, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(12332.123456BD, 4),
+    format_number(12332.123456BD, 2),
+    format_number(12332.1BD, 4),
+    format_number(-12332.2BD, 0),
+    format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4),
+    format_number(12332.1BD, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12,332.1235	12,332.12	12,332.1000	-12,332	12,332.6000	12332.1
+PREHOOK: query: SELECT
+  format_number(cast(null as int), 0),
+  format_number(12332.123456BD, cast(null as int)),
+  format_number(cast(null as int), cast(null as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  format_number(cast(null as int), 0),
+  format_number(12332.123456BD, cast(null as int)),
+  format_number(cast(null as int), cast(null as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL	NULL
+PREHOOK: query: SELECT format_number(-9223372036854775807, '##################.###'),
+    format_number(9223372036854775807, '##################.###'),
+    format_number(4.9E-324, '##################.###'),
+    format_number(1.7976931348623157E308, '##################.###'),
+    format_number(null, '##################.###')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT format_number(-9223372036854775807, '##################.###'),
+    format_number(9223372036854775807, '##################.###'),
+    format_number(4.9E-324, '##################.###'),
+    format_number(1.7976931348623157E308, '##################.###'),
+    format_number(null, '##################.###')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-9223372036854775807	9223372036854775807	0	179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000	NULL

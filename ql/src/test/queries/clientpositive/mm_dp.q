@@ -13,7 +13,6 @@ set mapred.max.split.size=5000;
 set mapred.reduce.tasks=10;
 set tez.am.grouping.split-count=10;
 set tez.grouping.split-count=10;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.exec.max.dynamic.partitions=1000;

@@ -17,14 +17,12 @@
  */
 package org.apache.hadoop.hive.ql;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 import org.apache.hadoop.mapred.Counters;
@@ -55,14 +53,14 @@ public class QueryDisplay {
 
   private final LinkedHashMap<String, TaskDisplay> tasks = new LinkedHashMap<String, TaskDisplay>();
 
-  public synchronized <T extends Serializable> void updateTaskStatus(Task<T> tTask) {
+  public synchronized void updateTaskStatus(Task<?> tTask) {
     if (!tasks.containsKey(tTask.getId())) {
       tasks.put(tTask.getId(), new TaskDisplay(tTask));
     }
     tasks.get(tTask.getId()).updateStatus(tTask);
   }
 
-  public synchronized <T extends Serializable> void updateTaskStatistics(MapRedStats mapRedStats,
+  public synchronized void updateTaskStatistics(MapRedStats mapRedStats,
       RunningJob rj, String taskId) throws IOException, JSONException {
     if (tasks.containsKey(taskId)) {
       tasks.get(taskId).updateMapRedStatsJson(mapRedStats, rj);
@@ -232,7 +230,7 @@ public class QueryDisplay {
       return externalHandle;
     }
 
-    public synchronized <T extends Serializable> void updateStatus(Task<T> tTask) {
+    public void updateStatus(Task<?> tTask) {
       this.taskState = tTask.getTaskState();
       if (externalHandle == null && tTask.getExternalHandle() != null) {
         this.externalHandle = tTask.getExternalHandle();
@@ -303,7 +301,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param hmsTimings map of HMS Client method-calls and duration in miliseconds, during given phase.
    */
-  public synchronized void setHmsTimings(Phase phase, ImmutableMap<String, Long> hmsTimings) {
+  public synchronized void setHmsTimings(Phase phase, Map<String, Long> hmsTimings) {
     hmsTimingMap.put(phase, hmsTimings);
   }
 
@@ -319,7 +317,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param perfLogStarts map of PerfLogger call-trace name and start time in miliseconds, during given phase.
    */
-  public synchronized void setPerfLogStarts(Phase phase, ImmutableMap<String, Long> perfLogStarts) {
+  public synchronized void setPerfLogStarts(Phase phase, Map<String, Long> perfLogStarts) {
     perfLogStartMap.put(phase, perfLogStarts);
   }
 
@@ -335,7 +333,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param perfLogEnds map of PerfLogger call-trace name and end time in miliseconds, during given phase.
    */
-   public synchronized void setPerfLogEnds(Phase phase, ImmutableMap<String, Long> perfLogEnds) {
+  public synchronized void setPerfLogEnds(Phase phase, Map<String, Long> perfLogEnds) {
     perfLogEndMap.put(phase, perfLogEnds);
   }
 
@@ -375,11 +373,11 @@ public class QueryDisplay {
     this.queryId = queryId;
   }
 
-  private String returnStringOrUnknown(String s) {
+  private static String returnStringOrUnknown(String s) {
     return s == null ? "UNKNOWN" : s;
   }
 
-  public long getQueryStartTime() {
+  public synchronized long getQueryStartTime() {
     return queryStartTime;
   }
 }

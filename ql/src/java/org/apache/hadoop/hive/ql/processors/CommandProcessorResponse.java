@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import java.util.List;
-
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 
 /**
  * Encapsulates the basic response info returned by classes the implement the
@@ -30,87 +27,29 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
  * is not 0.  Note that often {@code responseCode} ends up the exit value of
  * command shell process so should keep it to &lt; 127.
  */
-public class CommandProcessorResponse extends Exception {
-  private final int responseCode;
-  private final String errorMessage;
-  private final int hiveErrorCode;
-  private final String SQLState;
-  private final Schema resSchema;
+public class CommandProcessorResponse {
+  private final Schema schema;
+  private final String message;
 
-  private final Throwable exception;
-  private final List<String> consoleMessages;
-
-  public CommandProcessorResponse(int responseCode) {
-    this(responseCode, null, null, null, null);
+  public CommandProcessorResponse() {
+    this(null, null);
   }
 
-  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState) {
-    this(responseCode, errorMessage, SQLState, null, null);
+  public CommandProcessorResponse(Schema schema, String message) {
+    this.schema = schema;
+    this.message = message;
   }
 
-  public CommandProcessorResponse(int responseCode, List<String> consoleMessages) {
-    this(responseCode, null, null, null, null, -1, consoleMessages);
+  public Schema getSchema() {
+    return schema;
   }
 
-  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Throwable exception) {
-    this(responseCode, errorMessage, SQLState, null, exception);
+  public String getMessage() {
+    return message;
   }
 
-  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Schema schema) {
-    this(responseCode, errorMessage, SQLState, schema, null);
-  }
-  public CommandProcessorResponse(int responseCode, ErrorMsg canonicalErrMsg, Throwable t, String ... msgArgs) {
-    this(responseCode, canonicalErrMsg.format(msgArgs),
-      canonicalErrMsg.getSQLState(), null, t, canonicalErrMsg.getErrorCode(), null);
-  }
-
-  /**
-   * Create CommandProcessorResponse object indicating an error.
-   * Creates new CommandProcessorResponse with responseCode=1, and sets message
-   * from exception argument
-   *
-   * @param e
-   * @return
-   */
-  public static CommandProcessorResponse create(Exception e) {
-    return new CommandProcessorResponse(1, e.getMessage(), null);
-  }
-
-  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
-                                  Schema schema, Throwable exception) {
-    this(responseCode, errorMessage, SQLState, schema, exception, -1, null);
-  }
-  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
-      Schema schema, Throwable exception, int hiveErrorCode, List<String> consoleMessages) {
-    this.responseCode = responseCode;
-    this.errorMessage = errorMessage;
-    this.SQLState = SQLState;
-    this.resSchema = schema;
-    this.exception = exception;
-    this.hiveErrorCode = hiveErrorCode;
-    this.consoleMessages = consoleMessages;
-  }
-
-  public int getResponseCode() { return responseCode; }
-  public String getErrorMessage() { return errorMessage; }
-  public String getSQLState() { return SQLState; }
-  public Schema getSchema() { return resSchema; }
-  public Throwable getException() { return exception; }
-
-  public List<String> getConsoleMessages() {
-    return consoleMessages;
-  }
-  public int getErrorCode() { return hiveErrorCode; }
   @Override
   public String toString() {
-    return "(responseCode = " + responseCode + ", errorMessage = " + errorMessage + ", " +
-      (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "" ) +
-      "SQLState = " + SQLState +
-      (resSchema == null ? "" : ", resSchema = " + resSchema) +
-      (exception == null ? "" : ", exception = " + exception.getMessage()) + ")";
-  }
-
-  public boolean failed() {
-    return responseCode != 0;
+    return "(" + (schema == null ? "" : ", schema = " + schema + ", ") + "message = " + message + ")";
   }
 }

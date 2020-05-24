@@ -900,7 +900,7 @@ public class TestVectorBetweenIn {
             (isFilter ?
                 VectorExpressionDescriptor.Mode.FILTER :
                 VectorExpressionDescriptor.Mode.PROJECTION));
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (betweenInTestMode == BetweenInTestMode.VECTOR_EXPRESSION) {
       String vecExprString = vectorExpression.toString();

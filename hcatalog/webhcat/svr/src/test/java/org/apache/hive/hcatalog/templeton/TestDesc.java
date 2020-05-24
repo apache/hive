@@ -23,14 +23,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import junit.framework.TestCase;
+
 import org.codehaus.jackson.map.ObjectMapper;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestDesc - Test the desc objects that are correctly converted to
  * and from json.  This also sets every field of the TableDesc object.
  */
-public class TestDesc extends TestCase {
+public class TestDesc {
+  @Test
   public void testTableDesc()
     throws Exception
   {

@@ -838,7 +838,8 @@ public class TestMetaStoreServerUtils {
     result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
     assertEquals(expectedConnectionURL, result);
 
-    connectionURL = "jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true";
+    connectionURL = "jdbc:derby:memory:${test.tmp.dir}/"
+        + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX + ";create=true";
     result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
     assertEquals(connectionURL, result);
   }

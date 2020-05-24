@@ -30,15 +30,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Generated from template ColumnArithmeticScalar.txt, which covers decimal64 arithmetic
+ * Generated from template Decimal64ColumnArithmeticDecimal64Scalar.txt, which covers decimal64 arithmetic
  * expressions between a column and a scalar.
  */
 public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-  private final long value;
+  protected final int colNum;
+  protected final long value;
 
   public <ClassName>(int colNum, long value, int outputColumnNum) {
     super(outputColumnNum);
