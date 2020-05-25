@@ -485,7 +485,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(0, ObjectInspectorUtils.compare(union, uoi1,
           new StandardUnion((byte) 0, 1), uoi2));
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals(1));
+          union, uoi1).equals(union));
 
       union = new StandardUnion((byte) 1, "two");
       assertEquals(1, uoi1.getTag(union));
@@ -494,7 +494,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(0, ObjectInspectorUtils.compare(union, uoi1,
           new StandardUnion((byte) 1, "two"), uoi2));
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals("two"));
+          union, uoi1).equals(union));
 
       union = new StandardUnion((byte) 2, true);
       assertEquals(2, uoi1.getTag(union));
@@ -503,7 +503,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(0, ObjectInspectorUtils.compare(union, uoi1,
           new StandardUnion((byte) 2, true), uoi2));
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals(true));
+          union, uoi1).equals(union));
 
       ArrayList<Integer> iList = new ArrayList<Integer>();
       iList.add(4);
@@ -515,7 +515,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(0, ObjectInspectorUtils.compare(union, uoi1,
           new StandardUnion((byte) 3, iList.clone()), uoi2));
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals(iList));
+          union, uoi1).equals(union));
 
       HashMap<Integer, String> map = new HashMap<Integer, String>();
       map.put(6, "six");
@@ -536,7 +536,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertNotNull(th);
       assertEquals("Compare on map type not supported!", th.getMessage());
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals(map));
+          union, uoi1).equals(union));
 
 
       ArrayList<Object> struct = new ArrayList<Object>(2);
@@ -550,7 +550,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(0, ObjectInspectorUtils.compare(union, uoi1,
           new StandardUnion((byte) 5, struct.clone()), uoi2));
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
-          union, uoi1).equals(struct));
+          union, uoi1).equals(union));
 
     } catch (Throwable e) {
       e.printStackTrace();
