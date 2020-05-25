@@ -16,23 +16,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <modules>
-    <module>metastore-common</module>
-    <module>metastore-server</module>
-    <module>metastore-tools</module>
-  </modules>
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>21</version>
-    <relativePath></relativePath>
+    <version>23</version>
   </parent>
-
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
   <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
+
+  <modules>
+    <module>metastore-common</module>
+    <module>metastore-server</module>
+    <module>metastore-tools</module>
+  </modules>
 
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
@@ -40,6 +39,7 @@
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
@@ -61,7 +61,6 @@
 
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
 
     <!-- Dependency versions -->
@@ -374,7 +373,6 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
-          <version>0.10</version>
           <configuration>
             <excludes>
               <exclude>binary-package-licenses/**</exclude>
