@@ -324,8 +324,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -361,8 +359,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='today')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -398,8 +394,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats4
@@ -477,8 +471,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -514,8 +506,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='today')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -551,8 +541,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats4
@@ -657,8 +645,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -694,8 +680,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats4 partition(ds='today')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats4
@@ -731,8 +715,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats4
