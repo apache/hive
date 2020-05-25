@@ -91,7 +91,6 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
   @AfterClass
   public static void afterTest() throws Exception {
-    System.out.println("@@@ AfterClass stuff");
     if (miniHS2.isStarted()) {
       miniHS2.stop();
     }
@@ -104,7 +103,6 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
   @After
   public void tearDown() throws Exception {
-    System.out.println("@@@ teardown stuff");
     LlapBaseInputFormat.closeAll();
     hs2Conn.close();
   }
@@ -117,9 +115,10 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     System.setErr(new PrintStream(baos)); // capture stderr
+    final Statement selStmt = con.createStatement();
     Throwable throwable = null;
     int rowCount = 0;
-    try (final Statement selStmt = con.createStatement()) {
+    try {
       try {
         if (setCmds != null) {
           for (String setCmd : setCmds) {
@@ -133,6 +132,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
       } catch (SQLException e) {
         throwable = e;
       }
+      selStmt.close();
       assertNull(throwable);
       System.out.println("Expected " + numRows + " rows for query '" + query + "'. Got: " + rowCount);
       assertEquals("Expected rows: " + numRows + " got: " + rowCount, numRows, rowCount);
@@ -208,34 +208,36 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
   }
 
   private void createPartitionedTestTable(String database, String tableName) throws Exception {
-    try (Statement stmt = hs2Conn.createStatement()) {
+    Statement stmt = hs2Conn.createStatement();
 
-      if (database != null) {
-        stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
-        stmt.execute("USE " + database);
-      }
-
-      // create table
-      stmt.execute("DROP TABLE IF EXISTS " + tableName);
-      stmt.execute("CREATE TABLE " + tableName + " (id INT) partitioned by (p1 int)");
-
-      // load data
-      for (int i = 1; i <= 5; i++) {
-        String values = "";
-        for (int j = 1; j <= 10; j++) {
-          if (j != 10) {
-            values += "(" + j + "),";
-          } else {
-            values += "(" + j + ")";
-          }
-        }
-        stmt.execute("insert into " + tableName + " partition (p1=" + i + ") " + " values " + values);
-      }
-
-      try (ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName)) {
-        assertTrue(res.next());
-        assertEquals(50, res.getInt(1));
-      }
+    if (database != null) {
+      stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
+      stmt.execute("USE " + database);
     }
+
+    // create table
+    stmt.execute("DROP TABLE IF EXISTS " + tableName);
+    stmt.execute("CREATE TABLE " + tableName
+            + " (id INT) partitioned by (p1 int)");
+
+    // load data
+    for (int i=1; i<=5; i++) {
+      String values = "";
+      for (int j=1; j<=10; j++) {
+        if (j != 10) {
+          values+= "(" + j +"),";
+        } else {
+          values+= "(" + j +")";
+        }
+      }
+      stmt.execute("insert into " + tableName + " partition (p1=" + i +") " + " values " + values);
+    }
+
+
+    ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+    assertTrue(res.next());
+    assertEquals(50, res.getInt(1));
+    res.close();
+    stmt.close();
   }
 }
