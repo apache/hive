@@ -88,6 +88,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.server2.authentication.ldap.userMembershipKey");
     addToExpectedRestrictedMap("hive.server2.authentication.ldap.groupClassKey");
     addToExpectedRestrictedMap("hive.server2.authentication.ldap.customLDAPQuery");
+    addToExpectedRestrictedMap("hive.server2.service.users");
     addToExpectedRestrictedMap("hive.spark.client.channel.log.level");
     addToExpectedRestrictedMap("hive.spark.client.secret.bits");
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.address");
