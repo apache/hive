@@ -44,8 +44,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -565,8 +563,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[i]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -836,8 +832,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1406,8 +1400,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1569,8 +1561,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1745,8 +1735,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1825,8 +1813,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2012,8 +1998,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2091,8 +2075,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2171,8 +2153,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2608,8 +2588,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2771,8 +2749,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 

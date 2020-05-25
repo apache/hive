@@ -91,6 +91,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -658,7 +659,7 @@ class MetaStoreDirectSql {
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(String catName, String dbName, String tableName,
-      SqlFilterForPushdown filter, Integer max) throws MetaException {
+      SqlFilterForPushdown filter, Integer max, boolean isTxnTable) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
         dbName, tableName, filter.filter, filter.params,
         filter.joins, max);
@@ -669,7 +670,7 @@ class MetaStoreDirectSql {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsFromPartitionIds(catName, dbName,
-            tableName, null, input, Collections.emptyList());
+            tableName, null, input, Collections.emptyList(), isTxnTable);
       }
     });
   }
@@ -914,6 +915,13 @@ class MetaStoreDirectSql {
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Long> partIdList, List<String> projectionFields) throws MetaException {
+    return getPartitionsFromPartitionIds(catName, dbName, tblName, isView, partIdList, projectionFields, false);
+  }
+
+  /** Should be called with the list short enough to not trip up Oracle/etc. */
+  private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
+      Boolean isView, List<Long> partIdList, List<String> projectionFields,
+      boolean isTxnTable) throws MetaException {
 
     boolean doTrace = LOG.isDebugEnabled();
 
@@ -1049,16 +1057,22 @@ class MetaStoreDirectSql {
     String serdeIds = trimCommaList(serdeSb);
     String colIds = trimCommaList(colsSb);
 
-    // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
-    MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
+    if (!isTxnTable) {
+      // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
+      MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
+    }
 
-    MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
+    boolean hasSkewedColumns = false;
+    if (!isTxnTable) {
+      MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
+    }
 
     MetastoreDirectSqlUtils.setSDBucketCols(BUCKETING_COLS, pm, sds, sdIds);
 
-    // Skewed columns stuff.
-    boolean hasSkewedColumns = MetastoreDirectSqlUtils
-        .setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
+    if (!isTxnTable) {
+      // Skewed columns stuff.
+      hasSkewedColumns = MetastoreDirectSqlUtils.setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
+    }
 
     // Assume we don't need to fetch the rest of the skewed column data if we have no columns.
     if (hasSkewedColumns) {
@@ -1078,8 +1092,9 @@ class MetaStoreDirectSql {
     }
 
     // Finally, get all the stuff for serdes - just the params.
-    MetastoreDirectSqlUtils
-        .setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
+    if (!isTxnTable) {
+      MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
+    }
 
     return orderedResult;
   }
@@ -1125,10 +1140,10 @@ class MetaStoreDirectSql {
   }
 
   private static class PartitionFilterGenerator extends TreeVisitor {
-    private String catName;
-    private String dbName;
-    private String tableName;
-    private List<FieldSchema> partitionKeys;
+    private final String catName;
+    private final String dbName;
+    private final String tableName;
+    private final List<FieldSchema> partitionKeys;
     private final FilterBuilder filterBuffer;
     private final List<Object> params;
     private final List<String> joins;
