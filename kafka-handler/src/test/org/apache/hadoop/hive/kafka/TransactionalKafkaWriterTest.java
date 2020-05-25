@@ -35,9 +35,9 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -71,7 +71,7 @@ public class TransactionalKafkaWriterTest {
       .range(0, RECORD_NUMBER)
       .mapToObj(number -> {
         final byte[] value = ("VALUE-" + Integer.toString(number)).getBytes(Charset.forName("UTF-8"));
-        return new KafkaWritable(0, number, value, KEY_BYTES);
+        return new KafkaWritable(0, (long) number, value, KEY_BYTES);
       })
       .collect(Collectors.toList());
 
@@ -140,8 +140,7 @@ public class TransactionalKafkaWriterTest {
     StorageDescriptor sd = new StorageDescriptor();
     sd.setLocation(tableLocation.toString());
     Mockito.when(table.getSd()).thenReturn(sd);
-    kafkaStorageHandler.setConf(new Configuration(configuration));
-    configuration.unset("mapred.task.id");
+    kafkaStorageHandler.setConf(configuration);
     properties = KafkaUtils.producerProperties(configuration);
   }
 
@@ -204,7 +203,7 @@ public class TransactionalKafkaWriterTest {
     checkData();
   }
 
-  @Ignore("HIVE-23400")
+  @Ignore("HIVE-23400 flaky")
   @Test(expected = IOException.class) public void writerFencedOut() throws IOException {
     TransactionalKafkaWriter
         writer =
