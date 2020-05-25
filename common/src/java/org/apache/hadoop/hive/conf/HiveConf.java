@@ -542,6 +542,10 @@ public class HiveConf extends Configuration {
             "hive",
             "This configuration will define the service name for which the ranger authorization"
                     + " policies needs to be replicated"),
+    REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
+      true,
+      "This configuration will add a deny policy on the target database for all users except hive"
+        + " to avoid any update to the target database"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2488,12 +2492,19 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.bi.rewrite.countdistinct.enabled",
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
-
     HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
         "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
         new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
             + "Distinct counting can be done with: hll"),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED("hive.optimize.bi.rewrite.percentile_disc.enabled",
+        true,
+        "Enables to rewrite PERCENTILE_DISC(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH(
+        "hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting PERCENTILE_DISC expressions. Options: kll"),
+
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,

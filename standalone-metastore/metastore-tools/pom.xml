@@ -15,17 +15,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
-    <groupId>org.apache.hive</groupId>
     <version>4.0.0-SNAPSHOT</version>
+    <groupId>org.apache.hive</groupId>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
 
   <artifactId>hive-metastore-tools</artifactId>
   <name>Hive Metastore Tools</name>
-  <version>4.0.0-SNAPSHOT</version>
-
   <packaging>pom</packaging>
 
   <modules>
@@ -35,9 +33,6 @@
 
   <properties>
     <hive.version>4.0.0-SNAPSHOT</hive.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <javac.errorprone.version>2.8</javac.errorprone.version>
     <errorprone.core.version>2.3.1</errorprone.core.version>
     <picocli.version>3.1.0</picocli.version>
@@ -150,15 +145,6 @@
   </dependencyManagement>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.7.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <!-- Suppress source assembly -->
       <plugin>
