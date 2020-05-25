@@ -3,7 +3,7 @@ with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -18,17 +18,16 @@ with year_total as (
  group by c_customer_id
          ,c_first_name
          ,c_last_name
-         ,d_year
          ,c_preferred_cust_flag
          ,c_birth_country
          ,c_login
          ,c_email_address
-         ,d_year 
+         ,d_year
  union all
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -49,7 +48,11 @@ with year_total as (
          ,c_email_address
          ,d_year
          )
-  select  t_s_secyear.c_preferred_cust_flag
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
  from year_total t_s_firstyear
      ,year_total t_s_secyear
      ,year_total t_w_firstyear
@@ -61,15 +64,18 @@ with year_total as (
          and t_w_firstyear.sale_type = 'w'
          and t_s_secyear.sale_type = 's'
          and t_w_secyear.sale_type = 'w'
-         and t_s_firstyear.dyear = 2001
-         and t_s_secyear.dyear = 2001+1
-         and t_w_firstyear.dyear = 2001
-         and t_w_secyear.dyear = 2001+1
+         and t_s_firstyear.dyear = 1999
+         and t_s_secyear.dyear = 1999+1
+         and t_w_firstyear.dyear = 1999
+         and t_w_secyear.dyear = 1999+1
          and t_s_firstyear.year_total > 0
          and t_w_firstyear.year_total > 0
-         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
-             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
- order by t_s_secyear.c_preferred_cust_flag
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else 0.0 end
+             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else 0.0 end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer
@@ -82,7 +88,7 @@ with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -97,17 +103,16 @@ with year_total as (
  group by c_customer_id
          ,c_first_name
          ,c_last_name
-         ,d_year
          ,c_preferred_cust_flag
          ,c_birth_country
          ,c_login
          ,c_email_address
-         ,d_year 
+         ,d_year
  union all
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -128,7 +133,11 @@ with year_total as (
          ,c_email_address
          ,d_year
          )
-  select  t_s_secyear.c_preferred_cust_flag
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
  from year_total t_s_firstyear
      ,year_total t_s_secyear
      ,year_total t_w_firstyear
@@ -140,15 +149,18 @@ with year_total as (
          and t_w_firstyear.sale_type = 'w'
          and t_s_secyear.sale_type = 's'
          and t_w_secyear.sale_type = 'w'
-         and t_s_firstyear.dyear = 2001
-         and t_s_secyear.dyear = 2001+1
-         and t_w_firstyear.dyear = 2001
-         and t_w_secyear.dyear = 2001+1
+         and t_s_firstyear.dyear = 1999
+         and t_s_secyear.dyear = 1999+1
+         and t_w_firstyear.dyear = 1999
+         and t_w_secyear.dyear = 1999+1
          and t_s_firstyear.year_total > 0
          and t_w_firstyear.year_total > 0
-         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
-             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
- order by t_s_secyear.c_preferred_cust_flag
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else 0.0 end
+             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else 0.0 end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer
@@ -190,25 +202,25 @@ Stage-0
     Stage-1
       Reducer 8 vectorized
       File Output Operator [FS_355]
-        Limit [LIM_354] (rows=100 width=85)
+        Limit [LIM_354] (rows=100 width=372)
           Number of rows:100
-          Select Operator [SEL_353] (rows=12248093 width=85)
-            Output:["_col0"]
+          Select Operator [SEL_353] (rows=12248093 width=372)
+            Output:["_col0","_col1","_col2","_col3"]
           <-Reducer 7 [SIMPLE_EDGE]
             SHUFFLE [RS_93]
-              Select Operator [SEL_92] (rows=12248093 width=85)
-                Output:["_col0"]
-                Top N Key Operator [TNK_158] (rows=12248093 width=537)
-                  keys:_col8,top n:100
-                  Filter Operator [FIL_91] (rows=12248093 width=537)
-                    predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col6) THEN (((_col1 / _col5) > (_col9 / _col3))) ELSE (false) END) ELSE (false) END
-                    Merge Join Operator [MERGEJOIN_288] (rows=24496186 width=537)
-                      Conds:RS_88._col2=RS_352._col0(Inner),Output:["_col1","_col3","_col5","_col6","_col8","_col9"]
+              Select Operator [SEL_92] (rows=12248093 width=372)
+                Output:["_col0","_col1","_col2","_col3"]
+                Top N Key Operator [TNK_158] (rows=12248093 width=824)
+                  keys:_col7, _col8, _col9, _col10,top n:100
+                  Filter Operator [FIL_91] (rows=12248093 width=824)
+                    predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col6) THEN (((_col1 / _col5) > (_col11 / _col3))) ELSE ((0 > (_col11 / _col3))) END) ELSE (CASE WHEN (_col6) THEN (((_col1 / _col5) > 0)) ELSE (false) END) END
+                    Merge Join Operator [MERGEJOIN_288] (rows=24496186 width=824)
+                      Conds:RS_88._col2=RS_352._col0(Inner),Output:["_col1","_col3","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
                     <-Reducer 20 [SIMPLE_EDGE] vectorized
                       SHUFFLE [RS_352]
                         PartitionCols:_col0
-                        Select Operator [SEL_351] (rows=80000000 width=297)
-                          Output:["_col0","_col1","_col2"]
+                        Select Operator [SEL_351] (rows=80000000 width=484)
+                          Output:["_col0","_col1","_col2","_col3","_col4"]
                           Group By Operator [GBY_350] (rows=80000000 width=764)
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5, KEY._col6
                           <-Reducer 19 [SIMPLE_EDGE]
@@ -238,7 +250,7 @@ Stage-0
                                         Select Operator [SEL_292] (rows=652 width=4)
                                           Output:["_col0"]
                                           Filter Operator [FIL_289] (rows=652 width=8)
-                                            predicate:((d_year = 2002) and d_date_sk is not null)
+                                            predicate:((d_year = 2000) and d_date_sk is not null)
                                             TableScan [TS_65] (rows=73049 width=8)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
                                     <-Map 17 [SIMPLE_EDGE] vectorized
@@ -299,7 +311,7 @@ Stage-0
                                                 Select Operator [SEL_294] (rows=652 width=4)
                                                   Output:["_col0"]
                                                   Filter Operator [FIL_291] (rows=652 width=8)
-                                                    predicate:((d_year = 2001) and d_date_sk is not null)
+                                                    predicate:((d_year = 1999) and d_date_sk is not null)
                                                      Please refer to the previous TableScan [TS_65]
                                             <-Map 13 [SIMPLE_EDGE] vectorized
                                               SHUFFLE [RS_339]
@@ -359,7 +371,7 @@ Stage-0
                                                     Select Operator [SEL_293] (rows=652 width=4)
                                                       Output:["_col0"]
                                                       Filter Operator [FIL_290] (rows=652 width=8)
-                                                        predicate:((d_year = 2001) and d_date_sk is not null)
+                                                        predicate:((d_year = 1999) and d_date_sk is not null)
                                                          Please refer to the previous TableScan [TS_65]
                                                 <-Map 9 [SIMPLE_EDGE] vectorized
                                                   SHUFFLE [RS_329]
