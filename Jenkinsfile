@@ -24,7 +24,6 @@ properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
-        string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
 ])
 
