@@ -26,9 +26,6 @@
 
   <name>Hive</name>
   <url>https://hive.apache.org</url>
-  <prerequisites>
-    <maven>2.2.1</maven>
-  </prerequisites>
 
   <modules>
     <module>storage-api</module>
