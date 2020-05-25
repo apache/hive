@@ -44,7 +44,7 @@ public class TestNewGetSplitsFormatReturnPath extends TestNewGetSplitsFormat {
   }
 
   @Override
-  @Ignore("flaky")
+  @Ignore("HIVE-23524 flaky")
   @Test
   public void testLlapInputFormatEndToEndWithMultipleBatches() {
   }
