@@ -115,7 +115,6 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                  ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("create scheduled query s1_t1 every 5 seconds as repl dump " + primaryDbName);
       replica.run("create scheduled query s2_t1 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName);
@@ -123,6 +122,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
 
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -133,10 +133,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(3)")
               .run("insert into t1 values(4)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -147,10 +147,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2", "3", "4"});
 
       // Second incremental
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(5)")
               .run("insert into t1 values(6)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -181,13 +181,13 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                  ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName);
       Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
               Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -198,10 +198,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t2 values(3)")
               .run("insert into t2 values(4)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -215,18 +215,19 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2_t2");
     }
   }
-
-  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws Exception {
+  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws IOException {
     long oldTime = System.currentTimeMillis();
     long sleepInterval = 2;
 
     while(true) {
       if (fs.exists(ackFile)) {
-        // in case even if the file exists - for acid tables the changes may not yet been visible
-        Thread.sleep(5000);
         return;
       }
-      Thread.sleep(sleepInterval);
+      try {
+        Thread.sleep(sleepInterval);
+      } catch (InterruptedException e) {
+        //no-op
+      }
       if (System.currentTimeMillis() - oldTime > timeout) {
         break;
       }
