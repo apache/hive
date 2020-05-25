@@ -2908,6 +2908,12 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
+
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+        "will gather stats if there are stats already associated with the table/partition.\n" +
+        "Turn this off to save some resources and the stats are not used anyway.\n" +
+        "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
+
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_INITIATOR_FAILED_THRESHOLD
      */

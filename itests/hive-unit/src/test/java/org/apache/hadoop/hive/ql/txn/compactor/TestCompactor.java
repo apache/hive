@@ -129,6 +129,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.cleanDb(hiveConf);
@@ -1466,6 +1467,57 @@ public class TestCompactor {
     if (connection2 != null) {
       connection2.close();
     }
+  }
+
+  @Test
+  public void testCompactorGatherStats() throws Exception {
+    String dbName = "default";
+    String tableName = "stats_comp_test";
+    List<String> colNames = Arrays.asList("a");
+    executeStatementOnDriver("drop table if exists " + dbName + "." + tableName, driver);
+    executeStatementOnDriver("create table " + dbName + "." + tableName +
+        " (a INT) STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(1)", driver);
+    executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(1)", driver);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
+    runWorker(conf);
+
+    // Make sure we do not have statistics for this table yet
+    // Compaction generates stats only if there is any
+    List<ColumnStatisticsObj> colStats = msClient.getTableColumnStatistics(dbName,
+        tableName, colNames, Constants.HIVE_ENGINE);
+    assertEquals("No stats should be there for the table", 0, colStats.size());
+
+    executeStatementOnDriver("analyze table " + dbName + "." + tableName + " compute statistics for columns", driver);
+    executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(2)", driver);
+
+    // Make sure we have old statistics for the table
+    colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
+    assertEquals("Stats should be there", 1, colStats.size());
+    assertEquals("Value should contain old data", 1, colStats.get(0).getStatsData().getLongStats().getHighValue());
+    assertEquals("Value should contain old data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
+
+    txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
+    runWorker(conf);
+    // Make sure the statistics is updated for the table
+    colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
+    assertEquals("Stats should be there", 1, colStats.size());
+    assertEquals("Value should contain new data", 2, colStats.get(0).getStatsData().getLongStats().getHighValue());
+    assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
+
+    executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(3)", driver);
+    HiveConf workerConf = new HiveConf(conf);
+    workerConf.setBoolVar(ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS, false);
+
+    txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
+    runWorker(workerConf);
+    // Make sure the statistics is NOT updated for the table
+    colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
+    assertEquals("Stats should be there", 1, colStats.size());
+    assertEquals("Value should contain new data", 2, colStats.get(0).getStatsData().getLongStats().getHighValue());
+    assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
   }
 
   /**
