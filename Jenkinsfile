@@ -92,22 +92,7 @@ def rsyncPodTemplate(closure) {
         resourceLimitCpu: '1100m',
         resourceRequestMemory: '250Mi',
     ),
-  ], yaml:'''
-spec:
-  securityContext:
-    fsGroup: 1000
-  tolerations:
-    - key: "type"
-      operator: "Equal"
-      value: "slave"
-      effect: "PreferNoSchedule"
-    - key: "type"
-      operator: "Equal"
-      value: "slave"
-      effect: "NoSchedule"
-  nodeSelector:
-    type: slave
-''') {
+  ]) {
     closure();
   }
 }
