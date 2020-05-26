@@ -90,7 +90,7 @@ def rsyncPodTemplate(closure) {
         alwaysPullImage: true,
         resourceRequestCpu: '100m',
         resourceLimitCpu: '1100m',
-        resourceRequestMemory: '250Mi',
+        resourceRequestMemory: '2250Mi',
     ),
   ]) {
     closure();
@@ -103,7 +103,7 @@ def hdbPodTemplate(closure) {
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '2000m',
-        resourceRequestMemory: '6200Mi',
+        resourceRequestMemory: '4200Mi',
         resourceLimitMemory: '12000Mi'
     ),
   ], yaml:'''
