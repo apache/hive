@@ -18,9 +18,9 @@
 
 properties([
     // max 5 build/branch/day
-    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    //rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
-    disableConcurrentBuilds(),
+    //disableConcurrentBuilds(),
     parameters([
         string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
@@ -68,7 +68,6 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
-#export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
@@ -118,7 +117,7 @@ def hdbPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '1000m',
+        resourceRequestCpu: '2000m',
         resourceRequestMemory: '6200Mi',
         resourceLimitMemory: '12000Mi'
     ),
