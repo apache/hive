@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Analyzer;
@@ -52,6 +51,7 @@ import org.apache.impala.planner.PlanNode;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Abstract base class for Impala relational expressions with a variable number
@@ -184,21 +184,51 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     return ImmutableMap.copyOf(exprs);
   }
 
-  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
-    return getConjuncts(filter, analyzer, relNode, null /* no tuple ids */);
-  }
-
   protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
       List<TupleId> tupleIds) {
+    return getConjuncts(filter, analyzer, relNode, tupleIds,
+        null /* no partition cols indexes */, null, null);
+  }
+
+  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
+    return getConjuncts(filter, analyzer, relNode, null /* no tuple ids */,
+        null /* no partition cols indexes */, null, null);
+  }
+
+  /**
+   * Convert the filter's conjuncts into Impala exprs and return the list of all such
+   * exprs. If the partitionColsIndexes is supplied, this method checks which of
+   * the conjuncts references a partition column and populates the two lists: partitionConjuncts
+   * and nonPartitionConjuncts.
+   */
+  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
+      List<TupleId> tupleIds, Set<Integer> partitionColsIndexes,
+      List<Expr> partitionConjuncts, List<Expr> nonPartitionConjuncts) {
     List<Expr> conjuncts = Lists.newArrayList();
     if (filter == null) {
       return conjuncts;
     }
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(relNode), tupleIds);
+        analyzer, ImmutableList.of(relNode), tupleIds, partitionColsIndexes);
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
-      conjuncts.add(andOperand.accept(visitor));
+      // reset the visitor's partition state because we want each conjunct's
+      // eligibility as a partitioning expr to be evaluated independently
+      visitor.resetPartitionState();
+      Expr impalaConjunct = andOperand.accept(visitor);
+      conjuncts.add(impalaConjunct);
+      if (partitionColsIndexes != null) {
+        Preconditions.checkNotNull(partitionConjuncts);
+        Preconditions.checkNotNull(nonPartitionConjuncts);
+        // check if this conjunct only has partition column references.
+        // e.g  'part_col = 5 OR non_part_col = 10' will return false, so don't add
+        // it to the list of partition conjuncts
+        if (visitor.hasPartitionColsOnly()) {
+          partitionConjuncts.add(impalaConjunct);
+        } else {
+          nonPartitionConjuncts.add(impalaConjunct);
+        }
+      }
     }
     return conjuncts;
   }

@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.plan.impala.rex;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import java.util.List;
-import java.util.Map;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
@@ -41,6 +39,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.TupleId;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This visitor can generate Impala expressions for function calls and literals.
@@ -149,15 +151,23 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
   public static class ImpalaInferMappingRexVisitor extends ImpalaRexVisitor {
 
     private final List<ReferrableNode> impalaPlanNodes;
+    // set of indexes of RexInputRef corresponding to the partition columns
+    private final Set<Integer> partitionColsIndexes;
+    // true if this expr contains partition column references
+    private boolean hasPartitionCols;
+    // true if this expr contains non-partition column references
+    private boolean hasNonPartitionCols;
 
     public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
-      this(analyzer, impalaPlanNodes, null);
+      this(analyzer, impalaPlanNodes, null, null);
     }
 
-    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes, List<TupleId> tupleIds) {
+    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes,
+        List<TupleId> tupleIds, Set<Integer> partitionColsIndexes) {
       super(analyzer, tupleIds);
       Preconditions.checkArgument(impalaPlanNodes != null);
       this.impalaPlanNodes = impalaPlanNodes;
+      this.partitionColsIndexes = partitionColsIndexes;
     }
 
     @Override
@@ -182,11 +192,26 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
       int localIndex = rexInputRef.getIndex() - numOutputExprs;
       Preconditions.checkState(inputNum < impalaPlanNodes.size());
       Expr e = impalaPlanNodes.get(inputNum).getExpr(localIndex);
+      // check if this input ref is a partition column
+      if (partitionColsIndexes != null) {
+        if (partitionColsIndexes.contains(rexInputRef.getIndex())) {
+          hasPartitionCols = true;
+        } else {
+          hasNonPartitionCols = true;
+        }
+      }
       return e;
     }
 
-  }
+    public boolean hasPartitionColsOnly() {
+      return hasPartitionCols && !hasNonPartitionCols;
+    }
 
+    public void resetPartitionState() {
+      hasPartitionCols = false;
+      hasNonPartitionCols = false;
+    }
+  }
   /**
    * This visitor will generate an Impala expression from the mappings
    * that have already been created. This visitor can map analytic

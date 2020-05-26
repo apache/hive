@@ -62,6 +62,7 @@ import org.apache.impala.planner.PlanNodeId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
@@ -146,8 +147,8 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     // this could be done through a rule (not implemented yet), so for now
     // we will pass a null and re-visit this later.
     AggregateInfo aggInfo = null;
-    // TODO: populate the partition conjuncts
     List<Expr> partitionConjuncts = new ArrayList<>();
+    List<Expr> nonPartitionConjuncts = new ArrayList<>();
 
     TableName impalaTblName = TableName.parse(tableName);
     String alias = null;
@@ -170,9 +171,18 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     TupleDescriptor tupleDesc = createTupleAndSlotDesc(baseTblRef, ctx);
 
     this.outputExprs = createScanOutputExprs(tupleDesc.getSlots());
+    List<Expr> assignedConjuncts;
 
-    // get the list of conjuncts from the filter
-    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
+    if (hdfsTable.isPartitioned()) {
+      Set<Integer> partitionColsIndexes = ((RelOptHiveTable) scan.getTable()).getPartColInfoMap().keySet();
+      // get the list of partition and non-partition conjuncts from the filter
+      getConjuncts(filter, ctx.getRootAnalyzer(), this, null, partitionColsIndexes,
+          partitionConjuncts, nonPartitionConjuncts);
+      assignedConjuncts = nonPartitionConjuncts;
+    } else {
+      // get the list of conjuncts from the filter
+      assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
+    }
     this.nodeInfo = new ImpalaNodeInfo(assignedConjuncts, tupleDesc);
 
     hdfsScanNode = new ImpalaHdfsScanNode(nodeId, feFsPartitions, baseTblRef, aggInfo, partitionConjuncts, nodeInfo);
