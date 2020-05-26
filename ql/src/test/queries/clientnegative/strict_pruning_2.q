@@ -1,3 +1,4 @@
+--! qt:disabled:flaky
 --! qt:dataset:srcpart
 reset hive.mapred.mode;
 set hive.strict.checks.no.partition.filter=true;
