@@ -1,4 +1,3 @@
---! qt:disabled:flaky
 --! qt:dataset:srcpart
 set hive.strict.checks.bucketing=false; 
 
