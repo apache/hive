@@ -172,8 +172,10 @@ jobWrappers {
         '''
       }
       stage('Upload') {
-        sh 'tar --exclude=archive.tar -cf archive.tar .'
-        sh 'rsync -rltDq --stats archive.tar rsync://$S/data'
+        sh '''#!/bin/bash -e
+        tar --exclude=archive.tar -cf archive.tar .
+        ls -l archive.tar
+        rsync -rltDq --stats archive.tar rsync://$S/data'''
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
       }
     }
@@ -189,8 +191,9 @@ jobWrappers {
       branches[splitName] = {
         executorNode {
           stage('Prepare') {
-              sh  'rsync -rltDq --stats rsync://$S/data .'
-              sh  'tar -xf archive.tar'
+              sh '''#!/bin/bash -e
+              rsync -rltDq --stats rsync://$S/data .
+              tar -xf archive.tar'''
               writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
               writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
               sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
