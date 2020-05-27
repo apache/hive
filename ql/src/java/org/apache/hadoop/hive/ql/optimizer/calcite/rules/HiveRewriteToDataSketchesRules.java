@@ -76,7 +76,15 @@ import com.google.common.collect.Lists;
  *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
  *    </pre>
  *  </li>
- *  <li>
+ *  <li>{@code percentile_disc(0.2) within group (order by id)}
+ *    <pre>
+ *     SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
+ *       ⇒ SELECT id, CUME_DIST() OVER (ORDER BY id),
+ *           ds_kll_cdf(ds, CAST(id AS DOUBLE) - 0.5/ds_kll_cdf(ds) )[0]
+ *         FROM sketch_input JOIN (
+ *           SELECT ds_quantile_doubles_sketch(CAST(id AS DOUBLE)) AS ds FROM sketch_input
+ *         ) q;
+ *    </pre>
  *  </li>
  *  </ul>
  *
