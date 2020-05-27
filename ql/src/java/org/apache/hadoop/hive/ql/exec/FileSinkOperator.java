@@ -962,7 +962,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       } else {
         if (conf.isCompactionTable()) {
-          int bucketProperty = ((IntWritable)((Object[])row)[2]).get();
+          int bucketProperty = getBucketProperty(row);
           bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
         }
         createBucketFiles(fsp);
@@ -1682,6 +1682,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void configureJobConf(JobConf job) {
     if (conf.getInsertOverwrite()) {
       job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
+
+  /**
+   * Get the bucket property as an int from the row. This is necessary because
+   * VectorFileSinkOperator wraps row values in Writable objects.
+   * @param row as Object
+   * @return bucket property as int
+   */
+  private int getBucketProperty(Object row) {
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty instanceof Writable) {
+      return ((IntWritable) bucketProperty).get();
+    } else {
+      return (int) bucketProperty;
     }
   }
 }
