@@ -70,20 +70,16 @@ public class OrcEncodedDataConsumer
   private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
   private List<ConsumerStripeMetadata> stripes;
-  private final boolean skipCorrupt; // TODO: get rid of this
   private SchemaEvolution evolution;
   private IoTrace trace;
   private final Includes includes;
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
 
-  public OrcEncodedDataConsumer(
-    Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
-    QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
+  public OrcEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes,
+                                QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
-    // TODO: get rid of this
-    this.skipCorrupt = skipCorrupt;
     if (includes.isProbeDecodeEnabled()) {
       LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
               this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
@@ -225,7 +221,7 @@ public class OrcEncodedDataConsumer
   private void createColumnReaders(OrcEncodedColumnBatch batch,
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
-            .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
+            .setSchemaEvolution(evolution)
             .writerTimeZone(stripeMetadata.getWriterTimezone())
             .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion())
             .useUTCTimestamp(true)
