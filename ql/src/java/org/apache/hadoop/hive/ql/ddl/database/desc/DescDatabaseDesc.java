@@ -33,21 +33,26 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String DESC_DATABASE_SCHEMA =
+      "db_name,comment,location,managedLocation,owner_name,owner_type#string:string:string:string:string:string";
+
+  public static final String DESC_DATABASE_SCHEMA_EXTENDED =
       "db_name,comment,location,managedLocation,owner_name,owner_type,parameters#" +
       "string:string:string:string:string:string:string";
 
   private final String resFile;
   private final String dbName;
-  private final boolean isExt;
+  private final boolean isExtended;
 
-  public DescDatabaseDesc(Path resFile, String dbName, boolean isExt) {
+  public DescDatabaseDesc(Path resFile, String dbName, boolean isExtended) {
     this.resFile = resFile.toString();
     this.dbName = dbName;
-    this.isExt = isExt;
+    this.isExtended = isExtended;
   }
 
-  public boolean isExt() {
-    return isExt;
+  @Explain(displayName = "extended", displayOnlyOnTrue=true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isExtended() {
+    return isExtended;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -58,5 +63,9 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
+  }
+
+  public String getSchema() {
+    return isExtended ? DESC_DATABASE_SCHEMA_EXTENDED : DESC_DATABASE_SCHEMA;
   }
 }

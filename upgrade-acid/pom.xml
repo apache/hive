@@ -15,16 +15,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+   <modelVersion>4.0.0</modelVersion>
     <parent>
         <!--disconnected from hive root pom since this module needs 2.x jars-->
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>18</version>
-        <relativePath></relativePath>
+        <version>23</version>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <!--this module is added to parent pom so that it builds and releases with the reset of Hive-->
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-upgrade-acid</artifactId>
@@ -40,15 +38,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
-        <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
-        <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <hive.path.to.root>..</hive.path.to.root>
         <!-- Plugin versions -->
         <ant.contrib.version>1.0b3</ant.contrib.version>
-        <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
         <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
         <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-        <maven.surefire.version>2.20.1</maven.surefire.version>
     </properties>
     <modules>
         <module>pre-upgrade</module>

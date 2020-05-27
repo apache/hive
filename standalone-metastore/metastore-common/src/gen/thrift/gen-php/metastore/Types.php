@@ -14398,6 +14398,10 @@ class PartitionsByExprRequest {
    * @var string
    */
   public $catName = null;
+  /**
+   * @var string
+   */
+  public $order = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14426,6 +14430,10 @@ class PartitionsByExprRequest {
           'var' => 'catName',
           'type' => TType::STRING,
           ),
+        7 => array(
+          'var' => 'order',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14446,6 +14454,9 @@ class PartitionsByExprRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
+      }
+      if (isset($vals['order'])) {
+        $this->order = $vals['order'];
       }
     }
   }
@@ -14511,6 +14522,13 @@ class PartitionsByExprRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->order);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -14552,6 +14570,11 @@ class PartitionsByExprRequest {
     if ($this->catName !== null) {
       $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
       $xfer += $output->writeString($this->catName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->order !== null) {
+      $xfer += $output->writeFieldBegin('order', TType::STRING, 7);
+      $xfer += $output->writeString($this->order);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

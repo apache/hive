@@ -2387,6 +2387,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order, short maxParts)
+      throws MetaException, TException, NoSuchObjectException {
+
+    PartitionsByExprRequest req = new PartitionsByExprRequest(
+        dbName, tblName, ByteBuffer.wrap(exprBytes));
+    if (defaultPartName != null) {
+      req.setDefaultPartitionName(defaultPartName);
+    }
+    if (maxParts >= 0) {
+      req.setMaxParts(maxParts);
+    }
+    if (order != null) {
+      req.setOrder(order);
+    }
+    req.setCatName(catName);
+    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
+        dbName, tblName, client.get_partition_names_req(req));
+  }
+
+  @Override
   public int getNumPartitionsByFilter(String db_name, String tbl_name,
                                       String filter) throws TException {
     return getNumPartitionsByFilter(getDefaultCatalog(conf), db_name, tbl_name, filter);

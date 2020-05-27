@@ -48,7 +48,7 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
       }
 
       SortedMap<String, String> params = null;
-      if (desc.isExt()) {
+      if (desc.isExtended()) {
         params = new TreeMap<>(database.getParameters());
       }
 

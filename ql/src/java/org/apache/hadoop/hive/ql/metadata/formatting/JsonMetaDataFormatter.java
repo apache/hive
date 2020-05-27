@@ -35,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -130,48 +132,38 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables including table types.
    */
   @Override
-  public void showTablesExtended(DataOutputStream out, List<Table> tables)
-      throws HiveException {
+  public void showTablesExtended(DataOutputStream out, List<Table> tables) throws HiveException {
     if (tables.isEmpty()) {
-      // Nothing to do
       return;
     }
 
-    MapBuilder builder = MapBuilder.create();
-    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    List<Map<String, Object>> tableDataList = new ArrayList<Map<String, Object>>();
     for (Table table : tables) {
-      final String tableName = table.getTableName();
-      final String tableType = table.getTableType().toString();
-      res.add(builder
-          .put("Table Name", tableName)
-          .put("Table Type", tableType)
-          .build());
+      Map<String, Object> tableData = ImmutableMap.of(
+          "Table Name", table.getTableName(),
+          "Table Type", table.getTableType().toString());
+      tableDataList.add(tableData);
     }
-    asJson(out, builder.put("tables", res).build());
+    asJson(out, ImmutableMap.of("tables", tableDataList));
   }
 
   /**
    * Show a list of materialized views.
    */
   @Override
-  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
-      throws HiveException {
+  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews) throws HiveException {
     if (materializedViews.isEmpty()) {
-      // Nothing to do
       return;
     }
 
-    MapBuilder builder = MapBuilder.create();
-    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
-    for (Table mv : materializedViews) {
-      final String mvName = mv.getTableName();
-      final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
+    List<Map<String, Object>> materializedViewDataList = new ArrayList<Map<String, Object>>();
+    for (Table materializedView : materializedViews) {
       // Currently, we only support manual refresh
       // TODO: Update whenever we have other modes
-      final String refreshMode = "Manual refresh";
-      final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
-      final String mode;
-      if (!org.apache.commons.lang3.StringUtils.isEmpty(timeWindowString)) {
+      String refreshMode = "Manual refresh";
+      String timeWindowString = materializedView.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+      String mode;
+      if (!StringUtils.isEmpty(timeWindowString)) {
         long time = HiveConf.toTime(timeWindowString,
             HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
             TimeUnit.MINUTES);
@@ -185,13 +177,14 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       } else {
         mode = refreshMode;
       }
-      res.add(builder
-          .put("MV Name", mvName)
-          .put("Rewriting Enabled", rewriteEnabled)
-          .put("Mode", mode)
-          .build());
+
+      Map<String, Object> materializedViewData = ImmutableMap.of(
+          "MV Name", materializedView.getTableName(),
+          "Rewriting Enabled", materializedView.isRewriteEnabled() ? "Yes" : "No",
+          "Mode", mode);
+      materializedViewDataList.add(materializedViewData);
     }
-    asJson(out, builder.put("materialized views", res).build());
+    asJson(out, ImmutableMap.of("materialized views", materializedViewDataList));
   }
 
   /**

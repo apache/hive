@@ -46,23 +46,7 @@ public class CliConfigs {
       try {
         setQueryDir("ql/src/test/queries/clientpositive");
 
-        excludesFrom(testConfigProps, "minillap.query.files");
-        excludesFrom(testConfigProps, "minillap.shared.query.files");
-        excludesFrom(testConfigProps, "minillaplocal.query.files");
-        excludesFrom(testConfigProps, "minillaplocal.shared.query.files");
-        excludesFrom(testConfigProps, "minimr.query.files");
-        excludesFrom(testConfigProps, "minitez.query.files");
-        excludesFrom(testConfigProps, "minitez.query.files.shared");
-        excludesFrom(testConfigProps, "encrypted.query.files");
-        excludesFrom(testConfigProps, "spark.only.query.files");
-        excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
-        excludesFrom(testConfigProps, "localSpark.only.query.files");
-        excludesFrom(testConfigProps, "druid.query.files");
-        excludesFrom(testConfigProps, "druid.kafka.query.files");
-        excludesFrom(testConfigProps, "hive.kafka.query.files");
-        excludesFrom(testConfigProps, "erasurecoding.only.query.files");
-        excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
-        excludesFrom(testConfigProps, "beeline.positive.include");
+        includesFrom(testConfigProps, "mr.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -128,8 +112,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minitez.query.files");
         includesFrom(testConfigProps, "minitez.query.files.shared");
-        excludesFrom(testConfigProps, "minillap.query.files");
-        excludesFrom(testConfigProps, "minillap.shared.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/tez");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -152,7 +134,6 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "minillap.query.files");
-        includesFrom(testConfigProps, "minillap.shared.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -231,8 +212,19 @@ public class CliConfigs {
       try {
         setQueryDir("ql/src/test/queries/clientpositive");
 
-        includesFrom(testConfigProps, "minillaplocal.query.files");
-        includesFrom(testConfigProps, "minillaplocal.shared.query.files");
+        excludesFrom(testConfigProps, "mr.query.files");
+        excludesFrom(testConfigProps, "minimr.query.files");
+        excludesFrom(testConfigProps, "minillap.query.files");
+        excludesFrom(testConfigProps, "minitez.query.files");
+        excludesFrom(testConfigProps, "encrypted.query.files");
+        excludesFrom(testConfigProps, "druid.query.files");
+        excludesFrom(testConfigProps, "druid.kafka.query.files");
+        excludesFrom(testConfigProps, "hive.kafka.query.files");
+        excludesFrom(testConfigProps, "erasurecoding.only.query.files");
+        excludesFrom(testConfigProps, "beeline.positive.include");
+        excludesFrom(testConfigProps, "spark.only.query.files");
+        excludesFrom(testConfigProps, "localSpark.only.query.files");
+        excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -506,6 +498,7 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "beeline.positive.include");
+        includesFrom(testConfigProps, "beeline.query.files.shared");
 
         setResultsDir("ql/src/test/results/clientpositive/beeline");
         setLogDir("itests/qtest/target/qfile-results/beelinepositive");
@@ -681,7 +674,6 @@ public class CliConfigs {
       try {
         setQueryDir("ql/src/test/queries/clientpositive");
 
-        includesFrom(testConfigProps, "erasurecoding.shared.query.files");
         includesFrom(testConfigProps, "erasurecoding.only.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/erasurecoding");

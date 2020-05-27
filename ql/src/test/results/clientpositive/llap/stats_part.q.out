@@ -170,8 +170,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mysource
@@ -242,8 +240,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into table mysource values (103,20,200), (103,83,832), (103,53,530)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -305,8 +301,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: show partitions stats_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@stats_part
@@ -464,8 +458,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select max(key) from stats_part where p > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -551,8 +543,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats_part where p = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
