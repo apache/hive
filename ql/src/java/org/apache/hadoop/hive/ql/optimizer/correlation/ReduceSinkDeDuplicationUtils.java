@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -138,10 +137,10 @@ public class ReduceSinkDeDuplicationUtils {
 
     if (useChildsPartitionColumns) {
       List<ExprNodeDesc> newPartitionCols = ExprNodeDescUtils.backtrack(childPCs, cRS, pRS);
-      long defaultParallelism = estimateReducers(hiveConf, pRS);
-      long oldParallelism = Math.min(defaultParallelism, maxColNDV(hiveConf, pRS, parentPCs));
-      long newParallelism = Math.min(defaultParallelism, maxColNDV(hiveConf, pRS, newPartitionCols));
-      if (newParallelism < oldParallelism) {
+      long oldParallelism = estimateMaxPartitions(hiveConf, pRS, parentPCs);
+      long newParallelism = estimateMaxPartitions(hiveConf, pRS, newPartitionCols);
+      long threshold = hiveConf.getLongVar(HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONPARALLELISMDECTHRESHOLD);
+      if (oldParallelism / newParallelism > threshold) {
         return false;
       }
       pRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(childPCs, cRS, pRS));
@@ -203,37 +202,21 @@ public class ReduceSinkDeDuplicationUtils {
     return true;
   }
 
-  private static long estimateReducers(HiveConf conf, ReduceSinkOperator rs) {
-    // TODO: Check if we can somehow exploit the logic in SetReducerParallelism
-    if (rs.getConf().getNumReducers() > 0) {
-      return rs.getConf().getNumReducers();
-    }
-    int constantReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
-    if (constantReducers > 0) {
-      return constantReducers;
-    }
-    long inputTotalBytes = 0;
-    List<Operator<?>> rsSiblings = rs.getChildOperators().get(0).getParentOperators();
-    for (Operator<?> sibling : rsSiblings) {
-      if (sibling.getStatistics() != null) {
-        inputTotalBytes = StatsUtils.safeAdd(inputTotalBytes, sibling.getStatistics().getDataSize());
-      }
-    }
-    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
-    return Utilities.estimateReducers(inputTotalBytes, bytesPerReducer, maxReducers, false);
-  }
-
-  private static long maxColNDV(HiveConf conf, ReduceSinkOperator rs, List<ExprNodeDesc> cols) {
+  private static long estimateMaxPartitions(HiveConf conf, ReduceSinkOperator rs, List<ExprNodeDesc> cols) {
     Statistics stats = rs.getParentOperators().get(0).getStatistics();
-    if (stats == null || cols == null || cols.isEmpty()) {
+    if (stats == null) {
       return Long.MAX_VALUE;
+    }
+    if (cols == null || cols.isEmpty()) {
+      return stats.getNumRows();
     }
     List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExpressions(conf, stats, cols);
     if (colStats.size() != cols.size()) {
-      return Long.MAX_VALUE;
+      return stats.getNumRows();
     }
-    return colStats.stream().mapToLong(ColStatistics::getCountDistint).max().orElse(Long.MAX_VALUE);
+    long ndvProduct =
+        colStats.stream().mapToLong(ColStatistics::getCountDistint).reduce(1, StatsUtils::safeMult);
+    return Math.min(ndvProduct, stats.getNumRows());
   }
 
   /**

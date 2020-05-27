@@ -24,3 +24,9 @@ explain select sex, count(id) from (select id, sex from person group by id, sex)
 set hive.remove.orderby.in.subquery=false;
 explain select name, count(id) from (select * from person sort by name, id) Q5 group by name;
 explain select sex, count(id) from (select * from person sort by sex, id) Q6 group by sex;
+
+-- Set the parallelism decrease threshold very low to disable deduplication in the following cases
+set hive.optimize.reducededuplication.parallelism.decrease.threshold=10;
+explain select name, count(id) from (select * from person distribute by name, id) Q1 group by name;
+explain select name, count(id) from (select id, name from person group by id, name) Q3 group by name;
+explain select name, count(id) from (select * from person sort by name, id) Q5 group by name;

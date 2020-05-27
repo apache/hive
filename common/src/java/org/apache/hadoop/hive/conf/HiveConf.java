@@ -2358,6 +2358,12 @@ public class HiveConf extends Configuration {
         "Reduce deduplication merges two RSs by moving key/parts/reducer-num of the child RS to parent RS. \n" +
         "That means if reducer-num of the child RS is fixed (order by or forced bucketing) and small, it can make very slow, single MR.\n" +
         "The optimization will be automatically disabled if number of reducers would be less than specified value."),
+    HIVEOPTREDUCEDEDUPLICATIONPARALLELISMDECTHRESHOLD(
+        "hive.optimize.reducededuplication.parallelism.decrease.threshold", 10000L,
+        "Reduce deduplication usually drops partitioning columns decreasing theoretically the parallelism. " +
+        "If the decrease is significant then shuffled data may end up to very few nodes under-utilizing the cluster. " +
+        "The optimization does not apply if the (estimated) parallelism decrease ratio is more than the specified " +
+        "value."),
     HIVEOPTJOINREDUCEDEDUPLICATION("hive.optimize.joinreducededuplication", true,
         "Remove extra shuffle/sorting operations after join algorithm selection has been executed. \n" +
         "Currently it only works with Apache Tez. This should always be set to true. \n" +
