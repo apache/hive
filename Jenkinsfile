@@ -83,27 +83,14 @@ du -h --max-depth=1
   }
 }
 
-def rsyncPodTemplate(closure) {
-  podTemplate(
-  containers: [
-    containerTemplate(name: 'rsync', image: 'kgyrtkirk/htk-rsync:latest', ttyEnabled: true,
-        alwaysPullImage: true,
-        resourceRequestCpu: '100m',
-        resourceLimitCpu: '1100m',
-        resourceRequestMemory: '2250Mi',
-    ),
-  ]) {
-    closure();
-  }
-}
-
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '2000m',
-        resourceRequestMemory: '4200Mi',
+        resourceLimitCpu: '3000m',
+        resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi'
     ),
   ], yaml:'''
@@ -129,21 +116,10 @@ spec:
 def jobWrappers(closure) {
   try {
     // allocate 1 precommit token for the execution
-    lock(label:'hive-precommit',quantity:1)  {
+    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
-        rsyncPodTemplate {
-          node(POD_LABEL) {
-            // launch the "rsync" container to store build data
-            container('rsync') {
-              stage('Prepare rsync') {
-                sh '''printf 'env.S="%s"' "`hostname -i`" | tee load.props'''
-                load 'load.props'
-                sh 'df -h /data'
-              }
-            }
-            closure()
-          }
-        }
+          echo env.LOCKED_RESOURCE
+//        closure()
       }
     }
   } finally {
