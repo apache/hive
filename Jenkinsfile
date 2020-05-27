@@ -131,14 +131,12 @@ def saveWS() {
   sh '''#!/bin/bash -e
     tar --exclude=archive.tar -cf archive.tar .
     ls -l archive.tar
-    #rsync -rltDq --stats archive.tar rsync://$S/data'''
-  stash includes: 'archive.tar', name: 'build'
+    rsync -rltDq --stats archive.tar rsync://rsync/data/$LOCKED_RESOURCE'''
 }
 
 def loadWS() {
-  unstash 'build'
   sh '''#!/bin/bash -e
-    #rsync -rltDq --stats rsync://$S/data .
+    rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
     tar -xf archive.tar'''
 }
 
