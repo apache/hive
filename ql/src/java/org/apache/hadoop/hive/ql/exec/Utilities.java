@@ -324,11 +324,15 @@ public final class Utilities {
     try {
       if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
         FileSystem fs = mapPath.getFileSystem(conf);
-        if (fs.exists(mapPath)) {
+        try {
           fs.delete(mapPath, true);
+        } catch (FileNotFoundException e) {
+          // delete if exists, don't panic if it doesn't
         }
-        if (fs.exists(reducePath)) {
+        try {
           fs.delete(reducePath, true);
+        } catch (FileNotFoundException e) {
+          // delete if exists, don't panic if it doesn't
         }
       }
     } catch (Exception e) {
