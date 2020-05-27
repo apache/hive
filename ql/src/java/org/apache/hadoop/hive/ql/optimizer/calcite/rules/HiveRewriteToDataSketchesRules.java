@@ -87,17 +87,6 @@ import com.google.common.collect.Lists;
  *    </pre>
  *  </li>
  *  </ul>
- *
- * <p>
- *   The transformation here works on Aggregate nodes; the operations done are the following:
- * </p>
- * <ol>
- * <li>Identify candidate aggregate calls</li>
- * <li>A new Project is inserted below the Aggregate; to help with data pre-processing</li>
- * <li>A new Aggregate is created in which the aggregation is done by the sketch function</li>
- * <li>A new Project is inserted on top of the Aggregate; which unwraps the resulting
- *    count-distinct estimation from the sketch representation</li>
- * </ol>
  */
 public final class HiveRewriteToDataSketchesRules {
 
@@ -105,6 +94,15 @@ public final class HiveRewriteToDataSketchesRules {
 
   /**
    * Generic support for rewriting an Aggregate into a chain of Project->Aggregate->Project.
+   * <p>
+   *   The transformation here works on Aggregate nodes; the operations done are the following:
+   * </p>
+   * <ol>
+   * <li>Identify candidate aggregate calls</li>
+   * <li>A new Project is inserted below the Aggregate; to help with data pre-processing</li>
+   * <li>A new Aggregate is created in which the aggregation is done by the sketch function</li>
+   * <li>A new Project is inserted on top of the Aggregate; which unwraps the resulting estimation from the sketch representation</li>
+   * </ol>
    */
   private static abstract class AggregateToProjectAggregateProject extends RelOptRule {
 
