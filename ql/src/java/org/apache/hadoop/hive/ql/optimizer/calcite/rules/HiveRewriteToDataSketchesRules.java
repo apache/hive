@@ -76,6 +76,8 @@ import com.google.common.collect.Lists;
  *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
  *    </pre>
  *  </li>
+ *  <li>
+ *  </li>
  *  </ul>
  *
  * <p>

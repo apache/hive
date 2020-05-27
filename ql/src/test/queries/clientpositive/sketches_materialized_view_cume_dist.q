@@ -48,7 +48,7 @@ select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_in
 
 -- rewrite+mv matching with rollup
 explain
-select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
-select 'FIXME rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'FIXME rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
+select 'FIXME rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
 
 drop materialized view mv_1;
