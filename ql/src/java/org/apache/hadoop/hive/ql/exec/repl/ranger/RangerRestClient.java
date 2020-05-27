@@ -47,4 +47,7 @@ public interface RangerRestClient {
                                                         HiveConf conf) throws SemanticException;
 
   boolean checkConnection(String url) throws Exception;
+
+  List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
+                                     String sourceDb, String targetDb) throws SemanticException;
 }

@@ -969,4 +969,30 @@ public class MetaStoreUtils {
   public static List<Predicate<String>> compilePatternsToPredicates(List<String> patterns) {
     return patterns.stream().map(pattern -> compile(pattern).asPredicate()).collect(Collectors.toList());
   }
+
+  /**
+   * Get order specs from a represented string.
+   * @param order specified in partColIndex[,partColIndex]*:[-|\+]+ pattern
+   * @return the order specs
+   */
+  public static List<Object[]> makeOrderSpecs(String order) {
+    if (StringUtils.isBlank(order) || order.split(":").length != 2) {
+      return new ArrayList<Object[]>();
+    }
+    String[] parts = order.split(":");
+    String[] poses = parts[0].split(",");
+    char[] chars = parts[1].toCharArray();
+    List<Object[]> orderSpecs = new ArrayList<Object[]>(chars.length);
+    if (poses.length != chars.length) {
+      throw new IllegalArgumentException("The length of partition keys and sort order" +
+          " do not mismatch, order: " + order);
+    }
+    for (int i = 0; i < poses.length; i++) {
+      Object[] spec = new Object[2];
+      spec[0] = Integer.parseInt(poses[i]);
+      spec[1] = ('+' == chars[i]) ? "ASC" : "DESC";
+      orderSpecs.add(spec);
+    }
+    return orderSpecs;
+  }
 }

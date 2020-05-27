@@ -130,7 +130,6 @@ STAGE PLANS:
                         name default.acid_ptn_bucket1
                         partition_columns ds
                         partition_columns.types string
-                        serialization.format 1
                         serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                         transactional true
                         transactional_properties default
@@ -166,7 +165,6 @@ STAGE PLANS:
                 name default.acid_ptn_bucket1
                 partition_columns ds
                 partition_columns.types string
-                serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 transactional true
                 transactional_properties default

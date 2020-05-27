@@ -869,12 +869,9 @@ public class DagUtils {
 
     // Is this required ?
     conf.set("mapred.reducer.class", ExecReducer.class.getName());
-
-    boolean useSpeculativeExecReducers = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
-    conf.setBoolean(org.apache.hadoop.mapreduce.MRJobConfig.REDUCE_SPECULATIVE,
-        useSpeculativeExecReducers);
-
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    conf.setBoolean(org.apache.hadoop.mapreduce.MRJobConfig.REDUCE_SPECULATIVE, false);
+    conf.setBoolean(org.apache.hadoop.mapreduce.MRJobConfig.MAP_SPECULATIVE, false);
     return conf;
   }
 
@@ -1399,6 +1396,9 @@ public class DagUtils {
 
     // TODO: convert this to a predicate too
     hiveConf.stripHiddenConfigurations(conf);
+
+    // Remove hive configs which are used only in HS2 and not needed for execution
+    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname); 
     return conf;
   }
 

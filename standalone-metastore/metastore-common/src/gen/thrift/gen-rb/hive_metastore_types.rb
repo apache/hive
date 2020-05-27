@@ -2276,6 +2276,7 @@ class PartitionsByExprRequest
   DEFAULTPARTITIONNAME = 4
   MAXPARTS = 5
   CATNAME = 6
+  ORDER = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2283,7 +2284,8 @@ class PartitionsByExprRequest
     EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true},
     DEFAULTPARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'defaultPartitionName', :optional => true},
     MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    ORDER => {:type => ::Thrift::Types::STRING, :name => 'order', :optional => true}
   }
 
   def struct_fields; FIELDS; end

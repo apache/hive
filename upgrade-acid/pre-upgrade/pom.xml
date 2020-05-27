@@ -186,7 +186,6 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>${maven.antrun.plugin.version}</version>
                     <dependencies>
                         <dependency>
                             <groupId>ant-contrib</groupId>
@@ -264,7 +263,6 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.20.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -293,7 +291,6 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.version}</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <reuseForks>false</reuseForks>

@@ -10078,6 +10078,7 @@ class PartitionsByExprRequest:
    - defaultPartitionName
    - maxParts
    - catName
+   - order
   """
 
   thrift_spec = (
@@ -10088,15 +10089,17 @@ class PartitionsByExprRequest:
     (4, TType.STRING, 'defaultPartitionName', None, None, ), # 4
     (5, TType.I16, 'maxParts', None, -1, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
+    (7, TType.STRING, 'order', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=thrift_spec[5][4], catName=None,):
+  def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=thrift_spec[5][4], catName=None, order=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.expr = expr
     self.defaultPartitionName = defaultPartitionName
     self.maxParts = maxParts
     self.catName = catName
+    self.order = order
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10137,6 +10140,11 @@ class PartitionsByExprRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.order = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10171,6 +10179,10 @@ class PartitionsByExprRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.order is not None:
+      oprot.writeFieldBegin('order', TType.STRING, 7)
+      oprot.writeString(self.order)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10192,6 +10204,7 @@ class PartitionsByExprRequest:
     value = (value * 31) ^ hash(self.defaultPartitionName)
     value = (value * 31) ^ hash(self.maxParts)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.order)
     return value
 
   def __repr__(self):

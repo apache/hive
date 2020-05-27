@@ -106,7 +106,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.acidtbldefault
-                    serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     transactional true
                     transactional_properties default
@@ -125,7 +124,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.acidtbldefault
-                      serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       transactional true
                       transactional_properties default

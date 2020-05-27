@@ -40,7 +40,9 @@ final class QueryCompactorFactory {
    * <br>
    * {@link MinorQueryCompactor} - handles query based minor compaction
    * <br>
-   * {@link MmMajorQueryCompactor} - handles query based minor compaction for micro-managed tables
+   * {@link MmMajorQueryCompactor} - handles query based major compaction for micro-managed tables
+   * <br>
+   * {@link MmMinorQueryCompactor} - handles query based minor compaction for micro-managed tables
    * <br>
    * </p>
    * @param table the table, on which the compaction should be running, must be not null.
@@ -55,7 +57,7 @@ final class QueryCompactorFactory {
         return new MajorQueryCompactor();
       } else if (!compactionInfo.isMajorCompaction() && "tez"
           .equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
-        // query based minor compaction is only supported on tez
+        // query based minor compactigenerateAddMmTaskson is only supported on tez
         return new MinorQueryCompactor();
       }
     }

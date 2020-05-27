@@ -6224,6 +6224,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<String> get_partition_names_req(PartitionsByExprRequest req)
+        throws MetaException, NoSuchObjectException, TException {
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startTableFunction("get_partition_names_req", catName,
+          dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        authorizeTableForPartitionMetadata(catName, dbName, tblName);
+        ret = getMS().listPartitionNames(catName, dbName, tblName,
+            req.getDefaultPartitionName(), req.getExpr(), req.getOrder(), req.getMaxParts());
+        ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
+            filterHook, catName, dbName, tblName, ret);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partition_names_req", ret != null, ex, tblName);
+      }
+      return ret;
+    }
+
+    @Override
     public List<String> partition_name_to_vals(String part_name) throws TException {
       if (part_name.length() == 0) {
         return Collections.emptyList();

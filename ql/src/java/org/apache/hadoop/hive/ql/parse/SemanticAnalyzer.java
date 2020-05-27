@@ -343,7 +343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * that describes percentage and number.
    */
   private final Map<String, SplitSample> nameToSplitSample;
-  private Map<GroupByOperator, Set<String>> groupOpToInputTables;
+  private final Map<GroupByOperator, Set<String>> groupOpToInputTables;
   protected Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
   protected CreateViewDesc createVwDesc;
@@ -7294,17 +7294,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       idToTableNameMap.put(String.valueOf(destTableId), destinationTable.getTableName());
       currentTableId = destTableId;
       destTableId++;
-
-      lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
-          destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
-          destinationTable.isStoredAsSubDirectories());
-
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
         if (destTableIsTransactional) {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
           checkAcidConstraints();
+        } else {
+          lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
+              destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
+              destinationTable.isStoredAsSubDirectories());
         }
         try {
           if (ctx.getExplainConfig() != null) {
@@ -7440,12 +7439,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
-      lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
-          destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
-          destinationPartition.isStoredAsSubDirectories());
       if (destTableIsTransactional) {
         acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         checkAcidConstraints();
+      } else {
+        // Acid tables can't be list bucketed or have skewed cols
+        lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
+            destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
+            destinationPartition.isStoredAsSubDirectories());
       }
       try {
         if (ctx.getExplainConfig() != null) {
