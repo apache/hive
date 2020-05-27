@@ -2489,9 +2489,6 @@ public class AcidUtils {
       if (dirSnapshot != null && !dirSnapshot.contains(formatFile)) {
         return false;
       }
-      if(dirSnapshot == null && !fs.exists(formatFile)) {
-        return false;
-      }
       try (FSDataInputStream strm = fs.open(formatFile)) {
         Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
         if(!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION))) {
@@ -2506,8 +2503,9 @@ public class AcidUtils {
             throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
                 + ": " + dataFormat);
         }
-      }
-      catch(IOException e) {
+      } catch (FileNotFoundException e) {
+        return false;
+      } catch(IOException e) {
         String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE
             + ": " + e.getMessage();
         LOG.error(msg, e);

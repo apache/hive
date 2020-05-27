@@ -1217,7 +1217,7 @@ public class TestInputOutputFormat {
     private static String blockedUgi = null;
     private final static List<MockFile> globalFiles = new ArrayList<MockFile>();
     protected Statistics statistics;
-    private int numExistsCalls;
+    private int numOpenFileCalls;
 
     public MockFileSystem() {
       // empty
@@ -1225,7 +1225,6 @@ public class TestInputOutputFormat {
 
     @Override
     public boolean exists(Path f) throws IOException {
-      numExistsCalls++;
       return super.exists(f);
     }
 
@@ -1282,12 +1281,13 @@ public class TestInputOutputFormat {
 
     @Override
     public FSDataInputStream open(Path path, int i) throws IOException {
+      numOpenFileCalls++;
       statistics.incrementReadOps(1);
       System.out.println("STATS: open - " + path);
       checkAccess();
       MockFile file = findFile(path);
       if (file != null) return new FSDataInputStream(new MockInputStream(file));
-      throw new IOException("File not found: " + path);
+      throw new FileNotFoundException("File not found: " + path);
     }
 
     private MockFile findFile(Path path) {
@@ -1585,8 +1585,8 @@ public class TestInputOutputFormat {
       return buffer.toString();
     }
 
-    public int getNumExistsCalls() {
-      return numExistsCalls;
+    public int getNumOpenFileCalls() {
+      return numOpenFileCalls;
     }
 
     public static void addGlobalFile(MockFile mockFile) {

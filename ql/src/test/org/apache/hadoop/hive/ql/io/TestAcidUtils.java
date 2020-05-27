@@ -280,7 +280,7 @@ public class TestAcidUtils {
     assertEquals(0, dir.getObsolete().size());
     assertEquals(0, dir.getOriginalFiles().size());
     assertEquals(0, dir.getCurrentDirectories().size());
-    assertEquals(0, fs.getNumExistsCalls());
+    assertEquals(0, fs.getNumOpenFileCalls());
   }
 
   @Test
@@ -297,7 +297,7 @@ public class TestAcidUtils {
     assertEquals(0, dir.getObsolete().size());
     assertEquals(0, dir.getOriginalFiles().size());
     assertEquals(0, dir.getCurrentDirectories().size());
-    assertEquals(2, fs.getNumExistsCalls());
+    assertEquals(2, fs.getNumOpenFileCalls());
   }
 
   @Test
