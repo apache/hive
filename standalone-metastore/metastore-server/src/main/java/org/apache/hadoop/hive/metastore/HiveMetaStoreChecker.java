@@ -111,6 +111,7 @@ public class HiveMetaStoreChecker {
    * @param partitions
    *          List of partition name value pairs, if null or empty check all
    *          partitions
+   * @param table
    * @param result
    *          Fill this with the results of the check
    * @throws MetastoreException
@@ -119,7 +120,7 @@ public class HiveMetaStoreChecker {
    *           Most likely filesystem related
    */
   public void checkMetastore(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, Table table, CheckResult result)
       throws MetastoreException, IOException {
 
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
@@ -131,16 +132,16 @@ public class HiveMetaStoreChecker {
         // no table specified, check all tables and all partitions.
         List<String> tables = getMsc().getTables(catName, dbName, ".*");
         for (String currentTableName : tables) {
-          checkTable(catName, dbName, currentTableName, null, result);
+          checkTable(catName, dbName, currentTableName, null, null, result);
         }
 
         findUnknownTables(catName, dbName, tables, result);
       } else if (partitions == null || partitions.isEmpty()) {
         // only one table, let's check all partitions
-        checkTable(catName, dbName, tableName, null, result);
+        checkTable(catName, dbName, tableName, null, table, result);
       } else {
         // check the specified partitions
-        checkTable(catName, dbName, tableName, partitions, result);
+        checkTable(catName, dbName, tableName, partitions, table, result);
       }
       LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
               + ", partitionsNotOnFs=" + result.getPartitionsNotOnFs()
@@ -215,6 +216,7 @@ public class HiveMetaStoreChecker {
    *          Name of the table
    * @param partitions
    *          Partitions to check, if null or empty get all the partitions.
+   * @param table
    * @param result
    *          Result object
    * @throws MetastoreException
@@ -225,16 +227,16 @@ public class HiveMetaStoreChecker {
    *           Failed to get required information from the metastore.
    */
   void checkTable(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, Table table, CheckResult result)
       throws MetaException, IOException, MetastoreException {
 
-    Table table;
-
-    try {
-      table = getMsc().getTable(catName, dbName, tableName);
-    } catch (TException e) {
-      result.getTablesNotInMs().add(tableName);
-      return;
+    if (table == null) {
+      try {
+        table = getMsc().getTable(catName, dbName, tableName);
+      } catch (TException e) {
+        result.getTablesNotInMs().add(tableName);
+        return;
+      }
     }
 
     PartitionIterable parts;
