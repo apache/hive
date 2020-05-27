@@ -52,7 +52,7 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
   public int execute() throws HiveException, IOException, TException {
     try {
       Msck msck = new Msck(false, false);
-      msck.init(context.getDb().getConf());
+      msck.init(Msck.getMsckConf(context.getDb().getConf()));
 
       String[] names = Utilities.getDbTableName(desc.getTableName());
 
