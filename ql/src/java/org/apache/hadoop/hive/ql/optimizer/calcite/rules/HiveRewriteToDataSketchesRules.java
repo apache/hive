@@ -76,7 +76,7 @@ import com.google.common.collect.Lists;
  *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
  *    </pre>
  *  </li>
- *  <li>{@code percentile_disc(0.2) within group (order by id)}
+ *  <li>{@code cume_dist() over (order by id)}
  *    <pre>
  *     SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
  *       ⇒ SELECT id, CUME_DIST() OVER (ORDER BY id),
