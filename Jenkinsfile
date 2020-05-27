@@ -118,13 +118,28 @@ def jobWrappers(closure) {
     // allocate 1 precommit token for the execution
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
-          echo env.LOCKED_RESOURCE
-//        closure()
+        echo env.LOCKED_RESOURCE
+        closure()
       }
     }
   } finally {
     setPrLabel(currentBuild.currentResult)
   }
+}
+
+def saveWS() {
+  sh '''#!/bin/bash -e
+    tar --exclude=archive.tar -cf archive.tar .
+    ls -l archive.tar
+    #rsync -rltDq --stats archive.tar rsync://$S/data'''
+  stash includes: 'archive.tar', name: 'build'
+}
+
+def loadWS() {
+  unstash 'build'
+  sh '''#!/bin/bash -e
+    #rsync -rltDq --stats rsync://$S/data .
+    tar -xf archive.tar'''
 }
 
 jobWrappers {
@@ -148,10 +163,7 @@ jobWrappers {
         '''
       }
       stage('Upload') {
-        sh '''#!/bin/bash -e
-        tar --exclude=archive.tar -cf archive.tar .
-        ls -l archive.tar
-        rsync -rltDq --stats archive.tar rsync://$S/data'''
+        saveWS()
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
       }
     }
@@ -167,9 +179,7 @@ jobWrappers {
       branches[splitName] = {
         executorNode {
           stage('Prepare') {
-              sh '''#!/bin/bash -e
-              rsync -rltDq --stats rsync://$S/data .
-              tar -xf archive.tar'''
+              loadWS();
               writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
               writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
               sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
