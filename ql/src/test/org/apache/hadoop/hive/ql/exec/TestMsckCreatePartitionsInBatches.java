@@ -77,7 +77,7 @@ public class TestMsckCreatePartitionsInBatches {
       throw new HiveException(e);
     }
     msck = new Msck( false, false);
-    msck.init(hiveConf);
+    msck.init(Msck.getMsckConf(hiveConf));
   }
 
   @Before

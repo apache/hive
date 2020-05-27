@@ -93,13 +93,8 @@ public class Msck {
 
   public void init(Configuration conf) throws MetaException {
     if (msc == null) {
-      // the only reason we are using new conf here is to override EXPRESSION_PROXY_CLASS
-      Configuration metastoreConf = MetastoreConf.newMetastoreConf();
-      metastoreConf.addResource(conf);
-      metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-              getProxyClass(metastoreConf));
-      setConf(metastoreConf);
-      this.msc = new HiveMetaStoreClient(metastoreConf);
+      setConf(conf);
+      this.msc = new HiveMetaStoreClient(conf);
     }
   }
 
@@ -110,6 +105,14 @@ public class Msck {
 
   public void updateExpressionProxy(String proxyClass) throws TException {
     msc.setMetaConf(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(), proxyClass);
+  }
+
+  public static Configuration getMsckConf(Configuration conf) {
+    // the only reason we are using new conf here is to override EXPRESSION_PROXY_CLASS
+    Configuration metastoreConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
+    metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+            MsckPartitionExpressionProxy.class.getCanonicalName());
+    return metastoreConf;
   }
 
   /**
