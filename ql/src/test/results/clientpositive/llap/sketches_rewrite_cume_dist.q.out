@@ -241,3 +241,188 @@ POSTHOOK: Input: default@sketch_input
 13	rewrite	0.9090909090909091
 14	rewrite	0.9545454545454546
 15	rewrite	1.0
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sketch_input
+                  Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: int), UDFToFloat((- id)) (type: float)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: float)
+                  Select Operator
+                    expressions: UDFToFloat((- id)) (type: float)
+                    outputColumnNames: _col1
+                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_kll_sketch(_col1)
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.95454544
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 22 Data size: 3344 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: 0 (type: int)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: 0 (type: int)
+                  Statistics: Num rows: 22 Data size: 3344 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int), _col1 (type: float), _col2 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: float), VALUE._col2 (type: binary)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 22 Data size: 3344 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: float, _col2: binary
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 0 ASC NULLS FIRST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: count_window_0
+                              arguments: _col0
+                              name: count
+                              window function: GenericUDAFCountEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  Statistics: Num rows: 22 Data size: 3344 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), (UDFToDouble(count_window_0) * (1.0D - ds_kll_cdf(_col2, _col1)[0])) (type: double)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 22 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 22 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: double)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), 'rewrite' (type: string), VALUE._col0 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 22 Data size: 2266 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 22 Data size: 2266 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: ds_kll_sketch(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: binary)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: binary)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+1	rewrite	2.000000000000001
+1	rewrite	2.000000000000001
+2	rewrite	3.0
+3	rewrite	3.999999999999999
+4	rewrite	5.0
+5	rewrite	6.0
+6	rewrite	9.0
+6	rewrite	9.0
+6	rewrite	9.0
+7	rewrite	11.0
+7	rewrite	11.0
+8	rewrite	12.999999999999998
+8	rewrite	12.999999999999998
+9	rewrite	15.000000000000002
+9	rewrite	15.000000000000002
+10	rewrite	17.0
+10	rewrite	17.0
+11	rewrite	18.0
+12	rewrite	19.0
+13	rewrite	20.0
+14	rewrite	21.0
+15	rewrite	22.0

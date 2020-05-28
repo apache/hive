@@ -25,3 +25,9 @@ select id,'rewrite',cume_dist() over (order by id) from sketch_input order by id
 
 select id,'rewrite',cume_dist() over (order by id) from sketch_input order by id;
 
+-- see if rewrite happens in nested expressions
+explain
+select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id;
+
+select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id;
+

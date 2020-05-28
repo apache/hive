@@ -41,6 +41,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
@@ -428,12 +429,18 @@ public final class HiveRewriteToDataSketchesRules {
         rexBuilder = relBuilder.getRexBuilder();
       }
 
+      final class ProcessShuttle extends RexShuttle {
+        public RexNode visitOver(RexOver over) {
+          return processCall(over);
+        }
+      };
+
       protected RelNode processProject(Project project) {
         relBuilder.push(project.getInput());
-        // FIXME later use shuttle
+        RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
         for (RexNode expr : project.getChildExps()) {
-          newProjects.add(processCall(expr));
+          newProjects.add(expr.accept(shuttle));
         }
         relBuilder.project(newProjects);
         return relBuilder.build();
