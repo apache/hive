@@ -109,7 +109,9 @@ enum StageType {
   SCHEDULED_QUERY_MAINT,
   ACK,
   RANGER_DUMP,
-  RANGER_LOAD
+  RANGER_LOAD,
+  ATLAS_DUMP,
+  ATLAS_LOAD
 }
 
 struct Stage {
