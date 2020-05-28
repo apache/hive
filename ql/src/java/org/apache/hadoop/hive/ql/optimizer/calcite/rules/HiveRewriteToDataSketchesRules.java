@@ -28,6 +28,7 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
+import org.apache.calcite.rel.RelFieldCollation.NullDirection;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -37,6 +38,7 @@ import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -505,7 +507,8 @@ public final class HiveRewriteToDataSketchesRules {
 
         over.getOperands();
         RexWindow w = over.getWindow();
-        // FIXME: NULLs first/last collation stuff
+
+        RexFieldCollation orderKey = w.orderKeys.get(0);
         // we don't really support nulls in aggregate/etc...they are actually ignored
         // so some hack will be needed for NULLs anyway..
         ImmutableList<RexNode> partitionKeys = w.partitionKeys;
@@ -513,8 +516,8 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.push(relBuilder.peek());
         // the CDF function utilizes the '<' operator;
         // negating the input will mirror the values on the x axis
-        // and using 1-cdf(-x) we could get a <= operator
-        RexNode key = w.orderKeys.get(0).getKey();
+        // by using 1-CDF(-x) we could get a <= operator
+        RexNode key = orderKey.getKey();
         key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
         key = rexBuilder.makeCast(getFloatType(), key);
 
@@ -548,11 +551,18 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.join(JoinRelType.INNER, joinConditions);
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
-        // long story short: CAST(1.0f-CDF(CAST(-X AS FLOAT))[0] AS targetType)
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-        RexNode projRex;
-        projRex = rexBuilder.makeCast(getFloatType(), key);
+
+        // NULLs will be replaced by this value - to be before / after the other values
+        // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
+        final RexNode nullReplacement =
+            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+
+        // long story short: CAST(1.0f-CDF(CAST(COALESCE(-X, nullReplacement) AS FLOAT))[0] AS targetType)
+        RexNode projRex = key;
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
+        projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = makeItemCall(projRex, relBuilder.literal(0));
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);

@@ -12,9 +12,9 @@ insert into table sketch_input values
 
 select id,cume_dist() over (order by id) from sketch_input;
 
-select id,cume_dist() over (order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) + 0.0001)[0]
+select id,cume_dist() over (order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
 from sketch_input
-join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
+join ( select ds_kll_sketch(cast(-id as float)) as ds from sketch_input ) q
 order by id;
 
 set hive.optimize.bi.enabled=true;
@@ -31,3 +31,17 @@ select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch
 
 select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id;
 
+
+insert into sketch_input values (null,'a'),(null,'b');
+
+explain
+select id,'rewrite',cume_dist() over (order by id nulls first) from sketch_input order by id nulls first;
+
+select id,'rewrite',cume_dist() over (order by id nulls first) from sketch_input order by id nulls first;
+
+explain
+select id,'rewrite',cume_dist() over (order by id nulls last) from sketch_input order by id nulls last;
+
+select id,'rewrite',cume_dist() over (order by id nulls last) from sketch_input order by id nulls last;
+
+select id,cume_dist() over (order by id) from sketch_input order by id;
