@@ -97,7 +97,6 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.druid.broker.address.default");
     addToExpectedRestrictedMap("hive.druid.coordinator.address.default");
     addToExpectedRestrictedMap("hikaricp.test");
-    addToExpectedRestrictedMap("hive.query.max.length");
     addToExpectedRestrictedMap("hadoop.bin.path");
     addToExpectedRestrictedMap("yarn.bin.path");
     addToExpectedRestrictedMap("hive.spark.client.connect.timeout");
