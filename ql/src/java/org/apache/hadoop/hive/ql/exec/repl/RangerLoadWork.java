@@ -18,11 +18,13 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.net.URL;
 
 /**
  * RangerLoadWork.
@@ -55,5 +57,9 @@ public class RangerLoadWork implements Serializable {
 
   public String getSourceDbName() {
     return sourceDbName;
+  }
+
+  URL getRangerConfigResource() {
+    return getClass().getClassLoader().getResource(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
   }
 }
