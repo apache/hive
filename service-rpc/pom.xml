@@ -42,6 +42,10 @@
       <artifactId>commons-cli</artifactId>
     </dependency>
     <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libfb303</artifactId>
     </dependency>
