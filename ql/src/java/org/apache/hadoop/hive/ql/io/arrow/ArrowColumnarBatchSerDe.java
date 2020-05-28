@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.complex.impl.UnionListWriter;
@@ -97,7 +98,8 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   StructObjectInspector rowObjectInspector;
   Configuration conf;
 
-  private Serializer serializer;
+  @VisibleForTesting
+  Serializer serializer;
   private Deserializer deserializer;
 
   @Override

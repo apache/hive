@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
@@ -101,7 +102,8 @@ public class Serializer {
   private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Hive columns
-  private final VectorizedRowBatch vectorizedRowBatch;
+  @VisibleForTesting
+  final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
   private BufferAllocator allocator;
@@ -929,7 +931,7 @@ public class Serializer {
     final int scale = decimalVector.getScale();
     decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
 
-    final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[i];
+    final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[j];
     decimalHolder.precision = writable.precision();
     decimalHolder.scale = scale;
     try (ArrowBuf arrowBuf = allocator.buffer(DecimalHolder.WIDTH)) {
