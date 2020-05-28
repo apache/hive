@@ -12,7 +12,7 @@ insert into table sketch_input values
 
 -- create an mv for the intermediate results
 create  materialized view mv_1 as
-  select ds_kll_sketch(cast(-id as float)) from sketch_input;
+  select category,ds_kll_sketch(cast(-id as float)) from sketch_input group by category;
 
 -- bi mode on
 set hive.optimize.bi.enabled=true;
@@ -48,7 +48,7 @@ select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_in
 
 -- rewrite+mv matching with rollup
 explain
-select 'FIXME rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
-select 'FIXME rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
+select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
+select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
 
 drop materialized view mv_1;
