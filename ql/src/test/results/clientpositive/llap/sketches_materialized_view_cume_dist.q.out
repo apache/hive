@@ -25,13 +25,13 @@ POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: create  materialized view mv_1 as
-  select ds_kll_sketch(cast(id as float)) from sketch_input
+  select ds_kll_sketch(cast(-id as float)) from sketch_input
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: create  materialized view mv_1 as
-  select ds_kll_sketch(cast(id as float)) from sketch_input
+  select ds_kll_sketch(cast(-id as float)) from sketch_input
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: database:default
@@ -69,7 +69,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(id) (type: float)
+                    expressions: id (type: int), UDFToFloat((- id)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -113,10 +113,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 22 Data size: 3520 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 22 Data size: 3344 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), ds_kll_cdf(_col2, UDFToFloat((_col1 - _col3)))[0] (type: double)
+                  expressions: _col0 (type: int), (1.0D - ds_kll_cdf(_col2, _col1)[0]) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 22 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -149,14 +149,14 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: binary)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: double)
+                    Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -175,28 +175,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	15	0.9545454545454546
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	3	0.18181818181818177
+rewrite; mv matching	4	0.2272727272727273
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	11	0.8181818181818181
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	15	1.0
 PREHOOK: query: explain
 select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -367,7 +367,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(id) (type: float)
+                    expressions: id (type: int), UDFToFloat((- id)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -376,11 +376,11 @@ STAGE PLANS:
                       Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: float)
                   Select Operator
-                    expressions: UDFToFloat(id) (type: float)
-                    outputColumnNames: _col0
+                    expressions: UDFToFloat((- id)) (type: float)
+                    outputColumnNames: _col1
                     Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: ds_kll_sketch(_col0)
+                      aggregations: ds_kll_sketch(_col1)
                       keys: true (type: boolean)
                       minReductionHashAggr: 0.97727275
                       mode: hash
@@ -404,10 +404,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 44 Data size: 7040 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 44 Data size: 6688 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), ds_kll_cdf(_col2, UDFToFloat((_col1 - _col3)))[0] (type: double)
+                  expressions: _col0 (type: int), (1.0D - ds_kll_cdf(_col2, _col1)[0]) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 44 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -440,14 +440,14 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: binary)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: double)
+                    Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -464,50 +464,50 @@ POSTHOOK: query: select 'rewrite; no mv matching', id, cume_dist() over (order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	2	0.09090909090909091
-rewrite; no mv matching	2	0.09090909090909091
-rewrite; no mv matching	3	0.13636363636363635
-rewrite; no mv matching	3	0.13636363636363635
-rewrite; no mv matching	4	0.18181818181818182
-rewrite; no mv matching	4	0.18181818181818182
-rewrite; no mv matching	5	0.22727272727272727
-rewrite; no mv matching	5	0.22727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	11	0.7727272727272727
-rewrite; no mv matching	11	0.7727272727272727
-rewrite; no mv matching	12	0.8181818181818182
-rewrite; no mv matching	12	0.8181818181818182
-rewrite; no mv matching	13	0.8636363636363636
-rewrite; no mv matching	13	0.8636363636363636
-rewrite; no mv matching	14	0.9090909090909091
-rewrite; no mv matching	14	0.9090909090909091
-rewrite; no mv matching	15	0.9545454545454546
-rewrite; no mv matching	15	0.9545454545454546
+rewrite; no mv matching	1	0.09090909090909094
+rewrite; no mv matching	1	0.09090909090909094
+rewrite; no mv matching	1	0.09090909090909094
+rewrite; no mv matching	1	0.09090909090909094
+rewrite; no mv matching	2	0.13636363636363635
+rewrite; no mv matching	2	0.13636363636363635
+rewrite; no mv matching	3	0.18181818181818177
+rewrite; no mv matching	3	0.18181818181818177
+rewrite; no mv matching	4	0.2272727272727273
+rewrite; no mv matching	4	0.2272727272727273
+rewrite; no mv matching	5	0.2727272727272727
+rewrite; no mv matching	5	0.2727272727272727
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	6	0.40909090909090906
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	8	0.5909090909090908
+rewrite; no mv matching	8	0.5909090909090908
+rewrite; no mv matching	8	0.5909090909090908
+rewrite; no mv matching	8	0.5909090909090908
+rewrite; no mv matching	9	0.6818181818181819
+rewrite; no mv matching	9	0.6818181818181819
+rewrite; no mv matching	9	0.6818181818181819
+rewrite; no mv matching	9	0.6818181818181819
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	11	0.8181818181818181
+rewrite; no mv matching	11	0.8181818181818181
+rewrite; no mv matching	12	0.8636363636363636
+rewrite; no mv matching	12	0.8636363636363636
+rewrite; no mv matching	13	0.9090909090909091
+rewrite; no mv matching	13	0.9090909090909091
+rewrite; no mv matching	14	0.9545454545454546
+rewrite; no mv matching	14	0.9545454545454546
+rewrite; no mv matching	15	1.0
+rewrite; no mv matching	15	1.0
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
 PREHOOK: type: QUERY
@@ -547,7 +547,7 @@ STAGE PLANS:
                     predicate: (ROW__ID.writeid > 1L) (type: boolean)
                     Statistics: Num rows: 14 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: UDFToFloat(id) (type: float)
+                      expressions: UDFToFloat((- id)) (type: float)
                       outputColumnNames: _col0
                       Statistics: Num rows: 14 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
@@ -709,7 +709,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(id) (type: float)
+                    expressions: id (type: int), UDFToFloat((- id)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -753,10 +753,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 44 Data size: 7040 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 44 Data size: 6688 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), ds_kll_cdf(_col2, UDFToFloat((_col1 - _col3)))[0] (type: double)
+                  expressions: _col0 (type: int), (1.0D - ds_kll_cdf(_col2, _col1)[0]) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 44 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -789,14 +789,14 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: binary), (0.5D / ds_kll_n(_col1)) (type: double)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: binary)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: double)
+                    Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -815,50 +815,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	15	0.9545454545454546
-rewrite; mv matching	15	0.9545454545454546
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	1	0.09090909090909094
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	3	0.18181818181818177
+rewrite; mv matching	3	0.18181818181818177
+rewrite; mv matching	4	0.2272727272727273
+rewrite; mv matching	4	0.2272727272727273
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	6	0.40909090909090906
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	8	0.5909090909090908
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	9	0.6818181818181819
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	11	0.8181818181818181
+rewrite; mv matching	11	0.8181818181818181
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	15	1.0
+rewrite; mv matching	15	1.0
 PREHOOK: query: explain
 select 'FIXME rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
@@ -878,8 +878,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -887,52 +888,58 @@ STAGE PLANS:
                 TableScan
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: category (type: char(1)), id (type: int)
-                    null sort order: az
-                    sort order: ++
-                    Map-reduce partition columns: category (type: char(1))
+                  Select Operator
+                    expressions: id (type: int), category (type: char(1)), UDFToFloat((- id)) (type: float)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 44 Data size: 4092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: char(1))
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: char(1))
+                      Statistics: Num rows: 44 Data size: 4092 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col2 (type: float)
+                  Select Operator
+                    expressions: category (type: char(1)), UDFToFloat((- id)) (type: float)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
+                    Group By Operator
+                      aggregations: ds_kll_sketch(_col1)
+                      keys: _col0 (type: char(1))
+                      minReductionHashAggr: 0.95454544
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(1))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: char(1))
+                        Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: binary)
+            Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: char(1))
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 44 Data size: 15708 Basic stats: COMPLETE Column stats: COMPLETE
-                PTF Operator
-                  Function definitions:
-                      Input definition
-                        input alias: ptf_0
-                        output shape: _col0: int, _col1: char(1)
-                        type: WINDOWING
-                      Windowing table definition
-                        input alias: ptf_1
-                        name: windowingtablefunction
-                        order by: _col0 ASC NULLS LAST
-                        partition by: _col1
-                        raw input shape:
-                        window functions:
-                            window function definition
-                              alias: cume_dist_window_0
-                              arguments: _col0
-                              name: cume_dist
-                              window function: GenericUDAFCumeDistEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-                              isPivotResult: true
-                  Statistics: Num rows: 44 Data size: 15708 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col1 (type: char(1)), _col0 (type: int), cume_dist_window_0 (type: double)
-                    outputColumnNames: _col0, _col1, _col2
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: char(1))
+                  1 _col0 (type: char(1))
+                outputColumnNames: _col0, _col1, _col2, _col4
+                Statistics: Num rows: 44 Data size: 10428 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: char(1)), _col0 (type: int), (1.0D - ds_kll_cdf(_col4, _col2)[0]) (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 44 Data size: 4268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: char(1)), _col1 (type: int)
+                    null sort order: zz
+                    sort order: ++
                     Statistics: Num rows: 44 Data size: 4268 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: char(1)), _col1 (type: int)
-                      null sort order: zz
-                      sort order: ++
-                      Statistics: Num rows: 44 Data size: 4268 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col2 (type: double)
+                    value expressions: _col2 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -947,6 +954,22 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: ds_kll_sketch(VALUE._col0)
+                keys: KEY._col0 (type: char(1))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: char(1))
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: char(1))
+                  Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -962,46 +985,46 @@ POSTHOOK: query: select 'FIXME rewrite; mv matching', category, id, cume_dist() 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-FIXME rewrite; mv matching	a	1	0.18181818181818182
-FIXME rewrite; mv matching	a	1	0.18181818181818182
-FIXME rewrite; mv matching	a	1	0.18181818181818182
-FIXME rewrite; mv matching	a	1	0.18181818181818182
+FIXME rewrite; mv matching	a	1	0.18181818181818177
+FIXME rewrite; mv matching	a	1	0.18181818181818177
+FIXME rewrite; mv matching	a	1	0.18181818181818177
+FIXME rewrite; mv matching	a	1	0.18181818181818177
 FIXME rewrite; mv matching	a	2	0.2727272727272727
 FIXME rewrite; mv matching	a	2	0.2727272727272727
 FIXME rewrite; mv matching	a	3	0.36363636363636365
 FIXME rewrite; mv matching	a	3	0.36363636363636365
-FIXME rewrite; mv matching	a	4	0.45454545454545453
-FIXME rewrite; mv matching	a	4	0.45454545454545453
+FIXME rewrite; mv matching	a	4	0.4545454545454546
+FIXME rewrite; mv matching	a	4	0.4545454545454546
 FIXME rewrite; mv matching	a	5	0.5454545454545454
 FIXME rewrite; mv matching	a	5	0.5454545454545454
 FIXME rewrite; mv matching	a	6	0.6363636363636364
 FIXME rewrite; mv matching	a	6	0.6363636363636364
 FIXME rewrite; mv matching	a	7	0.7272727272727273
 FIXME rewrite; mv matching	a	7	0.7272727272727273
-FIXME rewrite; mv matching	a	8	0.8181818181818182
-FIXME rewrite; mv matching	a	8	0.8181818181818182
+FIXME rewrite; mv matching	a	8	0.8181818181818181
+FIXME rewrite; mv matching	a	8	0.8181818181818181
 FIXME rewrite; mv matching	a	9	0.9090909090909091
 FIXME rewrite; mv matching	a	9	0.9090909090909091
 FIXME rewrite; mv matching	a	10	1.0
 FIXME rewrite; mv matching	a	10	1.0
-FIXME rewrite; mv matching	b	6	0.18181818181818182
-FIXME rewrite; mv matching	b	6	0.18181818181818182
-FIXME rewrite; mv matching	b	6	0.18181818181818182
-FIXME rewrite; mv matching	b	6	0.18181818181818182
+FIXME rewrite; mv matching	b	6	0.18181818181818177
+FIXME rewrite; mv matching	b	6	0.18181818181818177
+FIXME rewrite; mv matching	b	6	0.18181818181818177
+FIXME rewrite; mv matching	b	6	0.18181818181818177
 FIXME rewrite; mv matching	b	7	0.2727272727272727
 FIXME rewrite; mv matching	b	7	0.2727272727272727
 FIXME rewrite; mv matching	b	8	0.36363636363636365
 FIXME rewrite; mv matching	b	8	0.36363636363636365
-FIXME rewrite; mv matching	b	9	0.45454545454545453
-FIXME rewrite; mv matching	b	9	0.45454545454545453
+FIXME rewrite; mv matching	b	9	0.4545454545454546
+FIXME rewrite; mv matching	b	9	0.4545454545454546
 FIXME rewrite; mv matching	b	10	0.5454545454545454
 FIXME rewrite; mv matching	b	10	0.5454545454545454
 FIXME rewrite; mv matching	b	11	0.6363636363636364
 FIXME rewrite; mv matching	b	11	0.6363636363636364
 FIXME rewrite; mv matching	b	12	0.7272727272727273
 FIXME rewrite; mv matching	b	12	0.7272727272727273
-FIXME rewrite; mv matching	b	13	0.8181818181818182
-FIXME rewrite; mv matching	b	13	0.8181818181818182
+FIXME rewrite; mv matching	b	13	0.8181818181818181
+FIXME rewrite; mv matching	b	13	0.8181818181818181
 FIXME rewrite; mv matching	b	14	0.9090909090909091
 FIXME rewrite; mv matching	b	14	0.9090909090909091
 FIXME rewrite; mv matching	b	15	1.0

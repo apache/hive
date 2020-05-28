@@ -504,10 +504,11 @@ public final class HiveRewriteToDataSketchesRules {
         ImmutableList<RexNode> partitionKeys = w.partitionKeys;
 
         relBuilder.push(relBuilder.peek());
-        // the CDF is working by utilizing the '<' operator;
+        // the CDF function utilizes the '<' operator;
         // negating the input will mirror the values on the x axis
         // and using 1-cdf(-x) we could get a <= operator
-        RexNode key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, w.orderKeys.get(0).getKey());
+        RexNode key = w.orderKeys.get(0).getKey();
+        key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
         key = rexBuilder.makeCast(getFloatType(), key);
 
         ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(key).build();

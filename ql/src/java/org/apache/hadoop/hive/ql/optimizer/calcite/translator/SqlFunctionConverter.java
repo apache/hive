@@ -396,6 +396,7 @@ public class SqlFunctionConverter {
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
+
       // timebased
       registerFunction("year", HiveExtractDate.YEAR,
           hToken(HiveParser.Identifier, "year"));
