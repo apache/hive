@@ -118,31 +118,9 @@ public class ReduceSinkDeDuplicationUtils {
    */
   public static boolean merge(HiveConf hiveConf, ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
       throws SemanticException {
-    int[] result = extractMergeDirections(cRS, pRS, minReducer);
+    int[] result = extractMergeDirections(hiveConf, cRS, pRS, minReducer);
     if (result == null) {
       return false;
-    }
-
-    // The partitioning columns of the child RS will replace the columns of the
-    // parent RS in two cases:
-    // - Parent RS columns are more specific than those of the child RS,
-    // and child columns are assigned;
-    // - Child RS columns are more specific than those of the parent RS,
-    // and parent columns are not assigned.
-    List<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
-    List<ExprNodeDesc> parentPCs = pRS.getConf().getPartitionCols();
-    boolean useChildsPartitionColumns =
-        result[1] < 0 && (childPCs != null && !childPCs.isEmpty()) ||
-        result[1] > 0 && (parentPCs == null || parentPCs.isEmpty());
-
-    if (useChildsPartitionColumns) {
-      List<ExprNodeDesc> newPartitionCols = ExprNodeDescUtils.backtrack(childPCs, cRS, pRS);
-      long oldParallelism = estimateMaxPartitions(hiveConf, pRS, parentPCs);
-      long newParallelism = estimateMaxPartitions(hiveConf, pRS, newPartitionCols);
-      if (newParallelism < oldParallelism && newParallelism < minReducer) {
-        return false;
-      }
-      pRS.getConf().setPartitionCols(newPartitionCols);
     }
 
     if (result[0] > 0) {
@@ -151,6 +129,12 @@ public class ReduceSinkDeDuplicationUtils {
       // to the parent RS.
       List<ExprNodeDesc> childKCs = cRS.getConf().getKeyCols();
       pRS.getConf().setKeyCols(ExprNodeDescUtils.backtrack(childKCs, cRS, pRS));
+    }
+
+    List<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
+    List<ExprNodeDesc> parentPCs = pRS.getConf().getPartitionCols();
+    if (canReplaceParentWithChildPartioning(result[1], childPCs, parentPCs)) {
+      pRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(childPCs, cRS, pRS));
     }
 
     if (result[2] > 0) {
@@ -315,8 +299,8 @@ public class ReduceSinkDeDuplicationUtils {
    * 2. for -1, configuration of parent RS is more specific than child RS
    * 3. for 1, configuration of child RS is more specific than parent RS
    */
-  private static int[] extractMergeDirections(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
-      throws SemanticException {
+  private static int[] extractMergeDirections(HiveConf hiveConf, ReduceSinkOperator cRS, ReduceSinkOperator pRS,
+      int minReducer) throws SemanticException {
     ReduceSinkDesc cConf = cRS.getConf();
     ReduceSinkDesc pConf = pRS.getConf();
     // If there is a PTF between cRS and pRS we cannot ignore the order direction
@@ -350,6 +334,13 @@ public class ReduceSinkDeDuplicationUtils {
     if (movePartitionColTo == null) {
       return null;
     }
+    if (canReplaceParentWithChildPartioning(movePartitionColTo, cpars, ppars)) {
+      long cMaxPartitions = estimateMaxPartitions(hiveConf, pRS, ExprNodeDescUtils.backtrack(cpars, cRS, pRS));
+      long pMaxPartitions = estimateMaxPartitions(hiveConf, pRS, ppars);
+      if (cMaxPartitions < pMaxPartitions && cMaxPartitions < minReducer) {
+        return null;
+      }
+    }
     Integer moveNumDistKeyTo = checkNumDistributionKey(cConf.getNumDistributionKeys(),
         pConf.getNumDistributionKeys());
     return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo,
@@ -366,6 +357,27 @@ public class ReduceSinkDeDuplicationUtils {
       parent = parent.getParentOperators().get(0);
     }
     return false;
+  }
+
+  /**
+   * Checks if the partitioning columns of the child RS can replace the columns of the parent RS.
+   *
+   * The replacement can be done in two cases:
+   * <ul>
+   *   <li>Parent RS columns are more specific than those of the child RS, and child columns are assigned;</li>
+   *   <li>Child RS columns are more specific than those of the parent RS, and parent columns are not assigned.</li>
+   * </ul>
+   *
+   * @param moveColTo -1 if parent columns are more specific, 1 if child columns are more specific, 0 if the columns are
+   * equal
+   * @param cpars the child RS partitioning columns
+   * @param ppars the parent RS partitioning columns
+   * @return
+   *  true if the partitioning columns of the child RS can replace the columns of the parent RS and false otherwise
+   */
+  private static boolean canReplaceParentWithChildPartioning(Integer moveColTo, List<ExprNodeDesc> cpars,
+      List<ExprNodeDesc> ppars) {
+    return moveColTo < 0 && (cpars != null && !cpars.isEmpty()) || moveColTo > 0 && (ppars == null || ppars.isEmpty());
   }
 
   private static Integer checkNumDistributionKey(int cnd, int pnd) {
