@@ -20,6 +20,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -481,12 +484,10 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       boolean isApplicable(RexOver over) {
-        // FIXME PARTITION BY
         SqlAggFunction aggOp = over.getAggOperator();
         RexWindow window = over.getWindow();
         if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
-            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
-            && window.partitionKeys.size() == 1 && window.partitionKeys.get(0).isA(SqlKind.LITERAL)) {
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
           return true;
         }
         return false;
@@ -501,16 +502,20 @@ public final class HiveRewriteToDataSketchesRules {
         // we don't really support nulls in aggregate/etc...they are actually ignored
         // so some hack will be needed for NULLs anyway..
         RexNode orderKey = w.orderKeys.get(0).getKey();
+        ImmutableList<RexNode> partitionKeys = w.partitionKeys;
 
         relBuilder.push(relBuilder.peek());
         RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
-        relBuilder.project(castedKey,rexBuilder.makeLiteral(true));
+
+        ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(castedKey).build();
+        relBuilder.project(projExprs);
+        ImmutableBitSet groupSets = ImmutableBitSet.range(partitionKeys.size());
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
         boolean approximate = true;
         boolean ignoreNulls = true;
-        List<Integer> argList = Lists.newArrayList(0);
+        List<Integer> argList = Lists.newArrayList(partitionKeys.size());
         int filterArg = -1;
         RelCollation collation = RelCollations.EMPTY;
         RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
@@ -518,17 +523,22 @@ public final class HiveRewriteToDataSketchesRules {
         AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
                       collation, type, name);
 
-        //        relBuilder.aggregate(groupKey, aggCalls)
         RelNode agg = HiveRelFactories.HIVE_AGGREGATE_FACTORY.createAggregate(
             relBuilder.build(),
-            ImmutableBitSet.of(1), ImmutableList.of(ImmutableBitSet.of(1)),
+            groupSets, ImmutableList.of(groupSets),
             Lists.newArrayList(newAgg));
         relBuilder.push(agg);
 
-        relBuilder.join(JoinRelType.INNER);
+        List<RexNode> joinConditions;
+        joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
+          RexNode f = relBuilder.field(2, 1, o.i);
+          return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, o.e, f);
+        }).collect(Collectors.toList());
+        relBuilder.join(JoinRelType.INNER, joinConditions);
 
+        int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
         // long story short: CAST(CDF(X-(0.5/N))[0] AS FLOAT)
-        RexInputRef sketchInputRef = relBuilder.field(relBuilder.peek().getRowType().getFieldCount() - 1);
+        RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
         SqlOperator getN = getSqlOperator(DataSketchesFunctions.GET_N);
         RexNode projRex = rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE,
@@ -549,7 +559,7 @@ public final class HiveRewriteToDataSketchesRules {
         if(getClass().desiredAssertionStatus()) {
           try {
             SqlKind.class.getField("ITEM");
-            throw new RuntimeException("bind SqlKind.ITEM instead of this crap - C1.23 a02155a70a");
+            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
            } catch(NoSuchFieldException e) {
              // ignore
           }
