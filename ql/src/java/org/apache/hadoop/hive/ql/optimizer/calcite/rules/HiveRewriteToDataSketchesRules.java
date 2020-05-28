@@ -537,16 +537,12 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.join(JoinRelType.INNER, joinConditions);
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
-        // long story short: CAST(CDF(X-(0.5/N))[0] AS FLOAT)
+        // long story short: CAST(CDF(X+EPS)[0] AS FLOAT)
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-        SqlOperator getN = getSqlOperator(DataSketchesFunctions.GET_N);
-        RexNode projRex = rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE,
-              relBuilder.literal(.5),
-              rexBuilder.makeCall(getN, sketchInputRef)
-            );
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, castedKey, projRex);
-        projRex = rexBuilder.makeCast(getFloatType(), projRex);
+        RexNode projRex = relBuilder.literal(Float.MIN_NORMAL);
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, castedKey, projRex);
+        projRex = rexBuilder.makeCast(getFloatType(), castedKey);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
         projRex = rexBuilder.makeCast(over.getType(), projRex);
@@ -584,4 +580,9 @@ public final class HiveRewriteToDataSketchesRules {
       }
     }
   }
+
+  public static void main(String[] args) {
+    System.out.println(0.0f + Float.MIN_NORMAL);
+  }
+
 }

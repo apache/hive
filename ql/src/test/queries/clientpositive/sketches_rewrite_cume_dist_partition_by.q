@@ -12,7 +12,7 @@ insert into table sketch_input values
 select id,category,cume_dist() over (partition by category order by id) from sketch_input order by category,id;
 
 -- FIXME this offseting stinks
-select id,category,cume_dist() over (partition by category order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) - 0.0001)[0]
+select id,category,cume_dist() over (partition by category order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) + 0.01)[0]
 from sketch_input
 join ( select category as c,ds_kll_sketch(cast(id as float)) as ds from sketch_input group by category) q on (q.c=category)
 order by category,id;

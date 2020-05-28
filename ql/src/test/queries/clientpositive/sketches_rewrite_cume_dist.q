@@ -12,12 +12,12 @@ insert into table sketch_input values
 
 select id,cume_dist() over (order by id) from sketch_input;
 
-set hive.optimize.bi.enabled=true;
-
-select id,cume_dist() over (order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) - 0.5/ds_kll_n(ds))[0]
+select id,cume_dist() over (order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) + 0.0001)[0]
 from sketch_input
 join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
 order by id;
+
+set hive.optimize.bi.enabled=true;
 
 -- see if rewrite happens
 explain
