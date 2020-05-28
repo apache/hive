@@ -440,7 +440,7 @@ public final class HiveRewriteToDataSketchesRules {
         RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
         for (RexNode expr : project.getChildExps()) {
-          newProjects.add(expr.accept(shuttle));
+                newProjects.add(expr.accept(shuttle));
         }
         relBuilder.project(newProjects);
         return relBuilder.build();
@@ -554,14 +554,14 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode projRex;
         projRex = rexBuilder.makeCast(getFloatType(), key);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = getItemOperator(projRex, relBuilder.literal(0));
+        projRex = makeItemCall(projRex, relBuilder.literal(0));
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
       }
 
-      private RexNode getItemOperator(RexNode arr, RexNode offset) {
+      private RexNode makeItemCall(RexNode arr, RexNode offset) {
 
         if(getClass().desiredAssertionStatus()) {
           try {
