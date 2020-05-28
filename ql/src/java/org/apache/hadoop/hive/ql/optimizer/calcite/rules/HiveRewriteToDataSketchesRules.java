@@ -505,6 +505,7 @@ public final class HiveRewriteToDataSketchesRules {
         ImmutableList<RexNode> partitionKeys = w.partitionKeys;
 
         relBuilder.push(relBuilder.peek());
+        //        rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, orderKey);
         RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
 
         ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(castedKey).build();
@@ -540,9 +541,9 @@ public final class HiveRewriteToDataSketchesRules {
         // long story short: CAST(CDF(X+EPS)[0] AS FLOAT)
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-        RexNode projRex = relBuilder.literal(Float.MIN_NORMAL);
+        RexNode projRex = relBuilder.literal(0.01f);
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, castedKey, projRex);
-        projRex = rexBuilder.makeCast(getFloatType(), castedKey);
+        projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
         projRex = rexBuilder.makeCast(over.getType(), projRex);
@@ -580,9 +581,4 @@ public final class HiveRewriteToDataSketchesRules {
       }
     }
   }
-
-  public static void main(String[] args) {
-    System.out.println(0.0f + Float.MIN_NORMAL);
-  }
-
 }

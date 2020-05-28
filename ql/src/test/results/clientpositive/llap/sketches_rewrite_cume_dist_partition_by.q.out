@@ -120,7 +120,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), category (type: char(1)), UDFToFloat(id) (type: float)
+                    expressions: id (type: int), category (type: char(1)), UDFToFloat((UDFToFloat(id) + 0.009999999776482582D)) (type: float)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -216,25 +216,25 @@ POSTHOOK: query: select id,'rewrite',cume_dist() over (partition by category ord
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	0.0
-1	rewrite	0.0
-2	rewrite	0.18181818181818182
-3	rewrite	0.2727272727272727
-4	rewrite	0.36363636363636365
-5	rewrite	0.45454545454545453
-6	rewrite	0.5454545454545454
-7	rewrite	0.6363636363636364
-8	rewrite	0.7272727272727273
-9	rewrite	0.8181818181818182
-10	rewrite	0.9090909090909091
-6	rewrite	0.0
-6	rewrite	0.0
-7	rewrite	0.18181818181818182
-8	rewrite	0.2727272727272727
-9	rewrite	0.36363636363636365
-10	rewrite	0.45454545454545453
-11	rewrite	0.5454545454545454
-12	rewrite	0.6363636363636364
-13	rewrite	0.7272727272727273
-14	rewrite	0.8181818181818182
-15	rewrite	0.9090909090909091
+1	rewrite	0.18181818181818182
+1	rewrite	0.18181818181818182
+2	rewrite	0.2727272727272727
+3	rewrite	0.36363636363636365
+4	rewrite	0.45454545454545453
+5	rewrite	0.5454545454545454
+6	rewrite	0.6363636363636364
+7	rewrite	0.7272727272727273
+8	rewrite	0.8181818181818182
+9	rewrite	0.9090909090909091
+10	rewrite	1.0
+6	rewrite	0.18181818181818182
+6	rewrite	0.18181818181818182
+7	rewrite	0.2727272727272727
+8	rewrite	0.36363636363636365
+9	rewrite	0.45454545454545453
+10	rewrite	0.5454545454545454
+11	rewrite	0.6363636363636364
+12	rewrite	0.7272727272727273
+13	rewrite	0.8181818181818182
+14	rewrite	0.9090909090909091
+15	rewrite	1.0
