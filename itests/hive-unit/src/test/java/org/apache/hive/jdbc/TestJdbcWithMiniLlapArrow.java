@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -499,12 +498,6 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     Throwable throwable = exceptionHolder.throwable;
     assertNull("Something went wrong while testAddCloseCloseAllConnections" + throwable, throwable);
 
-  }
-
-  @Override
-  @Ignore
-  public void testMultipleBatchesOfComplexTypes() {
-    // ToDo: FixMe
   }
 
   private void executeNTimes(Callable action, int noOfTimes, long intervalMillis, ExceptionHolder exceptionHolder) {

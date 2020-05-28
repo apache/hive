@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -242,8 +241,6 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
   }
 
 
-  // ToDo: Fix me
-  @Ignore
   @Test
   public void testTypesNestedInListWithLimitAndFilters() throws Exception {
     try (Statement statement = hs2Conn.createStatement()) {
@@ -338,8 +335,6 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
 
   }
 
-  // ToDo: Fix me
-  @Ignore
   @Test
   public void testTypesNestedInMapWithLimitAndFilters() throws Exception {
     try (Statement statement = hs2Conn.createStatement()) {
@@ -413,22 +408,10 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     }
   }
 
-  @Override
-  @Ignore
-  public void testMultipleBatchesOfComplexTypes() {
-    // ToDo: FixMe
-  }
-
-  @Override
-  @Ignore
-  public void testComplexQuery() {
-    // ToDo: FixMe
-  }
-
-  @Override
-  @Ignore
-  public void testLlapInputFormatEndToEnd() {
-    // ToDo: FixMe
+  @Ignore("CDPD-9445 Ignore TestJdbcWithMiniLlaVectorpArrow.testComplexQuery as they are flaky")
+  @Test
+  public void testComplexQuery() throws Exception {
+    super.testComplexQuery();
   }
 }
 

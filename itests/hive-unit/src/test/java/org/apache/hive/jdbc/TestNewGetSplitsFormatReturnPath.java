@@ -18,7 +18,6 @@ package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 
 /**
  * TestNewGetSplitsFormat.
@@ -31,11 +30,5 @@ public class TestNewGetSplitsFormatReturnPath extends TestNewGetSplitsFormat {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, true);
     BaseJdbcWithMiniLlap.beforeTest(conf);
-  }
-
-  @Override
-  @Ignore
-  public void testMultipleBatchesOfComplexTypes() {
-    // ToDo: FixMe
   }
 }

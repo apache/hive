@@ -38,7 +38,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.SQLException;
@@ -471,18 +470,6 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
 
   @Override public void testKillQuery() throws Exception {
     // to be implemented for this reader
-  }
-
-  @Override
-  @Ignore
-  public void testMultipleBatchesOfComplexTypes() {
-    // ToDo: FixMe
-  }
-
-  @Override
-  @Ignore
-  public void testLlapInputFormatEndToEndWithMultipleBatches() {
-    // ToDo: FixMe
   }
 
 }
