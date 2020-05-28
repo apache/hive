@@ -501,14 +501,16 @@ public final class HiveRewriteToDataSketchesRules {
         // FIXME: NULLs first/last collation stuff
         // we don't really support nulls in aggregate/etc...they are actually ignored
         // so some hack will be needed for NULLs anyway..
-        RexNode orderKey = w.orderKeys.get(0).getKey();
         ImmutableList<RexNode> partitionKeys = w.partitionKeys;
 
         relBuilder.push(relBuilder.peek());
-        //        rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, orderKey);
-        RexNode castedKey = rexBuilder.makeCast(getFloatType(), orderKey);
+        // the CDF is working by utilizing the '<' operator;
+        // negating the input will mirror the values on the x axis
+        // and using 1-cdf(-x) we could get a <= operator
+        RexNode key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, w.orderKeys.get(0).getKey());
+        key = rexBuilder.makeCast(getFloatType(), key);
 
-        ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(castedKey).build();
+        ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(key).build();
         relBuilder.project(projExprs);
         ImmutableBitSet groupSets = ImmutableBitSet.range(partitionKeys.size());
 
@@ -538,14 +540,14 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.join(JoinRelType.INNER, joinConditions);
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
-        // long story short: CAST(CDF(X+EPS)[0] AS FLOAT)
+        // long story short: CAST(1.0f-CDF(CAST(-X AS FLOAT))[0] AS targetType)
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-        RexNode projRex = relBuilder.literal(0.01f);
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, castedKey, projRex);
-        projRex = rexBuilder.makeCast(getFloatType(), projRex);
+        RexNode projRex;
+        projRex = rexBuilder.makeCast(getFloatType(), key);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = getItemOperator(projRex, relBuilder.literal(0));
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
