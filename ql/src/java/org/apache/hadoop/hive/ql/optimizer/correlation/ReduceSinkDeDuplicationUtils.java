@@ -139,11 +139,10 @@ public class ReduceSinkDeDuplicationUtils {
       List<ExprNodeDesc> newPartitionCols = ExprNodeDescUtils.backtrack(childPCs, cRS, pRS);
       long oldParallelism = estimateMaxPartitions(hiveConf, pRS, parentPCs);
       long newParallelism = estimateMaxPartitions(hiveConf, pRS, newPartitionCols);
-      long threshold = hiveConf.getLongVar(HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONPARALLELISMDECTHRESHOLD);
-      if (oldParallelism / newParallelism > threshold) {
+      if (newParallelism < oldParallelism && newParallelism < minReducer) {
         return false;
       }
-      pRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(childPCs, cRS, pRS));
+      pRS.getConf().setPartitionCols(newPartitionCols);
     }
 
     if (result[0] > 0) {

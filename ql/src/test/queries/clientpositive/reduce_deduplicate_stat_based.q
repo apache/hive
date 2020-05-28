@@ -1,5 +1,4 @@
 -- HIVE-23365: Put RS deduplication optimization under cost based decision
-set hive.optimize.reducededuplication.min.reducer=1;
 set hive.optimize.reducededuplication=true;
 
 create table person (id integer, name string, sex string, country int); -- id: 4B, name:20B, sex:1B, country:4B
@@ -14,19 +13,19 @@ alter table person update statistics for column country set('numDVs'='44','numNu
 -- Currently it takes place in two cases:
 -- Case I: Parent RS columns are more specific than those of the child RS, and child columns are assigned;
 
-explain select name, count(id) from (select * from person distribute by name, id) Q1 group by name;
+explain select country, count(id) from (select * from person distribute by country, id) Q1 group by country;
 explain select sex, count(id) from (select * from person distribute by sex, id) Q2 group by sex;
-explain select name, count(id) from (select id, name from person group by id, name) Q3 group by name;
+explain select country, count(id) from (select id, country from person group by id, country) Q3 group by country;
 explain select sex, count(id) from (select id, sex from person group by id, sex) Q4 group by sex;
 
 -- Case II: Child RS columns are more specific than those of the parent RS, and parent columns are not assigned.
 
 set hive.remove.orderby.in.subquery=false;
-explain select name, count(id) from (select * from person sort by name, id) Q5 group by name;
+explain select country, count(id) from (select * from person sort by country, id) Q5 group by country;
 explain select sex, count(id) from (select * from person sort by sex, id) Q6 group by sex;
 
--- Set the parallelism decrease threshold very low to disable deduplication in the following cases
-set hive.optimize.reducededuplication.parallelism.decrease.threshold=10;
-explain select name, count(id) from (select * from person distribute by name, id) Q1 group by name;
-explain select name, count(id) from (select id, name from person group by id, name) Q3 group by name;
-explain select name, count(id) from (select * from person sort by name, id) Q5 group by name;
+-- Set the min reducer threshold higher to disable deduplication for country
+set hive.optimize.reducededuplication.min.reducer=45;
+explain select country, count(id) from (select * from person distribute by country, id) Q1 group by country;
+explain select country, count(id) from (select id, country from person group by country, id) Q3 group by country;
+explain select country, count(id) from (select * from person sort by country, id) Q5 group by country;
