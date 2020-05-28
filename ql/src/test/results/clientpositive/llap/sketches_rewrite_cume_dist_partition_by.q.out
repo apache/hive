@@ -54,40 +54,40 @@ POSTHOOK: Input: default@sketch_input
 13	b	0.8181818181818182
 14	b	0.9090909090909091
 15	b	1.0
-PREHOOK: query: select id,category,cume_dist() over (partition by category order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) + 0.01)[0]
+PREHOOK: query: select id,category,cume_dist() over (partition by category order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT))[0]
 from sketch_input
-join ( select category as c,ds_kll_sketch(cast(id as float)) as ds from sketch_input group by category) q on (q.c=category)
+join ( select category as c,ds_kll_sketch(cast(-id as float)) as ds from sketch_input group by category) q on (q.c=category)
 order by category,id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select id,category,cume_dist() over (partition by category order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) + 0.01)[0]
+POSTHOOK: query: select id,category,cume_dist() over (partition by category order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT))[0]
 from sketch_input
-join ( select category as c,ds_kll_sketch(cast(id as float)) as ds from sketch_input group by category) q on (q.c=category)
+join ( select category as c,ds_kll_sketch(cast(-id as float)) as ds from sketch_input group by category) q on (q.c=category)
 order by category,id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	a	0.18181818181818182	0.18181818181818182
-1	a	0.18181818181818182	0.18181818181818182
+1	a	0.18181818181818182	0.18181818181818177
+1	a	0.18181818181818182	0.18181818181818177
 2	a	0.2727272727272727	0.2727272727272727
 3	a	0.36363636363636365	0.36363636363636365
-4	a	0.45454545454545453	0.45454545454545453
+4	a	0.45454545454545453	0.4545454545454546
 5	a	0.5454545454545454	0.5454545454545454
 6	a	0.6363636363636364	0.6363636363636364
 7	a	0.7272727272727273	0.7272727272727273
-8	a	0.8181818181818182	0.8181818181818182
+8	a	0.8181818181818182	0.8181818181818181
 9	a	0.9090909090909091	0.9090909090909091
 10	a	1.0	1.0
-6	b	0.18181818181818182	0.18181818181818182
-6	b	0.18181818181818182	0.18181818181818182
+6	b	0.18181818181818182	0.18181818181818177
+6	b	0.18181818181818182	0.18181818181818177
 7	b	0.2727272727272727	0.2727272727272727
 8	b	0.36363636363636365	0.36363636363636365
-9	b	0.45454545454545453	0.45454545454545453
+9	b	0.45454545454545453	0.4545454545454546
 10	b	0.5454545454545454	0.5454545454545454
 11	b	0.6363636363636364	0.6363636363636364
 12	b	0.7272727272727273	0.7272727272727273
-13	b	0.8181818181818182	0.8181818181818182
+13	b	0.8181818181818182	0.8181818181818181
 14	b	0.9090909090909091	0.9090909090909091
 15	b	1.0	1.0
 PREHOOK: query: explain
