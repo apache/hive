@@ -1,4 +1,4 @@
---! qt:disabled:either flaky because its the first or for other reasons?
+--! qt:disabled:this started falling after the druid upgrade just like HIVE-23450
 SET hive.vectorized.execution.enabled=false;
 
 CREATE EXTERNAL TABLE druid_kafka_test_delimited(`__time` timestamp , `page` string, `user` string, `language` string,

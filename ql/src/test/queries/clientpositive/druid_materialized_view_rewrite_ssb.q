@@ -1,4 +1,4 @@
---! qt:disabled:either flaky because its the first or for other reasons?
+--! qt:disabled:unstable; fails sometimes HIVE-23450
 --! qt:dataset:part
 
 set hive.support.concurrency=true;

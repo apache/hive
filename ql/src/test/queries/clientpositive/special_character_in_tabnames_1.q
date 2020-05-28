@@ -1,4 +1,4 @@
---! qt:disabled:flaky
+--! qt:disabled:flaky HIVE-23568
 --! qt:dataset:src1
 --! qt:dataset:src
 --! qt:dataset:lineitem
