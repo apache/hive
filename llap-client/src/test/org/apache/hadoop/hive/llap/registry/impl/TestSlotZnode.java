@@ -158,13 +158,13 @@ public class TestSlotZnode {
     }
   }
 
-  @Ignore("flaky?")
+  @Ignore("HIVE-23564")
   @Test
   public void testConcurrencyAndFallback() throws Exception {
     concurrencyTest(100, true);
   }
 
-  @Ignore("flaky?")
+  @Ignore("HIVE-23564")
   @Test
   public void testConcurrencyNoFallback() throws Exception {
     concurrencyTest(100, false);
