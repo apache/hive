@@ -85,10 +85,9 @@ import com.google.common.collect.Lists;
  *  <li>{@code cume_dist() over (order by id)}
  *    <pre>
  *     SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
- *       ⇒ SELECT id, CUME_DIST() OVER (ORDER BY id),
- *           ds_kll_cdf(ds, CAST(id AS DOUBLE) - 0.5/ds_kll_cdf(ds) )[0]
+ *       ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
  *         FROM sketch_input JOIN (
- *           SELECT ds_quantile_doubles_sketch(CAST(id AS DOUBLE)) AS ds FROM sketch_input
+ *           SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
  *         ) q;
  *    </pre>
  *  </li>
@@ -442,7 +441,7 @@ public final class HiveRewriteToDataSketchesRules {
         RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
         for (RexNode expr : project.getChildExps()) {
-                newProjects.add(expr.accept(shuttle));
+          newProjects.add(expr.accept(shuttle));
         }
         relBuilder.project(newProjects);
         return relBuilder.build();
@@ -466,6 +465,12 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
+      /**
+       * Do the rewrite for the given expression.
+       *
+       * When this method is invoked the {@link #relBuilder} will only contain the current input.
+       * Expectation is to leave the new input there after the method finishes.
+       */
       abstract RexNode rewrite(RexOver expr);
 
       abstract boolean isApplicable(RexOver expr);
@@ -572,7 +577,6 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       private RexNode makeItemCall(RexNode arr, RexNode offset) {
-
         if(getClass().desiredAssertionStatus()) {
           try {
             SqlKind.class.getField("ITEM");

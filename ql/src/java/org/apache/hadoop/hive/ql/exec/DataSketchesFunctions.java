@@ -232,14 +232,14 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
         return Optional.empty();
       } else {
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
-        Type type = returnType;
-        if (type instanceof ParameterizedType) {
-          ParameterizedType parameterizedType = (ParameterizedType) type;
+        if (returnType instanceof ParameterizedType) {
+          ParameterizedType parameterizedType = (ParameterizedType) returnType;
           if (parameterizedType.getRawType() == List.class) {
-          final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
-          return Optional
-              .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
+            final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
+            return Optional
+                .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
           }
+          return Optional.empty();
         }
         return Optional.of(typeFactory.createType(returnType));
       }
