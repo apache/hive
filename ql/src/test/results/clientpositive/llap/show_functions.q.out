@@ -70,6 +70,7 @@ chr
 coalesce
 collect_list
 collect_set
+compute_bit_vector
 compute_stats
 concat
 concat_ws
@@ -190,6 +191,7 @@ month
 months_between
 murmur_hash
 named_struct
+ndv_compute_bit_vector
 negative
 next_day
 ngrams
@@ -351,6 +353,7 @@ chr
 coalesce
 collect_list
 collect_set
+compute_bit_vector
 compute_stats
 concat
 concat_ws
@@ -492,6 +495,7 @@ chr
 coalesce
 collect_list
 collect_set
+compute_bit_vector
 compute_stats
 concat
 concat_ws
@@ -612,6 +616,7 @@ month
 months_between
 murmur_hash
 named_struct
+ndv_compute_bit_vector
 negative
 next_day
 ngrams

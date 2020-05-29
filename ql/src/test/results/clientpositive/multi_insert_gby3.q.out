@@ -118,11 +118,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -155,22 +155,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-6
     Stats Work
@@ -216,11 +220,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd, value
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll'), compute_stats(value, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -245,22 +249,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+          Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+            Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
@@ -359,11 +367,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd, value
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll'), compute_stats(value, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -396,22 +404,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+          Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+            Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-6
     Stats Work
@@ -456,11 +468,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -485,22 +497,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
 INSERT OVERWRITE TABLE e1_n2
@@ -1912,11 +1928,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1949,22 +1965,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-6
     Stats Work
@@ -2009,11 +2029,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -2038,22 +2058,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
@@ -2174,11 +2198,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -2211,22 +2235,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Stats Work
@@ -2280,11 +2308,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd, value
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll'), compute_stats(value, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -2309,22 +2337,26 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+          Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+            Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-9
     Map Reduce
@@ -2361,11 +2393,11 @@ STAGE PLANS:
               outputColumnNames: key, keyd
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 'hll'), compute_stats(keyd, 'hll')
+                aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(keyd), max(keyd), count(keyd), compute_bit_vector(keyd, 'hll')
                 minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -2390,20 +2422,24 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+          Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+            Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 

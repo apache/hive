@@ -131,7 +131,7 @@ public class ColumnStatsAutoGatherContext {
       }
     }
     String command = ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, Utilities.getColumnNamesFromFieldSchema(tbl.getCols()), conf, partSpec, isPartitionStats, true);
+        tbl, conf, partSpec, isPartitionStats, true);
     insertAnalyzePipeline(command, true);
   }
 
