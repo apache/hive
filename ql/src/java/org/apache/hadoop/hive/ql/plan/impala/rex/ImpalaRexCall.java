@@ -23,9 +23,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBinaryCompExpr;
@@ -45,13 +47,17 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.BoolLiteral;
 import org.apache.impala.analysis.CaseWhenClause;
+import org.apache.impala.analysis.CastExpr;
 import org.apache.impala.analysis.CompoundPredicate;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.NumericLiteral;
 import org.apache.impala.analysis.TupleId;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
+import org.apache.impala.common.AnalysisException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +72,10 @@ public class ImpalaRexCall {
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
       List<Expr> params, List<TupleId> tupleIds) throws HiveException {
     Type impalaRetType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
+
+    if (rexCall.getOperator() == SqlStdOperatorTable.GROUPING) {
+      return processGroupingFunction(rexCall, params, impalaRetType, analyzer);
+    }
 
     Function fn = getFunction(rexCall);
 
@@ -119,6 +129,40 @@ public class ImpalaRexCall {
         return createBetweenExpr(analyzer, rexCall, params);
     }
     return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
+  }
+
+  /**
+   * Create an Impala Expr corresponding to the grouping() function. Impala projects the
+   * grouping_id field, which we leverage here for the grouping() function.
+   * Suppose original RexCall in the CBO plan is:
+   *    grouping($3, N)  where N = #bits to right shift
+   * Converted Impala function:
+   *    cast(bitand(shiftright($3, N), 1), Type.BIGINT)
+   */
+  private static Expr processGroupingFunction(RexCall rexCall, List<Expr> params, Type impalaRetType,
+      Analyzer analyzer) throws HiveException {
+    List<RexNode> operands = rexCall.getOperands();
+    Preconditions.checkState(operands.size() == 2,
+        "Multi column grouping function is not supported yet");
+    Preconditions.checkState(operands.get(0) instanceof RexInputRef);
+    try {
+      // the shiftright function in Impala only accepts INT as the second parameter, whereas
+      // the Calcite function has created this as a BIGINT, so convert the second parameter
+      BigDecimal value = new BigDecimal(((NumericLiteral) params.get(1)).getIntValue());
+      NumericLiteral numPositions = new NumericLiteral(value, Type.INT);
+      List<Expr> shiftRightParams = Lists.newArrayList();
+      shiftRightParams.add(params.get(0));
+      shiftRightParams.add(numPositions);
+      Expr shiftRightExpr = new FunctionCallExpr("shiftright", shiftRightParams);
+      Expr bitAndExpr = new FunctionCallExpr("bitand",
+          ImmutableList.of(shiftRightExpr, new NumericLiteral(new BigDecimal(1), Type.INT)));
+      bitAndExpr.analyze(analyzer);
+      Expr castExpr = new CastExpr(impalaRetType, bitAndExpr);
+      castExpr.analyze(analyzer);
+      return castExpr;
+    } catch (AnalysisException e) {
+      throw new HiveException("Encountered Impala exception: ", e);
+    }
   }
 
   /**

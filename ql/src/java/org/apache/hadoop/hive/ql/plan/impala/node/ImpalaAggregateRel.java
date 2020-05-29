@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
@@ -65,6 +66,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
   public PlanNode aggNode;
   public final HiveAggregate aggregate;
   public final HiveFilter filter;
+  private boolean generateGroupingId;
 
   public ImpalaAggregateRel(HiveAggregate aggregate) {
     this(aggregate, null);
@@ -110,6 +112,9 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     } else {
       List<List<Expr>> groupingSets = getGroupingSets(analyzer);
       multiAggInfo.setIsGroupingSet(true);
+      if (generateGroupingId) {
+        multiAggInfo.setGenerateGroupingId(true);
+      }
       List<AggregateInfo> aggInfos = Lists.newArrayList();
       List<List<FunctionCallExpr>> aggClasses = Lists.newArrayList();
       for (List<Expr> gsGroupByExprs : groupingSets) {
@@ -246,6 +251,10 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     List<FunctionCallExpr> exprs = Lists.newArrayList();
     ImpalaPlanRel input = getImpalaRelInput(0);
     for (AggregateCall aggCall : this.aggregate.getAggCallList()) {
+      if (aggCall.getAggregation() == HiveGroupingID.INSTANCE) {
+        generateGroupingId = true;
+        continue;
+      }
       List<Integer> indexes = aggCall.getArgList();
       // index size should be 1, but could be 0 in the case of count(*)
       Preconditions.checkState(indexes.size() <= 1);

@@ -24,6 +24,8 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -101,6 +103,20 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     // doesn't fit the rest of the algorithm flow.
     if (functionText.equals("internal_interval")) {
       return getRexNodeForInternalInterval(inputs);
+    }
+
+    // For the grouping() function, skip calling the Impala function resolver because
+    // (a) Impala currently does not support this function and (b) we convert it to
+    // an equivalent form later in ImpalaRexCall. However, we still have to create
+    // the RexNode, so we use the supplied RexNodeExprFactory to create one.
+    // Note that the grouping() function as implemented in Hive takes a first argument
+    // of grouping__id and behaves more like a scalar function than an
+    // aggregate function but we use the GROUPING operator here for creation because it
+    // is consistent with how Calcite treats it.
+    if (functionText.equals("grouping")) {
+      return factory.getRexBuilder().makeCall(returnType == null ?
+              factory.getRexBuilder().getTypeFactory().createSqlType(SqlTypeName.BIGINT) : returnType,
+          SqlStdOperatorTable.GROUPING, inputs);
     }
 
     try {
