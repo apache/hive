@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,11 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       AtlasReplInfo atlasReplInfo  = createAtlasReplInfo();
       LOG.info("Loading atlas metadata from srcDb: {} to tgtDb: {} from staging: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
+      AtlasLoadLogger replLogger = new AtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
+              atlasReplInfo.getStagingDir().toString());
+      replLogger.startLog();
       int importCount = importAtlasMetadata(atlasReplInfo);
+      replLogger.endLog(importCount);
       LOG.info("Atlas entities import count {}", importCount);
       return 0;
     } catch (Exception e) {
@@ -66,7 +72,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     }
   }
 
-  private AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
+  public AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
     String errorFormat = "%s is mandatory config for Atlas metadata replication";
     //Also validates URL for endpoint.
     String endpoint = new URL(ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, conf, errorFormat))
@@ -105,7 +111,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     }
   }
 
-  private int importAtlasMetadata(AtlasReplInfo atlasReplInfo) throws Exception {
+  public int importAtlasMetadata(AtlasReplInfo atlasReplInfo) throws Exception {
     AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
     AtlasImportRequest importRequest = atlasRequestBuilder.createImportRequest(
             atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
