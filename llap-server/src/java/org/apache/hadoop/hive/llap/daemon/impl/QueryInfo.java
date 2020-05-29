@@ -140,7 +140,18 @@ public class QueryInfo {
       int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
     QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
         this, vertexName, fragmentNumber, attemptNumber, vertexSpec, fragmentIdString);
-    knownFragments.add(fragmentInfo);
+    boolean wasUniqueFragment = knownFragments.add(fragmentInfo);
+    if (!wasUniqueFragment) {
+      // The same query fragment (including attempt number) has already been registered.
+      // This could potentially occur for external clients that are trying to submit the
+      // exact same fragment more than once (for example speculative execution of a query fragment).
+      // This should not occur for a non-external query fragment.
+      // Either way, registering the same fragment twice should be disallowed as the LLAP structures
+      // it will only ever have a single submission of a fragment.
+      String message = "Fragment " + fragmentIdString + "(isExternal=" + isExternalQuery()
+              + ") has already been registered.";
+      throw new IllegalArgumentException(message);
+    }
     return fragmentInfo;
   }
 
