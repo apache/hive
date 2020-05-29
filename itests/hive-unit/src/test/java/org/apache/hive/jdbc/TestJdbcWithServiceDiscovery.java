@@ -27,6 +27,7 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test JDBC driver when two HS2 instance is running with service discovery enabled.
  */
+@Ignore("unstable HIVE-23528")
 public class TestJdbcWithServiceDiscovery {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcWithServiceDiscovery.class);
