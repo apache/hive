@@ -1449,12 +1449,16 @@ public class MetaStoreServerUtils {
           return result;
         }
 
-        String partitionName = parts[0];
+        // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
+        // it should be converted to lower case
+        String partitionName = parts[0].toLowerCase();
+        // Do not convert the partitionValue to lowercase
+        String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           if (result == null) {
-            result = currPath.getName();
+            result = partitionName + "=" + partitionValue;
           } else {
-            result = currPath.getName() + Path.SEPARATOR + result;
+            result = partitionName + "=" + partitionValue + Path.SEPARATOR + result;
           }
         }
       }
