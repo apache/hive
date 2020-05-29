@@ -125,6 +125,8 @@ final class StageType {
   const ACK = 18;
   const RANGER_DUMP = 19;
   const RANGER_LOAD = 20;
+  const ATLAS_DUMP = 21;
+  const ATLAS_LOAD = 22;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -147,6 +149,8 @@ final class StageType {
     18 => 'ACK',
     19 => 'RANGER_DUMP',
     20 => 'RANGER_LOAD',
+    21 => 'ATLAS_DUMP',
+    22 => 'ATLAS_LOAD',
   );
 }
 
