@@ -408,7 +408,7 @@ public final class HiveRewriteToDataSketchesRules {
       VbuilderPAP vb = buildProcessor(call);
       RelNode newProject = vb.processProject(project);
 
-      if (newProject instanceof Project && ((Project) newProject).getChildExps().equals(project.getChildExps())) {
+      if (newProject == project) {
         return;
       } else {
         call.transformTo(newProject);
@@ -435,11 +435,16 @@ public final class HiveRewriteToDataSketchesRules {
       };
 
       protected final RelNode processProject(Project project) {
-        relBuilder.push(project.getInput());
+        RelNode origInput = project.getInput();
+        relBuilder.push(origInput);
         RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
         for (RexNode expr : project.getChildExps()) {
           newProjects.add(expr.accept(shuttle));
+        }
+        if (relBuilder.peek() == origInput) {
+          relBuilder.clear();
+          return project;
         }
         relBuilder.project(newProjects);
         return relBuilder.build();
