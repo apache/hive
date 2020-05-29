@@ -403,7 +403,6 @@ public final class HiveRewriteToDataSketchesRules {
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-
       final Project project = call.rel(0);
 
       VbuilderPAP vb = buildProcessor(call);
@@ -417,7 +416,6 @@ public final class HiveRewriteToDataSketchesRules {
     }
 
     protected abstract VbuilderPAP buildProcessor(RelOptRuleCall call);
-
 
     protected static abstract class VbuilderPAP {
       private final String sketchClass;
@@ -436,7 +434,7 @@ public final class HiveRewriteToDataSketchesRules {
         }
       };
 
-      protected RelNode processProject(Project project) {
+      protected final RelNode processProject(Project project) {
         relBuilder.push(project.getInput());
         RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
@@ -476,7 +474,6 @@ public final class HiveRewriteToDataSketchesRules {
       abstract boolean isApplicable(RexOver expr);
 
     }
-
   }
 
   public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
@@ -509,10 +506,7 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       RexNode rewrite(RexOver over) {
-
-        over.getOperands();
         RexWindow w = over.getWindow();
-
         RexFieldCollation orderKey = w.orderKeys.get(0);
         // we don't really support nulls in aggregate/etc...they are actually ignored
         // so some hack will be needed for NULLs anyway..
