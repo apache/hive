@@ -33,7 +33,7 @@
 
   <properties>
     <hive.version>4.0.0-SNAPSHOT</hive.version>
-    <maven.surefire.version>3.0.0-M4</maven.surefire.version>
+    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <javac.errorprone.version>2.8</javac.errorprone.version>
     <errorprone.core.version>2.3.1</errorprone.core.version>
     <picocli.version>3.1.0</picocli.version>
@@ -143,13 +143,17 @@
   </dependencyManagement>
 
   <build>
+    <pluginManagement>
     <plugins>
-      <!-- Suppress source assembly -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven.surefire.plugin.version}</version>
       </plugin>
+    </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- Suppress source assembly -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
