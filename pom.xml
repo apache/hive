@@ -1156,6 +1156,11 @@
           <version>${maven.checkstyle.plugin.version}</version>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.datanucleus</groupId>
           <artifactId>datanucleus-maven-plugin</artifactId>
           <version>${datanucleus.maven.plugin.version}</version>
