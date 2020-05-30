@@ -912,8 +912,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (JDOException e) {
         LOG.warn("Retrying creating default database after error: " + e.getMessage(), e);
         try {
-          createDefaultDB_core(getMS());
-        } catch (InvalidObjectException e1) {
+          RawStore ms = getMS();
+          createDefaultCatalog(ms, wh);
+          createDefaultDB_core(ms);
+        } catch (InvalidObjectException | InvalidOperationException e1) {
           throw new MetaException(e1.getMessage());
         }
       } catch (InvalidObjectException|InvalidOperationException e) {
@@ -6217,6 +6219,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         rethrowException(e);
       } finally {
         endFunction("get_partitions_names_ps", ret != null, ex, tbl_name);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_partition_names_req(PartitionsByExprRequest req)
+        throws MetaException, NoSuchObjectException, TException {
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startTableFunction("get_partition_names_req", catName,
+          dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        authorizeTableForPartitionMetadata(catName, dbName, tblName);
+        ret = getMS().listPartitionNames(catName, dbName, tblName,
+            req.getDefaultPartitionName(), req.getExpr(), req.getOrder(), req.getMaxParts());
+        ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
+            filterHook, catName, dbName, tblName, ret);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partition_names_req", ret != null, ex, tblName);
       }
       return ret;
     }

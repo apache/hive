@@ -128,8 +128,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted mm2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mm2
@@ -164,8 +162,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted mm3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mm3
@@ -200,8 +196,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted mm4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mm4
@@ -236,8 +230,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted non_mm1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@non_mm1
@@ -306,8 +298,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted acid2_n0
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@acid2_n0
@@ -342,8 +332,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table non_mm0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@non_mm0

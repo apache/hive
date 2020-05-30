@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -38,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Common interface for query based compactions.
@@ -82,6 +82,7 @@ abstract class QueryCompactor {
    * @param storageDescriptor this is the resolved storage descriptor.
    * @param writeIds valid write IDs used to filter rows while they're being read for compaction.
    * @param compactionInfo provides info about the type of compaction.
+   * @param resultDirs the delta/base directory that is created as the result of compaction.
    * @param createQueries collection of queries which creates the temporary tables.
    * @param compactionQueries collection of queries which uses data from the original table and writes in temporary
    *                          tables.
@@ -89,8 +90,9 @@ abstract class QueryCompactor {
    * @throws IOException error during the run of the compaction.
    */
   void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<String> createQueries,
-      List<String> compactionQueries, List<String> dropQueries) throws IOException {
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
+      List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
+      throws IOException {
     Util.disableLlapCaching(conf);
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
@@ -118,6 +120,7 @@ abstract class QueryCompactor {
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);
     } catch (HiveException e) {
       LOG.error("Error doing query based {} compaction", compactionInfo.isMajorCompaction() ? "major" : "minor", e);
+      removeResultDirs(resultDirs, conf);
       throw new IOException(e);
     } finally {
       try {
@@ -135,16 +138,51 @@ abstract class QueryCompactor {
   }
 
   /**
+   * Call in case compaction failed. Removes the new empty compacted delta/base.
+   * Cleaner would handle this later but clean up now just in case.
+   */
+  private void removeResultDirs(List<Path> resultDirPaths, HiveConf conf) throws IOException {
+    for (Path path : resultDirPaths) {
+      LOG.info("Compaction failed, removing directory: " + path.toString());
+      FileSystem fs = path.getFileSystem(conf);
+      if (!fs.listFiles(path, false).hasNext()) {
+        fs.delete(path, true);
+      }
+    }
+  }
+
+  /**
    * Collection of some helper functions.
    */
   static class Util {
+
     /**
-     * Generate a random tmp path, under the provided storage.
-     * @param sd storage descriptor, must be not null.
-     * @return path, always not null
+     * Get the path of the base, delta, or delete delta directory that will be the final
+     * destination of the files during compaction.
+     *
+     * @param sd storage descriptor of table or partition to compact
+     * @param writeIds list of valid writeids
+     * @param conf HiveConf
+     * @param writingBase if true, we are creating a base directory, otherwise a delta
+     * @param createDeleteDelta if true, the delta dir we are creating is a delete delta
+     * @param bucket0 whether to specify 0 as the bucketid
+     *
+     * @return Path of new base/delta/delete delta directory
      */
-    static String generateTmpPath(StorageDescriptor sd) {
-      return sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString();
+    static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
+        boolean writingBase, boolean createDeleteDelta, boolean bucket0) {
+      long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+      long highWatermark = writeIds.getHighWatermark();
+      long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+      AcidOutputFormat.Options options =
+          new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minOpenWriteId)
+              .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)
+              .writingBase(writingBase).writingDeleteDelta(createDeleteDelta);
+      if (bucket0) {
+        options = options.bucket(0);
+      }
+      Path location = new Path(sd.getLocation());
+      return AcidUtils.baseOrDeltaSubdirPath(location, options);
     }
 
     /**

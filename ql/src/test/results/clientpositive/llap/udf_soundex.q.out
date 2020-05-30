@@ -1,0 +1,71 @@
+PREHOOK: query: DESCRIBE FUNCTION soundex
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION soundex
+POSTHOOK: type: DESCFUNCTION
+soundex(string) - Returns soundex code of the string.
+PREHOOK: query: DESC FUNCTION EXTENDED soundex
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED soundex
+POSTHOOK: type: DESCFUNCTION
+soundex(string) - Returns soundex code of the string.
+The soundex code consist of the first letter of the name followed by three digits.
+Example:
+ > SELECT soundex('Miller');
+ M460
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSoundex
+Function type:BUILTIN
+PREHOOK: query: explain select soundex('Miller')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select soundex('Miller')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'M460' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+soundex('Miller'),
+soundex('miler'),
+soundex('myller'),
+soundex('muller'),
+soundex('m'),
+soundex('mu'),
+soundex('mul'),
+soundex('Peterson'),
+soundex('Pittersen'),
+soundex(''),
+soundex(cast(null as string))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+soundex('Miller'),
+soundex('miler'),
+soundex('myller'),
+soundex('muller'),
+soundex('m'),
+soundex('mu'),
+soundex('mul'),
+soundex('Peterson'),
+soundex('Pittersen'),
+soundex(''),
+soundex(cast(null as string))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+M460	M460	M460	M460	M000	M000	M400	P362	P362		NULL

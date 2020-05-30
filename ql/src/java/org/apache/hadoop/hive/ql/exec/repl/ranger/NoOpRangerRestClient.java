@@ -68,4 +68,11 @@ public class NoOpRangerRestClient implements RangerRestClient {
   public boolean checkConnection(String url) throws Exception {
     return true;
   }
+
+  @Override
+  public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
+                                            String sourceDb, String targetDb) throws SemanticException {
+    return rangerPolicies;
+  }
+
 }

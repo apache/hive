@@ -1,0 +1,14 @@
+PREHOOK: query: SELECT count(1) FROM
+( SELECT * FROM (SELECT TRANSFORM('echo $MY_ID') USING 'sh' AS key FROM src LIMIT 1)a UNION ALL
+  SELECT * FROM (SELECT TRANSFORM('echo $MY_ID') USING 'sh' AS key FROM src LIMIT 1)b ) a GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(1) FROM
+( SELECT * FROM (SELECT TRANSFORM('echo $MY_ID') USING 'sh' AS key FROM src LIMIT 1)a UNION ALL
+  SELECT * FROM (SELECT TRANSFORM('echo $MY_ID') USING 'sh' AS key FROM src LIMIT 1)b ) a GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+1

@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by e1ce9a23a704 in 2015
 --! qt:dataset:src
 --! qt:dataset:part
 set hive.merge.rcfile.block.level=false;

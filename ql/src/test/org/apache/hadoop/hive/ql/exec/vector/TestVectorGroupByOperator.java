@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
@@ -86,8 +87,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.sun.tools.javac.util.Pair;
 
 /**
  * Unit test for the vectorized GROUP BY operator.
@@ -241,8 +240,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair =
         buildGroupByDescType(ctx, aggregate, GenericUDAFEvaluator.Mode.PARTIAL1, column, dataTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.HASH);
 
     ArrayList<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>(keys.length);
@@ -273,8 +272,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     // Set the memory treshold so that we get 100Kb before we need to flush.
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -364,8 +363,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-      GroupByDesc desc = pair.fst;
-      VectorGroupByDesc vectorDesc = pair.snd;
+      GroupByDesc desc = pair.left;
+      VectorGroupByDesc vectorDesc = pair.right;
 
       LlapProxy.setDaemon(true);
 
@@ -459,8 +458,8 @@ public class TestVectorGroupByOperator {
         "v", TypeInfoFactory.longTypeInfo,
         new String[] { "k1", "k2" },
         new TypeInfo[] {TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     desc.setGroupingSetsPresent(true);
     ArrayList<Long> groupingSets = new ArrayList<>();
@@ -620,8 +619,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     // Set the memory treshold so that we get 100Kb before we need to flush.
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -2724,8 +2723,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescCountStar (ctx);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.HASH);
 
     CompilationOpContext cCtx = new CompilationOpContext();
@@ -2761,8 +2760,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, "count", GenericUDAFEvaluator.Mode.FINAL, "A", TypeInfoFactory.longTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.GLOBAL);  // Use GLOBAL when no key for Reduce.
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2799,8 +2798,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A",
         TypeInfoFactory.stringTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2837,8 +2836,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair =
         buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.getDecimalTypeInfo(30, 4));
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2876,8 +2875,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType (ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A",
         TypeInfoFactory.doubleTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2913,8 +2912,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.longTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2956,8 +2955,8 @@ public class TestVectorGroupByOperator {
         TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -3030,8 +3029,8 @@ public class TestVectorGroupByOperator {
        dataTypeInfo,
        new String[] {"Key"},
        new TypeInfo[] {TypeInfoFactory.stringTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 

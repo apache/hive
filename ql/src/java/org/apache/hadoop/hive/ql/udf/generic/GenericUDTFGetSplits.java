@@ -128,6 +128,7 @@ import com.google.common.base.Preconditions;
 @UDFType(deterministic = false)
 public class GenericUDTFGetSplits extends GenericUDTF {
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSplits.class);
+  private static String sha = null;
 
   protected transient StringObjectInspector stringOI;
   protected transient IntObjectInspector intOI;
@@ -703,7 +704,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     Path destDirPath = destDirStatus.getPath();
 
     Path localFile = new Path(localJarPath);
-    String sha = getSha(localFile, conf);
+    if (sha == null || !destDirPath.toString().contains(sha)) {
+      sha = getSha(localFile, conf);
+    }
 
     String destFileName = localFile.getName();
 

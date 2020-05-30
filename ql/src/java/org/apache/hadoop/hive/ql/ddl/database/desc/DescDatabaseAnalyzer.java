@@ -56,6 +56,6 @@ public class DescDatabaseAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(DescDatabaseDesc.DESC_DATABASE_SCHEMA));
+    setFetchTask(createFetchTask(desc.getSchema()));
   }
 }

@@ -1,0 +1,97 @@
+PREHOOK: query: EXPLAIN
+SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift tablesample (3 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift tablesample (3 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_thrift
+          Row Limit Per Split: 3
+          Select Operator
+            expressions: CASE (lint[0]) WHEN (0) THEN ((lint[0] + 1)) WHEN (1) THEN ((lint[0] + 2)) WHEN (2) THEN (100) ELSE (5) END (type: int), CASE (lstring[0]) WHEN ('0') THEN ('zero') WHEN ('10') THEN (concat(lstring[0], ' is ten')) ELSE ('default') END (type: string), CASE (lstring[0]) WHEN ('0') THEN (lstring) ELSE (null) END[0] (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift tablesample (3 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift tablesample (3 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+1	zero	0
+3	10 is ten	NULL
+100	default	NULL

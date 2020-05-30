@@ -26,7 +26,10 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -66,6 +69,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private MapJoinDesc desc;
   private TezContext tezContext;
   private String cacheKey;
+  private TezCounter htLoadCounter;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
@@ -74,6 +78,10 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+    String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
+    this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
   @Override
@@ -238,6 +246,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           cacheKey, tableContainer.getClass().getSimpleName(), pos);
 
         tableContainer.setSerde(keyCtx, valCtx);
+        long startTime = System.currentTimeMillis();
         while (kvReader.next()) {
           tableContainer.putRow((Writable) kvReader.getCurrentKey(), (Writable) kvReader.getCurrentValue());
           numEntries++;
@@ -258,6 +267,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
             }
           }
         }
+        long delta = System.currentTimeMillis() - startTime;
+        htLoadCounter.increment(delta);
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
         if (doMemCheck) {

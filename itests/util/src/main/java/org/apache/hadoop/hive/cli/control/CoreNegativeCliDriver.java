@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.internal.AssumptionViolatedException;
 
 import com.google.common.base.Strings;
 
@@ -136,6 +137,8 @@ public class CoreNegativeCliDriver extends CliAdapter{
           : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
+    } catch (AssumptionViolatedException e) {
+      throw e;
     } catch (Error error) {
       QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
       if (qTestProcessExecResult.getReturnCode() != 0) {

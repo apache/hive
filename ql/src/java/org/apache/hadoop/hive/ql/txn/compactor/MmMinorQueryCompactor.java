@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Lists;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,9 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
@@ -51,27 +48,25 @@ final class MmMinorQueryCompactor extends QueryCompactor {
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
 
-    AcidUtils.Directory dir = AcidUtils
-        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
-            Ref.from(false), false, table.getParameters(), false);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null,
+        new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
+        Ref.from(false), false, table.getParameters(), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
-    String tmpLocation = Util.generateTmpPath(storageDescriptor);
-    Path sourceTabLocation = new Path(tmpLocation);
-    Path resultTabLocation = new Path(tmpLocation, "_result");
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
 
     String tmpPrefix = table.getDbName() + ".tmp_minor_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     String resultTmpTableName = tmpTableName + "_result";
+    Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds, driverConf,
+        false, false, false);
 
-    List<String> createTableQueries =
-        getCreateQueries(tmpTableName, table, partition == null ? table.getSd() : partition.getSd(),
-            sourceTabLocation.toString(), resultTabLocation.toString(), dir, writeIds);
+    List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor, dir,
+        writeIds, resultDeltaDir);
     List<String> compactionQueries = getCompactionQueries(tmpTableName, resultTmpTableName, table);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
-        createTableQueries, compactionQueries, dropQueries);
+        Lists.newArrayList(resultDeltaDir), createTableQueries, compactionQueries, dropQueries);
   }
 
   /**
@@ -79,26 +74,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    */
   @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    org.apache.hadoop.hive.ql.metadata.Table resultTable =
-        Hive.get().getTable(tmpTableName + "_result");
-    String from = resultTable.getSd().getLocation();
-    Path fromPath = new Path(from);
-    Path toPath = new Path(dest);
-    FileSystem fs = fromPath.getFileSystem(conf);
-    long maxTxn = actualWriteIds.getHighWatermark();
-    AcidOutputFormat.Options options =
-        new AcidOutputFormat.Options(conf).writingBase(false).isCompressed(false)
-            .minimumWriteId(1).maximumWriteId(maxTxn).bucket(0).statementId(-1)
-            .visibilityTxnId(compactorTxnId);
-    Path newDeltaDir = AcidUtils.createFilename(toPath, options).getParent();
-    if (!fs.exists(fromPath)) {
-      LOG.info(from + " not found.  Assuming 0 splits. Creating " + newDeltaDir);
-      fs.mkdirs(newDeltaDir);
-      return;
-    }
-    LOG.info("Moving contents of " + from + " to " + dest);
-    fs.rename(fromPath, newDeltaDir);
-    fs.delete(fromPath, true);
+    Util.cleanupEmptyDir(conf, tmpTableName);
   }
 
   /**
@@ -114,32 +90,30 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    * @param tmpTableBase name of the first temp table (second will be $tmpTableBase_result)
    * @param t Table to compact
    * @param sd storage descriptor of table or partition to compact
-   * @param sourceTabLocation location the "source table" (temp table 1) should go
-   * @param resultTabLocation location the "result table (temp table 2) should go
    * @param dir the parent directory of delta directories
-   * @param validWriteIdList valid write ids for the table/partition to compact
+   * @param writeIds ValidWriteIdList for the table/partition we are compacting
+   * @param resultDeltaDir the final location for the
    * @return List of 3 query strings: 2 create table, 1 alter table
    */
   private List<String> getCreateQueries(String tmpTableBase, Table t, StorageDescriptor sd,
-      String sourceTabLocation, String resultTabLocation, AcidUtils.Directory dir,
-      ValidWriteIdList validWriteIdList) {
+      AcidUtils.Directory dir, ValidWriteIdList writeIds, Path resultDeltaDir) {
     List<String> queries = Lists.newArrayList(
-        getCreateQuery(tmpTableBase, t, sd, sourceTabLocation, true),
-        getCreateQuery(tmpTableBase + "_result", t, sd, resultTabLocation, false)
+        getCreateQuery(tmpTableBase, t, sd, null, true),
+        getCreateQuery(tmpTableBase + "_result", t, sd, resultDeltaDir.toString(), false)
     );
-    String alterQuery = buildAlterTableQuery(tmpTableBase, dir, validWriteIdList);
+    String alterQuery = buildAlterTableQuery(tmpTableBase, dir, writeIds);
     if (!alterQuery.isEmpty()) {
       queries.add(alterQuery);
     }
     return queries;
   }
 
-  private String getCreateQuery(String resultTableName, Table t, StorageDescriptor sd,
+  private String getCreateQuery(String newTableName, Table t, StorageDescriptor sd,
       String location, boolean isPartitioned) {
     return new CompactionQueryBuilder(
         CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
         CompactionQueryBuilder.Operation.CREATE,
-        resultTableName)
+        newTableName)
         .setSourceTab(t)
         .setStorageDescriptor(sd)
         .setLocation(location)

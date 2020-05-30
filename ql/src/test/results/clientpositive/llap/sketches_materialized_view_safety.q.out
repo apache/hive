@@ -399,7 +399,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'rewritten;mv not used' (type: string), _col0 (type: char(1)), UDFToLong(ds_hll_estimate(_col1)) (type: bigint)
+                  expressions: 'rewritten;mv not used' (type: string), _col0 (type: char(1)), UDFToLong(round(ds_hll_estimate(_col1))) (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

@@ -80,7 +80,7 @@ public class TestMsckDropPartitionsInBatches {
     SessionState.start(hiveConf);
     db = new HiveMetaStoreClient(hiveConf);
     msck = new Msck( false, false);
-    msck.init(hiveConf);
+    msck.init(Msck.getMsckConf(hiveConf));
   }
 
   @Before

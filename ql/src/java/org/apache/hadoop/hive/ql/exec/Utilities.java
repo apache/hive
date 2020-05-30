@@ -324,11 +324,15 @@ public final class Utilities {
     try {
       if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
         FileSystem fs = mapPath.getFileSystem(conf);
-        if (fs.exists(mapPath)) {
+        try {
           fs.delete(mapPath, true);
+        } catch (FileNotFoundException e) {
+          // delete if exists, don't panic if it doesn't
         }
-        if (fs.exists(reducePath)) {
+        try {
           fs.delete(reducePath, true);
+        } catch (FileNotFoundException e) {
+          // delete if exists, don't panic if it doesn't
         }
       }
     } catch (Exception e) {
@@ -1802,7 +1806,7 @@ public final class Utilities {
           }
         }
 
-        taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs, hconf);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
@@ -1815,7 +1819,7 @@ public final class Utilities {
       }
       Path mmDir = extractNonDpMmDir(writeId, stmtId, fileStats, isBaseDir);
       taskIDToFile = removeTempOrDuplicateFilesNonMm(
-          fs.listStatus(new Path(mmDir, unionSuffix)), fs);
+          fs.listStatus(new Path(mmDir, unionSuffix)), fs, hconf);
       if (filesKept != null && taskIDToFile != null) {
         addFilesToPathSet(taskIDToFile.values(), filesKept);
       }
@@ -1825,13 +1829,13 @@ public final class Utilities {
         return result;
       }
       if (!isMmTable) {
-        taskIDToFile = removeTempOrDuplicateFilesNonMm(fileStats, fs);
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(fileStats, fs, hconf);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
       } else {
         Path mmDir = extractNonDpMmDir(writeId, stmtId, fileStats, isBaseDir);
-        taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs, hconf);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
@@ -1896,11 +1900,19 @@ public final class Utilities {
   }
 
   private static HashMap<String, FileStatus> removeTempOrDuplicateFilesNonMm(
-      FileStatus[] files, FileSystem fs) throws IOException {
+      FileStatus[] files, FileSystem fs, Configuration conf) throws IOException {
     if (files == null || fs == null) {
       return null;
     }
     HashMap<String, FileStatus> taskIdToFile = new HashMap<String, FileStatus>();
+
+    // This method currently does not support speculative execution due to
+    // compareTempOrDuplicateFiles not being able to de-duplicate speculative
+    // execution created files
+    if (isSpeculativeExecution(conf)) {
+      String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+      throw new IOException("Speculative execution is not supported for engine " + engine);
+    }
 
     for (FileStatus one : files) {
       if (isTempPath(one)) {
@@ -1912,30 +1924,61 @@ public final class Utilities {
         }
       } else {
         // This would be a single file. See if we need to remove it.
-        ponderRemovingTempOrDuplicateFile(fs, one, taskIdToFile);
+        ponderRemovingTempOrDuplicateFile(fs, one, taskIdToFile, conf);
       }
     }
     return taskIdToFile;
   }
 
   private static void ponderRemovingTempOrDuplicateFile(FileSystem fs,
-      FileStatus file, HashMap<String, FileStatus> taskIdToFile) throws IOException {
+      FileStatus file, HashMap<String, FileStatus> taskIdToFile, Configuration conf)
+      throws IOException {
     Path filePath = file.getPath();
     String taskId = getPrefixedTaskIdFromFilename(filePath.getName());
     Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles looking at {}"
           + ", taskId {}", filePath, taskId);
     FileStatus otherFile = taskIdToFile.get(taskId);
     taskIdToFile.put(taskId, (otherFile == null) ? file :
-      compareTempOrDuplicateFiles(fs, file, otherFile));
+      compareTempOrDuplicateFiles(fs, file, otherFile, conf));
+  }
+
+  private static boolean warnIfSet(Configuration conf, String value) {
+    if (conf.getBoolean(value, false)) {
+      LOG.warn(value + " support is currently deprecated");
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean isSpeculativeExecution(Configuration conf) {
+    String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    boolean isSpeculative = false;
+    if ("mr".equalsIgnoreCase(engine)) {
+      isSpeculative = warnIfSet(conf, "mapreduce.map.speculative") ||
+          warnIfSet(conf, "mapreduce.reduce.speculative") ||
+          warnIfSet(conf, "mapred.map.tasks.speculative.execution") ||
+          warnIfSet(conf, "mapred.reduce.tasks.speculative.execution");
+    } else if ("tez".equalsIgnoreCase(engine)) {
+      isSpeculative = warnIfSet(conf, "tez.am.speculation.enabled");
+    } // all other engines do not support speculative execution
+
+    return isSpeculative;
   }
 
   private static FileStatus compareTempOrDuplicateFiles(FileSystem fs,
-      FileStatus file, FileStatus existingFile) throws IOException {
-    // Pick the one with mewest attempt ID. For sanity, check the file sizes too.
-    // If the file size of newest attempt is less than that for older one,
-    // Throw an exception as it maybe a correctness issue causing it.
-    // This breaks speculative execution if it ends prematurely.
+      FileStatus file, FileStatus existingFile, Configuration conf) throws IOException {
+    // Pick the one with newest attempt ID. Previously, this function threw an
+    // exception when the file size of the newer attempt was less than the
+    // older attempt. This was an incorrect assumption due to various
+    // techniques like file compression and no guarantee that the new task will
+    // write values in the same order.
     FileStatus toDelete = null, toRetain = null;
+
+    // This method currently does not support speculative execution
+    if (isSpeculativeExecution(conf)) {
+      String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+      throw new IOException("Speculative execution is not supported for engine " + engine);
+    }
 
     // "LOAD .. INTO" and "INSERT INTO" commands will generate files with
     // "_copy_x" suffix. These files are usually read by map tasks and the
@@ -1950,66 +1993,36 @@ public final class Utilities {
     // elimination.
     Path filePath = file.getPath();
     if (isCopyFile(filePath.getName())) {
-      LOG.info("{} file identified as duplicate. This file is" +
-          " not deleted as it has copySuffix.", filePath);
+      LOG.info("{} file identified as duplicate. This file is"
+          + " not deleted as it has copySuffix.", filePath);
       return existingFile;
     }
 
     int existingFileAttemptId = getAttemptIdFromFilename(existingFile.getPath().getName());
     int fileAttemptId = getAttemptIdFromFilename(file.getPath().getName());
-
-    long existingFileSz = getFileSizeRecursively(fs, existingFile);
-    long fileSz = getFileSizeRecursively(fs, file);
     // Files may come in any order irrespective of their attempt IDs
-    if (existingFileAttemptId > fileAttemptId &&
-        existingFileSz >= fileSz) {
+    if (existingFileAttemptId > fileAttemptId) {
       // keep existing
       toRetain = existingFile;
       toDelete = file;
-    } else if (existingFileAttemptId < fileAttemptId &&
-        existingFileSz <= fileSz) {
+    } else if (existingFileAttemptId < fileAttemptId) {
       // keep file
       toRetain = file;
       toDelete = existingFile;
     } else {
-      throw new IOException(" File " + filePath +
-        " with newer attempt ID " + fileAttemptId + " is smaller than the file "
-        + existingFile.getPath() + " with older attempt ID " + existingFileAttemptId);
+      throw new IOException(filePath + " has same attempt ID " + fileAttemptId + " as "
+          + existingFile.getPath());
     }
+
     if (!fs.delete(toDelete.getPath(), true)) {
-      throw new IOException(
-          "Unable to delete duplicate file: " + toDelete.getPath()
-              + ". Existing file: " + toRetain.getPath());
-    } else {
-      LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() + " with length "
-          + toDelete.getLen() + ". Existing file: " + toRetain.getPath() + " with length "
-          + toRetain.getLen());
+      throw new IOException("Unable to delete duplicate file: " + toDelete.getPath()
+          + ". Existing file: " + toRetain.getPath());
     }
 
+    LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() + " with length "
+        + toDelete.getLen() + ". Existing file: " + toRetain.getPath() + " with length "
+        + toRetain.getLen());
     return toRetain;
-  }
-
-  // This function recurisvely fetches the size of all the files in given directory
-  private static long getFileSizeRecursively(FileSystem fs, FileStatus src)
-  throws IOException {
-    long size = 0;
-    if (src.isDirectory()) {
-      LOG.debug(" src " + src.getPath() + " is a directory");
-      // This is a directory.
-      try {
-        FileStatus[] files = fs.listStatus(src.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-        // Recursively fetch sizes of each file
-        for (FileStatus file : files) {
-          size += getFileSizeRecursively(fs, file);
-        }
-      } catch (IOException e) {
-        throw new IOException("Unable to fetch files in directory " + src.getPath(), e);
-      }
-    } else {
-      size = src.getLen();
-      LOG.debug("src " + src.getPath() + " is a file of size " + size);
-    }
-    return size;
   }
 
   public static boolean isCopyFile(String filename) {

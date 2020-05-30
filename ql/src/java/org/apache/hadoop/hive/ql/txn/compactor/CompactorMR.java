@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 
 import org.apache.hadoop.conf.Configuration;
@@ -76,6 +78,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
@@ -132,7 +135,7 @@ public class CompactorMR {
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
     job.set(FINAL_LOCATION, sd.getLocation());
-    job.set(TMP_LOCATION, QueryCompactor.Util.generateTmpPath(sd));
+    job.set(TMP_LOCATION, generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
     job.set(OUTPUT_FORMAT_CLASS_NAME, sd.getOutputFormat());
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
@@ -209,6 +212,7 @@ public class CompactorMR {
    * @param sd metastore storage descriptor
    * @param writeIds list of valid write ids
    * @param ci CompactionInfo
+   * @param su StatsUpdater which is null if no stats gathering is needed
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
@@ -229,6 +233,7 @@ public class CompactorMR {
      */
     QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
     if (queryCompactor != null) {
+      LOG.info("Will compact with  " + queryCompactor.getClass().getName());
       queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
       return;
     }
@@ -291,7 +296,18 @@ public class CompactorMR {
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
-    su.gatherStats();
+    if (su != null) {
+      su.gatherStats();
+    }
+  }
+
+  /**
+   * Generate a random tmp path, under the provided storage.
+   * @param sd storage descriptor, must be not null.
+   * @return path, always not null
+   */
+  private static String generateTmpPath(StorageDescriptor sd) {
+    return sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString();
   }
 
   /**
@@ -328,6 +344,9 @@ public class CompactorMR {
     job.set(DIRS_TO_SEARCH, dirsToSearch.toString());
     job.setLong(MIN_TXN, minTxn);
     job.setLong(MAX_TXN, maxTxn);
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+    job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
     // Add tokens for all the file system in the input path.
     ArrayList<Path> dirs = new ArrayList<>();
@@ -866,8 +885,10 @@ public class CompactorMR {
       Path tmpLocation = AcidUtils.createFilename(rootDir, options);
       FileSystem fs = tmpLocation.getFileSystem(jobConf);
 
-      if (fs.exists(tmpLocation)) {
+      try {
         fs.delete(tmpLocation, true);
+      } catch (FileNotFoundException e) {
+        // no problem
       }
     }
 
