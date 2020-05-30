@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -185,6 +186,27 @@ public class ReduceSinkDeDuplicationUtils {
     return true;
   }
 
+  private static long estimateReducers(HiveConf conf, ReduceSinkOperator rs) {
+    // TODO: Check if we can somehow exploit the logic in SetReducerParallelism
+    if (rs.getConf().getNumReducers() > 0) {
+      return rs.getConf().getNumReducers();
+    }
+    int constantReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+    if (constantReducers > 0) {
+      return constantReducers;
+    }
+    long inputTotalBytes = 0;
+    List<Operator<?>> rsSiblings = rs.getChildOperators().get(0).getParentOperators();
+    for (Operator<?> sibling : rsSiblings) {
+      if (sibling.getStatistics() != null) {
+        inputTotalBytes = StatsUtils.safeAdd(inputTotalBytes, sibling.getStatistics().getDataSize());
+      }
+    }
+    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+    return Utilities.estimateReducers(inputTotalBytes, bytesPerReducer, maxReducers, false);
+  }
+
   private static long estimateMaxPartitions(HiveConf conf, ReduceSinkOperator rs, List<ExprNodeDesc> cols) {
     Statistics stats = rs.getParentOperators().get(0).getStatistics();
     if (stats == null) {
@@ -335,9 +357,10 @@ public class ReduceSinkDeDuplicationUtils {
       return null;
     }
     if (canReplaceParentWithChildPartioning(movePartitionColTo, cpars, ppars)) {
-      long cMaxPartitions = estimateMaxPartitions(hiveConf, pRS, ExprNodeDescUtils.backtrack(cpars, cRS, pRS));
-      long pMaxPartitions = estimateMaxPartitions(hiveConf, pRS, ppars);
-      if (cMaxPartitions < pMaxPartitions && cMaxPartitions < minReducer) {
+      List<ExprNodeDesc> newcpars = ExprNodeDescUtils.backtrack(cpars, cRS, pRS);
+      long oldParallelism = Math.min(estimateReducers(hiveConf, pRS), estimateMaxPartitions(hiveConf, pRS, ppars));
+      long newParallelism = Math.min(estimateReducers(hiveConf, cRS), estimateMaxPartitions(hiveConf, pRS, newcpars));
+      if (newParallelism < oldParallelism && newParallelism < minReducer) {
         return null;
       }
     }
