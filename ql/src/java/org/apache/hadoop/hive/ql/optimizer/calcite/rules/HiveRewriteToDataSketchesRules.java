@@ -27,7 +27,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelFieldCollation.NullDirection;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
@@ -51,8 +50,9 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.tools.RelBuilder.AggCall;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -276,7 +276,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = true;
+        boolean approximate = false;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -363,7 +363,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = true;
+        boolean approximate = false;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -397,7 +397,7 @@ public final class HiveRewriteToDataSketchesRules {
     protected final String sketchType;
 
     public WindowingToProjectAggregateJoinProject(String sketchType) {
-      super(operand(HiveProject.class, any()));
+      super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER, null);
       this.sketchType = sketchType;
     }
 
@@ -525,27 +525,17 @@ public final class HiveRewriteToDataSketchesRules {
         key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
         key = rexBuilder.makeCast(getFloatType(), key);
 
-        ImmutableList<RexNode> projExprs = ImmutableList.<RexNode>builder().addAll(partitionKeys).add(key).build();
-        relBuilder.project(projExprs);
-        ImmutableBitSet groupSets = ImmutableBitSet.range(partitionKeys.size());
+        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
+            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
+            /* distinct */ false,
+            /* approximate */ false,
+            /* ignoreNulls */ true,
+            null,
+            ImmutableList.of(),
+            null,
+            ImmutableList.of(key));
 
-        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
-        boolean distinct = false;
-        boolean approximate = true;
-        boolean ignoreNulls = true;
-        List<Integer> argList = Lists.newArrayList(partitionKeys.size());
-        int filterArg = -1;
-        RelCollation collation = RelCollations.EMPTY;
-        RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
-        String name = aggFunction.getName();
-        AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
-                      collation, type, name);
-
-        RelNode agg = HiveRelFactories.HIVE_AGGREGATE_FACTORY.createAggregate(
-            relBuilder.build(),
-            groupSets, ImmutableList.of(groupSets),
-            Lists.newArrayList(newAgg));
-        relBuilder.push(agg);
+        relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
         List<RexNode> joinConditions;
         joinConditions = Ord.zip(partitionKeys).stream().map(o -> {

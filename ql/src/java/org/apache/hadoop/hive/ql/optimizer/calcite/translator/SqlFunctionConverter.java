@@ -674,7 +674,6 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeChecker);
         break;
       case "cume_dist":
-        int asd = 1;
         // FIXME: SqlKind.CUME_DIST
         //        calciteAggFn = new HiveSqlVarianceAggFunction(
         //            "cume_dist",
