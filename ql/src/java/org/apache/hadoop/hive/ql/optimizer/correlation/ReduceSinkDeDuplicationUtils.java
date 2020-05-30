@@ -556,21 +556,6 @@ public class ReduceSinkDeDuplicationUtils {
     return true;
   }
 
-  // Check that in the path between cRS and pRS, there are only single branch
-  // i.e. the sequence must be pRS-Op*-cRS
-  protected static boolean checkSingleBranchOnly(ReduceSinkOperator cRS, ReduceSinkOperator pRS) {
-    Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
-    while (parent != pRS) {
-      assert parent.getNumParent() == 1;
-      if (parent.getChildOperators().size() > 1) {
-        return false;
-      }
-
-      parent = parent.getParentOperators().get(0);
-    }
-    return true;
-  }
-
   protected static boolean aggressiveDedup(ReduceSinkOperator cRS, ReduceSinkOperator pRS,
           ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException {
     assert cRS.getNumParent() == 1;
