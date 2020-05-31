@@ -98,6 +98,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       this.length = fileSplit.getLength();
       options.range(offset, length);
       options.include(OrcInputFormat.genIncludedColumns(schema, conf));
+      OrcInputFormat.setRowFilter(options, schema, conf);
       OrcInputFormat.setSearchArgument(options, types, conf, true);
 
       this.reader = file.rowsOptions(options, conf);
@@ -126,9 +127,17 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           }
           addPartitionCols = false;
         }
-        if (!reader.nextBatch(value)) {
-          return false;
+        boolean done = true;
+        while (reader.nextBatch(value)) {
+          if (value.size > 0) {
+            done = false;
+            break;
+          }
         }
+        if (done) return false;
+//        if (!reader.nextBatch(value)) {
+//          return false;
+//        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

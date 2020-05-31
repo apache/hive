@@ -85,7 +85,9 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     if (rowInBatch >= batch.size) {
       baseRow = super.getRowNumber();
       rowInBatch = 0;
-      batch.reset();
+      // ensure selected is false
+      // row-filtering should set it in nextBatch() call
+      batch.selectedInUse = false;
       return super.nextBatch(batch);
     }
     return true;
@@ -163,6 +165,9 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       }
       baseRow = super.getRowNumber();
       rowInBatch = 0;
+      // ensure selected is false
+      // row-filtering should set it in nextBatch() call
+      theirBatch.selectedInUse = false;
       return super.nextBatch(theirBatch);
     }
     copyIntoBatch(theirBatch, batch, rowInBatch);

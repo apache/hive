@@ -198,7 +198,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
-        schema, job, isAcidScan && acidReader.includeAcidColumns());
+        schema, jobConf, isAcidScan && acidReader.includeAcidColumns());
 
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
@@ -333,8 +333,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     SchemaEvolution evolution = rp.getSchemaEvolution();
 
     if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
-
       // We do not support data type conversion when reading encoded ORC data.
+      LlapIoImpl.LOG.warn("Unsupported data type conversion! Disabling Llap IO for {}", split);
       return false;
     }
     // TODO: should this just use physical IDs?
