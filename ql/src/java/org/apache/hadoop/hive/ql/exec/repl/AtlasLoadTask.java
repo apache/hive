@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-
 import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +44,8 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Atlas Metadata Replication Load Task.
@@ -56,6 +58,9 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   public int execute() {
     try {
       AtlasReplInfo atlasReplInfo  = createAtlasReplInfo();
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.TAGS.name(), 0L);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
       LOG.info("Loading atlas metadata from srcDb: {} to tgtDb: {} from staging: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
       AtlasLoadLogger replLogger = new AtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
@@ -63,11 +68,18 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       replLogger.startLog();
       int importCount = importAtlasMetadata(atlasReplInfo);
       replLogger.endLog(importCount);
+      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TAGS.name(), importCount);
       LOG.info("Atlas entities import count {}", importCount);
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
     } catch (Exception e) {
       LOG.error("Exception while loading atlas metadata", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }

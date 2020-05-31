@@ -24,10 +24,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -41,6 +43,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
@@ -398,7 +403,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
                 replScope.getDbName(),
                 dmd.getReplScope(),
-                queryState.getLineageState(), evDump, dmd.getEventTo());
+                queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
+            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
+              dmd.getDumpExecutionId()));
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
         LOG.warn("Previous Dump Already Loaded");
@@ -407,6 +414,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, String dumpDirectory,
+                                                          String dbNameToLoadIn, long dumpExecutionId) {
+    ReplicationMetricCollector collector;
+    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
+    long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    long maxCacheSize = conf.getLong(MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getVarname(),
+        (long) MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getDefaultVal());
+    if (isBootstrap) {
+      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, policy, executorId,
+        dumpExecutionId, maxCacheSize);
+    } else {
+      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, policy, executorId,
+        dumpExecutionId, maxCacheSize);
+    }
+    return collector;
   }
 
   private Path getCurrentLoadPath() throws IOException, SemanticException {

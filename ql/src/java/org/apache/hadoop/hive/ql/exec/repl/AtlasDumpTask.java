@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +48,12 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * Atlas Metadata Replication Dump Task.
@@ -71,6 +73,9 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
               atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.TAGS.name(), 0L);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
       atlasRestClient = new AtlasRestClientBuilder(atlasReplInfo.getAtlasEndpoint())
               .getClient(atlasReplInfo.getConf());
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
@@ -81,10 +86,16 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
       replLogger.endLog(0L);
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
