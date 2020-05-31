@@ -29,6 +29,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +60,8 @@ import com.google.common.annotations.VisibleForTesting;
 public class RetryingMetaStoreClient implements InvocationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryingMetaStoreClient.class.getName());
+  private static final Pattern IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN =
+      Pattern.compile("(?s).*(IO|JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*");
 
   private final IMetaStoreClient base;
   private final UserGroupInformation ugi;
@@ -233,16 +236,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
           caughtException = (TException)t;
-        } else if ((t instanceof MetaException) && t.getMessage().matches(
-            "(?s).*(JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*") &&
-            !t.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException")) {
+        } else if ((t instanceof MetaException) && isRecoverableMetaException((MetaException) t)) {
           caughtException = (MetaException)t;
         } else {
           throw t;
         }
       } catch (MetaException e) {
-        if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*") &&
-            !e.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException")) {
+        if (isRecoverableMetaException(e)) {
           caughtException = e;
         } else {
           throw e;
@@ -259,6 +259,17 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;
+  }
+
+  private static boolean isRecoverableMetaException(MetaException e) {
+    String m = e.getMessage();
+    if (m == null) {
+      return false;
+    }
+    if (m.contains("java.sql.SQLIntegrityConstraintViolationException")) {
+      return false;
+    }
+    return IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN.matcher(m).matches();
   }
 
   /**

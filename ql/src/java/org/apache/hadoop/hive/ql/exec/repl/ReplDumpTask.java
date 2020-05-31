@@ -81,6 +81,7 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
@@ -146,6 +147,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           work.setCurrentDumpPath(currentDumpPath);
+          if (shouldDumpAtlasMetadata()) {
+            addAtlasDumpTask(isBootstrap, previousValidHiveDumpPath);
+            LOG.info("Added task to dump atlas metadata.");
+          }
           if (shouldDumpAuthorizationMetadata()) {
             initiateAuthorizationDumpTask();
           }
@@ -194,6 +199,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
+  private boolean shouldDumpAtlasMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
+  }
+
   private Path getEncodedDumpRootPath() throws UnsupportedEncodingException {
     return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
             Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
@@ -226,6 +235,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
     }
   }
+
+  private void addAtlasDumpTask(boolean bootstrap, Path prevHiveDumpDir) {
+    Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
+                            : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir);
+    Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
+    childTasks = new ArrayList<>();
+    childTasks.add(atlasDumpTask);
+  }
+
 
   private void finishRemainingTasks() throws SemanticException {
     Path dumpAckFile = new Path(work.getCurrentDumpPath(),
@@ -525,8 +545,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Path bootstrapRoot = new Path(dumpRoot, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       Path metadataPath = new Path(bootstrapRoot, EximUtil.METADATA_PATH_NAME);
       FileSystem fs = FileSystem.get(metadataPath.toUri(), conf);
-      if (fs.exists(metadataPath)) {
+      try {
         fs.delete(metadataPath, true);
+      } catch (FileNotFoundException e) {
+        // no worries
       }
       Path dbRootMetadata = new Path(metadataPath, dbName);
       Path dbRootData = new Path(bootstrapRoot, EximUtil.DATA_PATH_NAME + File.separator + dbName);
@@ -588,8 +610,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       @Override
       public Void execute() throws IOException {
         FileSystem fs = FileSystem.get(nextEventRoot.toUri(), conf);
-        if (fs.exists(nextEventRoot))  {
+        try {
           fs.delete(nextEventRoot, true);
+        } catch (FileNotFoundException e) {
+          // no worries
         }
         return null;
       }

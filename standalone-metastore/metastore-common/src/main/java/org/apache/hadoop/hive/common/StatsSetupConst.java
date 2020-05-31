@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -167,6 +168,7 @@ public class StatsSetupConst {
       COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE, ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS,
       NUM_ERASURE_CODED_FILES);
 
+  @JsonPropertyOrder({"basicStats", "columnStats"})
   private static class ColumnStatsAccurate {
     private static ObjectReader objectReader;
     private static ObjectWriter objectWriter;

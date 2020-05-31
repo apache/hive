@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +59,7 @@ import java.util.UUID;
 public class Utils {
   private static Logger LOG = LoggerFactory.getLogger(Utils.class);
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+  private static final int DEF_BUF_SIZE = 8 * 1024;
 
   public enum ReplDumpState {
     IDLE, ACTIVE
@@ -92,6 +95,34 @@ public class Utils {
     };
     try {
       retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static long writeFile(FileSystem fs, Path exportFilePath, InputStream is) throws SemanticException {
+    Retry<Long> retriable = new Retry<Long>(IOException.class) {
+      @Override
+      public Long execute() throws IOException {
+        FSDataOutputStream fos = null;
+        try {
+          long bytesWritten;
+          fos = fs.create(exportFilePath);
+          byte[] buffer = new byte[DEF_BUF_SIZE];
+          int bytesRead;
+          while ((bytesRead = is.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+          }
+          bytesWritten = fos.getPos();
+          return bytesWritten;
+        } finally {
+          if (fos != null) {
+            fos.close();
+          }
+        }
+      }};
+    try {
+      return retriable.run();
     } catch (Exception e) {
       throw new SemanticException(e);
     }

@@ -97,7 +97,6 @@ STAGE PLANS:
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.acid_vectorized_n1
-                    serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     transactional true
                     transactional_properties default
@@ -115,7 +114,6 @@ STAGE PLANS:
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.acid_vectorized_n1
-                      serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       transactional true
                       transactional_properties default

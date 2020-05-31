@@ -78,33 +78,37 @@ STAGE PLANS:
                     outputColumnNames: fl_date
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: compute_stats(fl_date, 'hll')
+                      aggregations: min(fl_date), max(fl_date), count(1), count(fl_date), compute_bit_vector(fl_date, 'hll')
                       minReductionHashAggr: 0.99
                       mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 576 Basic stats: COMPLETE Column stats: NONE
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 576 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:date,max:date,countnulls:bigint,bitvector:binary>)
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col0 (type: date), _col1 (type: date), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Stats Work

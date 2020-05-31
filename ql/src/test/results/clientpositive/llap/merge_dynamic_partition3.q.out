@@ -171,19 +171,19 @@ STAGE PLANS:
                       outputColumnNames: key, value, ds, hr
                       Statistics: Num rows: 594 Data size: 405536 Basic stats: PARTIAL Column stats: PARTIAL
                       Group By Operator
-                        aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                        aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
                         keys: ds (type: string), hr (type: string)
                         minReductionHashAggr: 0.99
                         mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 594 Data size: 928256 Basic stats: PARTIAL Column stats: PARTIAL
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                        Statistics: Num rows: 594 Data size: 685904 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
                           null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 594 Data size: 928256 Basic stats: PARTIAL Column stats: PARTIAL
-                          value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                          Statistics: Num rows: 594 Data size: 685904 Basic stats: PARTIAL Column stats: PARTIAL
+                          value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
                       null sort order: aa
@@ -197,18 +197,18 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 297 Data size: 327128 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
-                  expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col2,0)) (type: bigint), COALESCE(_col3,0) (type: double), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                  Statistics: Num rows: 297 Data size: 327128 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 297 Data size: 327128 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

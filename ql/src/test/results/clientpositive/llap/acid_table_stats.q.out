@@ -50,8 +50,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into table acid partition(ds)  select key,value,ds from srcpart
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -108,8 +106,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid
@@ -195,8 +191,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@acid
@@ -246,8 +240,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid
@@ -342,8 +334,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid
@@ -391,8 +381,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid

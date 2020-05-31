@@ -535,13 +535,20 @@ public class HiveConf extends Configuration {
                     + "with the hive data and metadata replication. Set the configuration "
                     + "hive.repl.include.authorization.metadata to false to disable "
                     + "security policies being replicated "),
-    REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT("hive.repl.authorization.provider.service.endpoint",
-            "",
-            "This configuration will define the authorization service endpoint"),
-    REPL_RANGER_SERVICE_NAME("hive.repl.ranger.service.name",
-            "hive",
-            "This configuration will define the service name for which the ranger authorization"
-                    + " policies needs to be replicated"),
+    REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
+      true,
+      "This configuration will add a deny policy on the target database for all users except hive"
+        + " to avoid any update to the target database"),
+    REPL_INCLUDE_ATLAS_METADATA("hive.repl.include.atlas.metadata", false,
+            "Indicates if Atlas metadata should be replicated along with Hive data and metadata or not."),
+    REPL_ATLAS_ENDPOINT("hive.repl.atlas.endpoint", null,
+            "Atlas endpoint of the current cluster hive database is getting replicated from/to."),
+    REPL_ATLAS_REPLICATED_TO_DB("hive.repl.atlas.replicatedto", null,
+            "Target hive database name Atlas metadata of source hive database is being replicated to."),
+    REPL_SOURCE_CLUSTER_NAME("hive.repl.source.cluster.name", null,
+            "Name of the source cluster for the replication."),
+    REPL_TARGET_CLUSTER_NAME("hive.repl.target.cluster.name", null,
+            "Name of the target cluster for the replication."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2488,12 +2495,19 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.bi.rewrite.countdistinct.enabled",
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
-
     HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
         "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
         new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
             + "Distinct counting can be done with: hll"),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED("hive.optimize.bi.rewrite.percentile_disc.enabled",
+        true,
+        "Enables to rewrite PERCENTILE_DISC(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH(
+        "hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting PERCENTILE_DISC expressions. Options: kll"),
+
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
@@ -2665,8 +2679,9 @@ public class HiveConf extends Configuration {
         "The default value is 1000000, since the data limit of a znode is 1MB"),
     HIVE_MM_ALLOW_ORIGINALS("hive.mm.allow.originals", false,
         "Whether to allow original files in MM tables. Conversion to MM may be expensive if\n" +
-        "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
-        "read MM tables with original files will fail. The default in Hive 3.0 is false."),
+        "this is set to false, however unless MAPREDUCE-7086 fix is present (hadoop 3.1.1+),\n" +
+        "queries that read non-orc MM tables with original files will fail. The default in\n" +
+        "Hive 3.0 is false."),
 
     // Zookeeper related configs
     HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
@@ -2896,6 +2911,12 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
+
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+        "will gather stats if there are stats already associated with the table/partition.\n" +
+        "Turn this off to save some resources and the stats are not used anyway.\n" +
+        "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
+
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_INITIATOR_FAILED_THRESHOLD
      */

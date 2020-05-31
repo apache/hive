@@ -44,7 +44,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
          <exclusions>
             <exclusion>
@@ -70,20 +69,18 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoop.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
           <exclusions>
             <exclusion>
@@ -99,7 +96,6 @@
   <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-common</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
           <exclusions>
             <exclusion>
@@ -116,7 +112,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
       <version>${hadoop.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <optional>true</optional>
            <exclusions>
             <exclusion>
@@ -132,13 +128,11 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
-      <version>${tez.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
-      <version>${tez.version}</version>
       <optional>true</optional>
             <exclusions>
             <exclusion>
@@ -154,13 +148,11 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
-      <version>${tez.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
    </dependency>
    <dependency>
@@ -186,7 +178,6 @@
    <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-client</artifactId>
-     <version>${hadoop.version}</version>
      <optional>true</optional>
    </dependency>
    <dependency>
@@ -220,15 +211,15 @@
      <groupId>org.apache.tez</groupId>
      <artifactId>tez-tests</artifactId>
      <version>${tez.version}</version>
-      <optional>true</optional>
-     <type>test-jar</type>
+     <optional>true</optional>
+     <classifier>tests</classifier>
    </dependency>
    <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-server-tests</artifactId>
      <version>${hadoop.version}</version>
       <optional>true</optional>
-     <type>test-jar</type>
+     <classifier>tests</classifier>
      <exclusions>
        <exclusion>
          <groupId>com.codahale.metrics</groupId>

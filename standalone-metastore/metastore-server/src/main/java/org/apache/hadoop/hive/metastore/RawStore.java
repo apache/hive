@@ -483,6 +483,22 @@ public interface RawStore extends Configurable {
       String tbl_name, short max_parts) throws MetaException;
 
   /**
+   * Get a partial or complete list of names for partitions of a table.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param defaultPartName default partition name.
+   * @param exprBytes expression for filtering resulting list, serialized from ExprNodeDesc.
+   * @param order ordered the resulting list.
+   * @param maxParts maximum number of partitions to retrieve, -1 for all.
+   * @return list of partition names.
+   * @throws MetaException there was an error accessing the RDBMS
+   */
+  List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order,
+      short maxParts) throws MetaException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values as one big struct.
    * @param catName catalog name.
    * @param db_name database name.

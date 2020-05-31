@@ -1518,6 +1518,12 @@ public class CachedStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
+      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override public PartitionValuesResponse listPartitionValues(String catName, String dbName, String tblName,
       List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending, List<FieldSchema> order,
       long maxParts) throws MetaException {

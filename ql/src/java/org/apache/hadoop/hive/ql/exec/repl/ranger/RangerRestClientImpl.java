@@ -49,12 +49,15 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Arrays;
 
 /**
  * RangerRestClientImpl to connect to Ranger and export policies.
@@ -225,12 +228,6 @@ public class RangerRestClientImpl implements RangerRestClient {
   @Override
   public List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
                                           String targetDbName) {
-    if (sourceDbName.endsWith("/")) {
-      sourceDbName = StringUtils.removePattern(sourceDbName, "/+$");
-    }
-    if (targetDbName.endsWith("/")) {
-      targetDbName = StringUtils.removePattern(targetDbName, "/+$");
-    }
     if (targetDbName.equals(sourceDbName)) {
       return rangerPolicies;
     }
@@ -335,6 +332,9 @@ public class RangerRestClientImpl implements RangerRestClient {
       InputStream inputStream = fs.open(filePath);
       Reader reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
       rangerExportPolicyList = gsonBuilder.fromJson(reader, RangerExportPolicyList.class);
+    } catch (FileNotFoundException e) {
+      //If the ranger policies are not present, json file will not be present
+      return rangerExportPolicyList;
     } catch (Exception ex) {
       throw new SemanticException("Error reading file :" + filePath, ex);
     }
@@ -347,6 +347,69 @@ public class RangerRestClientImpl implements RangerRestClient {
     builder = getRangerResourceBuilder(url);
     ClientResponse clientResp = builder.get(ClientResponse.class);
     return (clientResp.getStatus() < HttpServletResponse.SC_UNAUTHORIZED);
+  }
+
+  @Override
+  public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
+                                            String sourceDb, String targetDb) throws SemanticException {
+    if (StringUtils.isEmpty(rangerServiceName)) {
+      throw new SemanticException("Ranger Service Name cannot be empty");
+    }
+    RangerPolicy denyRangerPolicy = new RangerPolicy();
+    denyRangerPolicy.setService(rangerServiceName);
+    denyRangerPolicy.setName(sourceDb + "_replication deny policy for " + targetDb);
+    Map<String, RangerPolicy.RangerPolicyResource> rangerPolicyResourceMap = new HashMap<String,
+        RangerPolicy.RangerPolicyResource>();
+    RangerPolicy.RangerPolicyResource rangerPolicyResource = new RangerPolicy.RangerPolicyResource();
+    List<String> resourceNameList = new ArrayList<String>();
+
+    List<RangerPolicy.RangerPolicyItem> denyPolicyItemsForPublicGroup = denyRangerPolicy.getDenyPolicyItems();
+    RangerPolicy.RangerPolicyItem denyPolicyItem = new RangerPolicy.RangerPolicyItem();
+    List<RangerPolicy.RangerPolicyItemAccess> denyPolicyItemAccesses = new ArrayList<RangerPolicy.
+        RangerPolicyItemAccess>();
+
+    List<RangerPolicy.RangerPolicyItem> denyExceptionsItemsForBeaconUser = denyRangerPolicy.getDenyExceptions();
+    RangerPolicy.RangerPolicyItem denyExceptionsPolicyItem = new RangerPolicy.RangerPolicyItem();
+    List<RangerPolicy.RangerPolicyItemAccess> denyExceptionsPolicyItemAccesses = new ArrayList<RangerPolicy.
+        RangerPolicyItemAccess>();
+
+    resourceNameList.add(sourceDb);
+    rangerPolicyResource.setValues(resourceNameList);
+    RangerPolicy.RangerPolicyResource rangerPolicyResourceColumn =new RangerPolicy.RangerPolicyResource();
+    rangerPolicyResourceColumn.setValues(new ArrayList<String>(){{add("*"); }});
+    RangerPolicy.RangerPolicyResource rangerPolicyResourceTable =new RangerPolicy.RangerPolicyResource();
+    rangerPolicyResourceTable.setValues(new ArrayList<String>(){{add("*"); }});
+    rangerPolicyResourceMap.put("database", rangerPolicyResource);
+    rangerPolicyResourceMap.put("table", rangerPolicyResourceTable);
+    rangerPolicyResourceMap.put("column", rangerPolicyResourceColumn);
+    denyRangerPolicy.setResources(rangerPolicyResourceMap);
+
+    List<String> accessTypes = Arrays.asList("create", "update", "drop", "alter",
+        "index", "lock", "write", "ReplAdmin");
+    for (String access : accessTypes) {
+      denyPolicyItemAccesses.add(new RangerPolicy.RangerPolicyItemAccess(access, true));
+    }
+    denyPolicyItem.setAccesses(denyPolicyItemAccesses);
+    denyPolicyItemsForPublicGroup.add(denyPolicyItem);
+    List<String> denyPolicyItemsGroups = new ArrayList<String>();
+    denyPolicyItemsGroups.add("public");
+    denyPolicyItem.setGroups(denyPolicyItemsGroups);
+    denyRangerPolicy.setDenyPolicyItems(denyPolicyItemsForPublicGroup);
+
+    List<String> denyExcludeAccessTypes = Arrays.asList("create", "update", "drop", "alter", "index", "lock", "write",
+        "ReplAdmin", "select", "read");
+    for (String access : denyExcludeAccessTypes) {
+      denyExceptionsPolicyItemAccesses.add(new RangerPolicy.RangerPolicyItemAccess(access, true));
+    }
+    denyExceptionsPolicyItem.setAccesses(denyExceptionsPolicyItemAccesses);
+    denyExceptionsItemsForBeaconUser.add(denyExceptionsPolicyItem);
+    List<String> denyExceptionsPolicyItemsUsers = new ArrayList<String>();
+    denyExceptionsPolicyItemsUsers.add("hive");
+    denyExceptionsPolicyItem.setUsers(denyExceptionsPolicyItemsUsers);
+    denyRangerPolicy.setDenyExceptions(denyExceptionsItemsForBeaconUser);
+
+    rangerPolicies.add(denyRangerPolicy);
+    return rangerPolicies;
   }
 
 

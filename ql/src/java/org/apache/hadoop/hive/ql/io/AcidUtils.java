@@ -2481,9 +2481,6 @@ public class AcidUtils {
       if (dirSnapshot != null && !dirSnapshot.contains(formatFile)) {
         return false;
       }
-      if(dirSnapshot == null && !fs.exists(formatFile)) {
-        return false;
-      }
       try (FSDataInputStream strm = fs.open(formatFile)) {
         Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
         if(!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION))) {
@@ -2498,8 +2495,9 @@ public class AcidUtils {
             throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
                 + ": " + dataFormat);
         }
-      }
-      catch(IOException e) {
+      } catch (FileNotFoundException e) {
+        return false;
+      } catch(IOException e) {
         String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE
             + ": " + e.getMessage();
         LOG.error(msg, e);
@@ -2610,12 +2608,15 @@ public class AcidUtils {
    * All data files produced by Acid write should have this (starting with Hive 3.0), including
    * those written by compactor.  This is more for sanity checking in case someone moved the files
    * around or something like that.
+   *
+   * Methods for getting/reading the version from files were moved to test class TestTxnCommands
+   * which is the only place they are used, in order to keep devs out of temptation, since they
+   * access the FileSystem which is expensive.
    */
   public static final class OrcAcidVersion {
-    private static final String ACID_VERSION_KEY = "hive.acid.version";
+    public static final String ACID_VERSION_KEY = "hive.acid.version";
     public static final String ACID_FORMAT = "_orc_acid_version";
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    public static final int ORC_ACID_VERSION_DEFAULT = 0;
     /**
      * 2 is the version of Acid released in Hive 3.0.
      */
@@ -2628,28 +2629,7 @@ public class AcidUtils {
       //so that we know which version wrote the file
       writer.addUserMetadata(ACID_VERSION_KEY, UTF8.encode(String.valueOf(ORC_ACID_VERSION)));
     }
-    /**
-     * This is smart enough to handle streaming ingest where there could be a
-     * {@link OrcAcidUtils#DELTA_SIDE_FILE_SUFFIX} side file.
-     * @param dataFile - ORC acid data file
-     * @return version property from file if there,
-     *          {@link #ORC_ACID_VERSION_DEFAULT} otherwise
-     */
-    @VisibleForTesting
-    public static int getAcidVersionFromDataFile(Path dataFile, FileSystem fs) throws IOException {
-      FileStatus fileStatus = fs.getFileStatus(dataFile);
-      Reader orcReader = OrcFile.createReader(dataFile,
-          OrcFile.readerOptions(fs.getConf())
-              .filesystem(fs)
-              //make sure to check for side file in case streaming ingest died
-              .maxLength(getLogicalLength(fs, fileStatus)));
-      if (orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
-        char[] versionChar = UTF8.decode(orcReader.getMetadataValue(ACID_VERSION_KEY)).array();
-        String version = new String(versionChar);
-        return Integer.valueOf(version);
-      }
-      return ORC_ACID_VERSION_DEFAULT;
-    }
+
     /**
      * This creates a version file in {@code deltaOrBaseDir}
      * @param deltaOrBaseDir - where to create the version file
@@ -2667,28 +2647,6 @@ public class AcidUtils {
     }
     public static Path getVersionFilePath(Path deltaOrBase) {
       return new Path(deltaOrBase, ACID_FORMAT);
-    }
-    @VisibleForTesting
-    public static int getAcidVersionFromMetaFile(Path deltaOrBaseDir, FileSystem fs)
-        throws IOException {
-      Path formatFile = getVersionFilePath(deltaOrBaseDir);
-      if(!fs.exists(formatFile)) {
-        LOG.debug(formatFile + " not found, returning default: " + ORC_ACID_VERSION_DEFAULT);
-        return ORC_ACID_VERSION_DEFAULT;
-      }
-      try (FSDataInputStream inputStream = fs.open(formatFile)) {
-        byte[] bytes = new byte[1];
-        int read = inputStream.read(bytes);
-        if (read != -1) {
-          String version = new String(bytes, UTF8);
-          return Integer.valueOf(version);
-        }
-        return ORC_ACID_VERSION_DEFAULT;
-      }
-      catch(IOException ex) {
-        LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
-        throw ex;
-      }
     }
   }
 

@@ -91,6 +91,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void run() {
     LOG.info("Starting Worker thread");
+    boolean computeStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
     do {
       boolean launchedJob = false;
       // Make sure nothing escapes this run method and kills the metastore at large,
@@ -201,10 +202,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           continue;
         }
 
-        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " + JavaUtils.txnIdToString(compactorTxnId));
-        final StatsUpdater su = StatsUpdater.init(ci, msc.findColumnsWithStats(
+        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
+            JavaUtils.txnIdToString(compactorTxnId) + " with compute stats set to " + computeStats);
+        final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
             CompactionInfo.compactionInfoToStruct(ci)), conf,
-          runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner());
+          runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
         final CompactorMR mr = new CompactorMR();
         launchedJob = true;
         try {

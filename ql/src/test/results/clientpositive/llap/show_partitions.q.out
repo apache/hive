@@ -128,6 +128,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Partitions
+      limit: -1
       partSpec:
         hr 11
       table: default.srcpart
@@ -159,6 +160,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Partitions
+      limit: -1
       partSpec:
         ds 2008-04-08
         hr 12

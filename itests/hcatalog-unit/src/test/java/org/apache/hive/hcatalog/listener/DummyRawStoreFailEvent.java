@@ -395,6 +395,15 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order,
+      short maxParts) throws MetaException, NoSuchObjectException {
+
+    return objectStore.listPartitionNames(catName, dbName, tblName,
+        defaultPartName, exprBytes, order, maxParts);
+  }
+
+  @Override
   public PartitionValuesResponse listPartitionValues(String catName, String db_name,
                                                      String tbl_name, List<FieldSchema> cols,
                                                      boolean applyDistinct, String filter,

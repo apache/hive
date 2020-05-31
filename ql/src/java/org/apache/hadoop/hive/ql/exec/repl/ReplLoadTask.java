@@ -107,6 +107,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       work.setRootTask(this);
       this.parentTasks = null;
+      if (shouldLoadAtlasMetadata()) {
+        addAtlasLoadTask();
+      }
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
@@ -141,8 +144,23 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       childTasks.add(rangerLoadTask);
     } else {
       throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
-          + " not supported for replication ");
+              + " not supported for replication ");
     }
+  }
+
+  private void addAtlasLoadTask() throws HiveException {
+    Path atlasDumpDir = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    LOG.info("Adding task to load Atlas metadata from {} ", atlasDumpDir);
+    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), work.dbNameToLoadIn, atlasDumpDir);
+    Task<?> atlasLoadTask = TaskFactory.get(atlasLoadWork, conf);
+    if (childTasks == null) {
+      childTasks = new ArrayList<>();
+    }
+    childTasks.add(atlasLoadTask);
+  }
+
+  private boolean shouldLoadAtlasMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
   }
 
   private int executeBootStrapLoad() throws Exception {

@@ -66,7 +66,7 @@ public class TestTaskExecutorService {
     initMocks(this);
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 10000)
   public void testPreemptionQueueComparator() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(
         createSubmitWorkRequestProto(1, 2, 100, 200, false), false, 100000);
@@ -665,7 +665,7 @@ public class TestTaskExecutorService {
     }
   }
 
-  @Test(timeout = 1000)
+  @Test(timeout = 10000)
   public void testZeroCapacity() throws InterruptedException {
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(1, 1, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
@@ -705,35 +705,35 @@ public class TestTaskExecutorService {
     }
   }
 
-  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  @Test(timeout = 10000, expected = IllegalArgumentException.class)
   public void testSetCapacityHighExecutors() {
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(3, 3);
   }
 
-  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  @Test(timeout = 10000, expected = IllegalArgumentException.class)
   public void testSetCapacityHighQueueSize() {
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(2, 5);
   }
 
-  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  @Test(timeout = 10000, expected = IllegalArgumentException.class)
   public void testSetCapacityNegativeExecutors() {
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(-3, 3);
   }
 
-  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  @Test(timeout = 10000, expected = IllegalArgumentException.class)
   public void testSetCapacityNegativeQueueSize() {
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(2, -5);
   }
 
-  @Test(timeout = 1000)
+  @Test(timeout = 10000)
   public void testCapacityMetricsInitial() {
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
         ShortestJobFirstComparator.class.getName(), true, mockMetrics);
@@ -742,7 +742,7 @@ public class TestTaskExecutorService {
     verify(mockMetrics).setWaitQueueSize(10);
   }
 
-  @Test(timeout = 1000)
+  @Test(timeout = 10000)
   public void testCapacityMetricsModification() {
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
         ShortestJobFirstComparator.class.getName(), true, mockMetrics);

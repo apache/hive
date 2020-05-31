@@ -299,8 +299,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: describe formatted srcpart_acid key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart_acid
@@ -411,8 +409,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: describe formatted srcpart_acid key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart_acid
@@ -1885,7 +1881,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
                 vectorized: false
             Reduce Operator Tree:
         Reducer 5 
@@ -2757,7 +2753,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
                 vectorized: false
             Reduce Operator Tree:
         Reducer 5 
@@ -2765,7 +2761,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
                 vectorized: false
             Reduce Operator Tree:
         Reducer 6 
