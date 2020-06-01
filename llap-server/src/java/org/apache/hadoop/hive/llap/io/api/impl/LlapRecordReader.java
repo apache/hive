@@ -43,20 +43,25 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.orc.ORCRowFilter;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -202,7 +207,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
-      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
+      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext(), sarg);
       LOG.info("LlapRecordReader ProbeDecode is enabled");
     }
 
@@ -405,7 +410,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
           inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
         }
-        inputVrb.size = cvb.size;
+        inputVrb.size = cvb.filterContext.size;
         acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
@@ -424,8 +429,13 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      vrb.selectedInUse = false;//why?
-      vrb.size = cvb.size;
+      if (cvb.filterContext.isSelectedInUse()) {
+        vrb.selectedInUse = true;
+        vrb.selected = cvb.filterContext.getSelected();
+      } else {
+        vrb.selectedInUse = false;
+      }
+      vrb.size = cvb.filterContext.size;
     }
 
     if (wasFirst) {
@@ -639,8 +649,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
-    // ProbeDecode Context for row-level filtering
-    private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
+    // ProbeDecode context for row-level filtering on MJ using dynamic HT values
+    private TableScanOperator.ProbeDecodeContext probeDynHTContext = null;
+    // ProbeDecode context for row-level filtering on a static FilterExpression
+    private ORCRowFilter probeStaticRowFilter = null;
+    // Index of ColIds that are used for filtering on static expressions
+    boolean [] probeStaticColidIndex = null;
 
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
@@ -723,8 +737,38 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
 
-    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext) {
-      this.probeDecodeContext = currProbeDecodeContext;
+    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext, SearchArgument sarg) {
+      this.probeDynHTContext = currProbeDecodeContext;
+      String filterExpr = jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR, "");
+      if (!filterExpr.isEmpty() && sarg != null) {
+        ExprNodeGenericFuncDesc exprObj = SerializationUtilities.
+            deserializeExpression(jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR));
+
+        SchemaEvolution schemaEvolution = this.createSchemaEvolution(readerSchema);
+        // Get the colIds use for static filter (and thus rowFiltering)
+        int[] filterColumnIds = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
+            sarg.getLeaves(), schemaEvolution);
+
+        // Get all included ColIds -> ColNames (needed by the generated filterExpression below)
+        List<String> allIncludedColNames = new ArrayList<>(filterColumnIds.length);
+        for (int i =0; i < schemaEvolution.getFileSchema().getMaximumId(); i++) {
+          TypeDescription col  = schemaEvolution.getFileSchema().getChildren().get(i);
+          if (schemaEvolution.getFileIncluded()[col.getId()]) {
+            allIncludedColNames.add(schemaEvolution.getFileSchema().getFieldNames().get(i));
+          }
+        }
+        // FilterExpression is using only includedCols to avoid extra colIndex wrangling
+        probeStaticRowFilter = new ORCRowFilter(exprObj, allIncludedColNames);
+
+        // Create a boolean index for RowFilter columns (indexed by ColId)
+        probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + 1];
+        for (int i : filterColumnIds) {
+          if (i > 0) {
+            probeStaticColidIndex[i] = true;
+          }
+        }
+        LOG.info("ProbeDecode RowFilter colIds: {}, all includedColNames {}", filterColumnIds, allIncludedColNames);
+      }
     }
 
     @Override
@@ -750,30 +794,38 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     @Override
     public boolean isProbeDecodeEnabled() {
-      return this.probeDecodeContext != null;
+      return this.probeDynHTContext != null || this.probeStaticRowFilter != null;
     }
 
     @Override
-    public byte getProbeMjSmallTablePos() {
-      return this.probeDecodeContext.getMjSmallTablePos();
+    public byte getProbeDynMjSmallTablePos() {
+      return this.probeDynHTContext.getMjSmallTablePos();
     }
 
     @Override
-    public int getProbeColIdx() {
+    public int getProbeDynMjColIdx() {
       // TODO: is this the best way to get the ColId?
       Pattern pattern = Pattern.compile("_col([0-9]+)");
-      Matcher matcher = pattern.matcher(this.probeDecodeContext.getMjBigTableKeyColName());
+      Matcher matcher = pattern.matcher(this.probeDynHTContext.getMjBigTableKeyColName());
       return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
     }
 
     @Override
-    public String getProbeColName() {
-      return this.probeDecodeContext.getMjBigTableKeyColName();
+    public String getProbeDynMjColName() {
+      return this.probeDynHTContext.getMjBigTableKeyColName();
     }
 
     @Override
-    public String getProbeCacheKey() {
-      return this.probeDecodeContext.getMjSmallTableCacheKey();
+    public String getProbeDynMjCacheKey() {
+      return this.probeDynHTContext.getMjSmallTableCacheKey();
+    }
+    @Override
+    public ORCRowFilter getProbeStaticRowFilter() {
+      return probeStaticRowFilter;
+    }
+    @Override
+    public boolean[] getProbeStaticColIdx() {
+      return probeStaticColidIndex;
     }
 
   }

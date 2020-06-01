@@ -128,6 +128,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           addPartitionCols = false;
         }
         boolean done = true;
+        // Do not push no-entry VRBs in the pipeline
+        // This can occur when row-filtering is enabled
         while (reader.nextBatch(value)) {
           if (value.size > 0) {
             done = false;
@@ -135,9 +137,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           }
         }
         if (done) return false;
-//        if (!reader.nextBatch(value)) {
-//          return false;
-//        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

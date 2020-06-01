@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.ql.io.orc.ORCRowFilter;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -51,10 +52,12 @@ public interface ColumnVectorProducer {
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
     String getQueryId();
     boolean isProbeDecodeEnabled();
-    byte getProbeMjSmallTablePos();
-    String getProbeCacheKey();
-    String getProbeColName();
-    int getProbeColIdx();
+    byte getProbeDynMjSmallTablePos();
+    String getProbeDynMjCacheKey();
+    String getProbeDynMjColName();
+    int getProbeDynMjColIdx();
+    ORCRowFilter getProbeStaticRowFilter();
+    boolean[] getProbeStaticColIdx();
   }
 
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,

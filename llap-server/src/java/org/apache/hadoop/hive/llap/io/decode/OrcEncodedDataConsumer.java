@@ -76,13 +76,15 @@ public class OrcEncodedDataConsumer
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
 
+  private static final VectorizedRowBatch NULL_FILTERCONTEXT = new VectorizedRowBatch(0);
+
   public OrcEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes,
                                 QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
     if (includes.isProbeDecodeEnabled()) {
       LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
-              this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
+              this.includes.getProbeDynMjCacheKey(), this.includes.getProbeDynMjColIdx(), this.includes.getProbeDynMjColName());
     }
   }
 
@@ -153,9 +155,30 @@ public class OrcEncodedDataConsumer
 
         ColumnVectorBatch cvb = cvbPool.take();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.size = batchSize;
+        cvb.filterContext.selectedInUse = false;
+        cvb.filterContext.size = batchSize;
+
+        if (includes.getProbeStaticRowFilter() != null) {
+          for (int idx = 0; idx < columnReaders.length; ++idx) {
+            TreeReader reader = columnReaders[idx];
+            if (includes.getProbeStaticColIdx()[reader.getColumnId()]) {
+              LlapIoImpl.LOG.debug("ProbeDecode RowFilter early id {} reader {} ", reader.getColumnId(), reader);
+              ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
+              reader.nextVector(cv, null, batchSize, NULL_FILTERCONTEXT);
+            }
+          }
+          // Now apply filter (cols are already in the right place!)
+          this.includes.getProbeStaticRowFilter().rowFilterCallback(cvb.filterContext);
+        }
+
+        LlapIoImpl.LOG.debug("ProbeDecode UseSelected: {} Size: {} BatchSize: {}",  cvb.filterContext.isSelectedInUse(),  cvb.filterContext.size, batchSize);
+
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           TreeReader reader = columnReaders[idx];
+          if (includes.getProbeStaticRowFilter() != null) {
+            if (includes.getProbeStaticColIdx()[reader.getColumnId()])
+              continue;
+          }
           /*
            * Currently, ORC's TreeReaderFactory class does this:
            *
@@ -191,8 +214,9 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
+          LlapIoImpl.LOG.debug("ProbeDecode RowFilter late id {} reader {} ", reader.getColumnId(), reader);
           ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
-          reader.nextVector(cv, null, batchSize, new VectorizedRowBatch(0));
+          reader.nextVector(cv, null, batchSize, cvb.filterContext.immutable());
         }
 
         // we are done reading a batch, send it to consumer for processing

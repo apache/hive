@@ -2070,6 +2070,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     OrcSplit split = (OrcSplit) inputSplit;
 
     if (vectorMode) {
+      // TODO [PANOS] implement row-filter in ACID mode
       return (org.apache.hadoop.mapred.RecordReader)
           new VectorizedOrcAcidRowBatchReader(split, conf, reporter);
     }
