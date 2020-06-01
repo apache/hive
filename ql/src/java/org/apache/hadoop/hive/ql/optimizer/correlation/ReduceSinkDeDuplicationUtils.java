@@ -207,23 +207,6 @@ public class ReduceSinkDeDuplicationUtils {
     return Utilities.estimateReducers(inputTotalBytes, bytesPerReducer, maxReducers, false);
   }
 
-  private static long estimateMaxPartitions(HiveConf conf, ReduceSinkOperator rs, List<ExprNodeDesc> cols) {
-    Statistics stats = rs.getParentOperators().get(0).getStatistics();
-    if (stats == null) {
-      return Long.MAX_VALUE;
-    }
-    if (cols == null || cols.isEmpty()) {
-      return stats.getNumRows();
-    }
-    List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExpressions(conf, stats, cols);
-    if (colStats.size() != cols.size()) {
-      return stats.getNumRows();
-    }
-    long ndvProduct =
-        colStats.stream().mapToLong(ColStatistics::getCountDistint).reduce(1, StatsUtils::safeMult);
-    return Math.min(ndvProduct, stats.getNumRows());
-  }
-
   /**
    * This is a more strict version of the merge check, where:
    * - cRS and pRS should have exactly the same keys in the same positions, and
@@ -357,9 +340,8 @@ public class ReduceSinkDeDuplicationUtils {
       return null;
     }
     if (canReplaceParentWithChildPartioning(movePartitionColTo, cpars, ppars)) {
-      List<ExprNodeDesc> newcpars = ExprNodeDescUtils.backtrack(cpars, cRS, pRS);
-      long oldParallelism = Math.min(estimateReducers(hiveConf, pRS), estimateMaxPartitions(hiveConf, pRS, ppars));
-      long newParallelism = Math.min(estimateReducers(hiveConf, cRS), estimateMaxPartitions(hiveConf, pRS, newcpars));
+      long oldParallelism = estimateReducers(hiveConf, pRS);
+      long newParallelism = estimateReducers(hiveConf, cRS);
       if (newParallelism < oldParallelism && newParallelism < minReducer) {
         return null;
       }
