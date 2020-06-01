@@ -68,19 +68,19 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location:",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
+      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
+              atlasReplInfo.getStagingDir().toString());
+      replLogger.startLog();
       atlasRestClient = new AtlasRestClientBuilder(atlasReplInfo.getAtlasEndpoint())
               .getClient(atlasReplInfo.getConf());
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
       String entityGuid = checkHiveEntityGuid(atlasRequestBuilder, atlasReplInfo.getSrcCluster(),
               atlasReplInfo.getSrcDB());
       long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
-      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
-              atlasReplInfo.getStagingDir().toString());
-      replLogger.startLog();
       long numBytesWritten = dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
-      replLogger.endLog(0L);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
+      replLogger.endLog(0L);
       return 0;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
