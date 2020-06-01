@@ -87,6 +87,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       }
 
       List<Object> nr = getFilteredValue(alias, row);
+      addToAliasFilterTags(alias, nr, false);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);
