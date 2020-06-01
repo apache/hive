@@ -277,7 +277,7 @@ public class ColumnType {
     // These 4 types are not supported yet.
     // We should define a complex type date in thrift that contains a single int
     // member, and DynamicSerDe
-    // should convert it to date type at runtime.
+    // should convert it to date type at runtime. (note: DynamicSerDe has been removed)
     typeToThriftTypeMap.put(DATE_TYPE_NAME, "date");
     typeToThriftTypeMap.put(DATETIME_TYPE_NAME, "datetime");
     typeToThriftTypeMap.put(TIMESTAMP_TYPE_NAME, "timestamp");
