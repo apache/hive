@@ -540,7 +540,7 @@ public final class HiveRewriteToDataSketchesRules {
         List<RexNode> joinConditions;
         joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
           RexNode f = relBuilder.field(2, 1, o.i);
-          return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, o.e, f);
+          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, o.e, f);
         }).collect(Collectors.toList());
         relBuilder.join(JoinRelType.INNER, joinConditions);
 
