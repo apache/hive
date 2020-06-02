@@ -50,7 +50,6 @@ import org.apache.impala.analysis.CaseWhenClause;
 import org.apache.impala.analysis.CastExpr;
 import org.apache.impala.analysis.CompoundPredicate;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.NumericLiteral;
 import org.apache.impala.analysis.TupleId;
 import org.apache.impala.catalog.Function;
@@ -148,15 +147,24 @@ public class ImpalaRexCall {
     try {
       // the shiftright function in Impala only accepts INT as the second parameter, whereas
       // the Calcite function has created this as a BIGINT, so convert the second parameter
+      RelDataType refType = rexCall.getOperands().get(0).getType();
+      Type refImpalaType = params.get(0).getType();
+      // shiftRight expr
       BigDecimal value = new BigDecimal(((NumericLiteral) params.get(1)).getIntValue());
       NumericLiteral numPositions = new NumericLiteral(value, Type.INT);
-      List<Expr> shiftRightParams = Lists.newArrayList();
-      shiftRightParams.add(params.get(0));
-      shiftRightParams.add(numPositions);
-      Expr shiftRightExpr = new FunctionCallExpr("shiftright", shiftRightParams);
-      Expr bitAndExpr = new FunctionCallExpr("bitand",
-          ImmutableList.of(shiftRightExpr, new NumericLiteral(new BigDecimal(1), Type.INT)));
-      bitAndExpr.analyze(analyzer);
+      Function shiftRightFn = getFunction(SqlKind.OTHER_FUNCTION, "shiftright",
+          ImmutableList.of(refType.getSqlTypeName(), SqlTypeName.INTEGER),
+          refType);
+      Expr shiftRightExpr = new ImpalaFunctionCallExpr(analyzer, shiftRightFn,
+          ImmutableList.of(params.get(0), numPositions), rexCall, refImpalaType);
+      // bitAnd expr
+      NumericLiteral mask = new NumericLiteral(new BigDecimal(1), refImpalaType);
+      Function bitAndFn = getFunction(SqlKind.OTHER_FUNCTION, "bitand",
+          ImmutableList.of(refType.getSqlTypeName(), refType.getSqlTypeName()),
+          refType);
+      Expr bitAndExpr = new ImpalaFunctionCallExpr(analyzer, bitAndFn,
+          ImmutableList.of(shiftRightExpr, mask), rexCall, refImpalaType);
+      // cast expr
       Expr castExpr = new CastExpr(impalaRetType, bitAndExpr);
       castExpr.analyze(analyzer);
       return castExpr;
