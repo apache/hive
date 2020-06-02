@@ -1,4 +1,4 @@
-name: "Close stale issues"
+name: "Close stale PRs"
 on:
   schedule:
   - cron: "20 * * * *"
@@ -13,3 +13,5 @@ jobs:
         stale-pr-message: 'Stale pull request message'
         stale-pr-label: 'no-pr-activity'
         exempt-pr-labels: 'awaiting-approval,work-in-progress'
+        days-before-stale: 5
+        days-before-close: 3
