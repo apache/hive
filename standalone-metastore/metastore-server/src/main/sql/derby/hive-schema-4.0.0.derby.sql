@@ -747,7 +747,7 @@ CREATE TABLE "APP"."SCHEDULED_QUERIES" (
   "USER" varchar(128) not null,
   "SCHEDULE" varchar(256) not null,
   "QUERY" varchar(4000) not null,
-  "NEXT_EXECUTION" integer not null,
+  "NEXT_EXECUTION" integer,
   "ACTIVE_EXECUTION_ID" bigint
 );
 
