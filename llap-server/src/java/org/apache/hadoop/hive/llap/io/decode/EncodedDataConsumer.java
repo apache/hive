@@ -57,17 +57,15 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     this.downstreamConsumer = consumer;
     this.ioMetrics = ioMetrics;
     this.mxBean = LlapUtil.initThreadMxBean();
-    cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
-        new Pool.PoolObjectHelper<ColumnVectorBatch>() {
-          @Override
-          public ColumnVectorBatch create() {
-            return new ColumnVectorBatch(colCount);
-          }
-          @Override
-          public void resetBeforeOffer(ColumnVectorBatch t) {
-            // Don't reset anything, we are reusing column vectors.
-          }
-        });
+    cvbPool = new FixedSizedObjectPool<>(CVB_POOL_SIZE, new Pool.PoolObjectHelper<ColumnVectorBatch>() {
+      @Override public ColumnVectorBatch create() {
+        return new ColumnVectorBatch(colCount);
+      }
+
+      @Override public void resetBeforeOffer(ColumnVectorBatch t) {
+        // Don't reset anything, we are reusing column vectors.
+      }
+    });
     this.counters = counters;
   }
 
@@ -81,6 +79,9 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
 
     @Override
     public Void call() throws Exception {
+      if (mxBean == null) {
+        return readCallable.call();
+      }
       long cpuTime = mxBean.getCurrentThreadCpuTime(),
           userTime = mxBean.getCurrentThreadUserTime();
       try {
@@ -145,6 +146,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   @Override
   public void setDone() throws InterruptedException {
     downstreamConsumer.setDone();
+    cvbPool.clear();
   }
 
   @Override
