@@ -762,6 +762,7 @@ alter table web_site change column web_site_id web_site_id string constraint wsi
 alter table web_page change column wp_web_page_id wp_web_page_id string constraint wpid_nn not null disable novalidate rely;
 alter table warehouse change column w_warehouse_id w_warehouse_id string constraint wid_nn not null disable novalidate rely;
 alter table customer change column c_customer_id c_customer_id string constraint cid_nn not null disable novalidate rely;
+alter table customer change column c_customer_id c_customer_id string constraint cid_uq unique disable novalidate rely;
 alter table customer_address change column ca_address_id ca_address_id string constraint caid_nn not null disable novalidate rely;
 alter table date_dim change column d_date_id d_date_id string constraint did_nn not null disable novalidate rely;
 alter table item change column i_item_id i_item_id string constraint itid_nn not null disable novalidate rely;

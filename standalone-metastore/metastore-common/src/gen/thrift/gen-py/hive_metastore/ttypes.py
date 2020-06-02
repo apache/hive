@@ -341,12 +341,14 @@ class TxnType:
   REPL_CREATED = 1
   READ_ONLY = 2
   COMPACTION = 3
+  MATER_VIEW_REBUILD = 4
 
   _VALUES_TO_NAMES = {
     0: "DEFAULT",
     1: "REPL_CREATED",
     2: "READ_ONLY",
     3: "COMPACTION",
+    4: "MATER_VIEW_REBUILD",
   }
 
   _NAMES_TO_VALUES = {
@@ -354,6 +356,7 @@ class TxnType:
     "REPL_CREATED": 1,
     "READ_ONLY": 2,
     "COMPACTION": 3,
+    "MATER_VIEW_REBUILD": 4,
   }
 
 class GetTablesExtRequestFields:
@@ -10075,6 +10078,7 @@ class PartitionsByExprRequest:
    - defaultPartitionName
    - maxParts
    - catName
+   - order
   """
 
   thrift_spec = (
@@ -10085,15 +10089,17 @@ class PartitionsByExprRequest:
     (4, TType.STRING, 'defaultPartitionName', None, None, ), # 4
     (5, TType.I16, 'maxParts', None, -1, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
+    (7, TType.STRING, 'order', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=thrift_spec[5][4], catName=None,):
+  def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=thrift_spec[5][4], catName=None, order=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.expr = expr
     self.defaultPartitionName = defaultPartitionName
     self.maxParts = maxParts
     self.catName = catName
+    self.order = order
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10134,6 +10140,11 @@ class PartitionsByExprRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.order = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10168,6 +10179,10 @@ class PartitionsByExprRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.order is not None:
+      oprot.writeFieldBegin('order', TType.STRING, 7)
+      oprot.writeString(self.order)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10189,6 +10204,7 @@ class PartitionsByExprRequest:
     value = (value * 31) ^ hash(self.defaultPartitionName)
     value = (value * 31) ^ hash(self.maxParts)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.order)
     return value
 
   def __repr__(self):
@@ -15685,6 +15701,7 @@ class CompactionInfoStruct:
    - start
    - highestWriteId
    - errorMessage
+   - hasoldabort
   """
 
   thrift_spec = (
@@ -15702,9 +15719,10 @@ class CompactionInfoStruct:
     (11, TType.I64, 'start', None, None, ), # 11
     (12, TType.I64, 'highestWriteId', None, None, ), # 12
     (13, TType.STRING, 'errorMessage', None, None, ), # 13
+    (14, TType.BOOL, 'hasoldabort', None, None, ), # 14
   )
 
-  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None,):
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None,):
     self.id = id
     self.dbname = dbname
     self.tablename = tablename
@@ -15718,6 +15736,7 @@ class CompactionInfoStruct:
     self.start = start
     self.highestWriteId = highestWriteId
     self.errorMessage = errorMessage
+    self.hasoldabort = hasoldabort
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15793,6 +15812,11 @@ class CompactionInfoStruct:
           self.errorMessage = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.BOOL:
+          self.hasoldabort = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15855,6 +15879,10 @@ class CompactionInfoStruct:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 13)
       oprot.writeString(self.errorMessage)
       oprot.writeFieldEnd()
+    if self.hasoldabort is not None:
+      oprot.writeFieldBegin('hasoldabort', TType.BOOL, 14)
+      oprot.writeBool(self.hasoldabort)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15885,6 +15913,7 @@ class CompactionInfoStruct:
     value = (value * 31) ^ hash(self.start)
     value = (value * 31) ^ hash(self.highestWriteId)
     value = (value * 31) ^ hash(self.errorMessage)
+    value = (value * 31) ^ hash(self.hasoldabort)
     return value
 
   def __repr__(self):

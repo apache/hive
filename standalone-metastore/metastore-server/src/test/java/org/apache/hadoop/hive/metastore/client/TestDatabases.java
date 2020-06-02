@@ -187,7 +187,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database database = testDatabases[0];
 
     // Invalid character in new database name
-    database.setName("test_database_1;");
+    database.setName("test_database§1;");
     client.createDatabase(database);
   }
 

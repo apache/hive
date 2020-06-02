@@ -84,13 +84,17 @@ public class Msck {
 
   public void init(Configuration conf) throws MetaException {
     if (msc == null) {
-      // the only reason we are using new conf here is to override EXPRESSION_PROXY_CLASS
-      Configuration metastoreConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
-      metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-        MsckPartitionExpressionProxy.class.getCanonicalName());
-      setConf(metastoreConf);
-      this.msc = new HiveMetaStoreClient(metastoreConf);
+      setConf(conf);
+      this.msc = new HiveMetaStoreClient(conf);
     }
+  }
+
+  public static Configuration getMsckConf(Configuration conf) {
+    // the only reason we are using new conf here is to override EXPRESSION_PROXY_CLASS
+    Configuration metastoreConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
+    metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+        MsckPartitionExpressionProxy.class.getCanonicalName());
+    return metastoreConf;
   }
 
   /**
@@ -118,7 +122,7 @@ public class Msck {
       // And partitions that are not present in filesystem and metadata exists in metastore -
       // accessed through getPartitionNotOnFS
       checker.checkMetastore(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName(),
-        msckInfo.getPartSpecs(), result);
+        msckInfo.getPartSpecs(), table, result);
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
       Set<CheckResult.PartitionResult> expiredPartitions = result.getExpiredPartitions();
@@ -373,7 +377,7 @@ public class Msck {
                 continue;
               }
               Map<String, String> partSpec = Warehouse.makeSpecFromName(part.getPartitionName());
-              Path location = new Path(tablePath, Warehouse.makePartPath(partSpec));
+              Path location = part.getLocation(tablePath, partSpec);
               Partition partition = MetaStoreServerUtils.createMetaPartitionObject(table, partSpec, location);
               partition.setWriteId(table.getWriteId());
               partsToAdd.add(partition);

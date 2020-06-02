@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField DEFAULT_PARTITION_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultPartitionName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField MAX_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxParts", org.apache.thrift.protocol.TType.I16, (short)5);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField ORDER_FIELD_DESC = new org.apache.thrift.protocol.TField("order", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -57,6 +58,7 @@ import org.slf4j.LoggerFactory;
   private String defaultPartitionName; // optional
   private short maxParts; // optional
   private String catName; // optional
+  private String order; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -65,7 +67,8 @@ import org.slf4j.LoggerFactory;
     EXPR((short)3, "expr"),
     DEFAULT_PARTITION_NAME((short)4, "defaultPartitionName"),
     MAX_PARTS((short)5, "maxParts"),
-    CAT_NAME((short)6, "catName");
+    CAT_NAME((short)6, "catName"),
+    ORDER((short)7, "order");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -92,6 +95,8 @@ import org.slf4j.LoggerFactory;
           return MAX_PARTS;
         case 6: // CAT_NAME
           return CAT_NAME;
+        case 7: // ORDER
+          return ORDER;
         default:
           return null;
       }
@@ -134,7 +139,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __MAXPARTS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DEFAULT_PARTITION_NAME,_Fields.MAX_PARTS,_Fields.CAT_NAME};
+  private static final _Fields optionals[] = {_Fields.DEFAULT_PARTITION_NAME,_Fields.MAX_PARTS,_Fields.CAT_NAME,_Fields.ORDER};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -149,6 +154,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("maxParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ORDER, new org.apache.thrift.meta_data.FieldMetaData("order", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionsByExprRequest.class, metaDataMap);
@@ -191,6 +198,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    if (other.isSetOrder()) {
+      this.order = other.order;
+    }
   }
 
   public PartitionsByExprRequest deepCopy() {
@@ -206,6 +216,7 @@ import org.slf4j.LoggerFactory;
     this.maxParts = (short)-1;
 
     this.catName = null;
+    this.order = null;
   }
 
   public String getDbName() {
@@ -354,6 +365,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getOrder() {
+    return this.order;
+  }
+
+  public void setOrder(String order) {
+    this.order = order;
+  }
+
+  public void unsetOrder() {
+    this.order = null;
+  }
+
+  /** Returns true if field order is set (has been assigned a value) and false otherwise */
+  public boolean isSetOrder() {
+    return this.order != null;
+  }
+
+  public void setOrderIsSet(boolean value) {
+    if (!value) {
+      this.order = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -404,6 +438,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ORDER:
+      if (value == null) {
+        unsetOrder();
+      } else {
+        setOrder((String)value);
+      }
+      break;
+
     }
   }
 
@@ -426,6 +468,9 @@ import org.slf4j.LoggerFactory;
 
     case CAT_NAME:
       return getCatName();
+
+    case ORDER:
+      return getOrder();
 
     }
     throw new IllegalStateException();
@@ -450,6 +495,8 @@ import org.slf4j.LoggerFactory;
       return isSetMaxParts();
     case CAT_NAME:
       return isSetCatName();
+    case ORDER:
+      return isSetOrder();
     }
     throw new IllegalStateException();
   }
@@ -521,6 +568,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_order = true && this.isSetOrder();
+    boolean that_present_order = true && that.isSetOrder();
+    if (this_present_order || that_present_order) {
+      if (!(this_present_order && that_present_order))
+        return false;
+      if (!this.order.equals(that.order))
+        return false;
+    }
+
     return true;
   }
 
@@ -557,6 +613,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_catName);
     if (present_catName)
       list.add(catName);
+
+    boolean present_order = true && (isSetOrder());
+    list.add(present_order);
+    if (present_order)
+      list.add(order);
 
     return list.hashCode();
   }
@@ -629,6 +690,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetOrder()).compareTo(other.isSetOrder());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOrder()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.order, other.order);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -695,6 +766,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.catName);
+      }
+      first = false;
+    }
+    if (isSetOrder()) {
+      if (!first) sb.append(", ");
+      sb.append("order:");
+      if (this.order == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.order);
       }
       first = false;
     }
@@ -803,6 +884,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // ORDER
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.order = iprot.readString();
+              struct.setOrderIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -850,6 +939,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.order != null) {
+        if (struct.isSetOrder()) {
+          oprot.writeFieldBegin(ORDER_FIELD_DESC);
+          oprot.writeString(struct.order);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -880,7 +976,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCatName()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetOrder()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetDefaultPartitionName()) {
         oprot.writeString(struct.defaultPartitionName);
       }
@@ -889,6 +988,9 @@ import org.slf4j.LoggerFactory;
       }
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetOrder()) {
+        oprot.writeString(struct.order);
       }
     }
 
@@ -901,7 +1003,7 @@ import org.slf4j.LoggerFactory;
       struct.setTblNameIsSet(true);
       struct.expr = iprot.readBinary();
       struct.setExprIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.defaultPartitionName = iprot.readString();
         struct.setDefaultPartitionNameIsSet(true);
@@ -913,6 +1015,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.order = iprot.readString();
+        struct.setOrderIsSet(true);
       }
     }
   }

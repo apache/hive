@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -207,7 +208,7 @@ public class PartitionPruner extends Transform {
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
         return new PrunedPartitionList(tab, key + compactExpr.getExprString(true),
-            new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
+            Collections.emptySet(), Collections.emptyList(), false);
       }
       // For null and true values, return every partition
       return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
@@ -242,7 +243,7 @@ public class PartitionPruner extends Transform {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
-    ppList = new PrunedPartitionList(tab, key, parts, null, unknownPartitions);
+    ppList = new PrunedPartitionList(tab, key, parts, Collections.emptyList(), unknownPartitions);
     if (partsCache != null) {
       partsCache.put(key, ppList);
     }

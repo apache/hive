@@ -124,10 +124,6 @@ public abstract class CompactorTest {
     startThread('c', true);
   }
 
-  protected void startCleaner(AtomicBoolean looped) throws Exception {
-    startThread('c', false, looped);
-  }
-
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
     return newTable(dbName, tableName, partitioned, new HashMap<String, String>(), null, false);
   }
@@ -136,10 +132,6 @@ public abstract class CompactorTest {
                            Map<String, String> parameters)  throws TException {
     return newTable(dbName, tableName, partitioned, parameters, null, false);
 
-  }
-
-  protected Table newTempTable(String tableName) throws TException {
-    return newTable("default", tableName, false, null, null, true);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
@@ -298,13 +290,8 @@ public abstract class CompactorTest {
 
   // I can't do this with @Before because I want to be able to control when the thread starts
   private void startThread(char type, boolean stopAfterOne) throws Exception {
-    startThread(type, stopAfterOne, new AtomicBoolean());
-  }
-
-  private void startThread(char type, boolean stopAfterOne, AtomicBoolean looped)
-    throws Exception {
     TxnDbUtil.setConfValues(conf);
-    CompactorThread t = null;
+    CompactorThread t;
     switch (type) {
       case 'i': t = new Initiator(); break;
       case 'w': t = new Worker(); break;
@@ -314,7 +301,7 @@ public abstract class CompactorTest {
     t.setThreadId((int) t.getId());
     t.setConf(conf);
     stop.set(stopAfterOne);
-    t.init(stop, looped);
+    t.init(stop);
     if (stopAfterOne) t.run();
     else t.start();
   }

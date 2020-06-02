@@ -912,8 +912,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (JDOException e) {
         LOG.warn("Retrying creating default database after error: " + e.getMessage(), e);
         try {
-          createDefaultDB_core(getMS());
-        } catch (InvalidObjectException e1) {
+          RawStore ms = getMS();
+          createDefaultCatalog(ms, wh);
+          createDefaultDB_core(ms);
+        } catch (InvalidObjectException | InvalidOperationException e1) {
           throw new MetaException(e1.getMessage());
         }
       } catch (InvalidObjectException|InvalidOperationException e) {
@@ -1398,7 +1400,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(db.getName(), null)) {
+      if (!MetaStoreUtils.validateName(db.getName(), conf)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
 
@@ -6222,14 +6224,37 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<String> get_partition_names_req(PartitionsByExprRequest req)
+        throws MetaException, NoSuchObjectException, TException {
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startTableFunction("get_partition_names_req", catName,
+          dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        authorizeTableForPartitionMetadata(catName, dbName, tblName);
+        ret = getMS().listPartitionNames(catName, dbName, tblName,
+            req.getDefaultPartitionName(), req.getExpr(), req.getOrder(), req.getMaxParts());
+        ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
+            filterHook, catName, dbName, tblName, ret);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partition_names_req", ret != null, ex, tblName);
+      }
+      return ret;
+    }
+
+    @Override
     public List<String> partition_name_to_vals(String part_name) throws TException {
       if (part_name.length() == 0) {
-        return new ArrayList<>();
+        return Collections.emptyList();
       }
       LinkedHashMap<String, String> map = Warehouse.makeSpecFromName(part_name);
-      List<String> part_vals = new ArrayList<>();
-      part_vals.addAll(map.values());
-      return part_vals;
+      return new ArrayList<>(map.values());
     }
 
     @Override
@@ -10293,8 +10318,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_WORKER_THREADS));
     HMSHandler.LOG
         .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN));
-    HMSHandler.LOG.info("metastore.compactor.history.reaper.interval = {}",
-        MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, TimeUnit.MINUTES));
     HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
     HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",
@@ -10525,7 +10548,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 

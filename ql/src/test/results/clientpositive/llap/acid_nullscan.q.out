@@ -89,32 +89,22 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count 2
                     bucket_field_name a
                     bucketing_version 2
                     column.name.delimiter ,
                     columns a,b
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.acid_vectorized_n1
-                    numFiles 3
-                    numRows 11
-                    rawDataSize 0
-                    serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
-                    serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
-                    totalSize 2583
                     transactional true
                     transactional_properties default
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.NullStructSerDe
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                       bucket_count 2
                       bucket_field_name a
                       bucketing_version 2
@@ -124,16 +114,9 @@ STAGE PLANS:
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.acid_vectorized_n1
-                      numFiles 3
-                      numRows 11
-                      rawDataSize 0
-                      serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
-                      serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2583
                       transactional true
                       transactional_properties default
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.acid_vectorized_n1
                   name: default.acid_vectorized_n1

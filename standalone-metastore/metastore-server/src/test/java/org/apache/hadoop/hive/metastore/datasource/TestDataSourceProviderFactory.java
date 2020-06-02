@@ -18,7 +18,8 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.commons.dbcp.PoolingDataSource;
+
+import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;

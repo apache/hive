@@ -771,8 +771,9 @@ struct PartitionsByExprRequest {
   2: required string tblName,
   3: required binary expr,
   4: optional string defaultPartitionName,
-  5: optional i16 maxParts=-1
-  6: optional string catName
+  5: optional i16 maxParts=-1,
+  6: optional string catName,
+  7: optional string order
 }
 
 struct TableStatsResult {
@@ -898,7 +899,8 @@ enum TxnType {
     DEFAULT      = 0,
     REPL_CREATED = 1,
     READ_ONLY    = 2,
-    COMPACTION   = 3
+    COMPACTION   = 3,
+    MATER_VIEW_REBUILD = 4
 }
 
 // specifies which info to return with GetTablesExtRequest
@@ -1167,6 +1169,7 @@ struct CompactionInfoStruct {
     11: optional i64 start
     12: optional i64 highestWriteId
     13: optional string errorMessage
+    14: optional bool hasoldabort
 }
 
 struct OptionalCompactionInfoStruct {
@@ -2247,6 +2250,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_partition_names_ps(1:string db_name,
   	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
   	                   throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  list<string> get_partition_names_req(1:PartitionsByExprRequest req)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter
   list<Partition> get_partitions_by_filter(1:string db_name 2:string tbl_name

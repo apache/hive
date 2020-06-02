@@ -126,6 +126,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsUtils {
@@ -1057,8 +1059,8 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
-    if (colStats==null) {
-      return new ArrayList<ColStatistics>();
+    if (colStats == null) {
+      return Collections.emptyList();
     }
     List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
     for (ColumnStatisticsObj statObj : colStats) {
@@ -1637,27 +1639,27 @@ public class StatsUtils {
   }
 
   private static Optional<Number> getConstValue(ExprNodeConstantDesc encd) {
-    if (encd.getValue() != null) {
-      String constant = encd.getValue().toString();
-      PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
-      try {
-        switch (category) {
-        case INT:
-        case BYTE:
-        case SHORT:
-        case LONG:
-          return Optional.of(Long.parseLong(constant));
-        case FLOAT:
-        case DOUBLE:
-        case DECIMAL:
-          return Optional.of(Double.parseDouble(constant));
-        default:
-        }
-      } catch (Exception e) {
-        LOG.debug("Interpreting constant (" + constant + ")  resulted in exception", e);
-      }
+    if (encd.getValue() == null) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    String constant = encd.getValue().toString();
+    PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
+    if (category == null) {
+      return Optional.empty();
+    }
+    switch (category) {
+    case INT:
+    case BYTE:
+    case SHORT:
+    case LONG:
+      return Optional.ofNullable(Longs.tryParse(constant));
+    case FLOAT:
+    case DOUBLE:
+    case DECIMAL:
+      return Optional.ofNullable(Doubles.tryParse(constant));
+    default:
+      return Optional.empty();
+    }
   }
 
   private static boolean isWideningCast(ExprNodeGenericFuncDesc engfd) {

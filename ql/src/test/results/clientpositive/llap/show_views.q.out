@@ -143,9 +143,9 @@ POSTHOOK: type: SHOWVIEWS
 shtb_full_view2_n0
 shtb_test1_view1_n0
 shtb_test1_view2_n0
-PREHOOK: query: EXPLAIN SHOW VIEWS 'test_*'
+PREHOOK: query: EXPLAIN SHOW VIEWS 'test_%'
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: EXPLAIN SHOW VIEWS 'test_*'
+POSTHOOK: query: EXPLAIN SHOW VIEWS 'test_%'
 POSTHOOK: type: SHOWVIEWS
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -155,7 +155,7 @@ STAGE PLANS:
   Stage: Stage-0
     Show Views
       database name: test1
-      pattern: test_*
+      pattern: test_%
 
   Stage: Stage-1
     Fetch Operator
@@ -163,37 +163,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SHOW VIEWS 'test_*'
+PREHOOK: query: SHOW VIEWS 'test_%'
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS 'test_*'
+POSTHOOK: query: SHOW VIEWS 'test_%'
 POSTHOOK: type: SHOWVIEWS
-PREHOOK: query: SHOW VIEWS '*view2'
+PREHOOK: query: SHOW VIEWS '%view2'
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS '*view2'
-POSTHOOK: type: SHOWVIEWS
-PREHOOK: query: EXPLAIN SHOW VIEWS LIKE 'test_view1|test_view2'
-PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: EXPLAIN SHOW VIEWS LIKE 'test_view1|test_view2'
-POSTHOOK: type: SHOWVIEWS
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
-  Stage-1 depends on stages: Stage-0
-
-STAGE PLANS:
-  Stage: Stage-0
-    Show Views
-      database name: test1
-      pattern: test_view1|test_view2
-
-  Stage: Stage-1
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SHOW VIEWS LIKE 'test_view1|test_view2'
-PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS LIKE 'test_view1|test_view2'
+POSTHOOK: query: SHOW VIEWS '%view2'
 POSTHOOK: type: SHOWVIEWS
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
@@ -201,9 +177,9 @@ PREHOOK: Input: database:test2
 POSTHOOK: query: USE test2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test2
-PREHOOK: query: SHOW VIEWS 'shtb_*'
+PREHOOK: query: SHOW VIEWS 'shtb_%'
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS 'shtb_*'
+POSTHOOK: query: SHOW VIEWS 'shtb_%'
 POSTHOOK: type: SHOWVIEWS
 shtb_test1_view1_n0
 shtb_test2_view2_n0
@@ -275,9 +251,9 @@ PREHOOK: query: SHOW VIEWS IN default
 PREHOOK: type: SHOWVIEWS
 POSTHOOK: query: SHOW VIEWS IN default
 POSTHOOK: type: SHOWVIEWS
-PREHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_*"
+PREHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_%"
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_*"
+POSTHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_%"
 POSTHOOK: type: SHOWVIEWS
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -287,7 +263,7 @@ STAGE PLANS:
   Stage: Stage-0
     Show Views
       database name: test1
-      pattern: shtb_test_*
+      pattern: shtb_test_%
 
   Stage: Stage-1
     Fetch Operator
@@ -295,10 +271,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SHOW VIEWS IN test1 "shtb_test_*"
+PREHOOK: query: SHOW VIEWS IN test1 "shtb_test_%"
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS IN test1 "shtb_test_*"
+POSTHOOK: query: SHOW VIEWS IN test1 "shtb_test_%"
 POSTHOOK: type: SHOWVIEWS
+shtb_test1_view1_n0
+shtb_test1_view2_n0
 PREHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"
 PREHOOK: type: SHOWVIEWS
 POSTHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"

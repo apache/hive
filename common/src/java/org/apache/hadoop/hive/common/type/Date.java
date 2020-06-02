@@ -127,6 +127,11 @@ public class Date implements Comparable<Date> {
     int idx = s.indexOf(" ");
     if (idx != -1) {
       s = s.substring(0, idx);
+    } else {
+      idx = s.indexOf('T');
+      if (idx != -1) {
+        s = s.substring(0, idx);
+      }
     }
     LocalDate localDate;
     try {

@@ -431,7 +431,7 @@ public class ParseContext {
    * @return col stats
    */
   public ColumnStatsList getColStatsCached(PrunedPartitionList partList) {
-    return ctx.getOpContext().getColStatsCache().get(partList.getKey());
+    return ctx.getOpContext().getColStatsCache().get(partList.getKey().orElse(null));
   }
 
   /**

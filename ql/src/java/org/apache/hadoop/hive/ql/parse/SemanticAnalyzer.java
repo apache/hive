@@ -343,7 +343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * that describes percentage and number.
    */
   private final Map<String, SplitSample> nameToSplitSample;
-  private Map<GroupByOperator, Set<String>> groupOpToInputTables;
+  private final Map<GroupByOperator, Set<String>> groupOpToInputTables;
   protected Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
   protected CreateViewDesc createVwDesc;
@@ -4398,7 +4398,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   boolean isRegex(String pattern, HiveConf conf) {
     String qIdSupport = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
-    if ( "column".equals(qIdSupport)) {
+    if (!"none".equals(qIdSupport)) {
       return false;
     }
     for (int i = 0; i < pattern.length(); i++) {
@@ -7294,17 +7294,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       idToTableNameMap.put(String.valueOf(destTableId), destinationTable.getTableName());
       currentTableId = destTableId;
       destTableId++;
-
-      lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
-          destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
-          destinationTable.isStoredAsSubDirectories());
-
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
         if (destTableIsTransactional) {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
           checkAcidConstraints();
+        } else {
+          lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
+              destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
+              destinationTable.isStoredAsSubDirectories());
         }
         try {
           if (ctx.getExplainConfig() != null) {
@@ -7440,12 +7439,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
-      lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
-          destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
-          destinationPartition.isStoredAsSubDirectories());
       if (destTableIsTransactional) {
         acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         checkAcidConstraints();
+      } else {
+        // Acid tables can't be list bucketed or have skewed cols
+        lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
+            destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
+            destinationPartition.isStoredAsSubDirectories());
       }
       try {
         if (ctx.getExplainConfig() != null) {
@@ -11508,8 +11509,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // db_name.table_name + partitionSec
     // as the prefix for easy of read during explain and debugging.
     // Currently, partition spec can only be static partition.
-    String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
+    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);
@@ -14956,7 +14957,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int endIdx = ast.getTokenStopIndex();
 
     boolean queryNeedsQuotes = true;
-    if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
+    Quotation quotation = Quotation.from(conf);
+    if (quotation == Quotation.NONE) {
       queryNeedsQuotes = false;
     }
 
@@ -14967,10 +14969,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (queryNeedsQuotes && curTok.getType() == HiveLexer.Identifier) {
         // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
         // Ugly solution is just to surround all identifiers with quotes.
-        sb.append('`');
-        // Re-escape any backtick (`) characters in the identifier.
-        sb.append(curTok.getText().replaceAll("`", "``"));
-        sb.append('`');
+        sb.append(HiveUtils.unparseIdentifier(curTok.getText(), conf));
       } else {
         sb.append(curTok.getText());
       }

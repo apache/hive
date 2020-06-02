@@ -43,7 +43,6 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
@@ -92,14 +91,16 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -497,6 +498,133 @@ class MetaStoreDirectSql {
   }
 
   /**
+   * Get partition names by using direct SQL queries.
+   * @param filter filter to use with direct sql
+   * @param partitionKeys partition columns
+   * @param defaultPartName default partition name
+   * @param order the specification for ordering partition names
+   * @param max maximum number of partition names to return
+   * @return list of partition names
+   */
+  public List<String> getPartitionNamesViaSql(SqlFilterForPushdown filter, List<FieldSchema> partitionKeys,
+      String defaultPartName, String order, Integer max) throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
+    List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
+    String catName = filter.catName.toLowerCase(), dbName = filter.dbName.toLowerCase(),
+        tblName = filter.tableName.toLowerCase(), sqlFilter = filter.filter;
+    List<Object> paramsForFilter = filter.params;
+    List<String> joins =  filter.joins;
+    if (joins.isEmpty()) {
+      for (int i = 0; i < partitionKeys.size(); i++) {
+        joins.add(null);
+      }
+    }
+
+    StringBuilder orderColumns = new StringBuilder(), orderClause = new StringBuilder();
+    int i = 0;
+    List<Object> paramsForOrder = new ArrayList<Object>();
+    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    for (Object[] orderSpec: orderSpecs) {
+      int partColIndex = (int)orderSpec[0];
+      String orderAlias = "ODR" + (i++);
+      String tableValue, tableAlias;
+      if (joins.get(partColIndex) == null) {
+        tableAlias = "ORDER"  + partColIndex;
+        joins.set(partColIndex, "inner join " + PARTITION_KEY_VALS + " \"" + tableAlias
+            + "\" on \""  + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + " and \"" + tableAlias + "\".\"INTEGER_IDX\" = " + partColIndex);
+        tableValue = " \"" + tableAlias + "\".\"PART_KEY_VAL\" ";
+      } else {
+        tableAlias = "FILTER" + partColIndex;
+        tableValue = " \"" + tableAlias + "\".\"PART_KEY_VAL\" ";
+      }
+
+      String tableColumn = tableValue;
+      String colType = partitionKeys.get(partColIndex).getType();
+      PartitionFilterGenerator.FilterType type =
+          PartitionFilterGenerator.FilterType.fromType(colType);
+      if (type == PartitionFilterGenerator.FilterType.Date) {
+        if (dbType == DatabaseProduct.ORACLE) {
+          tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
+        } else {
+          tableValue = "cast(" + tableValue + " as date)";
+        }
+      } else if (type == PartitionFilterGenerator.FilterType.Integral) {
+        tableValue = "CAST(" + tableColumn + " AS decimal(21,0))";
+      }
+      String tableValue0 = tableValue;
+      tableValue = " (case when " + tableColumn + " <> ?";
+      paramsForOrder.add(defaultPartName);
+      if (dbHasJoinCastBug) {
+        tableValue += (" and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and "
+            + DBS + ".\"CTLG_NAME\" = ? and "
+            + "\"" + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\" and "
+            + "\"" + tableAlias + "\".\"INTEGER_IDX\" = " + partColIndex);
+        paramsForOrder.add(tblName);
+        paramsForOrder.add(dbName);
+        paramsForOrder.add(catName);
+      }
+      tableValue += " then " + tableValue0 + " else null end) AS \"" + orderAlias + "\" ";
+      orderColumns.append(tableValue).append(",");
+      orderClause.append(" \"").append(orderAlias).append("\" ")
+          .append((String)orderSpec[1]).append(",");
+    }
+
+    for (int j = 0; j < joins.size(); j++) {
+      if (joins.get(j) == null) {
+        joins.remove(j--);
+      }
+    }
+    if (orderClause.length() > 0) {
+      orderClause.setLength(orderClause.length() - 1);
+      orderColumns.setLength(orderColumns.length() - 1);
+    }
+
+    String orderCls = " order by " +
+        (orderClause.length() > 0 ? orderClause.toString() : "\"PART_NAME\" asc");
+    String columns = orderColumns.length() > 0 ? (", " + orderColumns.toString()) : "";
+    String queryText =
+        "select " + PARTITIONS + ".\"PART_NAME\"" + columns + " from " + PARTITIONS + " "
+            + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+            + "  and " + TBLS + ".\"TBL_NAME\" = ? "
+            + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+            + "  and " + DBS + ".\"NAME\" = ? "
+            + join(joins, ' ')
+            + " where " + DBS + ".\"CTLG_NAME\" = ? "
+            + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderCls;
+
+    Object[] params = new Object[paramsForFilter.size() + paramsForOrder.size() + 3];
+    i = 0;
+    for (; i < paramsForOrder.size(); i++) {
+      params[i] = paramsForOrder.get(i);
+    }
+    params[i] = tblName;
+    params[i+1] = dbName;
+    params[i+2] = catName;
+    for (int j = 0; j < paramsForFilter.size(); j++) {
+      params[i + j + 3] = paramsForFilter.get(j);
+    }
+
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<String> partNames = new LinkedList<String>();
+    int limit = (max == null ? -1 : max);
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      List<Object> sqlResult = executeWithArray(query, params, queryText, limit);
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      for (Object result : sqlResult) {
+        Object obj = !columns.isEmpty() ? ((Object[]) result)[0] : result;
+        partNames.add((String)obj);
+      }
+    } finally {
+      query.closeAll();
+    }
+    return partNames;
+  }
+
+
+  /**
    * Gets partitions by using direct SQL queries.
    * @param catName Metastore catalog name.
    * @param dbName Metastore db name.
@@ -530,13 +658,10 @@ class MetaStoreDirectSql {
    * @param max The maximum number of partitions to return.
    * @return List of partitions.
    */
-  public List<Partition> getPartitionsViaSqlFilter(
-      SqlFilterForPushdown filter, Integer max) throws MetaException {
-    Boolean isViewTable = isViewTable(filter.table);
-    String catName = filter.table.isSetCatName() ? filter.table.getCatName() :
-        DEFAULT_CATALOG_NAME;
+  public List<Partition> getPartitionsViaSqlFilter(String catName, String dbName, String tableName,
+      SqlFilterForPushdown filter, Integer max, boolean isTxnTable) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
-        filter.table.getDbName(), filter.table.getTableName(), filter.filter, filter.params,
+        dbName, tableName, filter.filter, filter.params,
         filter.joins, max);
     if (partitionIds.isEmpty()) {
       return Collections.emptyList(); // no partitions, bail early.
@@ -544,8 +669,8 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, filter.table.getDbName(),
-            filter.table.getTableName(), isViewTable, input, Collections.emptyList());
+        return getPartitionsFromPartitionIds(catName, dbName,
+            tableName, null, input, Collections.emptyList(), isTxnTable);
       }
     });
   }
@@ -647,22 +772,35 @@ class MetaStoreDirectSql {
     private final List<Object> params = new ArrayList<>();
     private final List<String> joins = new ArrayList<>();
     private String filter;
-    private Table table;
+    private String catName;
+    private String dbName;
+    private String tableName;
+    // whether should compact null elements in joins when generating sql filter.
+    private boolean compactJoins = true;
+    SqlFilterForPushdown() {
+
+    }
+    SqlFilterForPushdown(Table table, boolean compactJoins) {
+      this.catName = table.getCatName();
+      this.dbName = table.getDbName();
+      this.tableName = table.getTableName();
+      this.compactJoins = compactJoins;
+    }
   }
 
-  public boolean generateSqlFilterForPushdown(
-      Table table, ExpressionTree tree, SqlFilterForPushdown result) throws MetaException {
-    return generateSqlFilterForPushdown(table, tree, null, result);
-  }
-
-  public boolean generateSqlFilterForPushdown(Table table, ExpressionTree tree, String defaultPartitionName,
-                                              SqlFilterForPushdown result) throws MetaException {
+  public boolean generateSqlFilterForPushdown(String catName, String dbName, String tableName,
+      List<FieldSchema> partitionKeys, ExpressionTree tree, String defaultPartitionName,
+      SqlFilterForPushdown result) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
+    assert partitionKeys != null;
     boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
-    result.table = table;
-    result.filter = PartitionFilterGenerator.generateSqlFilter(table, tree, result.params,
-            result.joins, dbHasJoinCastBug, ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
-            dbType, schema);
+    result.tableName = tableName;
+    result.dbName = dbName;
+    result.catName = catName;
+    result.filter = PartitionFilterGenerator.generateSqlFilter(catName, dbName, tableName,
+        partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug,
+        ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
+        dbType, schema, result.compactJoins);
     return result.filter != null;
   }
 
@@ -777,6 +915,13 @@ class MetaStoreDirectSql {
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Long> partIdList, List<String> projectionFields) throws MetaException {
+    return getPartitionsFromPartitionIds(catName, dbName, tblName, isView, partIdList, projectionFields, false);
+  }
+
+  /** Should be called with the list short enough to not trip up Oracle/etc. */
+  private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
+      Boolean isView, List<Long> partIdList, List<String> projectionFields,
+      boolean isTxnTable) throws MetaException {
 
     boolean doTrace = LOG.isDebugEnabled();
 
@@ -824,16 +969,6 @@ class MetaStoreDirectSql {
       Long sdId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
       Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[2]);
       Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[3]);
-      // A partition must have at least sdId and serdeId set, or nothing set if it's a view.
-      if (sdId == null || serdeId == null) {
-        if (isView == null) {
-          isView = isViewTable(catName, dbName, tblName);
-        }
-        if ((sdId != null || colId != null || serdeId != null) || !isView) {
-          throw new MetaException("Unexpected null for one of the IDs, SD " + sdId +
-              ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
-        }
-      }
 
       Partition part = new Partition();
       orderedResult.add(part);
@@ -922,16 +1057,22 @@ class MetaStoreDirectSql {
     String serdeIds = trimCommaList(serdeSb);
     String colIds = trimCommaList(colsSb);
 
-    // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
-    MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
+    if (!isTxnTable) {
+      // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
+      MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
+    }
 
-    MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
+    boolean hasSkewedColumns = false;
+    if (!isTxnTable) {
+      MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
+    }
 
     MetastoreDirectSqlUtils.setSDBucketCols(BUCKETING_COLS, pm, sds, sdIds);
 
-    // Skewed columns stuff.
-    boolean hasSkewedColumns = MetastoreDirectSqlUtils
-        .setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
+    if (!isTxnTable) {
+      // Skewed columns stuff.
+      hasSkewedColumns = MetastoreDirectSqlUtils.setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
+    }
 
     // Assume we don't need to fetch the rest of the skewed column data if we have no columns.
     if (hasSkewedColumns) {
@@ -951,17 +1092,18 @@ class MetaStoreDirectSql {
     }
 
     // Finally, get all the stuff for serdes - just the params.
-    MetastoreDirectSqlUtils
-        .setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
+    if (!isTxnTable) {
+      MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
+    }
 
     return orderedResult;
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
-    String catName = filter.table.getCatName().toLowerCase();
-    String dbName = filter.table.getDbName().toLowerCase();
-    String tblName = filter.table.getTableName().toLowerCase();
+    String catName = filter.catName.toLowerCase();
+    String dbName = filter.dbName.toLowerCase();
+    String tblName = filter.tableName.toLowerCase();
 
     // Get number of partitions by doing count on PART_ID.
     String queryText = "select count(" + PARTITIONS + ".\"PART_ID\") from " + PARTITIONS + ""
@@ -998,7 +1140,10 @@ class MetaStoreDirectSql {
   }
 
   private static class PartitionFilterGenerator extends TreeVisitor {
-    private final Table table;
+    private final String catName;
+    private final String dbName;
+    private final String tableName;
+    private final List<FieldSchema> partitionKeys;
     private final FilterBuilder filterBuffer;
     private final List<Object> params;
     private final List<String> joins;
@@ -1007,9 +1152,13 @@ class MetaStoreDirectSql {
     private final DatabaseProduct dbType;
     private final String PARTITION_KEY_VALS, PARTITIONS, DBS, TBLS;
 
-    private PartitionFilterGenerator(Table table, List<Object> params, List<String> joins,
+    private PartitionFilterGenerator(String catName, String dbName, String tableName,
+        List<FieldSchema> partitionKeys, List<Object> params, List<String> joins,
         boolean dbHasJoinCastBug, String defaultPartName, DatabaseProduct dbType, String schema) {
-      this.table = table;
+      this.catName = catName;
+      this.dbName = dbName;
+      this.tableName = tableName;
+      this.partitionKeys = partitionKeys;
       this.params = params;
       this.joins = joins;
       this.dbHasJoinCastBug = dbHasJoinCastBug;
@@ -1024,15 +1173,18 @@ class MetaStoreDirectSql {
 
     /**
      * Generate the ANSI SQL92 filter for the given expression tree
-     * @param table the table being queried
+     * @param catName catalog name
+     * @param dbName db name
+     * @param tableName table name
+     * @param partitionKeys partition keys
      * @param params the ordered parameters for the resulting expression
      * @param joins the joins necessary for the resulting expression
      * @return the string representation of the expression tree
      */
-    private static String generateSqlFilter(Table table, ExpressionTree tree, List<Object> params,
+    private static String generateSqlFilter(String catName, String dbName, String tableName,
+        List<FieldSchema> partitionKeys, ExpressionTree tree, List<Object> params,
         List<String> joins, boolean dbHasJoinCastBug, String defaultPartName,
-        DatabaseProduct dbType, String schema) throws MetaException {
-      assert table != null;
+        DatabaseProduct dbType, String schema, boolean compactJoins) throws MetaException {
       if (tree == null) {
         // consistent with other APIs like makeExpressionTree, null is returned to indicate that
         // the filter could not pushed down due to parsing issue etc
@@ -1042,7 +1194,8 @@ class MetaStoreDirectSql {
         return "";
       }
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(
-          table, params, joins, dbHasJoinCastBug, defaultPartName, dbType, schema);
+          catName, dbName, tableName, partitionKeys,
+          params, joins, dbHasJoinCastBug, defaultPartName, dbType, schema);
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -1050,9 +1203,13 @@ class MetaStoreDirectSql {
       }
 
       // Some joins might be null (see processNode for LeafNode), clean them up.
-      for (int i = 0; i < joins.size(); ++i) {
-        if (joins.get(i) != null) continue;
-        joins.remove(i--);
+      if (compactJoins) {
+        for (int i = 0; i < joins.size(); ++i) {
+          if (joins.get(i) != null) {
+            continue;
+          }
+          joins.remove(i--);
+        }
       }
       return "(" + visitor.filterBuffer.getFilter() + ")";
     }
@@ -1109,11 +1266,11 @@ class MetaStoreDirectSql {
 
     @Override
     public void visit(LeafNode node) throws MetaException {
-      int partColCount = table.getPartitionKeys().size();
-      int partColIndex = node.getPartColIndexForFilter(table, filterBuffer);
+      int partColCount = partitionKeys.size();
+      int partColIndex = node.getPartColIndexForFilter(partitionKeys, filterBuffer);
       if (filterBuffer.hasError()) return;
 
-      String colTypeStr = table.getPartitionKeys().get(partColIndex).getType();
+      String colTypeStr = partitionKeys.get(partColIndex).getType();
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
         filterBuffer.setError("Filter pushdown not supported for type " + colTypeStr);
@@ -1199,9 +1356,9 @@ class MetaStoreDirectSql {
               + DBS + ".\"CTLG_NAME\" = ? and "
               + "\"FILTER" + partColIndex + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\" and "
                 + "\"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
-          params.add(table.getTableName().toLowerCase());
-          params.add(table.getDbName().toLowerCase());
-          params.add(table.getCatName().toLowerCase());
+          params.add(tableName.toLowerCase());
+          params.add(dbName.toLowerCase());
+          params.add(catName.toLowerCase());
         }
         tableValue += " then " + tableValue0 + " else null end)";
 

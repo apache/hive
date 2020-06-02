@@ -54,11 +54,11 @@ public abstract class DbTxnManagerEndToEndTestBase {
 
   @Before
   public void setUp() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
     SessionState.start(conf);
     ctx = new Context(conf);
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
     driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
     TxnDbUtil.cleanDb(conf);
     SessionState ss = SessionState.get();
     ss.initTxnMgr(conf);

@@ -86,17 +86,14 @@ public class MetastoreConf {
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
   @VisibleForTesting
-  static final String ACID_COMPACTION_HISTORY_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService";
-  @VisibleForTesting
   static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
   @VisibleForTesting
+  static final String ACID_TXN_CLEANER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService";
+  @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService";
-  @VisibleForTesting
-  static final String ACID_WRITE_SET_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidWriteSetService";
 
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
@@ -271,6 +268,15 @@ public class MetastoreConf {
 
   public enum ConfVars {
     // alpha order, PLEASE!
+    ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
+        "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
+        "Time interval describing how often the acid housekeeper runs."),
+    ACID_HOUSEKEEPER_SERVICE_START("metastore.acid.housekeeper.start",
+        "hive.metastore.acid.housekeeper.start", 60, TimeUnit.SECONDS,
+        "Time delay of 1st acid housekeeper run after metastore has started."),
+    ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
+        "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
+        "Time interval describing how often aborted and committed txns are cleaned."),
     ADDED_JARS("metastore.added.jars.path", "hive.added.jars.path", "",
         "This an internal parameter."),
     AGGREGATE_STATS_CACHE_CLEAN_UNTIL("metastore.aggregate.stats.cache.clean.until",
@@ -382,9 +388,6 @@ public class MetastoreConf {
             "has an infinite lifetime."),
     CLIENT_SOCKET_TIMEOUT("metastore.client.socket.timeout", "hive.metastore.client.socket.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
-    COMPACTOR_HISTORY_REAPER_INTERVAL("metastore.compactor.history.reaper.interval",
-        "hive.compactor.history.reaper.interval", 2, TimeUnit.MINUTES,
-        "Determines how often compaction history reaper runs"),
     COMPACTOR_HISTORY_RETENTION_ATTEMPTED("metastore.compactor.history.retention.attempted",
         "hive.compactor.history.retention.attempted", 2,
         new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
@@ -1047,8 +1050,8 @@ public class MetastoreConf {
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
             + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
-            + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
-            + "The default value is true."),
+            + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
+            + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
@@ -1059,12 +1062,11 @@ public class MetastoreConf {
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
     TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
         ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
+            ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
-            ACID_COMPACTION_HISTORY_SERVICE_CLASS + "," +
-            ACID_WRITE_SET_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
             PARTITION_MANAGEMENT_TASK_CLASS,
-        "Command separated list of tasks that will be started in separate threads.  These will be" +
+        "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
@@ -1150,12 +1152,6 @@ public class MetastoreConf {
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
         "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
-    TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
-        "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
-        "Time delay of 1st reaper run after metastore start"),
-    TIMEDOUT_TXN_REAPER_INTERVAL("metastore.timedout.txn.reaper.interval",
-        "hive.timedout.txn.reaper.interval", 180, TimeUnit.SECONDS,
-        "Time interval describing how often the reaper runs"),
     TOKEN_SIGNATURE("metastore.token.signature", "hive.metastore.token.signature", "",
         "The delegation token service name to match when selecting a token from the current user's tokens."),
     METASTORE_CACHE_CAN_USE_EVENT("metastore.cache.can.use.event", "hive.metastore.cache.can.use.event", false,
@@ -1252,9 +1248,6 @@ public class MetastoreConf {
         "hive.metastore.warehouse.external.dir", "",
         "Default location for external tables created in the warehouse. " +
         "If not set or null, then the normal warehouse location will be used as the default location."),
-    WRITE_SET_REAPER_INTERVAL("metastore.writeset.reaper.interval",
-        "hive.writeset.reaper.interval", 60, TimeUnit.SECONDS,
-        "Frequency of WriteSet reaper runs"),
     WM_DEFAULT_POOL_SIZE("metastore.wm.default.pool.size",
         "hive.metastore.wm.default.pool.size", 4,
         "The size of a default pool to create when creating an empty resource plan;\n" +

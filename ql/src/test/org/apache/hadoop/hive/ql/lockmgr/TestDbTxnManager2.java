@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -1167,7 +1167,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
         1, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
 
-    AcidWriteSetService houseKeeper = new AcidWriteSetService();
+    MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
     houseKeeper.setConf(conf);
     houseKeeper.run();
     //since T3 overlaps with Long Running (still open) GC does nothing
@@ -1277,7 +1277,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr.openTxn(ctx, "Long Running");
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     // Now we can clean the write_set
-    MetastoreTaskThread writeSetService = new AcidWriteSetService();
+    MetastoreTaskThread writeSetService = new AcidHouseKeeperService();
     writeSetService.setConf(conf);
     writeSetService.run();
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
@@ -2187,6 +2187,94 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnid2 +
               " and \"WS_OPERATION_TYPE\"='d'"));
     }
+  }
+
+  @Test
+  public void testInsertMergeInsertLocking() throws Exception {
+    testMergeInsertLocking(false);
+  }
+  @Test
+  public void testInsertMergeInsertLockingSharedWrite() throws Exception {
+    testMergeInsertLocking(true);
+  }
+
+  private void testMergeInsertLocking(boolean sharedWrite) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    driver.compileAndRespond("insert into target values (5, 6)");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+
+    driver.compileAndRespond("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)");
+    txnMgr2.acquireLocks(driver.getPlan(), driver.getContext(), "T2", false);
+    List<ShowLocksResponseElement> locks = getLocks();
+
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock((sharedWrite ? LockType.SHARED_WRITE : LockType.SHARED_READ),
+        LockState.ACQUIRED, "default", "target", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "source", null, locks);
+    checkLock((sharedWrite ? LockType.EXCL_WRITE : LockType.EXCLUSIVE),
+        LockState.WAITING, "default", "target", null, locks);
+  }
+
+  @Test
+  public void test2MergeInsertsConcurrentNoDuplicates() throws Exception {
+    testConcurrentMergeInsertNoDuplicates("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", false);
+  }
+  @Test
+  public void test2MergeInsertsConcurrentSharedWriteNoDuplicates() throws Exception {
+    testConcurrentMergeInsertNoDuplicates("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", true);
+  }
+  @Test
+  public void testtInsertMergeInsertConcurrentNoDuplicates() throws Exception {
+    testConcurrentMergeInsertNoDuplicates("insert into target values (5, 6)", false);
+  }
+  @Test
+  public void testtInsertMergeInsertConcurrentSharedWriteNoDuplicates() throws Exception {
+    testConcurrentMergeInsertNoDuplicates("insert into target values (5, 6)", true);
+  }
+
+  private void testConcurrentMergeInsertNoDuplicates(String query, boolean sharedWrite) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    driver.compileAndRespond(query);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+
+    driver2.compileAndRespond("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)");
+
+    swapTxnManager(txnMgr);
+    driver.run();
+
+    //merge should notice snapshot changes and re-create it
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Duplicate records found", 4, res.size());
   }
 
   /**

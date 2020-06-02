@@ -19,16 +19,16 @@ from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` havi
 
 
 -- escaped back ticks
-create table t4(`x+1``` string, `y&y` string);
-describe t4;
-insert into table t4 select * from src;
+create table `t4```(`x+1``` string, `y&y` string);
+describe `t4```;
+insert into table `t4``` select * from src;
 select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)  
-from t4 where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10';
+from `t4``` where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10';
 
 -- view
 create view v1 as 
 select `x+1```, `y&y`
-from t4 where `x+1``` < '200';
+from `t4``` where `x+1``` < '200';
 
 select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1

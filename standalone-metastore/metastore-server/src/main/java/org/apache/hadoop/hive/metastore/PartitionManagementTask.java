@@ -146,7 +146,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
         CountDownLatch countDownLatch = new CountDownLatch(candidateTables.size());
         LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
-        setupMsckConf();
+        setupMsckPathInvalidation();
+        Configuration msckConf = Msck.getMsckConf(conf);
         for (Table table : candidateTables) {
           qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
           long retentionSeconds = getRetentionPeriodInSeconds(table);
@@ -155,7 +156,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
             null, null, true, true, true, retentionSeconds);
-          executorService.submit(new MsckThread(msckInfo, conf, qualifiedTableName, countDownLatch));
+          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();
         executorService.shutdownNow();
@@ -196,7 +197,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     return retentionSeconds;
   }
 
-  private void setupMsckConf() {
+  private void setupMsckPathInvalidation() {
     // if invalid partition directory appears, we just skip and move on. We don't want partition management to throw
     // when invalid path is encountered as these are background threads. We just want to skip and move on. Users will
     // have to fix the invalid paths via external means.

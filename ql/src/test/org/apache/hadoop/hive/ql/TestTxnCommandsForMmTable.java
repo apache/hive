@@ -465,11 +465,6 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
 
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"),
             2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
-    // Clean committed after TXN_OPENTXN_TIMEOUT, one transaction should always remain
-    Thread.sleep(1000);
-    runInitiator(hiveConf);
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
 
     // Initiate a major compaction request on the table.
     runStatementOnDriver("alter table " + TableExtended.MMTBL  + " compact 'MAJOR'");
@@ -478,16 +473,11 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     runWorker(hiveConf);
     verifyDirAndResult(2, true);
 
-    // Clean committed after TXN_OPENTXN_TIMEOUT, one transaction should always remain
-    Thread.sleep(1000);
-    runInitiator(hiveConf);
     // Run Cleaner.
     runCleaner(hiveConf);
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"),
             0,
             TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
     verifyDirAndResult(0, true);
   }
 

@@ -45,7 +45,7 @@ public class UDFLog10 extends UDFMath {
     if (a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log10(a.get()));
+      result.set(StrictMath.log10(a.get()));
       return result;
     }
   }

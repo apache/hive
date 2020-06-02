@@ -1489,18 +1489,6 @@ public class Hive {
   }
 
   /**
-   * Get tables for the specified database that match the provided regex pattern and table type.
-   * @param dbName
-   * @param pattern
-   * @param tableType
-   * @return List of table objects
-   * @throws HiveException
-   */
-  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
-    return getTableObjects(dbName, pattern, tableType);
-  }
-
-  /**
    * Get all materialized view names for the specified database.
    * @param dbName
    * @return List of materialized view table names
@@ -1531,7 +1519,7 @@ public class Hive {
     return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
   }
 
-  private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
+  public List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
         new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
@@ -1637,8 +1625,7 @@ public class Hive {
     List<RelOptMaterialization> materializedViews =
         HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews();
     if (materializedViews.isEmpty()) {
-      // Bail out: empty list
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     // Add to final result
     return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
@@ -1784,8 +1771,7 @@ public class Hive {
     List<Table> materializedViewTables =
         getAllMaterializedViewObjectsForRewriting();
     if (materializedViewTables.isEmpty()) {
-      // Bail out: empty list
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     // Return final result
     return getValidMaterializedViews(materializedViewTables, tablesUsed, false, txnMgr);
@@ -3606,6 +3592,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return names;
   }
 
+  public List<String> getPartitionNames(Table tbl, ExprNodeGenericFuncDesc expr, String order,
+       short maxParts) throws HiveException {
+    List<String> names = null;
+    // the exprBytes should not be null by thrift definition
+    byte[] exprBytes = {(byte)-1};
+    if (expr != null) {
+      exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+    }
+    try {
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      names = getMSC().listPartitionNames(tbl.getCatalogName(), tbl.getDbName(),
+          tbl.getTableName(), defaultPartitionName, exprBytes, order, maxParts);
+    } catch (NoSuchObjectException nsoe) {
+      return Lists.newArrayList();
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    return names;
+  }
+
   /**
    * get all the partitions that the table has
    *
@@ -3831,7 +3838,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static List<Partition> convertFromMetastore(Table tbl,
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
     if (partitions == null) {
-      return new ArrayList<Partition>();
+      return Collections.emptyList();
     }
 
     List<Partition> results = new ArrayList<Partition>(partitions.size());
@@ -4377,10 +4384,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static void deleteAndRename(FileSystem destFs, Path destFile, FileStatus srcStatus, Path destPath)
           throws IOException {
-    if (destFs.exists(destFile)) {
+    try {
       // rename cannot overwrite non empty destination directory, so deleting the destination before renaming.
       destFs.delete(destFile);
-      LOG.info("Deleting destination file" + destFile.toUri());
+      LOG.info("Deleted destination file" + destFile.toUri());
+    } catch (FileNotFoundException e) {
+      // no worries
     }
     if(!destFs.rename(srcStatus.getPath(), destFile)) {
       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"

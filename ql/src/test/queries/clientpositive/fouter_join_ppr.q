@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-19509
 --! qt:dataset:srcpart
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;

@@ -228,11 +228,13 @@ final class TxnType {
   const REPL_CREATED = 1;
   const READ_ONLY = 2;
   const COMPACTION = 3;
+  const MATER_VIEW_REBUILD = 4;
   static public $__names = array(
     0 => 'DEFAULT',
     1 => 'REPL_CREATED',
     2 => 'READ_ONLY',
     3 => 'COMPACTION',
+    4 => 'MATER_VIEW_REBUILD',
   );
 }
 
@@ -14396,6 +14398,10 @@ class PartitionsByExprRequest {
    * @var string
    */
   public $catName = null;
+  /**
+   * @var string
+   */
+  public $order = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14424,6 +14430,10 @@ class PartitionsByExprRequest {
           'var' => 'catName',
           'type' => TType::STRING,
           ),
+        7 => array(
+          'var' => 'order',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14444,6 +14454,9 @@ class PartitionsByExprRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
+      }
+      if (isset($vals['order'])) {
+        $this->order = $vals['order'];
       }
     }
   }
@@ -14509,6 +14522,13 @@ class PartitionsByExprRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->order);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -14550,6 +14570,11 @@ class PartitionsByExprRequest {
     if ($this->catName !== null) {
       $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
       $xfer += $output->writeString($this->catName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->order !== null) {
+      $xfer += $output->writeFieldBegin('order', TType::STRING, 7);
+      $xfer += $output->writeString($this->order);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22570,6 +22595,10 @@ class CompactionInfoStruct {
    * @var string
    */
   public $errorMessage = null;
+  /**
+   * @var bool
+   */
+  public $hasoldabort = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22626,6 +22655,10 @@ class CompactionInfoStruct {
           'var' => 'errorMessage',
           'type' => TType::STRING,
           ),
+        14 => array(
+          'var' => 'hasoldabort',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22667,6 +22700,9 @@ class CompactionInfoStruct {
       }
       if (isset($vals['errorMessage'])) {
         $this->errorMessage = $vals['errorMessage'];
+      }
+      if (isset($vals['hasoldabort'])) {
+        $this->hasoldabort = $vals['hasoldabort'];
       }
     }
   }
@@ -22781,6 +22817,13 @@ class CompactionInfoStruct {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 14:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->hasoldabort);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22857,6 +22900,11 @@ class CompactionInfoStruct {
     if ($this->errorMessage !== null) {
       $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 13);
       $xfer += $output->writeString($this->errorMessage);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hasoldabort !== null) {
+      $xfer += $output->writeFieldBegin('hasoldabort', TType::BOOL, 14);
+      $xfer += $output->writeBool($this->hasoldabort);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

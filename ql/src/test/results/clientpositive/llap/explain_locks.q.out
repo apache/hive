@@ -150,7 +150,7 @@ default.target.p=1/q=3 -> EXCL_WRITE
 default.target.p=1/q=3 -> EXCL_WRITE
 default.target.p=1/q=2 -> EXCL_WRITE
 default.target.p=1/q=2 -> EXCL_WRITE
-default.target -> SHARED_READ
+default.target -> EXCLUSIVE
 PREHOOK: query: explain locks update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
@@ -248,4 +248,4 @@ default.target.p=1/q=3 -> SHARED_WRITE
 default.target.p=1/q=3 -> SHARED_WRITE
 default.target.p=1/q=2 -> SHARED_WRITE
 default.target.p=1/q=2 -> SHARED_WRITE
-default.target -> SHARED_WRITE
+default.target -> EXCL_WRITE

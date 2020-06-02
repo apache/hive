@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 38f7a7f3839e in 2018
 --! qt:dataset:src
 explain extended create table t as select * from src union all select * from src;
 

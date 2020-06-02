@@ -130,7 +130,7 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  protected void excludeQuery(String qFile) {
+  private void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
 
@@ -368,6 +368,7 @@ public abstract class AbstractCliConfig {
     if (clusterType == null) {
       throw new RuntimeException("clustertype cant be null");
     }
+    this.setFsType(clusterType.getDefaultFsType());
   }
 
   protected FsType getFsType() {

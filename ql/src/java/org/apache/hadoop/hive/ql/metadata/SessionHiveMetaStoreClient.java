@@ -1222,7 +1222,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
               (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-              " for table " + tableName + " in database " + dbName + "and for user " +
+              " for table " + tableName + " in database " + dbName + " and for user " +
               userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
               " is not found.");
     }
@@ -1543,9 +1543,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private String generateJDOFilter(org.apache.hadoop.hive.metastore.api.Table table, ExpressionTree exprTree)
       throws MetaException {
 
+    assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, table, params, filterBuilder);
+    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
     // replace leading &&
     stringBuilder.replace(0, 4, "");

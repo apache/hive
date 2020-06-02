@@ -73,8 +73,6 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc() {
   }
 
-  private final static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PartitionDesc.class);
-
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
     this.tableDesc = table;
     setPartSpec(partSpec);
@@ -90,10 +88,6 @@ public class PartitionDesc implements Serializable, Cloneable {
     } else {
       setProperties(part.getMetadataFromPartitionSchema());
     }
-  }
-
-  public PartitionDesc(final Partition part) throws HiveException {
-    this(part, getTableDesc(part.getTable()));
   }
 
   /**
@@ -223,6 +217,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
+    properties.remove("columns.comments");
     if (properties instanceof CopyOnFirstWriteProperties) {
       this.properties = properties;
     } else {

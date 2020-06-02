@@ -211,6 +211,7 @@ select setval('"TXNS_TXN_ID_SEQ"',  (SELECT MAX("TXN_ID") FROM "TXNS"));
 ALTER TABLE "TXNS" ALTER "TXN_ID" SET DEFAULT nextval('"TXNS_TXN_ID_SEQ"');
 
 ALTER TABLE "NEXT_TXN_ID" RENAME TO "TXN_LOCK_TBL";
+ALTER TABLE "TXN_LOCK_TBL" RENAME COLUMN "NTXN_NEXT" TO "TXN_LOCK";
 
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;

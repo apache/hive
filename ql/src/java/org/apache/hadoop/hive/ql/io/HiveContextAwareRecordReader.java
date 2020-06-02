@@ -341,6 +341,8 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
+        // In TextFormat, skipping is already taken care of as part of SkippingTextInputFormat.
+        // This code will be also called from LLAP when pipeline is non-vectorized and cannot create wrapper.
         if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);

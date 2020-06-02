@@ -83,7 +83,7 @@ public class TestMsckCreatePartitionsInBatches {
       throw new HiveException(e);
     }
     msck = new Msck( false, false);
-    msck.init(hiveConf);
+    msck.init(Msck.getMsckConf(hiveConf));
   }
 
   @Before
@@ -137,6 +137,7 @@ public class TestMsckCreatePartitionsInBatches {
     for (int i = 0; i < numOfParts; i++) {
       PartitionResult result = new PartitionResult();
       result.setPartitionName("city=dummyCity_" + String.valueOf(i));
+      result.setTableName("dummyTable");
       partsNotInMs.add(result);
     }
     return partsNotInMs;

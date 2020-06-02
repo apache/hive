@@ -6,16 +6,16 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) CO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jsontable
-PREHOOK: query: SHOW TABLES LIKE 'jsontab*'
+PREHOOK: query: SHOW TABLES LIKE 'jsontab%'
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE 'jsontab*'
+POSTHOOK: query: SHOW TABLES LIKE 'jsontab%'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 {"tables":["jsontable"]}
-PREHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab*'
+PREHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab*'
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
 POSTHOOK: type: SHOW_TABLESTATUS
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')

@@ -169,6 +169,11 @@ class StageType:
   REPL_TXN = 15
   REPL_INCREMENTAL_LOAD = 16
   SCHEDULED_QUERY_MAINT = 17
+  ACK = 18
+  RANGER_DUMP = 19
+  RANGER_LOAD = 20
+  ATLAS_DUMP = 21
+  ATLAS_LOAD = 22
 
   _VALUES_TO_NAMES = {
     0: "CONDITIONAL",
@@ -189,6 +194,11 @@ class StageType:
     15: "REPL_TXN",
     16: "REPL_INCREMENTAL_LOAD",
     17: "SCHEDULED_QUERY_MAINT",
+    18: "ACK",
+    19: "RANGER_DUMP",
+    20: "RANGER_LOAD",
+    21: "ATLAS_DUMP",
+    22: "ATLAS_LOAD",
   }
 
   _NAMES_TO_VALUES = {
@@ -210,6 +220,11 @@ class StageType:
     "REPL_TXN": 15,
     "REPL_INCREMENTAL_LOAD": 16,
     "SCHEDULED_QUERY_MAINT": 17,
+    "ACK": 18,
+    "RANGER_DUMP": 19,
+    "RANGER_LOAD": 20,
+    "ATLAS_DUMP": 21,
+    "ATLAS_LOAD": 22,
   }
 
 

@@ -91,7 +91,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class TaskExecutorService extends AbstractService
     implements Scheduler<TaskRunnerCallable>, SchedulerFragmentCompletingListener {
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
-  private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
+  public static final String TASK_EXECUTOR_THREAD_NAME_FORMAT_PREFIX = "Task-Executor-";
+  private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = TASK_EXECUTOR_THREAD_NAME_FORMAT_PREFIX + "%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
   private static final long PREEMPTION_KILL_GRACE_MS = 500; // 500ms
   private static final int PREEMPTION_KILL_GRACE_SLEEP_MS = 50; // 50ms
@@ -867,7 +868,8 @@ public class TaskExecutorService extends AbstractService
     return sc;
   }
 
-  private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
+  @VisibleForTesting
+  void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
     synchronized (lock) {
       LOG.debug("Fragment {} guaranteed state changed to {}; finishable {}, in wait queue {}, "
           + "in preemption queue {}", taskWrapper.getRequestId(), taskWrapper.isGuaranteed(),
@@ -884,10 +886,20 @@ public class TaskExecutorService extends AbstractService
         taskWrapper.updateCanFinishForPriority(newFinishableState);
         forceReinsertIntoQueue(taskWrapper, isRemoved);
       } else {
-        taskWrapper.updateCanFinishForPriority(newFinishableState);
-        if (!newFinishableState && !taskWrapper.isInPreemptionQueue()) {
-          // No need to check guaranteed here; if it was false we would already be in the queue.
+        // if speculative task, any finishable state change should re-order the queue as speculative tasks are always
+        // not-guaranteed (re-order helps put non-finishable's ahead of finishable)
+        if (!taskWrapper.isGuaranteed()) {
+          removeFromPreemptionQueue(taskWrapper);
+          taskWrapper.updateCanFinishForPriority(newFinishableState);
           addToPreemptionQueue(taskWrapper);
+        } else {
+          // if guaranteed task, if the finishable state changed to non-finishable and if the task doesn't exist
+          // pre-emption queue, then add it so that it becomes candidate to kill
+          taskWrapper.updateCanFinishForPriority(newFinishableState);
+          if (!newFinishableState && !taskWrapper.isInPreemptionQueue()) {
+            // No need to check guaranteed here; if it was false we would already be in the queue.
+            addToPreemptionQueue(taskWrapper);
+          }
         }
       }
 
@@ -896,6 +908,9 @@ public class TaskExecutorService extends AbstractService
   }
 
   private void addToPreemptionQueue(TaskWrapper taskWrapper) {
+    if (taskWrapper.isInPreemptionQueue()) {
+      return;
+    }
     synchronized (lock) {
       insertIntoPreemptionQueueOrFailUnlocked(taskWrapper);
       taskWrapper.setIsInPreemptableQueue(true);

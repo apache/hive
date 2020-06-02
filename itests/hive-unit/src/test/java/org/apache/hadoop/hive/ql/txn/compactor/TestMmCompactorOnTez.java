@@ -570,6 +570,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals(expectedData, actualData);
   }
 
+  @Test public void testVectorizationOff() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    testMmMinorCompactionAfterMajor();
+  }
+
   /**
    * Verify that the expected number of transactions have run, and their state is "succeeded".
    *
