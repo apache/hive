@@ -1,3 +1,5 @@
+
+
 name: "Close stale pull requests"
 on:
   schedule:
