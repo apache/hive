@@ -1,7 +1,7 @@
 name: "Close stale pull requests"
 on:
   schedule:
-  - cron: "40 * * * *"
+  - cron: "0 0 * * *"
 
 jobs:
   stale:
@@ -10,8 +10,6 @@ jobs:
     - uses: actions/stale@v3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-pr-message: 'Stale pull request message'
-        stale-pr-label: 'no-pr-activity'
+        stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.'
         exempt-pr-labels: 'awaiting-approval,work-in-progress'
-        days-before-stale: 5
-        days-before-close: 3
+        stale-pr-label: stale
