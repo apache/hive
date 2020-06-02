@@ -1041,7 +1041,7 @@ public class TestTxnCommands2 {
     Initiator init = new Initiator();
     init.setThreadId((int)init.getId());
     init.setConf(hiveConf);
-    init.init(stop, new AtomicBoolean());
+    init.init(stop);
     init.run();
     int numAttemptedCompactions = 1;
     checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numAttemptedCompactions), countCompacts(txnHandler));

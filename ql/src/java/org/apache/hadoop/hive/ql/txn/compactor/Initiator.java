@@ -229,8 +229,8 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
   }
