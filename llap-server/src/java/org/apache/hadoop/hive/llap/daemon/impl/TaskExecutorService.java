@@ -91,7 +91,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class TaskExecutorService extends AbstractService
     implements Scheduler<TaskRunnerCallable>, SchedulerFragmentCompletingListener {
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
-  private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
+  public static final String TASK_EXECUTOR_THREAD_NAME_FORMAT_PREFIX = "Task-Executor-";
+  private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = TASK_EXECUTOR_THREAD_NAME_FORMAT_PREFIX + "%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
   private static final long PREEMPTION_KILL_GRACE_MS = 500; // 500ms
   private static final int PREEMPTION_KILL_GRACE_SLEEP_MS = 50; // 50ms
