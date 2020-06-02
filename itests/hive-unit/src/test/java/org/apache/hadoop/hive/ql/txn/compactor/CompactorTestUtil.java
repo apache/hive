@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
-import org.apache.hive.hcatalog.streaming.TransactionBatch;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StreamingException;
@@ -205,25 +203,6 @@ class CompactorTestUtil {
       return null;
     }
     return connection;
-  }
-
-  static void writeBatch(org.apache.hive.hcatalog.streaming.StreamingConnection connection,
-      DelimitedInputWriter writer,
-      boolean closeEarly) throws InterruptedException, org.apache.hive.hcatalog.streaming.StreamingException {
-    TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
-    txnBatch.beginNextTransaction();
-    txnBatch.write("50,Kiev".getBytes());
-    txnBatch.write("51,St. Petersburg".getBytes());
-    txnBatch.write("44,Boston".getBytes());
-    txnBatch.commit();
-    if (!closeEarly) {
-      txnBatch.beginNextTransaction();
-      txnBatch.write("52,Tel Aviv".getBytes());
-      txnBatch.write("53,Atlantis".getBytes());
-      txnBatch.write("53,Boston".getBytes());
-      txnBatch.commit();
-      txnBatch.close();
-    }
   }
 
   static void checkExpectedTxnsPresent(Path base, Path[] deltas, String columnNamesProperty, String columnTypesProperty,
