@@ -197,8 +197,7 @@ public abstract class TxnCommandsBaseForTests {
     }
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(stop);
     t.run();
   }
 

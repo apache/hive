@@ -722,7 +722,7 @@ public class TestStatsUpdaterThread {
   private StatsUpdaterThread createUpdater() throws MetaException {
     StatsUpdaterThread su = new StatsUpdaterThread();
     su.setConf(hiveConf);
-    su.init(new AtomicBoolean(false), null);
+    su.init(new AtomicBoolean(false));
     return su;
   }
 }
