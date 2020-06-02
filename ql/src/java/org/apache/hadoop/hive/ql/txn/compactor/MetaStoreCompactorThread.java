@@ -54,8 +54,8 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);

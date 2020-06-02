@@ -68,8 +68,8 @@ public class Cleaner extends MetaStoreCompactorThread {
   private ReplChangeManager replChangeManager;
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
   }
 
@@ -81,10 +81,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
 
     do {
-      // This is solely for testing.  It checks if the test has set the looped value to false,
-      // and if so remembers that and then sets it to true at the end.  We have to check here
-      // first to make sure we go through a complete iteration of the loop before resetting it.
-      boolean setLooped = !looped.get();
       TxnStore.MutexAPI.LockHandle handle = null;
       long startedAt = -1;
       // Make sure nothing escapes this run method and kills the metastore at large,
@@ -104,9 +100,6 @@ public class Cleaner extends MetaStoreCompactorThread {
         if (handle != null) {
           handle.releaseLocks();
         }
-      }
-      if (setLooped) {
-        looped.set(true);
       }
       // Now, go back to bed until it's time to do this again
       long elapsedTime = System.currentTimeMillis() - startedAt;

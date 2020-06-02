@@ -1096,7 +1096,7 @@ public class TestCompactor {
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
     t.setConf(conf);
-    t.init(new AtomicBoolean(true), new AtomicBoolean());
+    t.init(new AtomicBoolean(true));
     if (partNames.length == 0) {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       t.run();

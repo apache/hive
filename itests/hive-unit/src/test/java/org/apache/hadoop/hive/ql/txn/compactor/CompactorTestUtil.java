@@ -118,7 +118,7 @@ class CompactorTestUtil {
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    t.init(new AtomicBoolean(true), new AtomicBoolean());
+    t.init(new AtomicBoolean(true));
     if (partNames.length == 0) {
       txnHandler.compact(new CompactionRequest(dbName, tblName, compactionType));
       t.run();
@@ -139,48 +139,10 @@ class CompactorTestUtil {
    */
   static void runCleaner(HiveConf hConf) throws Exception {
     HiveConf hiveConf = new HiveConf(hConf);
-    AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  /**
-   * Trigger compaction initiator.
-   * @param hConf hive configuration
-   * @param isQueryBased run compaction as query based
-   * @throws Exception if initiator cannot be started.
-   */
-  static void runInitiator(HiveConf hConf, boolean isQueryBased) throws Exception {
-    HiveConf hiveConf = new HiveConf(hConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Initiator t = new Initiator();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  /**
-   * Trigger compaction worker.
-   * @param hConf hive configuration
-   * @param isQueryBased run compaction as query based
-   * @throws Exception if worker cannot be started.
-   */
-  static void runWorker(HiveConf hConf, boolean isQueryBased) throws Exception {
-    HiveConf hiveConf = new HiveConf(hConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(new AtomicBoolean(true));
     t.run();
   }
 
