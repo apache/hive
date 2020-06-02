@@ -77,4 +77,10 @@ public class Constants {
 
   /**  A named lock is acquired prior to executing the query; enabling to run queries in parallel which might interfere with eachother. */
   public static final String HIVE_QUERY_EXCLUSIVE_LOCK = "hive.query.exclusive.lock";
+
+  public static final String SCHEDULED_QUERY_NAMESPACE = "scheduled.query.namespace";
+  public static final String SCHEDULED_QUERY_SCHEDULENAME = "scheduled.query.schedulename";
+  public static final String SCHEDULED_QUERY_EXECUTIONID = "scheduled.query.executionid";
+  public static final String SCHEDULED_QUERY_USER = "scheduled.query.user";
+
 }
