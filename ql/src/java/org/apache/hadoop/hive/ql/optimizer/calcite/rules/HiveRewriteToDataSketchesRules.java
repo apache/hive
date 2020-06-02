@@ -276,7 +276,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = false;
+        boolean approximate = true;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -363,7 +363,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = false;
+        boolean approximate = true;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -528,7 +528,7 @@ public final class HiveRewriteToDataSketchesRules {
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
             (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
             /* distinct */ false,
-            /* approximate */ false,
+            /* approximate */ true,
             /* ignoreNulls */ true,
             null,
             ImmutableList.of(),
