@@ -25,6 +25,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPar
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionListByFilterExp;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionColtoTypeMap;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
 
@@ -430,11 +431,12 @@ public class HiveMetaStoreChecker {
       partColNames.add(fSchema.getName());
     }
 
+    Map<String, String> partitionColToTypeMap = getPartitionColtoTypeMap(table.getPartitionKeys());
     // we should now only have the unexpected folders left
     for (Path partPath : allPartDirs) {
       FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath),
-          partPath, partColNames);
+          partPath, partColNames, partitionColToTypeMap);
       LOG.debug("PartitionName: " + partitionName);
 
       if (partitionName != null) {
