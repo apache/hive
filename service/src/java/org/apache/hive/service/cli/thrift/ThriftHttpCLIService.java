@@ -45,6 +45,8 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -53,6 +55,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
@@ -192,6 +195,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         server.setHandler(context);
       }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+      constrainHttpMethods(context, false);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize,
       // bodyRecieveDuration, etc.
@@ -267,6 +271,28 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       }
     }
     return httpPath;
+  }
+
+  public  void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+    Constraint c = new Constraint();
+    c.setAuthenticate(true);
+
+    ConstraintMapping cmt = new ConstraintMapping();
+    cmt.setConstraint(c);
+    cmt.setMethod("TRACE");
+    cmt.setPathSpec("/*");
+
+    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+    if (!allowOptionsMethod) {
+      ConstraintMapping cmo = new ConstraintMapping();
+      cmo.setConstraint(c);
+      cmo.setMethod("OPTIONS");
+      cmo.setPathSpec("/*");
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt, cmo});
+    } else {
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt});
+    }
+    ctxHandler.setSecurityHandler(securityHandler);
   }
 
   @Override
