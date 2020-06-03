@@ -122,7 +122,7 @@ public class Msck {
       // And partitions that are not present in filesystem and metadata exists in metastore -
       // accessed through getPartitionNotOnFS
       checker.checkMetastore(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName(),
-        msckInfo.getPartSpecs(), result);
+        msckInfo.getPartSpecs(), table, result);
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
       Set<CheckResult.PartitionResult> expiredPartitions = result.getExpiredPartitions();
@@ -377,7 +377,7 @@ public class Msck {
                 continue;
               }
               Map<String, String> partSpec = Warehouse.makeSpecFromName(part.getPartitionName());
-              Path location = new Path(tablePath, Warehouse.makePartPath(partSpec));
+              Path location = part.getLocation(tablePath, partSpec);
               Partition partition = MetaStoreServerUtils.createMetaPartitionObject(table, partSpec, location);
               partition.setWriteId(table.getWriteId());
               partsToAdd.add(partition);

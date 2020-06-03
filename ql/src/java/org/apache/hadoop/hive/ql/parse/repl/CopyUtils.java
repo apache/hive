@@ -254,10 +254,13 @@ public class CopyUtils {
         // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
         // directly to table path (bypassing staging directory) then there might be some stale files from previous
         // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
+        try {
           dstFs.delete(newDestFile, true);
+          LOG.debug(" file " + newDestFile + " is deleted before renaming");
+        } catch (FileNotFoundException e) {
+          // no problem
         }
+
         boolean result = dstFs.rename(destFile, newDestFile);
         if (!result) {
           throw new IllegalStateException(

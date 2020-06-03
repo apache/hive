@@ -285,6 +285,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("quote", GenericUDFQuote.class);
     system.registerGenericUDF("nvl", GenericUDFCoalesce.class); //HIVE-20961
     system.registerGenericUDF("split", GenericUDFSplit.class);
+    system.registerGenericUDF("split_map_privs", GenericUDFStringToPrivilege.class);
     system.registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     system.registerGenericUDF("translate", GenericUDFTranslate.class);
     system.registerGenericUDF("validate_acid_sort_order", GenericUDFValidateAcidSortOrder.class);
@@ -467,6 +468,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
+    system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
+    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);

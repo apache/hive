@@ -10548,7 +10548,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 

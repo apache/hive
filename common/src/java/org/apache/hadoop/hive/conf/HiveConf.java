@@ -535,17 +535,20 @@ public class HiveConf extends Configuration {
                     + "with the hive data and metadata replication. Set the configuration "
                     + "hive.repl.include.authorization.metadata to false to disable "
                     + "security policies being replicated "),
-    REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT("hive.repl.authorization.provider.service.endpoint",
-            "",
-            "This configuration will define the authorization service endpoint"),
-    REPL_RANGER_SERVICE_NAME("hive.repl.ranger.service.name",
-            "hive",
-            "This configuration will define the service name for which the ranger authorization"
-                    + " policies needs to be replicated"),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
         + " to avoid any update to the target database"),
+    REPL_INCLUDE_ATLAS_METADATA("hive.repl.include.atlas.metadata", false,
+            "Indicates if Atlas metadata should be replicated along with Hive data and metadata or not."),
+    REPL_ATLAS_ENDPOINT("hive.repl.atlas.endpoint", null,
+            "Atlas endpoint of the current cluster hive database is getting replicated from/to."),
+    REPL_ATLAS_REPLICATED_TO_DB("hive.repl.atlas.replicatedto", null,
+            "Target hive database name Atlas metadata of source hive database is being replicated to."),
+    REPL_SOURCE_CLUSTER_NAME("hive.repl.source.cluster.name", null,
+            "Name of the source cluster for the replication."),
+    REPL_TARGET_CLUSTER_NAME("hive.repl.target.cluster.name", null,
+            "Name of the target cluster for the replication."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

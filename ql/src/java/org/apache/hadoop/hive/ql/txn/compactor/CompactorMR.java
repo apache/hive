@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -884,8 +885,10 @@ public class CompactorMR {
       Path tmpLocation = AcidUtils.createFilename(rootDir, options);
       FileSystem fs = tmpLocation.getFileSystem(jobConf);
 
-      if (fs.exists(tmpLocation)) {
+      try {
         fs.delete(tmpLocation, true);
+      } catch (FileNotFoundException e) {
+        // no problem
       }
     }
 

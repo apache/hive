@@ -13174,9 +13174,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       openTransaction();
       Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-      if (nextExecutionTime == null) {
-        throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-      }
       schq.setNextExecution(nextExecutionTime);
       pm.makePersistent(schq);
       commited = commitTransaction();
@@ -13222,9 +13219,6 @@ public class ObjectStore implements RawStore, Configurable {
       persisted.doUpdate(schq);
       if (!scheduledQuery.isSetNextExecution()) {
         Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-        if (nextExecutionTime == null) {
-          throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-        }
         persisted.setNextExecution(nextExecutionTime);
       } else {
         persisted.setNextExecution(schq.getNextExecution());

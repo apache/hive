@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
@@ -82,6 +83,19 @@ public class ReplUtils {
   // Root base directory name for ranger.
   public static final String REPL_RANGER_BASE_DIR = "ranger";
 
+  // Root base directory name for atlas.
+  public static final String REPL_ATLAS_BASE_DIR = "atlas";
+
+  // Atlas meta data export file.
+  public static final String REPL_ATLAS_EXPORT_FILE_NAME = "atlas_export.zip";
+
+  // Config for hadoop default file system.
+  public static final String DEFAULT_FS_CONFIG = "fs.defaultFS";
+
+  // Cluster name separator, used when the cluster name contains data center name as well, e.g. dc$mycluster1.
+  public static final String CLUSTER_NAME_SEPARATOR = "$";
+
+
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
   public static final String REPL_TABLE_LIST_DIR_NAME = "_tables";
@@ -107,6 +121,12 @@ public class ReplUtils {
   public static final String RANGER_AUTHORIZER = "ranger";
 
   public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies.json";
+
+  public static final String RANGER_REST_URL = "ranger.plugin.hive.policy.rest.url";
+
+  public static final String RANGER_HIVE_SERVICE_NAME = "ranger.plugin.hive.service.name";
+
+  public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -176,6 +196,15 @@ public class ReplUtils {
               props.get(REPL_CHECKPOINT_KEY)));
     }
     return false;
+  }
+
+  public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
+          throws SemanticException {
+    String val = hiveConf.get(configParam);
+    if (StringUtils.isEmpty(val)) {
+      throw new SemanticException(String.format(errorMsgFormat, configParam));
+    }
+    return val;
   }
 
   public static boolean isTableMigratingToTransactional(HiveConf conf,

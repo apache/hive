@@ -4384,10 +4384,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static void deleteAndRename(FileSystem destFs, Path destFile, FileStatus srcStatus, Path destPath)
           throws IOException {
-    if (destFs.exists(destFile)) {
+    try {
       // rename cannot overwrite non empty destination directory, so deleting the destination before renaming.
       destFs.delete(destFile);
-      LOG.info("Deleting destination file" + destFile.toUri());
+      LOG.info("Deleted destination file" + destFile.toUri());
+    } catch (FileNotFoundException e) {
+      // no worries
     }
     if(!destFs.rename(srcStatus.getPath(), destFile)) {
       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"
