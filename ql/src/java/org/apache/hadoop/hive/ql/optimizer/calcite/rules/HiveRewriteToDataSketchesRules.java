@@ -469,6 +469,33 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
+      protected final RexNode makeItemCall(RexNode arr, RexNode offset) {
+        if (getClass().desiredAssertionStatus()) {
+          try {
+            SqlKind.class.getField("ITEM");
+            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
+          } catch (NoSuchFieldException e) {
+            // ignore
+          }
+        }
+
+        try {
+          SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
+              ImmutableList.of(arr.getType(), offset.getType()), arr.getType().getComponentType(), true, false);
+          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
+          return call;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      protected final RelDataType getFloatType() {
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+        return floatType;
+      }
+
       /**
        * Do the rewrite for the given expression.
        *
@@ -576,34 +603,6 @@ public final class HiveRewriteToDataSketchesRules {
 
         return projRex;
       }
-
-      private RexNode makeItemCall(RexNode arr, RexNode offset) {
-        if(getClass().desiredAssertionStatus()) {
-          try {
-            SqlKind.class.getField("ITEM");
-            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
-           } catch(NoSuchFieldException e) {
-             // ignore
-          }
-        }
-
-        try {
-        SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
-            ImmutableList.of(arr.getType(),offset.getType()),
-            arr.getType().getComponentType(), true, false);
-          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
-          return call;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      private RelDataType getFloatType() {
-        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
-        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
-        return floatType;
-      }
     }
   }
 
@@ -639,7 +638,7 @@ public final class HiveRewriteToDataSketchesRules {
       boolean isApplicable(RexOver over) {
         SqlAggFunction aggOp = over.getAggOperator();
         RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("ntile") && window.orderKeys.size() == 1
+        if (aggOp.getName().equalsIgnoreCase("ntile0") && window.orderKeys.size() == 1
             && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
           return true;
         }
@@ -663,8 +662,14 @@ public final class HiveRewriteToDataSketchesRules {
         key = rexBuilder.makeCast(getFloatType(), key);
 
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH), /* distinct */ false,
-            /* approximate */ false, /* ignoreNulls */ true, null, ImmutableList.of(), null, ImmutableList.of(key));
+            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
+            /* distinct */ false,
+            /* approximate */ false,
+            /* ignoreNulls */ true,
+            null,
+            ImmutableList.of(),
+            null,
+            ImmutableList.of(key));
 
         relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
@@ -694,33 +699,6 @@ public final class HiveRewriteToDataSketchesRules {
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
-      }
-
-      private RexNode makeItemCall(RexNode arr, RexNode offset) {
-        if (getClass().desiredAssertionStatus()) {
-          try {
-            SqlKind.class.getField("ITEM");
-            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
-          } catch (NoSuchFieldException e) {
-            // ignore
-          }
-        }
-
-        try {
-          SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
-              ImmutableList.of(arr.getType(), offset.getType()), arr.getType().getComponentType(), true, false);
-          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
-          return call;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      private RelDataType getFloatType() {
-        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
-        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
-        return floatType;
       }
     }
   }
