@@ -214,7 +214,6 @@ public class OrcEncodedDataConsumer
            *
            */
           LlapIoImpl.LOG.debug("ProbeDecode RowFilter late idx {} id {} reader {} ", idx, reader.getColumnId(), reader);
-          trace.dumpLog(LlapIoImpl.LOG);
           ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
           reader.nextVector(cv, null, batchSize, cvb.filterContext.immutable());
         }
