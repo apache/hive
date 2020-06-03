@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.atlas.model.impexp.AtlasImportRequest;
 import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,12 +55,22 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
 
+  public AtlasLoadTask() {
+    super();
+  }
+
+  @VisibleForTesting
+  AtlasLoadTask(final HiveConf conf, final AtlasLoadWork work) {
+    this.conf = conf;
+    this.work = work;
+  }
+
   @Override
   public int execute() {
     try {
       AtlasReplInfo atlasReplInfo  = createAtlasReplInfo();
       Map<String, Long> metricMap = new HashMap<>();
-      metricMap.put(ReplUtils.MetricName.TAGS.name(), 0L);
+      metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
       work.getMetricCollector().reportStageStart(getName(), metricMap);
       LOG.info("Loading atlas metadata from srcDb: {} to tgtDb: {} from staging: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
@@ -68,7 +79,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       replLogger.startLog();
       int importCount = importAtlasMetadata(atlasReplInfo);
       replLogger.endLog(importCount);
-      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TAGS.name(), importCount);
+      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.ENTITIES.name(), importCount);
       LOG.info("Atlas entities import count {}", importCount);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
@@ -84,7 +95,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     }
   }
 
-  public AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
+  AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
     String errorFormat = "%s is mandatory config for Atlas metadata replication";
     //Also validates URL for endpoint.
     String endpoint = new URL(ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, conf, errorFormat))
@@ -123,7 +134,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     }
   }
 
-  public int importAtlasMetadata(AtlasReplInfo atlasReplInfo) throws Exception {
+  private int importAtlasMetadata(AtlasReplInfo atlasReplInfo) throws Exception {
     AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
     AtlasImportRequest importRequest = atlasRequestBuilder.createImportRequest(
             atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),

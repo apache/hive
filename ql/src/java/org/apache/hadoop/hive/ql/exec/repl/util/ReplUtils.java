@@ -139,7 +139,7 @@ public class ReplUtils {
    * Replication Metrics.
    */
   public enum MetricName {
-    TABLES, FUNCTIONS, EVENTS, POLICIES, TAGS
+    TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(

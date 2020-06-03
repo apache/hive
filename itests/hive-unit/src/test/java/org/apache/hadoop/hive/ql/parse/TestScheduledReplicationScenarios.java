@@ -304,7 +304,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     stages.add(rangerDump);
     //Atlas
     Stage atlasDump = new Stage("ATLAS_LOAD", Status.SUCCESS, 0);
-    Metric atlasMetric = new Metric(ReplUtils.MetricName.TAGS.name(), 0);
+    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
     atlasDump.addMetric(atlasMetric);
     stages.add(atlasDump);
     //Hive
@@ -333,7 +333,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     stages.add(rangerDump);
     //Atlas
     Stage atlasDump = new Stage("ATLAS_DUMP", Status.SUCCESS, 0);
-    Metric atlasMetric = new Metric(ReplUtils.MetricName.TAGS.name(), 0);
+    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
     atlasDump.addMetric(atlasMetric);
     stages.add(atlasDump);
     //Hive

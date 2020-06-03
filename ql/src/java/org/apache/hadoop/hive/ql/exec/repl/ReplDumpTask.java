@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
@@ -531,8 +530,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     replLogger.endLog(lastReplId.toString());
     LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-    long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executorId);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId);
     // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
     // so that REPL LOAD would drop the tables which are not included in current policy.
     if (work.oldReplScope != null) {
@@ -600,16 +599,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, Path dumpRoot) {
     ReplicationMetricCollector collector;
-    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
-    long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-    long maxCacheSize = conf.getLong(MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getVarname(),
-        (long) MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getDefaultVal());
     if (isBootstrap) {
-      collector = new BootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), policy, executorId,
-        maxCacheSize);
+      collector = new BootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf);
     } else {
-      collector = new IncrementalDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), policy, executorId,
-        maxCacheSize);
+      collector = new IncrementalDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf);
     }
     return collector;
   }

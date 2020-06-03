@@ -35,6 +35,14 @@ public class ReplicationMetric {
     this.progress = new Progress();
   }
 
+  public ReplicationMetric(ReplicationMetric metric) {
+    this.scheduledExecutionId = metric.scheduledExecutionId;
+    this.policy = metric.policy;
+    this.dumpExecutionId = metric.dumpExecutionId;
+    this.metadata = new Metadata(metric.metadata);
+    this.progress = new Progress(metric.progress);
+  }
+
   public long getScheduledExecutionId() {
     return scheduledExecutionId;
   }

@@ -434,11 +434,11 @@ public class TestReplicationScenarios {
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ReplicationMetricCollector metricCollector;
     if (isIncrementalDump) {
-      metricCollector = new IncrementalLoadMetricCollector(replicadb, tuple.dumpLocation, "",
-        0, 0, 1);
+      metricCollector = new IncrementalLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
+        confTemp);
     } else {
-      metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, "",
-        0, 0, 1);
+      metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
+        confTemp);
     }
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),

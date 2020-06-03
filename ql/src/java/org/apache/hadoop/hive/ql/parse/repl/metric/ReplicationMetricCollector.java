@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
@@ -37,11 +39,13 @@ public abstract class ReplicationMetricCollector {
   private boolean isEnabled;
 
   public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
-                             String stagingDir, String policy, long executionId,
-                                    long dumpExecutionId, long maxCacheSize) {
+                             String stagingDir, long dumpExecutionId, HiveConf conf) {
+    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
     if (!StringUtils.isEmpty(policy) && executionId > 0) {
       isEnabled = true;
-      metricCollector = MetricCollector.getInstance().init(maxCacheSize);
+      metricCollector = MetricCollector.getInstance().init(conf);
+      MetricSink.getInstance().init(conf);
       Metadata metadata = new Metadata(dbName, replicationType, stagingDir);
       replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
     }
@@ -67,7 +71,6 @@ public abstract class ReplicationMetricCollector {
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
-      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
@@ -82,7 +85,6 @@ public abstract class ReplicationMetricCollector {
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
-      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
     }
@@ -98,7 +100,6 @@ public abstract class ReplicationMetricCollector {
         metric.setTotalCount(metric.getCurrentCount());
       }
       stage.addMetric(metric);
-      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
     }

@@ -82,12 +82,11 @@ public class ReplStateLogWork implements Serializable {
     this.metricCollector = metricCollector;
   }
 
-  public ReplStateLogWork(ReplLogger replLogger, Map<String,String> dbProps,
-                          ReplicationMetricCollector metricCollector) {
+  public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, ReplicationMetricCollector collector) {
     this.logType = LOG_TYPE.END;
     this.replLogger = replLogger;
     this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
-    this.metricCollector = metricCollector;
+    this.metricCollector = collector;
   }
 
   public void replStateLog() throws SemanticException {
@@ -106,7 +105,7 @@ public class ReplStateLogWork implements Serializable {
       break;
     case END:
       replLogger.endLog(lastReplId);
-      if (StringUtils.isEmpty(lastReplId)) {
+      if (StringUtils.isEmpty(lastReplId) || "null".equalsIgnoreCase(lastReplId)) {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS);
       } else {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS, Long.parseLong(lastReplId));

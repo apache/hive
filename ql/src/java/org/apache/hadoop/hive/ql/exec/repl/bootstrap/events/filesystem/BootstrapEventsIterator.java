@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -206,12 +205,10 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       long numTables = getNumTables(dbDumpPath, fs);
       long numFunctions = getNumFunctions(dbDumpPath, fs);
       Map<String, Long> metricMap = new HashMap<>();
-      metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) numTables);
-      metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) numFunctions);
+      metricMap.put(ReplUtils.MetricName.TABLES.name(), numTables);
+      metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), numFunctions);
       metricCollector.reportStageStart("REPL_LOAD", metricMap);
-    } catch (IOException e) {
-      // Ignore the exception
-    } catch (SemanticException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Failed to collect Metrics ", e);
     }
   }

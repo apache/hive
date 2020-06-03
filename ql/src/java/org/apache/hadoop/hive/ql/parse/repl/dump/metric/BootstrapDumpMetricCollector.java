@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.metric;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 
@@ -25,8 +26,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
  * Bootstrap Dump Metric Collector
  */
 public class BootstrapDumpMetricCollector extends ReplicationMetricCollector {
-  public BootstrapDumpMetricCollector(String dbName, String stagingDir, String policy,
-                                      long executionId,  long maxCacheSize) {
-    super(dbName, Metadata.ReplicationType.BOOTSTRAP, stagingDir, policy, executionId, 0, maxCacheSize);
+  public BootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf) {
+    super(dbName, Metadata.ReplicationType.BOOTSTRAP, stagingDir, 0, conf);
   }
 }

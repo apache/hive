@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * MetricCollector.
@@ -35,8 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MetricCollector {
   private static final Logger LOG = LoggerFactory.getLogger(MetricCollector.class);
-  private Map<Long, ReplicationMetric> metricMap = new ConcurrentHashMap<>();
-  private long maxSize = (long) MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getDefaultVal();
+  private final Map<Long, ReplicationMetric> metricMap = new HashMap<>();
+  private long maxSize = 0;
   private boolean isInited = false;
   private static volatile MetricCollector instance;
 
@@ -54,19 +54,21 @@ public final class MetricCollector {
     return instance;
   }
 
-  public synchronized MetricCollector init(long cacheSize) {
+  public synchronized MetricCollector init(HiveConf conf) {
     //Can initialize the cache only once with a value.
     if (!isInited) {
-      maxSize = cacheSize;
+      maxSize = getMaxSize(conf);
       isInited = true;
-    } else {
-      LOG.warn("Metric Collection cache is already initialised with size {} .", maxSize);
     }
     return instance;
   }
 
+  long getMaxSize(HiveConf conf) {
+    return MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE);
+  }
+
   public synchronized void addMetric(ReplicationMetric replicationMetric) throws SemanticException {
-    if (metricMap.size() > maxSize) {
+    if (metricMap.size() >= maxSize) {
       throw new SemanticException("Metrics are not getting collected. ");
     } else {
       if (metricMap.size() > 0.8 * maxSize) { //soft limit
@@ -76,9 +78,25 @@ public final class MetricCollector {
     }
   }
 
-  public synchronized List<ReplicationMetric> getMetrics() {
-    List<ReplicationMetric> metricList = new ArrayList<>(metricMap.values());
+  public synchronized LinkedList<ReplicationMetric> getMetrics() {
+    LinkedList<ReplicationMetric> metricList = new LinkedList<>();
+    for (ReplicationMetric metric : metricMap.values()) {
+      metricList.add(new ReplicationMetric(metric));
+    }
     metricMap.clear();
     return metricList;
+  }
+
+  //For testing
+  synchronized void deinit() {
+    if (isInited) {
+      isInited = false;
+      metricMap.clear();
+      resetInstance();
+    }
+  }
+
+  private static void resetInstance() {
+    instance = null;
   }
 }

@@ -2032,6 +2032,24 @@ struct GetPartitionsPsWithAuthResponse {
    1: required list<Partition> partitions
 }
 
+struct ReplicationMetrics{
+  1: required i64 scheduledExecutionId,
+  2: required string policy,
+  3: required i64 dumpExecutionId,
+  4: optional string metadata,
+  5: optional string progress,
+}
+
+struct ReplicationMetricList{
+  1: required list<ReplicationMetrics> replicationMetricList,
+}
+
+struct GetReplicationMetricsRequest {
+  1: optional i64 scheduledExecutionId,
+  2: optional string policy,
+  3: optional i64 dumpExecutionId
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2760,6 +2778,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:AlreadyExistsException o3, 4:InvalidInputException o4)
   void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1, 2: InvalidOperationException o2)
   ScheduledQuery get_scheduled_query(1: ScheduledQueryKey scheduleKey) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
+  ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

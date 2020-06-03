@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
@@ -32,8 +34,10 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
@@ -47,30 +51,34 @@ import java.util.Arrays;
 @RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricCollector {
 
-
+  HiveConf conf;
 
   @Before
   public void setup() throws Exception {
-    MetricCollector.getInstance().init(1);
+    conf = new HiveConf();
+    conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
+    conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
+    MetricCollector.getInstance().init(conf);
+  }
+
+  @After
+  public void finalize() {
+    MetricCollector.getInstance().deinit();
   }
 
   @Test
   public void testFailureCacheHardLimit() throws Exception {
-    ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", "repl", 1, 1);
-    Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
-    metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
-    bootstrapDumpMetricCollector.reportStageStart("dump", metricMap);
-    bootstrapDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS);
-
-    ReplicationMetricCollector incrDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", "repl", 2, 1);
-    metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
-    incrDumpMetricCollector.reportStageStart("dump", metricMap);
+    MetricCollector.getInstance().deinit();
+    conf = new HiveConf();
+    MetricCollector collector = MetricCollector.getInstance();
+    MetricCollector metricCollectorSpy = Mockito.spy(collector);
+    Mockito.doReturn(1L).when(metricCollectorSpy).getMaxSize(Mockito.any());
+    metricCollectorSpy.init(conf);
+    metricCollectorSpy.addMetric(new ReplicationMetric(1, "repl",
+        0, null));
     try {
-      incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS);
+      metricCollectorSpy.addMetric(new ReplicationMetric(2, "repl",
+          0, null));
       Assert.fail();
     } catch (SemanticException e) {
       Assert.assertEquals("Metrics are not getting collected. ", e.getMessage());
@@ -79,8 +87,11 @@ public class TestReplicationMetricCollector {
 
   @Test
   public void testFailureNoScheduledId() throws Exception {
+    MetricCollector.getInstance().deinit();
+    conf = new HiveConf();
+    MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", "repl", 0, 1);
+        "staging", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -91,8 +102,11 @@ public class TestReplicationMetricCollector {
 
   @Test
   public void testFailureNoPolicyId() throws Exception {
+    MetricCollector.getInstance().deinit();
+    conf = new HiveConf();
+    MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", "", 0, 1);
+        "staging", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -104,7 +118,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessBootstrapDumpMetrics() throws Exception {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", "repl", 1, 1);
+        "staging", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -145,7 +159,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessIncrDumpMetrics() throws Exception {
     ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
-        "staging", "repl", 1, 1);
+        "staging", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -187,7 +201,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessBootstrapLoadMetrics() throws Exception {
     ReplicationMetricCollector bootstrapLoadMetricCollector = new BootstrapLoadMetricCollector("db",
-        "staging", "repl", 1, 1, 1);
+        "staging", 1, conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -229,7 +243,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessIncrLoadMetrics() throws Exception {
     ReplicationMetricCollector incrLoadMetricCollector = new IncrementalLoadMetricCollector("db",
-        "staging", "repl", 1, 1, 1);
+        "staging", 1, conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);

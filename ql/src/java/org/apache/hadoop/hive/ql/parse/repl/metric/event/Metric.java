@@ -25,9 +25,19 @@ public class Metric {
   private long currentCount;
   private long totalCount;
 
+  public Metric() {
+
+  }
+
   public Metric(String name, long totalCount) {
     this.name = name;
     this.totalCount = totalCount;
+  }
+
+  public Metric(Metric metric) {
+    this.name = metric.name;
+    this.totalCount = metric.totalCount;
+    this.currentCount = metric.currentCount;
   }
 
   public String getName() {

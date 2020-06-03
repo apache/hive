@@ -24,12 +24,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -419,16 +417,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, String dumpDirectory,
                                                           String dbNameToLoadIn, long dumpExecutionId) {
     ReplicationMetricCollector collector;
-    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
-    long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-    long maxCacheSize = conf.getLong(MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getVarname(),
-        (long) MetastoreConf.ConfVars.REPL_METRICS_CACHE_MAXSIZE.getDefaultVal());
     if (isBootstrap) {
-      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, policy, executorId,
-        dumpExecutionId, maxCacheSize);
+      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
     } else {
-      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, policy, executorId,
-        dumpExecutionId, maxCacheSize);
+      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
     }
     return collector;
   }

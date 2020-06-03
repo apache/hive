@@ -32,10 +32,24 @@ public class Stage {
   private long endTime;
   private Map<String, Metric> metrics = new HashMap<>();
 
+  public Stage() {
+
+  }
+
   public Stage(String name, Status status, long startTime) {
     this.name = name;
     this.status = status;
     this.startTime = startTime;
+  }
+
+  public Stage(Stage stage) {
+    this.name = stage.name;
+    this.status = stage.status;
+    this.startTime = stage.startTime;
+    this.endTime = stage.endTime;
+    for (Metric metric : stage.metrics.values()) {
+      this.metrics.put(metric.getName(), new Metric(metric));
+    }
   }
 
   public String getName() {

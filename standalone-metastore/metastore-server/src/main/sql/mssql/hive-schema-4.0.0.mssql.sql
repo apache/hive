@@ -1318,6 +1318,19 @@ CREATE TABLE "SCHEDULED_EXECUTIONS" (
 CREATE INDEX IDX_SCHEDULED_EX_LAST_UPDATE ON "SCHEDULED_EXECUTIONS" ("LAST_UPDATE_TIME");
 CREATE INDEX IDX_SCHEDULED_EX_SQ_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_QUERY_ID");
 
+--HIVE-23516
+CREATE TABLE "REPLICATION_METRICS" (
+  "RM_SCHEDULED_EXECUTION_ID" bigint PRIMARY KEY,
+  "RM_POLICY" varchar(256) NOT NULL,
+  "RM_DUMP_EXECUTION_ID" bigint NOT NULL,
+  "RM_METADATA" varchar(max),
+  "RM_PROGRESS" varchar(max)
+);
+
+--Create indexes for the replication metrics table
+CREATE INDEX "POLICY_IDX" ON "REPLICATION_METRICS" ("RM_POLICY");
+CREATE INDEX "DUMP_IDX" ON "REPLICATION_METRICS" ("RM_DUMP_EXECUTION_ID");
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

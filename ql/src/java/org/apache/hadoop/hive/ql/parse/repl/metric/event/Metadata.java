@@ -33,6 +33,17 @@ public class Metadata {
   private String stagingDir;
   private long lastReplId;
 
+  public Metadata() {
+
+  }
+
+  public Metadata(Metadata metadata) {
+    this.dbName = metadata.dbName;
+    this.replicationType = metadata.replicationType;
+    this.stagingDir = metadata.stagingDir;
+    this.lastReplId = metadata.lastReplId;
+  }
+
   public Metadata(String dbName, ReplicationType replicationType, String stagingDir) {
     this.dbName = dbName;
     this.replicationType = replicationType;

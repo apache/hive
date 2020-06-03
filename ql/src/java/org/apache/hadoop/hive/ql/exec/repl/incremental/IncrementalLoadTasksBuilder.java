@@ -80,7 +80,7 @@ public class IncrementalLoadTasksBuilder {
   public IncrementalLoadTasksBuilder(String dbName, String loadPath,
                                      IncrementalLoadEventsIterator iterator, HiveConf conf,
                                      Long eventTo,
-                                     ReplicationMetricCollector metricCollector) {
+                                     ReplicationMetricCollector metricCollector) throws SemanticException {
     this.dbName = dbName;
     this.iterator = iterator;
     inputs = new HashSet<>();
@@ -92,6 +92,9 @@ public class IncrementalLoadTasksBuilder {
     this.eventTo = eventTo;
     setNumIteration(0);
     this.metricCollector = metricCollector;
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
+    this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
   }
 
   public Task<?> build(Context context, Hive hive, Logger log,
@@ -102,9 +105,6 @@ public class IncrementalLoadTasksBuilder {
     this.log = log;
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
-    Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
-    this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
       String location = dir.getPath().toUri().toString();

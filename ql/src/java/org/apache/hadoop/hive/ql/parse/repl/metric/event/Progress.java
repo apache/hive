@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,9 +29,23 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Progress {
 
+  @JsonProperty()
   private Status status;
 
+  @JsonProperty("stages")
   private Map<String, Stage> stages = new ConcurrentHashMap<>();
+
+  public Progress() {
+
+  }
+
+  public Progress(Progress progress) {
+    this.status = progress.status;
+    for (Stage value : progress.stages.values()) {
+      Stage stage = new Stage(value);
+      this.stages.put(stage.getName(), stage);
+    }
+  }
 
   public Status getStatus() {
     return status;
@@ -40,7 +56,7 @@ public class Progress {
   }
 
   public void addStage(Stage stage) {
-    stages.put(stage.getName(), stage);
+    stages.putIfAbsent(stage.getName(), stage);
   }
 
   public Stage getStageByName(String stageName) {
