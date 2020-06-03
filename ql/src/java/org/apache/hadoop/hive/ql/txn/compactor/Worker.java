@@ -394,7 +394,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     long compactorTxnId = NOT_SET;
     try {
       if (msc == null) {
-        msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+        try {
+          msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+        } catch (Exception e) {
+          LOG.error("Failed to connect to HMS", e);
+          return false;
+        }
       }
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
       LOG.debug("Processing compaction request " + ci);
