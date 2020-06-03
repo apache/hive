@@ -223,6 +223,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       speculativeTasks = new TreeMap<>();
 
   private final LlapPluginServerImpl pluginEndpoint;
+  private final boolean workloadManagementEnabled;
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
@@ -450,6 +451,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         + "nodeBlacklistConf={}, localityConf={} consistentSplits={}",
         hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf, consistentSplits);
     this.amRegistry = TezAmRegistryImpl.create(conf, true);
+    this.workloadManagementEnabled =
+        !StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim());
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
       LlapTaskCommunicator peer = LlapTaskCommunicator.instance;
@@ -1089,7 +1092,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
-    if (!StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim())) {
+    if (workloadManagementEnabled) {
       updateGuaranteedInRegistry(tgVersionForZk, 0);
     }
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
@@ -1338,6 +1341,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @return The initial value of the guaranteed flag to send with the task.
    */
   boolean isInitialGuaranteed(TezTaskAttemptID attemptId) {
+    if (!workloadManagementEnabled) {
+      return false;
+    }
     TaskInfo info = null;
     readLock.lock();
     try {
