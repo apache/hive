@@ -26,17 +26,7 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -44,6 +34,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
@@ -279,6 +270,31 @@ public class TestListPartitions extends MetaStoreClientTest {
 
     partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short) 0);
     assertTrue(partitions.isEmpty());
+  }
+
+  /**
+   * Testing getPartitionsRequest(PartitionsRequest) ->
+   *         get_partitions_req(PartitionsRequest).
+   */
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testGetPartitionsRequest() throws Exception {
+    List<List<String>> testValues = createTable4PartColsParts(client);
+    PartitionsRequest req = new PartitionsRequest();
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
+    req.setDbName(DB_NAME);
+    req.setTblName(TABLE_NAME);
+    req.setMaxParts((short)-1);
+    PartitionsResponse res = client.getPartitionsRequest(req);
+    assertPartitionsHaveCorrectValues(res.getPartitions(), testValues);
+
+    req.setMaxParts((short)1);
+    res = client.getPartitionsRequest(req);
+    assertPartitionsHaveCorrectValues(res.getPartitions(), testValues.subList(0, 1));
+
+    req.setMaxParts((short)0);
+    res = client.getPartitionsRequest(req);
+    assertTrue(res.getPartitions().isEmpty());
   }
 
   @Test(expected = MetaException.class)
@@ -601,11 +617,57 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short)-1, "user0", null);
   }
 
+  /**
+   * Testing listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest) ->
+   *         get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest).
+   */
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testListPartitionsWithAuthRequestByValues() throws Exception {
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<String> groups = Lists.newArrayList(GROUP);
 
+    GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
+    req.setDbName(DB_NAME);
+    req.setTblName(TABLE_NAME);
+    req.setPartVals(Lists
+        .newArrayList("2017", "11", "27"));
+    req.setMaxParts((short)-1);
+    req.setUserName(USER_NAME);
+    req.setGroupNames(groups);
+    GetPartitionsPsWithAuthResponse res = client.listPartitionsWithAuthInfoRequest(req);
+    List<Partition> partitions = res.getPartitions();
+    assertEquals(1, partitions.size());
+    assertPartitionsHaveCorrectValues(partitions, partValues.subList(3, 4));
+    partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
+
+    req.setPartVals(Lists
+        .newArrayList("2017"));
+    res = client.listPartitionsWithAuthInfoRequest(req);
+    partitions = res.getPartitions();
+    assertEquals(2, partitions.size());
+    assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 4));
+    partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
+
+    req.setMaxParts((short)1);
+    res = client.listPartitionsWithAuthInfoRequest(req);
+    partitions = res.getPartitions();
+    assertEquals(1, partitions.size());
+    assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 3));
+    partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
+
+    req.setMaxParts((short)-1);
+    req.setPartVals(Lists
+        .newArrayList("2013"));
+    res = client.listPartitionsWithAuthInfoRequest(req);
+    partitions = res.getPartitions();
+    assertTrue(partitions.isEmpty());
+  }
 
   /**
-   * Testing listPartitionsWithAuthInfo(String,String,List(String),short,String,List(String)) ->
-   *         get_partitions_ps_with_auth(String,String,List(String),short,String,List(String)).
+   * Testing listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest) ->
+   *         get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest).
    */
   @Test
   public void testListPartitionsWithAuthByValues() throws Exception {
@@ -613,25 +675,25 @@ public class TestListPartitions extends MetaStoreClientTest {
     List<String> groups = Lists.newArrayList(GROUP);
 
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-            .newArrayList("2017", "11", "27"), (short)-1, USER_NAME, groups);
+        .newArrayList("2017", "11", "27"), (short)-1, USER_NAME, groups);
     assertEquals(1, partitions.size());
     assertPartitionsHaveCorrectValues(partitions, partValues.subList(3, 4));
     partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
 
     partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-            .newArrayList("2017"), (short)-1, USER_NAME, groups);
+        .newArrayList("2017"), (short)-1, USER_NAME, groups);
     assertEquals(2, partitions.size());
     assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 4));
     partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
 
     partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-            .newArrayList("2017"), (short)1, USER_NAME, groups);
+        .newArrayList("2017"), (short)1, USER_NAME, groups);
     assertEquals(1, partitions.size());
     assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 3));
     partitions.forEach(partition -> assertAuthInfoReturned(USER_NAME, groups.get(0), partition));
 
     partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-            .newArrayList("2013"), (short)-1, USER_NAME, groups);
+        .newArrayList("2013"), (short)-1, USER_NAME, groups);
     assertTrue(partitions.isEmpty());
   }
 
@@ -1215,6 +1277,51 @@ public class TestListPartitions extends MetaStoreClientTest {
             Lists.newArrayList("2017", "10"), (short)-1);
     assertCorrectPartitionNames(partitionNames, testValues.subList(2, 3),
             Lists.newArrayList("yyyy", "mm", "dd"));
+
+  }
+
+  /**
+   * Testing listPartitionNamesRequest(GetPartitionNamesPsRequest) ->
+   *         get_partition_names_ps_req(GetPartitionNamesPsRequest).
+   */
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testListPartitionNamesRequestByValues() throws Exception {
+    List<List<String>> testValues = createTable4PartColsParts(client);
+    GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
+    req.setDbName(DB_NAME);
+    req.setTblName(TABLE_NAME);
+    req.setPartValues(Lists.newArrayList("2017"));
+    req.setMaxParts((short)-1);
+    GetPartitionNamesPsResponse res = client.listPartitionNamesRequest(req);
+    List<String> partitionNames = res.getNames();
+    assertCorrectPartitionNames(partitionNames, testValues.subList(2, 4),
+        Lists.newArrayList("yyyy", "mm", "dd"));
+
+    req.setMaxParts((short)101);
+    res = client.listPartitionNamesRequest(req);
+    partitionNames = res.getNames();
+    assertCorrectPartitionNames(partitionNames, testValues.subList(2, 4),
+        Lists.newArrayList("yyyy", "mm", "dd"));
+
+    req.setMaxParts((short)1);
+    res = client.listPartitionNamesRequest(req);
+    partitionNames = res.getNames();
+    assertCorrectPartitionNames(partitionNames, testValues.subList(2, 3),
+        Lists.newArrayList("yyyy", "mm", "dd"));
+
+    req.setMaxParts((short)0);
+    res = client.listPartitionNamesRequest(req);
+    partitionNames = res.getNames();
+    assertTrue(partitionNames.isEmpty());
+
+    req.setMaxParts((short)-1);
+    req.setPartValues(Lists.newArrayList("2017", "10"));
+    res = client.listPartitionNamesRequest(req);
+    partitionNames = res.getNames();
+    assertCorrectPartitionNames(partitionNames, testValues.subList(2, 3),
+        Lists.newArrayList("yyyy", "mm", "dd"));
 
   }
 

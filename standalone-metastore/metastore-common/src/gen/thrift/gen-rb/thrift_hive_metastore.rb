@@ -347,6 +347,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_fields_with_environment_context failed: unknown result')
     end
 
+    def get_fields_req(req)
+      send_get_fields_req(req)
+      return recv_get_fields_req()
+    end
+
+    def send_get_fields_req(req)
+      send_message('get_fields_req', Get_fields_req_args, :req => req)
+    end
+
+    def recv_get_fields_req()
+      result = receive_message(Get_fields_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_fields_req failed: unknown result')
+    end
+
     def get_schema(db_name, table_name)
       send_get_schema(db_name, table_name)
       return recv_get_schema()
@@ -381,6 +399,24 @@ module ThriftHiveMetastore
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_with_environment_context failed: unknown result')
+    end
+
+    def get_schema_req(req)
+      send_get_schema_req(req)
+      return recv_get_schema_req()
+    end
+
+    def send_get_schema_req(req)
+      send_message('get_schema_req', Get_schema_req_args, :req => req)
+    end
+
+    def recv_get_schema_req()
+      result = receive_message(Get_schema_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_req failed: unknown result')
     end
 
     def create_table(tbl)
@@ -1191,6 +1227,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition failed: unknown result')
     end
 
+    def get_partition_req(req)
+      send_get_partition_req(req)
+      return recv_get_partition_req()
+    end
+
+    def send_get_partition_req(req)
+      send_message('get_partition_req', Get_partition_req_args, :req => req)
+    end
+
+    def recv_get_partition_req()
+      result = receive_message(Get_partition_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_req failed: unknown result')
+    end
+
     def exchange_partition(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
       send_exchange_partition(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
       return recv_exchange_partition()
@@ -1278,6 +1331,23 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions failed: unknown result')
+    end
+
+    def get_partitions_req(req)
+      send_get_partitions_req(req)
+      return recv_get_partitions_req()
+    end
+
+    def send_get_partitions_req(req)
+      send_message('get_partitions_req', Get_partitions_req_args, :req => req)
+    end
+
+    def recv_get_partitions_req()
+      result = receive_message(Get_partitions_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_req failed: unknown result')
     end
 
     def get_partitions_with_auth(db_name, tbl_name, max_parts, user_name, group_names)
@@ -1382,6 +1452,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_ps_with_auth failed: unknown result')
     end
 
+    def get_partitions_ps_with_auth_req(req)
+      send_get_partitions_ps_with_auth_req(req)
+      return recv_get_partitions_ps_with_auth_req()
+    end
+
+    def send_get_partitions_ps_with_auth_req(req)
+      send_message('get_partitions_ps_with_auth_req', Get_partitions_ps_with_auth_req_args, :req => req)
+    end
+
+    def recv_get_partitions_ps_with_auth_req()
+      result = receive_message(Get_partitions_ps_with_auth_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_ps_with_auth_req failed: unknown result')
+    end
+
     def get_partition_names_ps(db_name, tbl_name, part_vals, max_parts)
       send_get_partition_names_ps(db_name, tbl_name, part_vals, max_parts)
       return recv_get_partition_names_ps()
@@ -1397,6 +1484,23 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_names_ps failed: unknown result')
+    end
+
+    def get_partition_names_ps_req(req)
+      send_get_partition_names_ps_req(req)
+      return recv_get_partition_names_ps_req()
+    end
+
+    def send_get_partition_names_ps_req(req)
+      send_message('get_partition_names_ps_req', Get_partition_names_ps_req_args, :req => req)
+    end
+
+    def recv_get_partition_names_ps_req()
+      result = receive_message(Get_partition_names_ps_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_names_ps_req failed: unknown result')
     end
 
     def get_partition_names_req(req)
@@ -4150,6 +4254,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_fields_with_environment_context', seqid)
     end
 
+    def process_get_fields_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_fields_req_args)
+      result = Get_fields_req_result.new()
+      begin
+        result.success = @handler.get_fields_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::UnknownTableException => o2
+        result.o2 = o2
+      rescue ::UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_fields_req', seqid)
+    end
+
     def process_get_schema(seqid, iprot, oprot)
       args = read_args(iprot, Get_schema_args)
       result = Get_schema_result.new()
@@ -4178,6 +4297,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'get_schema_with_environment_context', seqid)
+    end
+
+    def process_get_schema_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_req_args)
+      result = Get_schema_req_result.new()
+      begin
+        result.success = @handler.get_schema_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::UnknownTableException => o2
+        result.o2 = o2
+      rescue ::UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_schema_req', seqid)
     end
 
     def process_create_table(seqid, iprot, oprot)
@@ -4822,6 +4956,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_partition', seqid)
     end
 
+    def process_get_partition_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partition_req_args)
+      result = Get_partition_req_result.new()
+      begin
+        result.success = @handler.get_partition_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partition_req', seqid)
+    end
+
     def process_exchange_partition(seqid, iprot, oprot)
       args = read_args(iprot, Exchange_partition_args)
       result = Exchange_partition_result.new()
@@ -4893,6 +5040,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions', seqid)
+    end
+
+    def process_get_partitions_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_req_args)
+      result = Get_partitions_req_result.new()
+      begin
+        result.success = @handler.get_partitions_req(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partitions_req', seqid)
     end
 
     def process_get_partitions_with_auth(seqid, iprot, oprot)
@@ -4973,6 +5133,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_partitions_ps_with_auth', seqid)
     end
 
+    def process_get_partitions_ps_with_auth_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_ps_with_auth_req_args)
+      result = Get_partitions_ps_with_auth_req_result.new()
+      begin
+        result.success = @handler.get_partitions_ps_with_auth_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partitions_ps_with_auth_req', seqid)
+    end
+
     def process_get_partition_names_ps(seqid, iprot, oprot)
       args = read_args(iprot, Get_partition_names_ps_args)
       result = Get_partition_names_ps_result.new()
@@ -4984,6 +5157,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partition_names_ps', seqid)
+    end
+
+    def process_get_partition_names_ps_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partition_names_ps_req_args)
+      result = Get_partition_names_ps_req_result.new()
+      begin
+        result.success = @handler.get_partition_names_ps_req(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partition_names_ps_req', seqid)
     end
 
     def process_get_partition_names_req(seqid, iprot, oprot)
@@ -7515,6 +7701,44 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_fields_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetFieldsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_fields_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetFieldsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::UnknownTableException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_schema_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -7584,6 +7808,44 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::UnknownTableException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetSchemaRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetSchemaResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::UnknownTableException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
@@ -9432,6 +9694,42 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_partition_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetPartitionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Exchange_partition_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     PARTITIONSPECS = 1
@@ -9640,6 +9938,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PartitionsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PartitionsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
@@ -9900,6 +10234,42 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_partitions_ps_with_auth_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetPartitionsPsWithAuthRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_ps_with_auth_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionsPsWithAuthResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_partition_names_ps_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -9930,6 +10300,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_names_ps_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetPartitionNamesPsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_names_ps_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionNamesPsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }
