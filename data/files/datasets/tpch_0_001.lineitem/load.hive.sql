@@ -1,4 +1,6 @@
-CREATE TABLE lineitem (L_ORDERKEY      INT,
+CREATE DATABASE IF NOT EXISTS tpch_0_001;
+
+CREATE TABLE tpch_0_001.lineitem (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
                                 L_LINENUMBER    INT,
@@ -17,7 +19,7 @@ CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE lineitem;
+LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/tpch/sf0_001/lineitem.tbl.bz2' OVERWRITE INTO TABLE tpch_0_001.lineitem;
 
-analyze table lineitem compute statistics;
-analyze table lineitem compute statistics for columns;
+analyze table tpch_0_001.lineitem compute statistics;
+analyze table tpch_0_001.lineitem compute statistics for columns;

@@ -88,11 +88,11 @@ POSTHOOK: query: CREATE TABLE "p/a/r/t"(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db~!@@#$%^&*(),<>
 POSTHOOK: Output: db~!@@#$%^&*(),<>@p/a/r/t
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table "p/a/r/t"
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table "p/a/r/t"
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: db~!@@#$%^&*(),<>@p/a/r/t
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table "p/a/r/t"
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table "p/a/r/t"
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db~!@@#$%^&*(),<>@p/a/r/t
@@ -138,11 +138,11 @@ FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db~!@@#$%^&*(),<>
 POSTHOOK: Output: db~!@@#$%^&*(),<>@line/item
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE "line/item"
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE "line/item"
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: db~!@@#$%^&*(),<>@line/item
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE "line/item"
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE "line/item"
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db~!@@#$%^&*(),<>@line/item

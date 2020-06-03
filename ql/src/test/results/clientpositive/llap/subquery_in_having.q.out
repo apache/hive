@@ -30,11 +30,11 @@ POSTHOOK: query: CREATE TABLE part_subq(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_subq
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table part_subq
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@part_subq
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table part_subq
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part_subq
