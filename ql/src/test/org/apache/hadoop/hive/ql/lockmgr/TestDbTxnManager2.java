@@ -261,6 +261,30 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("Unexpected number of locks found", 0, locks.size());
   }
 
+  /**
+   * Test for disabling the locks all together with {@link HiveConf.ConfVars.HIVE_TXN_DISABLE_LOCKS}.
+   * @throws Exception
+   */
+  @Test
+  public void testBasicBlockingLocksDisabled() throws Exception {
+    dropTable(new String[] {"T6"});
+    driver.run("create table if not exists T6(a int)");
+    driver.compileAndRespond("select a from T6", true);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets S lock on T6
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_DISABLE_LOCKS, true);
+    driver.run("drop table if exists T6");
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
+    txnMgr.rollbackTxn(); //release S on T6
+    locks = getLocks();
+    Assert.assertEquals("Unexpected number of locks found", 0, locks.size());
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_DISABLE_LOCKS, false);
+  }
+
   @Test
   public void testLockConflictDbTable() throws Exception {
     dropTable(new String[] {"temp.T7"});
@@ -727,6 +751,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
    */
   @Test
   public void testCheckExpectedLocks2() throws Exception {
+    testCheckExpectedLocks2(true);
+  }
+  @Test
+  public void testCheckExpectedLocks2NoReadLock() throws Exception {
+    testCheckExpectedLocks2(false);
+  }
+  public void testCheckExpectedLocks2(boolean readLocks) throws Exception {
     dropTable(new String[] {"tab_acid", "tab_not_acid"});
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
         "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -734,28 +765,38 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "clustered by (na) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
     driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')");
+    if (!readLocks) {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_READ_LOCKS, false);
+    }
     txnMgr.openTxn(ctx, "T1");
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
-
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 4, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 0, locks.size());
+    }
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr2.openTxn(ctx, "T2");
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 5, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
-    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
-
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 5, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+      checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 1, locks.size());
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+    }
     // Test strict locking mode, i.e. backward compatible locking mode for non-ACID resources.
     // With non-strict mode, INSERT got SHARED_READ lock, instead of EXCLUSIVE with ACID semantics
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, false);
@@ -764,21 +805,36 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 6, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
-    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 6, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+      checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    }
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_READ_LOCKS,
+        HiveConf.ConfVars.HIVE_TXN_READ_LOCKS.defaultBoolVal);
   }
 
   /**
    * Check to make sure we acquire proper locks for queries involving non-strict locking
    */
   @Test
-  public void testCheckExpectedReadLocksForNonAcidTables() throws Exception {
+  public void testCheckExpectedReadLocksForNonAcidTables() throws Exception{
+    testCheckExpectedReadLocksForNonAcidTables(true);
+  }
+  @Test
+  public void testCheckExpectedReadLocksForNonAcidTablesNoReadLocks() throws Exception{
+    testCheckExpectedReadLocksForNonAcidTables(false);
+  }
+  private void testCheckExpectedReadLocksForNonAcidTables(boolean readLocks) throws Exception {
     dropTable(new String[] {"tab_acid", "tab_not_acid"});
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
         "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -789,38 +845,55 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     // Test non-acid read-locking mode - the read locks are only obtained for the ACID side
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_NONACID_READ_LOCKS, false);
+    if (!readLocks) {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_READ_LOCKS, false);
+    }
 
     HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr1.openTxn(ctx, "T1");
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr1.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr1);
-    Assert.assertEquals("Unexpected lock count", 2, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 0, locks.size());
+    }
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr2.openTxn(ctx, "T2");
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
-
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 3, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 1, locks.size());
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
+    }
     HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr3.openTxn(ctx, "T3");
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
-
+    if (readLocks) {
+      Assert.assertEquals("Unexpected lock count", 4, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
+      checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    }
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_NONACID_READ_LOCKS,
         HiveConf.ConfVars.HIVE_TXN_NONACID_READ_LOCKS.defaultBoolVal);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_READ_LOCKS,
+        HiveConf.ConfVars.HIVE_TXN_READ_LOCKS.defaultBoolVal);
+
   }
 
   @Test

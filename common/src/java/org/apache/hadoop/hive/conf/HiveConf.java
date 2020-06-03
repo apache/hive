@@ -2798,6 +2798,10 @@ public class HiveConf extends Configuration {
         "but in performance critical scenarios this option may be exercised."),
     HIVE_LOCKS_PARTITION_THRESHOLD("hive.locks.max.partitions", -1,
         "Locks the entire table if number of partition locks exceeds user-defined threshold. Disabled by default."),
+    HIVE_TXN_DISABLE_LOCKS("hive.txn.disable.locks", false,
+        "Flag to turn off all locks, when set to true. This is only intented to used in situations "
+            + "when a query is blocked on locks and it shouldn't be. A quick workaround can be to turn off locking "
+            + "entirely in the session until the problem is investigated and solved."),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +

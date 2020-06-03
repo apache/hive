@@ -406,6 +406,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         * mode of operation documented at {@link DbTxnManager#isExplicitTransaction}*/
         return  null;
     }
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_DISABLE_LOCKS)) {
+      LOG.info("Locking is disabled in the session, not acquiring locks!");
+      return null;
+    }
 
     LockRequestBuilder rqstBuilder = new LockRequestBuilder(queryId);
     //link queryId to txnId
