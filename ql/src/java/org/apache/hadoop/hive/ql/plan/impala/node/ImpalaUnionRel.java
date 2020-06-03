@@ -139,6 +139,7 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     for (RelDataTypeField relDataTypeField : rowType.getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
+      slotDesc.setLabel(relDataTypeField.getName());
       slotDesc.setIsMaterialized(true);
     }
     return tupleDesc;

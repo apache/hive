@@ -30,6 +30,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -125,22 +126,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       List<RexNode> conjuncts = RelOptUtil.conjunctions(join.getCondition());
       // convert the conjuncts to Impala Expr
       for (RexNode conj : conjuncts) {
-        // canonicalize the equijoin condition such that it is
-        // represented as =($M, $N) where M < N.  The Impala backend
-        // expects this.
-        if (conj.isA(SqlKind.EQUALS)) {
-          RexNode n0 = ((RexCall)conj).getOperands().get(0);
-          RexNode n1 = ((RexCall)conj).getOperands().get(1);
-          // CDPD-8690: generalize the check below to allow RexCall instead of
-          // just RexInputRef
-          if (n0 instanceof RexInputRef && n1 instanceof RexInputRef &&
-              ((RexInputRef) n0).getIndex() > ((RexInputRef) n1).getIndex()) {
-            // swap the left and right
-            RexNode newConj = join.getCluster().getRexBuilder().
-                makeCall(SqlStdOperatorTable.EQUALS, n1, n0);
-            conj = newConj;
-          }
-        }
+        conj = getCanonical(conj); // get a canonicalized representation
         Expr impalaConjunct = conj.accept(rexVisitor);
         if (conj.isA(SqlKind.EQUALS)) {
           Preconditions.checkState(impalaConjunct instanceof BinaryPredicate);
@@ -184,6 +170,57 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     joinNode.init(ctx.getRootAnalyzer());
 
     return joinNode;
+  }
+
+  private static class MinIndexVisitor extends RexVisitorImpl<Void> {
+    private int minIndex = Integer.MAX_VALUE;
+    public MinIndexVisitor() {
+      super(true);
+    }
+    @Override
+    public Void visitInputRef(RexInputRef inputRef) {
+      minIndex = Math.min(inputRef.getIndex(), minIndex);
+      return null;
+    }
+    public int getMinIndex() {
+      return minIndex;
+    }
+    public void reset() {
+      minIndex = Integer.MAX_VALUE;
+    }
+  }
+
+  /**
+   * Canonicalize the equijoin condition such that it is
+   * represented as =($M, $N) where M < N. The Impala backend
+   * expects this. If the join condition has expressions
+   * e.g CAST($5, INT) + $4 = CAST($3, INT) + $1
+   * This method will traverse the left and right sides of the
+   * condition and identify the minimum RexInputRef index
+   * on each side. If the left's min index is greater than the
+   * right side's min, it will swap the two sides.
+   */
+  private RexNode getCanonical(RexNode conjunct) {
+    if (!conjunct.isA(SqlKind.EQUALS)) {
+      return conjunct;
+    }
+
+    MinIndexVisitor visitor = new MinIndexVisitor();
+    RexNode lhsRexCall = ((RexCall) conjunct).getOperands().get(0);
+    RexNode rhsRexCall = ((RexCall) conjunct).getOperands().get(1);
+    // visit the left and right child
+    lhsRexCall.accept(visitor);
+    int lhsMinIndex = visitor.getMinIndex();
+    visitor.reset();
+    rhsRexCall.accept(visitor);
+    int rhsMinIndex = visitor.getMinIndex();
+    if (lhsMinIndex >  rhsMinIndex) {
+      // swap the left and right children
+      RexNode newConjunct = join.getCluster().getRexBuilder().
+          makeCall(SqlStdOperatorTable.EQUALS, rhsRexCall, lhsRexCall);
+      return newConjunct;
+    }
+    return conjunct;
   }
 
   private JoinOperator getImpalaJoinOp(Join join) throws HiveException {
