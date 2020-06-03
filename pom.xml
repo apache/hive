@@ -176,7 +176,7 @@
     <log4j2.version>2.12.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.1.7.2.0.0-SNAPSHOT</orc.version>
+    <orc.version>1.5.1.7.2.0.0-probedecode</orc.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>

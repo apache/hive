@@ -137,6 +137,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           }
         }
         if (done) return false;
+//        if (!reader.nextBatch(value)) {
+//          return false;
+//        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

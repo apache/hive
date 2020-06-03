@@ -63,6 +63,9 @@ public class ORCRowFilter {
     public void rowFilterCallback(VectorizedRowBatch batch) {
         try {
             predicateExpression.evaluate(batch);
+            // VectorExpressions just set size to 0 when there is NO match (or repeating No Match)
+            // In that case, make sure selected is set to True as it will be used for row-filtering!
+            if (batch.size == 0) batch.selectedInUse = true;
         } catch (HiveException e) {
             e.printStackTrace();
         }

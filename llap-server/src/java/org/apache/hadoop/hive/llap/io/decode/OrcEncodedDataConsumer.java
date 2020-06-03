@@ -83,8 +83,7 @@ public class OrcEncodedDataConsumer
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
     if (includes.isProbeDecodeEnabled()) {
-      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
-              this.includes.getProbeDynMjCacheKey(), this.includes.getProbeDynMjColIdx(), this.includes.getProbeDynMjColName());
+      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled");
     }
   }
 
@@ -162,7 +161,7 @@ public class OrcEncodedDataConsumer
           for (int idx = 0; idx < columnReaders.length; ++idx) {
             TreeReader reader = columnReaders[idx];
             if (includes.getProbeStaticColIdx()[reader.getColumnId()]) {
-              LlapIoImpl.LOG.debug("ProbeDecode RowFilter early id {} reader {} ", reader.getColumnId(), reader);
+              LlapIoImpl.LOG.debug("ProbeDecode RowFilter early idx {} id {} reader {} ", idx, reader.getColumnId(), reader);
               ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
               reader.nextVector(cv, null, batchSize, NULL_FILTERCONTEXT);
             }
@@ -214,14 +213,16 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
-          LlapIoImpl.LOG.debug("ProbeDecode RowFilter late id {} reader {} ", reader.getColumnId(), reader);
+          LlapIoImpl.LOG.debug("ProbeDecode RowFilter late idx {} id {} reader {} ", idx, reader.getColumnId(), reader);
+          trace.dumpLog(LlapIoImpl.LOG);
           ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
           reader.nextVector(cv, null, batchSize, cvb.filterContext.immutable());
         }
-
-        // we are done reading a batch, send it to consumer for processing
-        downstreamConsumer.consumeData(cvb);
-        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        if (cvb.filterContext.size > 0) {
+          // we are done reading a batch, send it to consumer for processing
+          downstreamConsumer.consumeData(cvb);
+          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        }
       }
       LlapIoImpl.ORC_LOGGER.debug("Done with decode");
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
@@ -261,7 +262,7 @@ public class OrcEncodedDataConsumer
 
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       for (int i = 0; i < columnReaders.length; ++i) {
-        LlapIoImpl.LOG.debug("Created a reader at " + i + ": " + columnReaders[i]
+        LlapIoImpl.LOG.debug("Created a reader at " + i + ": " + columnReaders[i] + " withColId: "+ columnReaders[i].getColumnId()
             + " from schema " + batchSchemas[i]);
       }
     }

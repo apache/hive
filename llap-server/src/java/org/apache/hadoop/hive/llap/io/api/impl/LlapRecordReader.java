@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
@@ -386,7 +387,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return false;
     }
     if (isAcidFormat) {
-      vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
@@ -411,6 +411,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
         }
         inputVrb.size = cvb.filterContext.size;
+        inputVrb.selectedInUse = cvb.filterContext.isSelectedInUse();
+        if (cvb.filterContext.isSelectedInUse()) {
+          inputVrb.selected = cvb.filterContext.getSelected();
+        }
         acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
@@ -429,13 +433,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      if (cvb.filterContext.isSelectedInUse()) {
-        vrb.selectedInUse = true;
-        vrb.selected = cvb.filterContext.getSelected();
-      } else {
-        vrb.selectedInUse = false;
-      }
+
       vrb.size = cvb.filterContext.size;
+      vrb.selectedInUse = cvb.filterContext.isSelectedInUse();
+      if (cvb.filterContext.isSelectedInUse()) {
+        vrb.selected = cvb.filterContext.getSelected();
+      }
     }
 
     if (wasFirst) {
@@ -760,14 +763,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         // FilterExpression is using only includedCols to avoid extra colIndex wrangling
         probeStaticRowFilter = new ORCRowFilter(exprObj, allIncludedColNames);
 
-        // Create a boolean index for RowFilter columns (indexed by ColId)
-        probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + 1];
+        // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
+        int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
+        probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
         for (int i : filterColumnIds) {
           if (i > 0) {
-            probeStaticColidIndex[i] = true;
+            probeStaticColidIndex[colIdAcidAddition + i] = true;
           }
         }
-        LOG.info("ProbeDecode RowFilter colIds: {}, all includedColNames {}", filterColumnIds, allIncludedColNames);
+        LOG.info("ProbeDecode RowFilter colIds: {}, all includedColNames {} AcidAddition {} Filter {}", filterColumnIds,
+            allIncludedColNames, colIdAcidAddition, DebugUtils.toString(probeStaticColidIndex));
       }
     }
 
