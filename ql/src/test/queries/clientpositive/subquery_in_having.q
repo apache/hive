@@ -17,7 +17,7 @@ CREATE TABLE part_subq(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table part_subq;
 
 -- non agg, non corr
 explain

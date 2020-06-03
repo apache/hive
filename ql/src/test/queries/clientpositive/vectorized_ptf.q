@@ -24,7 +24,7 @@ CREATE TABLE part_staging(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_staging;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table part_staging;
 
 CREATE TABLE part_orc( 
     p_partkey INT,

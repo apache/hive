@@ -31,7 +31,7 @@ CREATE TABLE `p/a/r/t`(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table `p/a/r/t`;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table `p/a/r/t`;
 
 CREATE TABLE `line/item` (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
@@ -52,7 +52,7 @@ CREATE TABLE `line/item` (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE `line/item`;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE `line/item`;
 
 create table `src/_/cbo` as select * from default.src;
 
