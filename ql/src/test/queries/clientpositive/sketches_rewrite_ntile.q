@@ -10,9 +10,9 @@ insert into table sketch_input values
   (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
 ; 
 
-select id,ntile() over (order by id) from sketch_input;
+select id,ntile(4) over (order by id) from sketch_input;
 
-select id,ntile() over (order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+select id,ntile(4) over (order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
 from sketch_input
 join ( select ds_kll_sketch(cast(-id as float)) as ds from sketch_input ) q
 order by id;
@@ -21,27 +21,27 @@ set hive.optimize.bi.enabled=true;
 
 -- see if rewrite happens
 explain
-select id,'rewrite',ntile() over (order by id) from sketch_input order by id;
+select id,'rewrite',ntile(4) over (order by id) from sketch_input order by id;
 
-select id,'rewrite',ntile() over (order by id) from sketch_input order by id;
+select id,'rewrite',ntile(4) over (order by id) from sketch_input order by id;
 
 -- see if rewrite happens in nested expressions
 explain
-select id,'rewrite',count(id) over ()*ntile() over (order by id) from sketch_input order by id;
+select id,'rewrite',count(id) over ()*ntile(4) over (order by id) from sketch_input order by id;
 
-select id,'rewrite',count(id) over ()*ntile() over (order by id) from sketch_input order by id;
+select id,'rewrite',count(id) over ()*ntile(4) over (order by id) from sketch_input order by id;
 
 
 insert into sketch_input values (null,'a'),(null,'b');
 
 explain
-select id,'rewrite',ntile() over (order by id nulls first) from sketch_input order by id nulls first;
+select id,'rewrite',ntile(4) over (order by id nulls first) from sketch_input order by id nulls first;
 
-select id,'rewrite',ntile() over (order by id nulls first) from sketch_input order by id nulls first;
+select id,'rewrite',ntile(4) over (order by id nulls first) from sketch_input order by id nulls first;
 
 explain
-select id,'rewrite',ntile() over (order by id nulls last) from sketch_input order by id nulls last;
+select id,'rewrite',ntile(4) over (order by id nulls last) from sketch_input order by id nulls last;
 
-select id,'rewrite',ntile() over (order by id nulls last) from sketch_input order by id nulls last;
+select id,'rewrite',ntile(4) over (order by id nulls last) from sketch_input order by id nulls last;
 
-select id,ntile() over (order by id) from sketch_input order by id;
+select id,ntile(4) over (order by id) from sketch_input order by id;
