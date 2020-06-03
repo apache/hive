@@ -70,26 +70,11 @@ import com.google.common.collect.Lists;
  * <br/>
  * Currently it can rewrite:
  * <ul>
- *  <li>{@code count(distinct(x))} to distinct counting sketches
- *    <pre>
- *     SELECT COUNT(DISTINCT id) FROM sketch_input;
- *       ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
- *    </pre>
+ *  <li>{@code count(distinct(x))} using {@code CountDistinctRewrite}
  *  </li>
- *  <li>{@code percentile_disc(0.2) within group (order by id)}
- *    <pre>
- *     SELECT PERCENTILE_DISC(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
- *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
- *    </pre>
+ *  <li>{@code percentile_disc(0.2) within group (order by id)} using {@code PercentileDiscRewrite}
  *  </li>
- *  <li>{@code cume_dist() over (order by id)}
- *    <pre>
- *     SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
- *       ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
- *         FROM sketch_input JOIN (
- *           SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
- *         ) q;
- *    </pre>
+ *  <li>{@code cume_dist() over (order by id)} using {@code CumeDistRewrite}
  *  </li>
  *  </ul>
  */
@@ -232,6 +217,14 @@ public final class HiveRewriteToDataSketchesRules {
     }
   };
 
+  /**
+   * Rewrites {@code count(distinct(x))} to distinct counting sketches.
+   *
+   * <pre>
+   *   SELECT COUNT(DISTINCT id) FROM sketch_input;
+   *   ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
+   * </pre>
+   */
   public static class CountDistinctRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
@@ -299,6 +292,14 @@ public final class HiveRewriteToDataSketchesRules {
     }
   }
 
+  /**
+   * Rewrites {@code percentile_disc(0.2) within group (order by id)}.
+   *
+   * <pre>
+   *   SELECT PERCENTILE_DISC(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
+   *   ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
+   * </pre>
+   */
   public static class PercentileDiscRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
@@ -481,6 +482,17 @@ public final class HiveRewriteToDataSketchesRules {
     }
   }
 
+  /**
+   * Rewrites {@code cume_dist() over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
   public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
 
     public CumeDistRewrite(String sketchType) {
