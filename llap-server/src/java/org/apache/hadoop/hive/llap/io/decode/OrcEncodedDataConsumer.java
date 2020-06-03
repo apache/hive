@@ -220,7 +220,7 @@ public class OrcEncodedDataConsumer
         if (cvb.filterContext.size > 0) {
           // we are done reading a batch, send it to consumer for processing
           downstreamConsumer.consumeData(cvb);
-          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, cvb.filterContext.size);
         }
       }
       LlapIoImpl.ORC_LOGGER.debug("Done with decode");
