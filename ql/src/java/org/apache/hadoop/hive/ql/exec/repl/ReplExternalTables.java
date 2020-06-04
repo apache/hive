@@ -110,7 +110,7 @@ public final class ReplExternalTables {
       dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
               hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE);
       if (shouldWrite()) {
-        this.writer = FileSystem.get(hiveConf).create(writePath);
+        this.writer = writePath.getFileSystem(hiveConf).create(writePath);
       }
     }
 
