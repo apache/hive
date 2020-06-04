@@ -197,13 +197,15 @@ public class HiveStatement implements java.sql.Statement {
       }
     } catch (SQLException e) {
       throw e;
-    } catch (Exception e) {
-      if (e instanceof TApplicationException && ((TApplicationException)e)
-          .getType() == TApplicationException.BAD_SEQUENCE_ID) {
-        String errorMsg = "Mismatch thrift sequence id, which usually is caused by an OutOfMemoryError " +
-            "or a SocketTimeoutException, please check the memory status and previous calls.";
-        throw new SQLException(errorMsg, "08S01", e);
+    } catch (TApplicationException tae) {
+      String errorMsg = "Failed to close statement";
+      if (tae.getType() == TApplicationException.BAD_SEQUENCE_ID) {
+        errorMsg = "Failed to close statement. Mismatch thrift sequence id. A previous call to the Thrift library"
+            + " failed and now position within the input stream is lost. Please enable verbose error logging and"
+            + " check the status of previous calls.";
       }
+      throw new SQLException(errorMsg, "08S01", tae);
+    } catch (Exception e) {
       throw new SQLException("Failed to close statement", "08S01", e);
     }
   }
