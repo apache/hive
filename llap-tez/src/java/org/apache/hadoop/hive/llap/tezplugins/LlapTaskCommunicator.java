@@ -848,10 +848,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
-    if (scheduler != null) { // May be null in tests
-      // TODO: see javadoc
-      builder.setIsGuaranteed(scheduler.isInitialGuaranteed(taskSpec.getTaskAttemptID()));
-    }
+    builder.setIsGuaranteed(ContainerFactory.isContainerInitializedAsGuaranteed(containerId));
     return builder.build();
   }
 

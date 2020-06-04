@@ -29,6 +29,29 @@ class ContainerFactory {
   final ApplicationAttemptId customAppAttemptId;
   AtomicLong nextId;
 
+  private static final int GUARANTEED_WIDTH = 1;
+
+  private static final long GUARANTEED_BIT_MASK = (1L << GUARANTEED_WIDTH) - 1;
+
+  /**
+   * This is a hack to pass initial guaranteed information from {@link LlapTaskSchedulerService}
+   * to {@link LlapTaskCommunicator}. Otherwise, we ended up synchronizing communication and
+   * scheduling. This workaround can be removed after TEZ-4192 and HIVE-23589 are merged.
+   *
+   * Note: This method is reliable only for initial allocation of the task. Guaranteed status
+   * may change via separate requests later. Therefore, do not rely on this method other
+   * than creating initial submit work request.
+   *
+   * Even containerId -> guaranteed
+   * Odd containerId -> not guaranteed
+   *
+   * @param containerId
+   * @return {@code true} if the task associated with container was guaranteed initially.
+   */
+  public static boolean isContainerInitializedAsGuaranteed(ContainerId containerId) {
+    return (containerId.getContainerId() & GUARANTEED_BIT_MASK) == 0;
+  }
+
   public ContainerFactory(ApplicationAttemptId appAttemptId, long appIdLong) {
     this.nextId = new AtomicLong(1);
     ApplicationId appId =
@@ -38,9 +61,9 @@ class ContainerFactory {
   }
 
   public Container createContainer(Resource capability, Priority priority, String hostname,
-    int port, String nodeHttpAddress, final String nodeIdentity) {
+    int port, String nodeHttpAddress, final String nodeIdentity, boolean isGuaranteed) {
     ContainerId containerId =
-        ContainerId.newContainerId(customAppAttemptId, nextId.getAndIncrement());
+        ContainerId.newContainerId(customAppAttemptId, nextContainerId(isGuaranteed));
     NodeId nodeId = NodeId.newInstance(hostname, port);
     NodeId extendedNodeId = new ExtendedNodeId(nodeId, nodeIdentity);
 
@@ -48,5 +71,19 @@ class ContainerFactory {
         Container.newInstance(containerId, extendedNodeId, nodeHttpAddress, capability, priority, null);
 
     return container;
+  }
+
+  /**
+   * See {@link #isContainerInitializedAsGuaranteed(ContainerId)}
+   * @param isInitialGuaranteed
+   * @return
+   */
+  private long nextContainerId(boolean isInitialGuaranteed) {
+    long candidate = nextId.getAndIncrement();
+    candidate <<= GUARANTEED_WIDTH;
+    if (!isInitialGuaranteed) {
+      candidate |= 1;
+    }
+    return candidate;
   }
 }

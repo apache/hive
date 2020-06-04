@@ -1925,6 +1925,33 @@ public class TestLlapTaskSchedulerService {
     }
   }
 
+  @Test
+  public void testInitialGuaranteedInfoIsEncodedInContainerId() {
+    ApplicationAttemptId appAttemptId = ApplicationAttemptId.newInstance(ApplicationId.newInstance(1000, 1), 1);
+    ContainerFactory containerFactory = new ContainerFactory(appAttemptId, 15);
+    Container c1 = createDummyContainer(containerFactory, false);
+    Container c2 = createDummyContainer(containerFactory, true);
+    Container c3 = createDummyContainer(containerFactory, true);
+    Container c4 = createDummyContainer(containerFactory, false);
+    Container c5 = createDummyContainer(containerFactory, true);
+    Container c6 = createDummyContainer(containerFactory, false);
+    Container c7 = createDummyContainer(containerFactory, false);
+    Container c8 = createDummyContainer(containerFactory, true);
+
+    assertFalse(ContainerFactory.isContainerInitializedAsGuaranteed(c1.getId()));
+    assertTrue(ContainerFactory.isContainerInitializedAsGuaranteed(c2.getId()));
+    assertTrue(ContainerFactory.isContainerInitializedAsGuaranteed(c3.getId()));
+    assertFalse(ContainerFactory.isContainerInitializedAsGuaranteed(c4.getId()));
+    assertTrue(ContainerFactory.isContainerInitializedAsGuaranteed(c5.getId()));
+    assertFalse(ContainerFactory.isContainerInitializedAsGuaranteed(c6.getId()));
+    assertFalse(ContainerFactory.isContainerInitializedAsGuaranteed(c7.getId()));
+    assertTrue(ContainerFactory.isContainerInitializedAsGuaranteed(c8.getId()));
+  }
+
+  private Container createDummyContainer(ContainerFactory containerFactory, boolean isGuaranteed) {
+    return containerFactory.createContainer(mock(Resource.class), mock(Priority.class), "hostname", 0, null, "nodeIdentity", isGuaranteed);
+  }
+
   private static class TestTaskSchedulerServiceWrapper {
     static final Resource resource = Resource.newInstance(1024, 1);
     Configuration conf;
