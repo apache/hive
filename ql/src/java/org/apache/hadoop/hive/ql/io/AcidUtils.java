@@ -2155,7 +2155,8 @@ public class AcidUtils {
    * Returns the logical end of file for an acid data file.
    *
    * This relies on the fact that if delta_x_y has no committed transactions it wil be filtered out
-   * by {@link #getAcidState(Path, Configuration, ValidWriteIdList)} and so won't be read at all.
+   * by {@link #getAcidState(FileSystem, Path, Configuration, ValidWriteIdList, Ref, boolean, Map, boolean)}
+   * and so won't be read at all.
    * @param file - data file to read/compute splits on
    */
   public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
@@ -2169,30 +2170,38 @@ public class AcidUtils {
     else {
       return file.getLen();
     }
-    Path lengths = OrcAcidUtils.getSideFile(file.getPath());
-    if(!fs.exists(lengths)) {
-      /**
-       * if here for delta_x_y that means txn y is resolved and all files in this delta are closed so
-       * they should all have a valid ORC footer and info from NameNode about length is good
-       */
-      return file.getLen();
+    return getLastFlushLength(fs, file);
+  }
+
+  /**
+   * Read the side file to get the last flush length, or file length if no side file found.
+   * @param fs the file system to use
+   * @param deltaFile the delta file
+   * @return length as stored in the side file, or file length if no side file found
+   * @throws IOException if problems reading the side file
+   */
+  private static long getLastFlushLength(FileSystem fs, FileStatus deltaFile) throws IOException {
+    Path sideFile = OrcAcidUtils.getSideFile(deltaFile.getPath());
+
+    try (FSDataInputStream stream = fs.open(sideFile)) {
+      long result = -1;
+      while (stream.available() > 0) {
+        result = stream.readLong();
+      }
+      if (result < 0) {
+        /* side file is there but we couldn't read it. We want to avoid a read where
+         * (file.getLen() < 'value from side file' which may happen if file is not closed)
+         * because this means some committed data from 'file' would be skipped. This should be very
+         * unusual.
+         */
+        throw new IOException(sideFile + " found but is not readable.  Consider waiting or "
+            + "orcfiledump --recover");
+      }
+      return result;
+
+    } catch (FileNotFoundException e) {
+      return deltaFile.getLen();
     }
-    long len = OrcAcidUtils.getLastFlushLength(fs, file.getPath());
-    if(len >= 0) {
-      /**
-       * if here something is still writing to delta_x_y so  read only as far as the last commit,
-       * i.e. where last footer was written.  The file may contain more data after 'len' position
-       * belonging to an open txn.
-       */
-      return len;
-    }
-    /**
-     * if here, side file is there but we couldn't read it.  We want to avoid a read where
-     * (file.getLen() < 'value from side file' which may happen if file is not closed) because this
-     * means some committed data from 'file' would be skipped.
-     * This should be very unusual.
-     */
-    throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
   }
 
 
