@@ -12,6 +12,39 @@ insert into table sketch_input values
 
 select id,ntile(4) over (order by id) from sketch_input;
 
+select id,ntile(4) over (order by id),ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]*4
+from sketch_input
+join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
+order by id;
+
+
+select id,rank() over (order by id),(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])*ds_kll_n(ds)
+from sketch_input
+join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
+order by id;
+
+
+select id,ntile(4) over (order by id),rank() over (order by id),ceil((ds_kll_rank(ds, CAST(id AS FLOAT) ))*4)+1
+from sketch_input
+join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
+order by id;
+
+
+select id,rank() over (order by id),(1.0-ds_kll_cdf(ds, CAST((-id+0.1) AS FLOAT) )[0])*ds_kll_n(ds)+1
+from sketch_input
+join ( select ds_kll_sketch(cast(-id as float)) as ds from sketch_input ) q
+order by id;
+
+select id,rank() over (order by id),ds_kll_rank(ds, CAST(id AS FLOAT) ),(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
+from sketch_input
+join ( select ds_kll_sketch(cast(id as float)) as ds from sketch_input ) q
+order by id;
+
+
+select id,ntile(4) over (order by id),CEIL(cume_dist() over (order by id)*4)
+from sketch_input
+order by id;
+
 select id,ntile(4) over (order by id),1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
 from sketch_input
 join ( select ds_kll_sketch(cast(-id as float)) as ds from sketch_input ) q
