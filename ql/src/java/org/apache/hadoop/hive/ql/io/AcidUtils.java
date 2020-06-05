@@ -2645,7 +2645,7 @@ public class AcidUtils {
      */
     public static void writeVersionFile(Path deltaOrBaseDir, FileSystem fs)  throws IOException {
       Path formatFile = getVersionFilePath(deltaOrBaseDir);
-      if(!fs.exists(formatFile)) {
+      if(!fs.isFile(formatFile)) {
         try (FSDataOutputStream strm = fs.create(formatFile, false)) {
           strm.write(UTF8.encode(String.valueOf(ORC_ACID_VERSION)).array());
         } catch (IOException ioe) {
