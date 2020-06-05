@@ -499,7 +499,8 @@ public class Initiator extends MetaStoreCompactorThread {
 
     // Get the last compaction for each db/table/partition
     for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
-      String key = element.getDbname() + "/" + element.getTablename() + "/" + element.getPartitionname();
+      String key = element.getDbname() + "/" + element.getTablename() +
+          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
       // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
       lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
     }
