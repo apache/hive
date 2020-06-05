@@ -964,7 +964,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     }
 
     int oldSize = hashAggregations.size();
-    LOG.info("Hash Tbl flush: #hash table = " + oldSize);
+    LOG.info("Hash Tbl flush: #hash table = {}", oldSize);
 
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
         .entrySet().iterator();
@@ -975,7 +975,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-        LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
+        LOG.info("Hash Table flushed: new size = {}", hashAggregations.size());
         return;
       }
     }
@@ -1012,7 +1012,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   public void flush() throws HiveException{
     try {
       if (hashAggregations != null) {
-        LOG.info("Begin Hash Table flush: size = " + hashAggregations.size());
+        LOG.info("Begin Hash Table flush: size = {}", hashAggregations.size());
         Iterator iter = hashAggregations.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter
