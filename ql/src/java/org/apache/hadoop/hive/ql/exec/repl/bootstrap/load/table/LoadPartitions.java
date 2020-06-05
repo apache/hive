@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
@@ -157,9 +158,9 @@ public class LoadPartitions {
     );
   }
 
-  private boolean isImmutableDataCopy() {
-    //at the time of repl dump, data got referenced externally and not part of the dump.
-    return HiveConf.getBoolVar(context.hiveConf, REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY);
+  private boolean isMetaDataOp() {
+    return HiveConf.getBoolVar(context.hiveConf, REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY) ||
+        HiveConf.getBoolVar(context.hiveConf, REPL_DUMP_METADATA_ONLY);
   }
 
   /**
@@ -190,7 +191,7 @@ public class LoadPartitions {
   }
 
   private TaskTracker forNewTable() throws Exception {
-    if (isImmutableDataCopy()) {
+    if (isMetaDataOp()) {
       // Place all partitions in single task to reduce load on HMS.
       addConsolidatedPartitionDesc();
       return tracker;
