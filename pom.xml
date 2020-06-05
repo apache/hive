@@ -1419,7 +1419,15 @@
       <plugin>
 	<groupId>org.apache.rat</groupId>
 	<artifactId>apache-rat-plugin</artifactId>
-	<configuration>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
 	  <excludes>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
