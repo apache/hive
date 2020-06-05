@@ -1,3 +1,4 @@
+--! qt:disabled:Found 1/2 error HIVE-23622
 --! qt:dataset:alltypesorc
 
 set hive.vectorized.execution.enabled=false;
