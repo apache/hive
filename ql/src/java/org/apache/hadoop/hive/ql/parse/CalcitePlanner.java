@@ -1704,7 +1704,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         resultDir = fso.getConf().getDirName();
       }
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          conf, getDb(), impalaRel, dbname, username, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type);
+          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type);
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);
@@ -5565,7 +5565,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   private FunctionHelper createFunctionHelper(RexBuilder rexBuilder) {
     return isImpalaPlan(conf)
-        ? new ImpalaFunctionHelper(rexBuilder)
+        ? impalaHelper.createFunctionHelper(rexBuilder)
         : new HiveFunctionHelper(rexBuilder);
   }
 

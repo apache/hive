@@ -34,30 +34,31 @@ import org.apache.impala.catalog.HdfsFileFormat;
 import org.apache.impala.catalog.TableLoadingException;
 import org.apache.impala.planner.PlannerContext;
 import org.apache.impala.thrift.TExecRequest;
+import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.util.EventSequence;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class ImpalaPlannerContext extends PlannerContext {
 
-  private ImpalaBasicAnalyzer analyzer;
+  private final ImpalaQueryContext queryContext;
   private TExecRequest execRequest;
   private List<Expr> resultExprs;
   private ImpalaTableLoader tableLoader;
   private FeTable targetTable;
   private Partition targetPartition;
 
-  public ImpalaPlannerContext(TQueryCtx queryCtx, EventSequence timeline,
-      ImpalaBasicAnalyzer analyzer) {
-    super(queryCtx, timeline);
-    this.analyzer = analyzer;
+  public ImpalaPlannerContext(ImpalaQueryContext queryContext, EventSequence timeline) {
+    super(queryContext.getTQueryCtx(), timeline);
+    this.queryContext = queryContext;
     this.tableLoader = new ImpalaTableLoader();
   }
 
   public void setTargetTable(FeTable targetTable) {
     this.targetTable = targetTable;
-    analyzer.getDescTbl().setTargetTable(targetTable);
+    queryContext.getAnalyzer().getDescTbl().setTargetTable(targetTable);
   }
 
   public FeTable getTargetTable() {
@@ -73,13 +74,15 @@ public class ImpalaPlannerContext extends PlannerContext {
   }
 
   @Override
-  public Analyzer getRootAnalyzer() {
-    return analyzer;
-  }
+  public Analyzer getRootAnalyzer() {return queryContext.getAnalyzer();}
 
   @Override
   public boolean hasTableSink() {
     return targetTable != null;
+  }
+
+  public List<TNetworkAddress> getHostLocations() {
+    return queryContext.getHostLocations();
   }
 
   public void setExecRequest(TExecRequest execRequest) {

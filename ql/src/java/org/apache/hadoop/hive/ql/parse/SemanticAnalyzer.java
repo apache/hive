@@ -475,8 +475,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     tabNameToTabObject = new HashMap<>();
     defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
+    SessionState sessionState = SessionState.get();
     impalaHelper = isImpalaPlan(conf)
-        ? new ImpalaHelper()
+        ? new ImpalaHelper(conf, sessionState.getCurrentDatabase(),
+	    StringUtils.defaultString(sessionState.getUserName()))
         : null;
   }
 

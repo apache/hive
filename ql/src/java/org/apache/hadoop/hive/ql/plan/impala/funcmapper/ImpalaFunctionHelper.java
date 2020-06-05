@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.List;
@@ -55,9 +56,9 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   private final RexNodeExprFactory factory;
   private final RexExecutor rexExecutor;
 
-  public ImpalaFunctionHelper(RexBuilder builder) {
+  public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
-    this.rexExecutor = new ImpalaRexExecutorImpl();
+    this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
   }
 
   /**

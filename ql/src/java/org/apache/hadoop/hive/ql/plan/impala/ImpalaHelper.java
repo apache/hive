@@ -23,6 +23,7 @@ import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -33,6 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaWindowingFixRule;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -60,6 +64,8 @@ import java.util.stream.Collectors;
 
 public class ImpalaHelper {
 
+  private final ImpalaQueryContext queryContext;
+
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaHelper.class);
 
   static {
@@ -67,6 +73,18 @@ public class ImpalaHelper {
     // If we don't call it here, it could be called from within impala-frontend with
     // the "false" parameter.
     BuiltinsDb.getInstance(true);
+  }
+
+  public ImpalaHelper(HiveConf conf, String dbname, String username) throws SemanticException {
+    try {
+      queryContext = new ImpalaQueryContext(conf, dbname, username, createQueryOptions(conf));
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public ImpalaQueryContext getQueryContext() {
+    return queryContext;
   }
 
   public HepProgram getHepProgram(Hive db) {
@@ -105,15 +123,12 @@ public class ImpalaHelper {
     return programBuilder.build();
   }
 
-  public ImpalaCompiledPlan compilePlan(HiveConf conf, Hive db, RelNode rootRelNode,
-      String dbName, String userName, Path resultPath, boolean isExplain, QB qb,
-      CalcitePlanner.PreCboCtx.Type stmtType) throws HiveException {
+  public ImpalaCompiledPlan compilePlan(Hive db, RelNode rootRelNode, Path resultPath,
+      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
-      TQueryOptions options = createQueryOptions(conf);
-      ImpalaPlanner impalaPlanner =
-        new ImpalaPlanner(dbName, userName, options, resultPath, db, qb,
+      ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, resultPath, db, qb,
           getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType));
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
@@ -161,6 +176,10 @@ public class ImpalaHelper {
       default:
         throw new RuntimeException("Unsupported statement type "+stmtType.toString());
     }
+  }
+
+  public FunctionHelper createFunctionHelper(RexBuilder rexBuilder) {
+    return new ImpalaFunctionHelper(queryContext, rexBuilder);
   }
 
   private TQueryOptions createQueryOptions(HiveConf conf) throws HiveException {

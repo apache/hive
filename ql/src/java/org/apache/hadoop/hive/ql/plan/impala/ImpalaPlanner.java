@@ -32,9 +32,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.LiteralExpr;
-import org.apache.impala.analysis.StmtMetadataLoader;
-import org.apache.impala.authorization.AuthorizationFactory;
-import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.catalog.Column;
 import org.apache.impala.catalog.FeTable;
 import org.apache.impala.catalog.HdfsTable;
@@ -54,33 +51,23 @@ import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
 import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
-import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TColumn;
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TExplainLevel;
-import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.thrift.TPlanExecInfo;
 import org.apache.impala.thrift.TPlanFragment;
 import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.thrift.TQueryExecRequest;
-import org.apache.impala.thrift.TQueryOptions;
 import org.apache.impala.thrift.TResultSetMetadata;
 import org.apache.impala.thrift.TRuntimeFilterMode;
-import org.apache.impala.thrift.TSessionState;
-import org.apache.impala.thrift.TSessionType;
 import org.apache.impala.thrift.TSortingOrder;
 import org.apache.impala.thrift.TStmtType;
-import org.apache.impala.thrift.TUniqueId;
 import org.apache.impala.util.EventSequence;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * The ImpalaPlanner encapsulates selected functionality from Impala's Frontend and
@@ -98,34 +85,26 @@ public class ImpalaPlanner {
   private ImpalaPlannerContext ctx_;
   boolean isOverwrite_ = false;
   long writeId_ = -1;
-  private List<TNetworkAddress> hostLocations = new ArrayList<>();
+
   // Path where result files are written when hive.impala.execution.mode is file.
   private final Path resultPath;
 
-  public ImpalaPlanner(String dbname, String username, TQueryOptions options, Path resultPath,
-      Hive db, QB qb, TStmtType stmtType, TStmtType resultStmtType) throws HiveException {
+  public ImpalaPlanner(ImpalaQueryContext queryContext, Path resultPath, Hive db, QB qb,
+      TStmtType stmtType, TStmtType resultStmtType) throws HiveException {
 
     db_ = db;
     qb_ = qb;
     stmtType_ = stmtType;
     resultStmtType_ = resultStmtType;
 
-    // TODO: replace hostname and port with configured parameter settings
-    hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
-
     this.resultPath = resultPath;
-    TQueryCtx queryCtx = createQueryContext(dbname, username, options, hostLocations.get(0));
-
-    AuthorizationFactory authFactory = new NoopAuthorizationFactory();
-    StmtMetadataLoader.StmtTableCache stmtTableCache =
-        new StmtMetadataLoader.StmtTableCache(new DummyCatalog(), Sets.newHashSet(), Maps.newHashMap());
-    ImpalaBasicAnalyzer analyzer = new ImpalaBasicAnalyzer(stmtTableCache, queryCtx,
-        authFactory, hostLocations);
     EventSequence timeline = new EventSequence("Starting conversion of Hive plan to Impala plan.");
-    ctx_ = new ImpalaPlannerContext(queryCtx, timeline, analyzer);
+    ctx_ = new ImpalaPlannerContext(queryContext, timeline);
   }
 
-  public ImpalaPlannerContext getPlannerContext() {return ctx_;}
+  public ImpalaPlannerContext getPlannerContext() {
+      return ctx_;
+  }
 
   /**
    * Create an exec request for Impala to execute based on the supplied plan
@@ -176,7 +155,7 @@ public class ImpalaPlanner {
     TQueryExecRequest queryExecRequest = new TQueryExecRequest();
     TExecRequest result = createExecRequest(ctx_.getQueryCtx(), planFragmentRoot,
         queryExecRequest);
-    queryExecRequest.setHost_list(hostLocations);
+    queryExecRequest.setHost_list(ctx_.getHostLocations());
 
     boolean isQuery = getResultStmtType() == TStmtType.QUERY;
 
@@ -413,35 +392,4 @@ public class ImpalaPlanner {
 
     return result;
   }
-
-  public TQueryCtx createQueryContext(String defaultDb,
-      String user, TQueryOptions options, TNetworkAddress hostLocation) {
-    TQueryCtx queryCtx = new TQueryCtx();
-    queryCtx.setClient_request(new TClientRequest("Submitting Hive generate plan", options));
-    queryCtx.setQuery_id(new TUniqueId());
-    queryCtx.setSession(new TSessionState(new TUniqueId(), TSessionType.HIVESERVER2,
-        defaultDb, user, hostLocation));
-
-    // TODO: following fields need to be configured appropriately
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
-    Date now = Calendar.getInstance().getTime();
-    queryCtx.setNow_string(formatter.format(now));
-    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-    queryCtx.setUtc_timestamp_string(formatter.format(now));
-    queryCtx.setLocal_time_zone("UTC");
-    queryCtx.setStart_unix_millis(System.currentTimeMillis());
-    queryCtx.setPid(1000);
-    String requestPool = SessionState.get().getConf()
-        .getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
-    queryCtx.setRequest_pool(requestPool); // for admission control
-    queryCtx.setCoord_address(hostLocation);
-
-    TNetworkAddress krpcCordAddr = new TNetworkAddress();
-    krpcCordAddr.setHostname("127.0.0.1");
-    krpcCordAddr.setPort(27000);
-    queryCtx.setCoord_krpc_address(krpcCordAddr);
-
-    return queryCtx;
-  }
-
 }
