@@ -4704,6 +4704,10 @@ public class HiveConf extends Configuration {
         "instead of using the locations provided by the split itself. If there is no llap daemon " +
         "running, fall back to locations provided by the split. This is effective only if " +
         "hive.execution.mode is llap"),
+    LLAP_SPLIT_LOCATION_PROVIDER_CLASS("hive.llap.split.location.provider.class",
+      "org.apache.hadoop.hive.ql.exec.tez.HostAffinitySplitLocationProvider",
+      "Split location provider class to use during split generation for LLAP. This class should implement\n" +
+        "org.apache.hadoop.mapred.split.SplitLocationProvider interface"),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
