@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hive.common.util.IntervalDayTimeUtils;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.hive.common.util.IntervalDayTimeUtils;
  * with nanosecond precision.
  * 1 day = 24 hours = 1440 minutes = 86400 seconds
  */
-public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime>, Cloneable {
+public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
 
   // days/hours/minutes/seconds all represented as seconds
   protected long totalSeconds;
@@ -168,11 +169,9 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime>, Clo
    * Return a copy of this object.
    */
   @Override
-  public Object clone() throws CloneNotSupportedException {
-    HiveIntervalDayTime clone = (HiveIntervalDayTime) super.clone();
-    clone.totalSeconds = totalSeconds;
-    clone.nanos = nanos;
-    return clone;
+  @SuppressFBWarnings(value = "CN_IMPLEMENTS_CLONE_BUT_NOT_CLONEABLE", justification = "Intended")
+  public Object clone() {
+      return new HiveIntervalDayTime(totalSeconds, nanos);
   }
 
   @Override
