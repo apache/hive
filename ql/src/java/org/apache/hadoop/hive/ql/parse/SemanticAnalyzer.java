@@ -2238,7 +2238,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Temporary tables created during the execution are not the input sources
       if (!PlanUtils.isValuesTempTable(alias)) {
         PlanUtils.addInput(inputs,
-            new ReadEntity(tab, parentViewInfo, parentViewInfo == null),mergeIsDirect);
+            new ReadEntity(tab, parentViewInfo, parentViewInfo == null), mergeIsDirect);
       }
     }
 
