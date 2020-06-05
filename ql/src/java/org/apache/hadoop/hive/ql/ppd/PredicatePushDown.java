@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -122,6 +123,9 @@ public class PredicatePushDown extends Transform {
     opRules.put(new RuleRegExp("R10",
         ReduceSinkOperator.getOperatorName() + "%"),
         OpProcFactory.getRSProc());
+    opRules.put(new RuleRegExp("R11",
+        GroupByOperator.getOperatorName() + "%"),
+        OpProcFactory.getGBYProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
