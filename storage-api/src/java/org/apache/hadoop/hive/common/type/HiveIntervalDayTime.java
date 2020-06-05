@@ -31,7 +31,7 @@ import org.apache.hive.common.util.IntervalDayTimeUtils;
  * with nanosecond precision.
  * 1 day = 24 hours = 1440 minutes = 86400 seconds
  */
-public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
+public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime>, Cloneable {
 
   // days/hours/minutes/seconds all represented as seconds
   protected long totalSeconds;
@@ -168,8 +168,11 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
    * Return a copy of this object.
    */
   @Override
-  public Object clone() {
-      return new HiveIntervalDayTime(totalSeconds, nanos);
+  public Object clone() throws CloneNotSupportedException {
+    HiveIntervalDayTime clone = (HiveIntervalDayTime) super.clone();
+    clone.totalSeconds = totalSeconds;
+    clone.nanos = nanos;
+    return clone;
   }
 
   @Override

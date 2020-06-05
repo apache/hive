@@ -78,13 +78,13 @@ public class EncodedColumnBatch<BatchKey> {
 
     @Override
     public String toString() {
-      String bufStr = "";
+      StringBuffer bufStr = new StringBuffer();
       if (cacheBuffers != null) {
         for (MemoryBuffer mb : cacheBuffers) {
-          bufStr += mb.getClass().getSimpleName() + " with " + mb.getByteBufferRaw().remaining() + " bytes, ";
+          bufStr.append(mb.getClass().getSimpleName() + " with " + mb.getByteBufferRaw().remaining() + " bytes, ");
         }
       }
-      return "ColumnStreamData [cacheBuffers=[" + bufStr
+      return "ColumnStreamData [cacheBuffers=[" + bufStr.toString()
           + "], indexBaseOffset=" + indexBaseOffset + "]";
     }
 

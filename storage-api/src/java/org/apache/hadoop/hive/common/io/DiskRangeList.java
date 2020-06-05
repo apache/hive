@@ -228,6 +228,16 @@ public class DiskRangeList extends DiskRange {
     return result;
   }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return super.equals(other);
+  }
+
   public static class CreateHelper {
     private DiskRangeList tail = null, head;
 
