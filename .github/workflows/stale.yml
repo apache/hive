@@ -10,7 +10,12 @@ jobs:
     - uses: actions/stale@v3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Feel free to reach out to us on the dev@hive.apache.org list if the patch is in need of reviews.'
+        stale-pr-message: This pull request has been automatically marked as
+          stale because it has not had recent activity. It will be closed if
+          no further activity occurs.
+
+          Feel free to reach out on the dev@hive.apache.org list if the patch
+          is in need of reviews.
         exempt-pr-labels: 'awaiting-approval,work-in-progress'
         stale-pr-label: stale
         days-before-stale: 60
