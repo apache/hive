@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -30,7 +29,6 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -76,10 +74,12 @@ public class BaseReplicationAcrossInstances {
     String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
     MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    Map<String, String> localOverrides = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
-      put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
-    }};
+    Map<String, String> localOverrides = new HashMap<String, String>() {
+      {
+        put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
+        put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+      }
+    };
     localOverrides.putAll(primaryOverrides);
     primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();

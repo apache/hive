@@ -34,16 +34,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 
+/**
+ * Test replication scenarios with staging on replica.
+ */
 public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcrossInstances {
 
   private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
+    Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
     overrides.put(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, "false");
