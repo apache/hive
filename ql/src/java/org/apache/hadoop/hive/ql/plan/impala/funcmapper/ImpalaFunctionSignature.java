@@ -127,7 +127,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
 
   private ImpalaFunctionSignature(String func, List<RelDataType> argTypes, RelDataType retType) {
     Preconditions.checkNotNull(func);
-    this.func = getFunctionName(func, argTypes);
+    this.func = func;
     this.argTypes = ImpalaTypeConverter.getNormalizedImpalaTypes(argTypes);
     this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypes(this.argTypes);
     this.retType = retType != null ? ImpalaTypeConverter.getNormalizedImpalaType(retType) : null;
@@ -265,26 +265,6 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     return Integer.compare(thisOrdinal, otherOrdinal);
   }
 
-  public static String getFunctionName(String funcName,
-      List<RelDataType> types) {
-    if (!funcName.equals("+") && !funcName.equals("-")) {
-      return funcName;
-    }
-    String opType = funcName.equals("+") ? "add" : "sub";
-    // We only need to support months* and milliseconds*. Days intervals and anything less all
-    // get translated into milliseconds within calcite.  Months and years both get translated into
-    // months.
-    for (RelDataType type : types) {
-      if (SqlTypeName.YEAR_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
-        return "months_" + opType;
-      }
-      if (SqlTypeName.DAY_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
-        return "milliseconds_" + opType;
-      }
-    }
-    return funcName;
-  }
-
   private static boolean verifyCaseParams(RelDataType typeToMatch, List<RelDataType> inputs) {
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < inputs.size() / 2; ++i) {
@@ -301,6 +281,18 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
           inputs.get(inputs.size() - 1));
     }
     return true;
+  }
+
+  private static ImpalaFunctionSignature createTimeIntervalOpSignature(
+      SqlKind kind, List<RelDataType> argTypes) {
+    String funcName = TimeIntervalOpFunctionResolver.getFunctionName(kind, argTypes);
+    // The time interval operations will always take timestamp and bigint as their two
+    // arguments.  If the first operand is of type "date", it will be cast into a timestamp.
+    List<Type> timeArgTypes = ImmutableList.of(Type.TIMESTAMP, Type.BIGINT);
+    List<RelDataType> timeArgRelDataTypes = ImpalaTypeConverter.getRelDataTypes(timeArgTypes);
+    Type timeRetType = Type.TIMESTAMP;
+    RelDataType timeRetRelDataType = ImpalaTypeConverter.getRelDataType(timeRetType);
+    return new ImpalaFunctionSignature(funcName, timeArgRelDataTypes, timeRetRelDataType);
   }
 
   /**
@@ -344,6 +336,12 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
         List<RelDataType> extractArgs = argTypes.size() > 1 ? argTypes.subList(1,2) : argTypes;
         ifs = new ImpalaFunctionSignature(lowerCaseFunc, extractArgs, returnType);
         break;
+      case PLUS:
+      case MINUS:
+        ifs = TimeIntervalOpFunctionResolver.isTimeIntervalOp(argTypes)
+            ? createTimeIntervalOpSignature(kind, argTypes)
+            : new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
+	break;
       default:
         ifs = new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
     }

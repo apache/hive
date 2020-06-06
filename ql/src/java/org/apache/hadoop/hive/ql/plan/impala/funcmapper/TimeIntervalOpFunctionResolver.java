@@ -19,13 +19,16 @@
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.impala.catalog.Type;
 
 import java.util.List;
 
@@ -83,5 +86,27 @@ public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
     return SqlTypeName.INTERVAL_TYPES.contains(inputNodes.get(0).getType().getSqlTypeName())
         ? Lists.newArrayList(inputNodes.get(1), inputNodes.get(0))
         : inputNodes;
+  }
+
+  public static String getFunctionName(SqlKind kind, List<RelDataType> types) {
+    String opType = kind == SqlKind.PLUS ? "add" : "sub";
+    // We only need to support months* and milliseconds*. Days intervals and anything less all
+    // get translated into milliseconds within calcite.  Months and years both get translated into
+    // months.
+    for (RelDataType type : types) {
+      if (SqlTypeName.YEAR_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
+        return "months_" + opType;
+      }
+      if (SqlTypeName.DAY_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
+        return "milliseconds_" + opType;
+      }
+    }
+    throw new RuntimeException("Unable to resolve time interval type for " + kind);
+  }
+
+  public static boolean isTimeIntervalOp(List<RelDataType> argTypes) {
+    return argTypes.size() == 2 &&
+        (SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(0).getSqlTypeName()) ||
+        SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(1).getSqlTypeName()));
   }
 }
