@@ -769,6 +769,90 @@ public class SharedCache {
       }
     }
 
+    public void refreshPrimaryKeys(List<SQLPrimaryKey> keys) {
+      Map<String, SQLPrimaryKey> newKeys = new HashMap<>();
+      try {
+        tableLock.writeLock().lock();
+        int size = 0;
+        for (SQLPrimaryKey key : keys) {
+          if (isPrimaryKeyCacheDirty.compareAndSet(true, false)) {
+            LOG.debug("Skipping primary key cache update for table: " + getTable().getTableName()
+                    + "; the primary keys we have is dirty.");
+            return;
+          }
+          newKeys.put(key.getPk_name(), key);
+          size += getObjectSize(SQLPrimaryKey.class, key);
+        }
+        primaryKeyCache = newKeys;
+        updateMemberSize(MemberName.PRIMARY_KEY_CACHE, size, SizeMode.Snapshot);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void refreshForeignKeys(List<SQLForeignKey> keys) {
+      Map<String, SQLForeignKey> newKeys = new HashMap<>();
+      try {
+        tableLock.writeLock().lock();
+        int size = 0;
+        for (SQLForeignKey key : keys) {
+          if (isForeignKeyCacheDirty.compareAndSet(true, false)) {
+            LOG.debug("Skipping foreign key cache update for table: " + getTable().getTableName()
+                    + "; the foreign keys we have is dirty.");
+            return;
+          }
+          newKeys.put(key.getFk_name(), key);
+          size += getObjectSize(SQLForeignKey.class, key);
+        }
+        foreignKeyMap = newKeys;
+        updateMemberSize(MemberName.FOREIGN_KEY_CACHE, size, SizeMode.Snapshot);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void refreshNotNullConstraints(List<SQLNotNullConstraint> constraints) {
+      Map<String, SQLNotNullConstraint> newConstraints = new HashMap<>();
+      try {
+        tableLock.writeLock().lock();
+        int size = 0;
+        for (SQLNotNullConstraint constraint : constraints) {
+          if (isNotNullConstraintCacheDirty.compareAndSet(true, false)) {
+            LOG.debug("Skipping not null constraints cache update for table: " + getTable().getTableName()
+                    + "; the not null constraints we have is dirty.");
+            return;
+          }
+          newConstraints.put(constraint.getNn_name(), constraint);
+          size += getObjectSize(SQLNotNullConstraint.class, constraint);
+        }
+        notNullConstraintMap = newConstraints;
+        updateMemberSize(MemberName.NOTNULL_CONSTRAINT, size, SizeMode.Snapshot);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void refreshUniqueConstraints(List<SQLUniqueConstraint> constraints) {
+      Map<String, SQLUniqueConstraint> newConstraints = new HashMap<>();
+      try {
+        tableLock.writeLock().lock();
+        int size = 0;
+        for (SQLUniqueConstraint constraint : constraints) {
+          if (isUniqueConstraintCacheDirty.compareAndSet(true, false)) {
+            LOG.debug("Skipping unique constraints cache update for table: " + getTable().getTableName()
+                    + "; the unique costraints we have is dirty.");
+            return;
+          }
+          newConstraints.put(constraint.getUk_name(), constraint);
+          size += getObjectSize(SQLUniqueConstraint.class, constraint);
+        }
+        uniqueConstraintMap = newConstraints;
+        updateMemberSize(MemberName.UNIQUE_CONSTRAINT, size, SizeMode.Snapshot);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
     public Partition removePartition(List<String> partVal, SharedCache sharedCache) {
       Partition part = null;
       try {
@@ -2329,6 +2413,56 @@ public class SharedCache {
       cacheLock.readLock().unlock();
     }
     return keys;
+  }
+
+  public void refreshPrimaryKeysInCache(String catName, String dbName, String tblName, List<SQLPrimaryKey> pks) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.refreshPrimaryKeys(pks);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void refreshForeignKeysInCache(String catName, String dbName, String tblName, List<SQLForeignKey> fks) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.refreshForeignKeys(fks);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void refreshNotNullConstraintsInCache(String catName, String dbName, String tblName,
+                                               List<SQLNotNullConstraint> nnc) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.refreshNotNullConstraints(nnc);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void refreshUniqueConstraintsInCache(String catName, String dbName, String tblName,
+                                              List<SQLUniqueConstraint> uc) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.refreshUniqueConstraints(uc);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
   }
 
   public void alterPartitionInCache(String catName, String dbName, String tblName, List<String> partVals,
