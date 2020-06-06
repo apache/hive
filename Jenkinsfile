@@ -149,6 +149,13 @@ jobWrappers {
       stage('Checkout') {
         checkout scm
       }
+      stage('Prechecks') {
+        def findbugsProjects = [
+            ":hive-shims-aggregator",
+            ":hive-shims-common"
+        ]
+        buildHive("-Pfindbugs -pl " + findbugsProjects.join(",") + " -am compile findbugs:check")
+      }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
         sh '''#!/bin/bash -e
