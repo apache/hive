@@ -313,7 +313,7 @@ public class TezSessionState {
 
     String tezJobName = HiveConf.getVar(conf,ConfVars.HIVETEZJOBNAME); 
     if (StringUtils.isBlank(tezJobName)){
-      tezJobName = "HIVE-" + sessionId;
+      tezJobName = String.format("HIVE-%s", sessionId);
     }  
     final TezClient session = TezClient.newBuilder(tezJobName, tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
