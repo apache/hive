@@ -65,6 +65,10 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
   // where DOUBLE is an operand.
   static Map<String, List<ImpalaFunctionSignature>> CAST_CHECK_BUILTINS_INSTANCE = Maps.newHashMap();
 
+  // List of functions where Impala does not handle CHAR or VARCHAR types but handles a STRING type.
+  public static List<String> STRING_ONLY_FUNCTIONS =
+      ImmutableList.of("coalesce", "in", "substr", "substring", "upper", "lower", "like");
+
   // populate the static structures
   static {
     Reader reader =
@@ -282,8 +286,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
 
     // If there is an "else" parameter, that argument needs to match too.
     if (inputs.size() % 2 == 1) {
-      return areCompatibleDataTypes(typeToMatch,
-          inputs.get(inputs.size() - 1));
+      return areCompatibleDataTypes(typeToMatch, inputs.get(inputs.size() - 1));
     }
     return true;
   }
@@ -299,6 +302,26 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     RelDataType timeRetRelDataType = ImpalaTypeConverter.getRelDataType(timeRetType);
     return new ImpalaFunctionSignature(funcName, timeArgRelDataTypes, timeRetRelDataType);
   }
+
+  // Create the Impala Function Signature for STRING_ONLY_FUNCTIONS, the functions that
+  // handle STRING types but do not handle CHAR and VARCHAR types.
+  private static ImpalaFunctionSignature createStringSignature(
+      String funcName, List<RelDataType> argTypes, RelDataType retType) {
+    List<RelDataType> inArgTypes = Lists.newArrayList();
+    for (RelDataType argType : argTypes) {
+      if (SqlTypeName.CHAR_TYPES.contains(argType.getSqlTypeName())) {
+        inArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.STRING));
+      } else {
+        inArgTypes.add(argType);
+      }
+    }
+    RelDataType inRetType = retType;
+    if (retType != null && SqlTypeName.CHAR_TYPES.contains(retType.getSqlTypeName())) {
+      retType = ImpalaTypeConverter.getRelDataType(Type.STRING);
+    }
+    return new ImpalaFunctionSignature(funcName, inArgTypes, inRetType);
+  }
+
 
   /**
    * Returns true if datatypes are compatible within the Impala function. In the case of character,
@@ -329,33 +352,38 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     SqlKind kind = op != null ? op.getKind() : SqlKind.OTHER;
 
     ImpalaFunctionSignature ifs;
-    switch(kind) {
-      case CASE:
-        // Extra check for verification of case statement. In function resolver mode,
-        // the return type will always be null and this will return null. At Impala
-        // translation time (after CBO), the parameters need to be simplified, since
-        // the case statement in Impala is of the form <TYPE> CASE(<TYPE>).
-        if (!verifyCaseParams(returnType, argTypes)) {
-          return null;
-        }
-        ifs = new ImpalaFunctionSignature(lowerCaseFunc, Lists.newArrayList(returnType),
-            returnType);
-        break;
-      case EXTRACT:
-        // Extract can come in two different forms. From the function resolver, it comes in
-        // as YEAR(TIMESTAMP). From Calcite, it comes in  the form YEAR(SYMBOL(YEAR), TIMESTAMP).
-        // So if we see two parameters, we only need the second one.
-        List<RelDataType> extractArgs = argTypes.size() > 1 ? argTypes.subList(1,2) : argTypes;
-        ifs = new ImpalaFunctionSignature(lowerCaseFunc, extractArgs, returnType);
-        break;
-      case PLUS:
-      case MINUS:
-        ifs = TimeIntervalOpFunctionResolver.isTimeIntervalOp(argTypes)
-            ? createTimeIntervalOpSignature(kind, argTypes)
-            : new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
-	break;
-      default:
-        ifs = new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
+
+    if (STRING_ONLY_FUNCTIONS.contains(lowerCaseFunc)) {
+      ifs = createStringSignature(lowerCaseFunc, argTypes, returnType);
+    } else {
+      switch(kind) {
+        case CASE:
+          // Extra check for verification of case statement. In function resolver mode,
+          // the return type will always be null and this will return null. At Impala
+          // translation time (after CBO), the parameters need to be simplified, since
+          // the case statement in Impala is of the form <TYPE> CASE(<TYPE>).
+          if (!verifyCaseParams(returnType, argTypes)) {
+            return null;
+          }
+          ifs = new ImpalaFunctionSignature(lowerCaseFunc, Lists.newArrayList(returnType),
+              returnType);
+          break;
+        case EXTRACT:
+          // Extract can come in two different forms. From the function resolver, it comes in
+          // as YEAR(TIMESTAMP). From Calcite, it comes in  the form YEAR(SYMBOL(YEAR), TIMESTAMP).
+          // So if we see two parameters, we only need the second one.
+          List<RelDataType> extractArgs = argTypes.size() > 1 ? argTypes.subList(1,2) : argTypes;
+          ifs = new ImpalaFunctionSignature(lowerCaseFunc, extractArgs, returnType);
+          break;
+        case PLUS:
+        case MINUS:
+          ifs = TimeIntervalOpFunctionResolver.isTimeIntervalOp(argTypes)
+              ? createTimeIntervalOpSignature(kind, argTypes)
+              : new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
+          break;
+        default:
+          ifs = new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
+      }
     }
     // Check within the given map that this signature exists. Even though this static function
     // created a signature, the returned signature will be a different object as retrieved from

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTimestampArithmeticExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
@@ -74,14 +75,21 @@ public class ImpalaRexCall {
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
       List<Expr> params, List<TupleId> tupleIds) throws HiveException {
-    Type impalaRetType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
+
+    Type calciteReturnType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
 
     if (rexCall.getOperator() == SqlStdOperatorTable.GROUPING) {
-      return processGroupingFunction(rexCall, params, impalaRetType, analyzer);
+      return processGroupingFunction(rexCall, params, calciteReturnType, analyzer);
     }
 
     String funcName = rexCall.getOperator().getName().toLowerCase();
+    if (ImpalaFunctionSignature.STRING_ONLY_FUNCTIONS.contains(funcName)) {
+      params = Lists.transform(params, ImpalaRexCall::castParamToString);
+    }
+
     Function fn = getFunction(funcName, rexCall.getOperands(), rexCall.getType());
+    Type impalaRetType = ImpalaTypeConverter.createImpalaType(fn.getReturnType(),
+        rexCall.getType().getPrecision(), rexCall.getType().getScale());
 
     // TODO: CDPD-8625: replace isBinaryComparison with rexCall.isA(SqlKind.BINARY_COMPARISON) when
     // we upgrade to calcite 1.21
@@ -89,49 +97,76 @@ public class ImpalaRexCall {
       return createBinaryCompExpr(analyzer, fn, params, rexCall.getOperator().getKind(), impalaRetType);
     }
 
+    Expr retExpr;
     switch (rexCall.getOperator().getKind()) {
       case OR:
-        return createCompoundExpr(analyzer, CompoundPredicate.Operator.OR, fn, params, impalaRetType);
+        retExpr = createCompoundExpr(analyzer, CompoundPredicate.Operator.OR, fn, params, impalaRetType);
+        break;
       case AND:
-        return createCompoundExpr(analyzer, CompoundPredicate.Operator.AND, fn, params, impalaRetType);
+        retExpr = createCompoundExpr(analyzer, CompoundPredicate.Operator.AND, fn, params, impalaRetType);
+        break;
       case CASE:
-        return createCaseExpr(analyzer, fn, params, impalaRetType);
+        retExpr = createCaseExpr(analyzer, fn, params, impalaRetType);
+        break;
       case IN:
-        return createInExpr(analyzer, fn, params, false, impalaRetType);
+        retExpr = createInExpr(analyzer, fn, params, false, impalaRetType);
+        break;
       case NOT_IN:
-        return createInExpr(analyzer, fn, params, true, impalaRetType);
+        retExpr = createInExpr(analyzer, fn, params, true, impalaRetType);
+        break;
       case IS_NULL:
         Preconditions.checkState(params.size() == 1);
         if (params.get(0) instanceof BoolLiteral && tupleIds != null && tupleIds.size() > 0) {
-          return createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
+          retExpr = createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
               false, rexCall, tupleIds);
+        } else {
+          retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), false, impalaRetType);
         }
-        return new ImpalaIsNullExpr(analyzer, fn, params.get(0), false, impalaRetType);
+        break;
       case IS_NOT_NULL:
         Preconditions.checkState(params.size() == 1);
         if (params.get(0) instanceof BoolLiteral && tupleIds != null && tupleIds.size() > 0) {
-          return createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
+          retExpr = createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
               true, rexCall, tupleIds);
+        } else {
+          retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
         }
-        return new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
+        break;
       case EXTRACT:
         // for specific extract functions (e.g.year, month), we ignore the first redundant
         // "SYMBOL" parameter
         if (!funcName.equals("extract")) {
-          return new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
-        }
+          retExpr = new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
+        } else {
         // CDPD-8867: normal 'extract function currently uses default ImpalaFunctionCallExpr
+          retExpr = new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
+        }
         break;
       case PLUS:
       case MINUS:
         if (TimeIntervalOpFunctionResolver.isTimestampArithExpr(fn.getName())) {
-          return createTimestampArithExpr(analyzer, fn, params, rexCall, impalaRetType);
+          retExpr = createTimestampArithExpr(analyzer, fn, params, rexCall, impalaRetType);
+        } else {
+          retExpr = new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
         }
         break;
       case BETWEEN:
-        return createBetweenExpr(analyzer, rexCall, params);
+        retExpr = createBetweenExpr(analyzer, rexCall, params);
+        break;
+      default:
+        retExpr = new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
+        break;
     }
-    return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
+
+    // If there is a mismatch between the return type of the Impala function and
+    // the expected return type from Calcite, we need to cast so that the rest of
+    // the Calcite expressions get the right type. This can happen for Impala functions
+    // that only allow STRING types but Calcite recognizes the datatype as CHAR or
+    // VARCHAR.
+    if (!calciteReturnType.matchesType(impalaRetType)) {
+      retExpr = new CastExpr(calciteReturnType, retExpr);
+    }
+    return retExpr;
   }
 
   /**
@@ -383,6 +418,12 @@ public class ImpalaRexCall {
       default:
         return false;
     }
+  }
+
+  private static Expr castParamToString(Expr param) {
+    return param.getType().matchesType(Type.VARCHAR) || param.getType().matchesType(Type.CHAR)
+        ? new CastExpr(Type.STRING, param)
+        : param;
   }
 
   private static Function getFunction(String name, List<RexNode> args,
