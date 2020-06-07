@@ -149,13 +149,13 @@ jobWrappers {
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
+      }
+      stage('Upload') {
+        saveWS()
         sh '''#!/bin/bash -e
             # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
             find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
         '''
-      }
-      stage('Upload') {
-        saveWS()
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
       }
     }
