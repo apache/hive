@@ -23,7 +23,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields.INSERT_DATA;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
@@ -89,7 +88,6 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -10201,11 +10199,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      Lock startLock = new ReentrantLock();
-      Condition startCondition = startLock.newCondition();
-      AtomicBoolean startedServing = new AtomicBoolean();
-      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, startLock,
-          startCondition, startedServing);
+      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, true, null);
     } catch (Throwable t) {
       // Catch the exception, log it and rethrow it.
       HMSHandler.LOG
@@ -10223,7 +10217,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
       throws Throwable {
-    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), null, null, null);
+    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), false, null);
   }
 
   /**
@@ -10235,21 +10229,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
                                     Configuration conf) throws Throwable {
-    startMetaStore(port, bridge, conf, null, null, null);
+    startMetaStore(port, bridge, conf, false, null);
   }
 
   /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
+   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
-   * @param port
+   * @param port The port on which the Thrift server will start to serve
    * @param bridge
-   * @param conf
-   *          configuration overrides
+   * @param conf Configuration overrides
+   * @param startMetaStoreThreads Start the background threads (initiator, cleaner, statsupdater, etc.)
+   * @param startedBackgroundThreads If startMetaStoreThreads is true, this AtomicBoolean will be switched to true,
+   *  when all of the background threads are scheduled. Useful for testing purposes to wait
+   *  until the MetaStore is fully initialized.
    * @throws Throwable
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
-      Configuration conf, Lock startLock, Condition startCondition,
-      AtomicBoolean startedServing) throws Throwable {
+      Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
     isMetaStoreRemote = true;
     // Server will create new threads up to max as necessary. After an idle
     // period, it will destroy threads to keep the number of threads in the
@@ -10382,10 +10378,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
 
-    if (startLock != null) {
-      startMetaStoreThreads(conf, startLock, startCondition, startedServing,
-                isMetastoreHousekeepingLeader(conf, getServerHostName()));
-      signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
+    if (startMetaStoreThreads) {
+      Lock metaStoreThreadsLock = new ReentrantLock();
+      Condition startCondition = metaStoreThreadsLock.newCondition();
+      AtomicBoolean startedServing = new AtomicBoolean();
+      startMetaStoreThreads(conf, metaStoreThreadsLock, startCondition, startedServing,
+                isMetastoreHousekeepingLeader(conf, getServerHostName()), startedBackgroundThreads);
+      signalOtherThreadsToStart(tServer, metaStoreThreadsLock, startCondition, startedServing);
     }
 
     // If dynamic service discovery through ZooKeeper is enabled, add this server to the ZooKeeper.
@@ -10528,8 +10527,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *                 started only in a leader HMS.
    */
   private static void startMetaStoreThreads(final Configuration conf, final Lock startLock,
-                                            final Condition startCondition, final
-                                            AtomicBoolean startedServing, boolean isLeader) {
+      final Condition startCondition, final AtomicBoolean startedServing, boolean isLeader,
+      final AtomicBoolean startedBackGroundThreads) {
     // A thread is spun up to start these other threads.  That's because we can't start them
     // until after the TServer has started, but once TServer.serve is called we aren't given back
     // control.
@@ -10582,6 +10581,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         if (isLeader) {
           ReplChangeManager.scheduleCMClearer(conf);
+        }
+        if (startedBackGroundThreads != null) {
+          startedBackGroundThreads.set(true);
         }
       }
     };
