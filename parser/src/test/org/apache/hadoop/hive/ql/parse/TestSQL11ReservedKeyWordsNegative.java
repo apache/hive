@@ -19,10 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,14 +43,13 @@ import org.junit.Test;
  * ,TO,TRIGGER,TRUE,TRUNCATE,UNION,UPDATE,USER,USING,VALUES,WITH,TIME
  */
 public class TestSQL11ReservedKeyWordsNegative {
-	private static HiveConf conf;
+  private static Configuration conf;
 
 	private ParseDriver pd;
 
 	@BeforeClass
 	public static void initialize() {
-		conf = new HiveConf(SemanticAnalyzer.class);
-		SessionState.start(conf);
+		conf = new Configuration();
 	}
 
 	@Before
@@ -62,12 +58,7 @@ public class TestSQL11ReservedKeyWordsNegative {
 	}
 
 	ASTNode parse(String query) throws ParseException {
-		ASTNode nd = null;
-		try {
-			nd = pd.parse(query, new Context(conf));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		ASTNode nd = pd.parse(query, conf).getTree();
 		return (ASTNode) nd.getChild(0);
 	}
 

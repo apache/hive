@@ -44,7 +44,7 @@ public class TestParseDriver {
     String whereStr = "field5=1 and field6 in ('a', 'b')";
     String havingStr = "sum(field7) > 11";
     ASTNode tree = parseDriver.parse(selectStr + " from table1 where " + whereStr
-        + " group by field1, field2 having  " + havingStr);
+        + " group by field1, field2 having  " + havingStr).getTree();
     assertEquals(tree.getType(), 0);
     assertEquals(tree.getChildCount(), 2);
     ASTNode queryTree = (ASTNode) tree.getChild(0);
@@ -62,7 +62,7 @@ public class TestParseDriver {
     assertEquals(fromAST.getChild(0).getChild(0).getChild(0).getText(), "table1");
     assertEquals(insertAST.getChildCount(), 5);
     assertEquals(insertAST.getChild(0).getType(), HiveParser.TOK_DESTINATION);
-    assertTree((ASTNode) insertAST.getChild(1), parseDriver.parseSelect(selectStr, null));
+    assertTree((ASTNode) insertAST.getChild(1), parseDriver.parseSelect(selectStr, null).getTree());
     assertEquals(insertAST.getChild(2).getType(), HiveParser.TOK_WHERE);
     assertTree((ASTNode) insertAST.getChild(2).getChild(0), parseDriver.parseExpression(whereStr));
     assertEquals(insertAST.getChild(3).getType(), HiveParser.TOK_GROUPBY);
@@ -79,7 +79,7 @@ public class TestParseDriver {
 
   @Test
   public void testParseSelect() throws Exception {
-    ASTNode tree = parseDriver.parseSelect("select field1, field2, sum(field3+field4)", null);
+    ASTNode tree = parseDriver.parseSelect("select field1, field2, sum(field3+field4)", null).getTree();
     assertEquals(tree.getType(), HiveParser.TOK_SELECT);
     assertEquals(tree.getChildCount(), 3);
     for (int i = 0; i < 3; i++) {
@@ -288,7 +288,7 @@ public class TestParseDriver {
             + "( (select key from src)a join (select value from src)b on a.key=b.value)";
     System.out.println(q);
 
-    ASTNode root = parseDriver.parse(q);
+    ASTNode root = parseDriver.parse(q).getTree();
     System.out.println(root.dump());
 
   }
@@ -299,7 +299,7 @@ public class TestParseDriver {
         "explain select key from ((select key from src) union (select key from src))subq ";
     System.out.println(q);
 
-    ASTNode root = parseDriver.parse(q);
+    ASTNode root = parseDriver.parse(q).getTree();
     System.out.println(root.dump());
 
   }

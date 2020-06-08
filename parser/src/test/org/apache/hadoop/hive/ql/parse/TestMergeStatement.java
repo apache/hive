@@ -18,12 +18,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.RewriteEmptyStreamException;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,13 +32,12 @@ import java.io.IOException;
  * Testing parsing for SQL Merge statement
  */
 public class TestMergeStatement {
-  private static HiveConf conf;
+  private static Configuration conf;
   private ParseDriver pd;
 
   @BeforeClass
   public static void initialize() {
-    conf = new HiveConf(SemanticAnalyzer.class);
-    SessionState.start(conf);
+    conf = new Configuration();
   }
 
   @Before

@@ -78,7 +78,7 @@ public class TestQBCompact {
 
   private void parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
-    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    ASTNode head = (ASTNode)hd.parse(query).getTree().getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<? extends Serializable>> roots = a.getRootTasks();
@@ -87,7 +87,7 @@ public class TestQBCompact {
 
   private AlterTableCompactDesc parseAndAnalyzeAlterTable(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
-    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    ASTNode head = (ASTNode)hd.parse(query).getTree().getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<?>> roots = a.getRootTasks();

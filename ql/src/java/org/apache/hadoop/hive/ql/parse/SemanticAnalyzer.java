@@ -15282,7 +15282,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode selNode = null;
     try {
       ParseDriver pd = new ParseDriver();
-      selNode = pd.parseSelect(selectExprStr, null);
+      selNode = pd.parseSelect(selectExprStr, null).getTree();
     } catch (ParseException pe) {
       throw new SemanticException(pe);
     }

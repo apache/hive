@@ -17,39 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.parse.positive;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * Basic parser tests for multi-statement transactions
  */
 public class TestTransactionStatement {
-  private static SessionState sessionState;
   private ParseDriver pd;
-
-  @BeforeClass
-  public static void initialize() {
-    HiveConf conf = new HiveConf(SemanticAnalyzer.class);
-    sessionState = SessionState.start(conf);
-  }
-  @AfterClass
-  public static void cleanUp() throws IOException {
-    if(sessionState != null) {
-      sessionState.close();
-    }
-  }
 
   @Before
   public void setup() throws SemanticException {
@@ -57,7 +37,7 @@ public class TestTransactionStatement {
   }
 
   ASTNode parse(String query) throws ParseException {
-    ASTNode nd = pd.parse(query);
+    ASTNode nd = pd.parse(query).getTree();
     return (ASTNode) nd.getChild(0);
   }
   @Test

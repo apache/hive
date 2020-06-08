@@ -59,7 +59,7 @@ public class TestParseDriverIntervals {
 
   @Test
   public void parseInterval() throws Exception {
-    ASTNode root = parseDriver.parse(query);
+    ASTNode root = parseDriver.parse(query).getTree();
     assertNotNull("failed: " + query, findFunctionNode(root));
     System.out.println(root.dump());
   }
