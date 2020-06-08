@@ -30,7 +30,8 @@ public class TestParseWithinGroupClause {
 
   @Test
   public void testParsePercentileCont() throws Exception {
-    ASTNode tree = parseDriver.parseSelect("SELECT percentile_cont(0.4) WITHIN GROUP (ORDER BY val) FROM src", null);
+    ASTNode tree = parseDriver.parseSelect(
+        "SELECT percentile_cont(0.4) WITHIN GROUP (ORDER BY val) FROM src", null).getTree();
 
     assertEquals(1, tree.getChildCount());
     ASTNode selExprNode = (ASTNode) tree.getChild(0);
@@ -60,7 +61,7 @@ public class TestParseWithinGroupClause {
   @Test
   public void testParseMultipleColumnRefs() throws Exception {
     ASTNode tree = parseDriver.parseSelect(
-            "SELECT rank(3, 4) WITHIN GROUP (ORDER BY val, val2) FROM src", null);
+            "SELECT rank(3, 4) WITHIN GROUP (ORDER BY val, val2) FROM src", null).getTree();
     ASTNode selExprNode = (ASTNode) tree.getChild(0);
     ASTNode functionNode = (ASTNode) selExprNode.getChild(0);
     ASTNode withinGroupNode = (ASTNode) functionNode.getChild(3);

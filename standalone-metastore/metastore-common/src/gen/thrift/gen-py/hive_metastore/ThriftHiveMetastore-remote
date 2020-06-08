@@ -44,8 +44,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_type_all(string name)')
   print('   get_fields(string db_name, string table_name)')
   print('   get_fields_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)')
+  print('  GetFieldsResponse get_fields_req(GetFieldsRequest req)')
   print('   get_schema(string db_name, string table_name)')
   print('   get_schema_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)')
+  print('  GetSchemaResponse get_schema_req(GetSchemaRequest req)')
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
   print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints,  defaultConstraints,  checkConstraints)')
@@ -94,18 +96,22 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  bool drop_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, bool deleteData, EnvironmentContext environment_context)')
   print('  DropPartitionsResult drop_partitions_req(DropPartitionsRequest req)')
   print('  Partition get_partition(string db_name, string tbl_name,  part_vals)')
+  print('  GetPartitionResponse get_partition_req(GetPartitionRequest req)')
   print('  Partition exchange_partition( partitionSpecs, string source_db, string source_table_name, string dest_db, string dest_table_name)')
   print('   exchange_partitions( partitionSpecs, string source_db, string source_table_name, string dest_db, string dest_table_name)')
   print('  Partition get_partition_with_auth(string db_name, string tbl_name,  part_vals, string user_name,  group_names)')
   print('  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)')
   print('   get_partitions(string db_name, string tbl_name, i16 max_parts)')
+  print('  PartitionsResponse get_partitions_req(PartitionsRequest req)')
   print('   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)')
   print('   get_partitions_pspec(string db_name, string tbl_name, i32 max_parts)')
   print('   get_partition_names(string db_name, string tbl_name, i16 max_parts)')
   print('  PartitionValuesResponse get_partition_values(PartitionValuesRequest request)')
   print('   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
   print('   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)')
+  print('  GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)')
   print('   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
+  print('  GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)')
   print('   get_partition_names_req(PartitionsByExprRequest req)')
   print('   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)')
   print('   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)')
@@ -446,6 +452,12 @@ elif cmd == 'get_fields_with_environment_context':
     sys.exit(1)
   pp.pprint(client.get_fields_with_environment_context(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'get_fields_req':
+  if len(args) != 1:
+    print('get_fields_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_fields_req(eval(args[0]),))
+
 elif cmd == 'get_schema':
   if len(args) != 2:
     print('get_schema requires 2 args')
@@ -457,6 +469,12 @@ elif cmd == 'get_schema_with_environment_context':
     print('get_schema_with_environment_context requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_schema_with_environment_context(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_schema_req':
+  if len(args) != 1:
+    print('get_schema_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_req(eval(args[0]),))
 
 elif cmd == 'create_table':
   if len(args) != 1:
@@ -746,6 +764,12 @@ elif cmd == 'get_partition':
     sys.exit(1)
   pp.pprint(client.get_partition(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'get_partition_req':
+  if len(args) != 1:
+    print('get_partition_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partition_req(eval(args[0]),))
+
 elif cmd == 'exchange_partition':
   if len(args) != 5:
     print('exchange_partition requires 5 args')
@@ -775,6 +799,12 @@ elif cmd == 'get_partitions':
     print('get_partitions requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_partitions(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_partitions_req':
+  if len(args) != 1:
+    print('get_partitions_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partitions_req(eval(args[0]),))
 
 elif cmd == 'get_partitions_with_auth':
   if len(args) != 5:
@@ -812,11 +842,23 @@ elif cmd == 'get_partitions_ps_with_auth':
     sys.exit(1)
   pp.pprint(client.get_partitions_ps_with_auth(args[0],args[1],eval(args[2]),eval(args[3]),args[4],eval(args[5]),))
 
+elif cmd == 'get_partitions_ps_with_auth_req':
+  if len(args) != 1:
+    print('get_partitions_ps_with_auth_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partitions_ps_with_auth_req(eval(args[0]),))
+
 elif cmd == 'get_partition_names_ps':
   if len(args) != 4:
     print('get_partition_names_ps requires 4 args')
     sys.exit(1)
   pp.pprint(client.get_partition_names_ps(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'get_partition_names_ps_req':
+  if len(args) != 1:
+    print('get_partition_names_ps_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partition_names_ps_req(eval(args[0]),))
 
 elif cmd == 'get_partition_names_req':
   if len(args) != 1:
