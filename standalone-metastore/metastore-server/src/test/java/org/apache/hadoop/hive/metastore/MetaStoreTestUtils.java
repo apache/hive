@@ -30,9 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -66,45 +63,37 @@ public class MetaStoreTestUtils {
    * @param port The port to start on
    * @param bridge The bridge to use
    * @param conf The configuration to use
-   * @throws Exception
+   * @param withHouseKeepingThreads Start the housekeeping background threads in the metastore
+   * @param waitForHouseKeepers Wait until the background threads are scheduled
+   * @throws Exception Timeout after 60 seconds
    */
-  public static void startMetaStore(final int port,
-      final HadoopThriftAuthBridge bridge, Configuration conf, boolean withHouseKeepingThreads)
-      throws Exception{
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge, Configuration conf,
+      boolean withHouseKeepingThreads, boolean waitForHouseKeepers) throws Exception {
     if (conf == null) {
       conf = MetastoreConf.newMetastoreConf();
     }
     final Configuration finalConf = conf;
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Lock startLock = null;
-          Condition startCondition = null;
-          AtomicBoolean startedServing = null;
-          if (withHouseKeepingThreads) {
-            startLock = new ReentrantLock();
-            startCondition = startLock.newCondition();
-            startedServing = new AtomicBoolean();
-          }
-          HiveMetaStore.startMetaStore(port, bridge, finalConf, startLock, startCondition,
-                                       startedServing);
-        } catch (Throwable e) {
-          LOG.error("Metastore Thrift Server threw an exception...", e);
-        }
+    final AtomicBoolean startedBackgroundThreads =
+        (withHouseKeepingThreads && waitForHouseKeepers) ? new AtomicBoolean() : null;
+    Thread thread = new Thread(() -> {
+      try {
+        HiveMetaStore.startMetaStore(port, bridge, finalConf, withHouseKeepingThreads, startedBackgroundThreads);
+      } catch (Throwable e) {
+        LOG.error("Metastore Thrift Server threw an exception...", e);
       }
     }, "MetaStoreThread-" + port);
     thread.setDaemon(true);
     thread.start();
     map.put(port,thread);
     String msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
-    MetaStoreTestUtils.loopUntilHMSReady(msHost, port);
+    MetaStoreTestUtils.loopUntilHMSReady(msHost, port, startedBackgroundThreads);
     String serviceDiscMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE);
     if (serviceDiscMode != null && serviceDiscMode.equalsIgnoreCase("zookeeper")) {
       MetaStoreTestUtils.loopUntilZKReady(conf, msHost, port);
     }
   }
 
+  @SuppressWarnings("deprecation")
   public static void close(final int port){
     Thread thread = map.get(port);
     if(thread != null){
@@ -124,7 +113,7 @@ public class MetaStoreTestUtils {
                                             boolean keepWarehousePath)
       throws Exception {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
-        keepJdbcUri, keepWarehousePath, false);
+        keepJdbcUri, keepWarehousePath, false, false);
   }
 
   public static int startMetaStoreWithRetry() throws Exception {
@@ -134,13 +123,13 @@ public class MetaStoreTestUtils {
 
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
                                             Configuration conf) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, false);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, false, false);
   }
 
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
                                             Configuration conf, boolean withHouseKeepingThreads)
           throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, withHouseKeepingThreads);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, withHouseKeepingThreads, false);
   }
 
   /**
@@ -152,14 +141,13 @@ public class MetaStoreTestUtils {
    * @param conf The configuration to use
    * @param keepJdbcUri If set to true, then the JDBC url is not changed
    * @param keepWarehousePath If set to true, then the Warehouse directory is not changed
-   * @param withHouseKeepingThreads
+   * @param withHouseKeepingThreads Start the housekeeping background threads in the metastore
+   * @param waitForHouseKeepers Wait until the background threads are scheduled
    * @return The port on which the MetaStore finally started
-   * @throws Exception
+   * @throws Exception Timeout after 60 seconds
    */
-  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
-                                            Configuration conf, boolean keepJdbcUri,
-                                            boolean keepWarehousePath,
-                                            boolean withHouseKeepingThreads) throws Exception {
+  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge, Configuration conf, boolean keepJdbcUri,
+      boolean keepWarehousePath, boolean withHouseKeepingThreads, boolean waitForHouseKeepers) throws Exception {
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
 
@@ -187,7 +175,7 @@ public class MetaStoreTestUtils {
           MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
         }
 
-        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf, withHouseKeepingThreads);
+        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf, withHouseKeepingThreads, waitForHouseKeepers);
 
         // Creating warehouse dir, if not exists
         Warehouse wh = new Warehouse(conf);
@@ -211,12 +199,12 @@ public class MetaStoreTestUtils {
 
   /**
    * A simple connect test to make sure that the metastore is up
-   * @throws Exception
+   * @throws Exception Timeout after 60 seconds
    */
-  private static void loopUntilHMSReady(String msHost, int port) throws Exception {
+  private static void loopUntilHMSReady(String msHost, int port, AtomicBoolean houseKeepingStarted) throws Exception {
     int retries = 0;
     Exception exc = null;
-    while (true) {
+    while (retries++ < 60) {
       try {
         Socket socket = new Socket();
         SocketAddress sockAddr;
@@ -227,14 +215,19 @@ public class MetaStoreTestUtils {
         }
         socket.connect(sockAddr, 5000);
         socket.close();
-        return;
-      } catch (Exception e) {
-        if (retries++ > 60) { //give up
-          exc = e;
-          break;
+        if (houseKeepingStarted == null || houseKeepingStarted.get()) {
+          return;
+        } else {
+          LOG.info("HMS started, waiting for housekeeper threads to start.");
         }
-        Thread.sleep(1000);
+      } catch (Exception e) {
+        LOG.info("Waiting the HMS to start.");
+        exc = e;
       }
+      Thread.sleep(1000);
+    }
+    if (exc == null) {
+      exc = new IllegalStateException("HMS started, but housekeeping threads were not started until 60 sec.");
     }
     // something is preventing metastore from starting
     // print the stack from all threads for debugging purposes
@@ -246,7 +239,7 @@ public class MetaStoreTestUtils {
 
   /**
    * A simple connect test to make sure that the metastore URI is available in the ZooKeeper
-   * @throws Exception
+   * @throws Exception Timeout after 60 seconds
    */
   private static void loopUntilZKReady(Configuration conf, String msHost, int port)
           throws Exception {
@@ -301,8 +294,8 @@ public class MetaStoreTestUtils {
   /**
    * Finds a free port on the machine.
    *
-   * @return
-   * @throws IOException
+   * @return The allocated port
+   * @throws IOException -
    */
   public static int findFreePort() throws IOException {
     ServerSocket socket= new ServerSocket(0);
@@ -316,11 +309,7 @@ public class MetaStoreTestUtils {
    * ability to specify a port number to not use, no matter what.
    */
   public static int findFreePortExcepting(int portToExclude) throws IOException {
-    ServerSocket socket1 = null;
-    ServerSocket socket2 = null;
-    try {
-      socket1 = new ServerSocket(0);
-      socket2 = new ServerSocket(0);
+    try (ServerSocket socket1 = new ServerSocket(0); ServerSocket socket2 = new ServerSocket(0)) {
       if (socket1.getLocalPort() != portToExclude) {
         return socket1.getLocalPort();
       }
@@ -328,13 +317,6 @@ public class MetaStoreTestUtils {
       // Since both sockets were open together at a point in time, we're
       // guaranteed that socket2.getLocalPort() is not the same.
       return socket2.getLocalPort();
-    } finally {
-      if (socket1 != null){
-        socket1.close();
-      }
-      if (socket2 != null){
-        socket2.close();
-      }
     }
   }
 
