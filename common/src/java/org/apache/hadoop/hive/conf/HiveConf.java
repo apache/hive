@@ -1500,6 +1500,9 @@ public class HiveConf extends Configuration {
     HIVEQUERYNAME ("hive.query.name", null,
         "This named is used by Tez to set the dag name. This name in turn will appear on \n" +
         "the Tez UI representing the work that was done."),
+    HIVETEZJOBNAME("tez.job.name", null,
+        "This named is used by Tez to set the job name. This name in turn will appear on \n" +
+        "the Yarn UI representing the Yarn Application Name."),
 
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
         "Don't create a reducer for enforcing \n" +
