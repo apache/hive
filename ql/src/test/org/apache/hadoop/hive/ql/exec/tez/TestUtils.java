@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -155,5 +157,56 @@ public class TestUtils {
     knownLocations.addAll(provider.locations);
     knownLocations.remove(null);
     assertArrayEquals(expectedLocations, knownLocations.toArray(new String[] {}));
+  }
+
+  public static class NoConstructorSplitLocationProvider implements SplitLocationProvider {
+
+    @Override
+    public String[] getLocations(final InputSplit inputSplit) throws IOException {
+      return new String[0];
+    }
+  }
+
+  public static class DefaultConstructorSplitLocationProvider implements SplitLocationProvider {
+
+    public DefaultConstructorSplitLocationProvider() {
+
+    }
+
+    @Override
+    public String[] getLocations(final InputSplit inputSplit) throws IOException {
+      return new String[0];
+    }
+  }
+
+  public static class ConfConstructorSplitLocationProvider implements SplitLocationProvider {
+    private Configuration configuration;
+
+    public ConfConstructorSplitLocationProvider(Configuration conf) {
+      this.configuration = conf;
+    }
+
+    @Override
+    public String[] getLocations(final InputSplit inputSplit) throws IOException {
+      return new String[0];
+    }
+  }
+
+  @Test
+  public void testCustomSplitLocationProvider() throws IOException {
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
+
+    conf.setVar(HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS, NoConstructorSplitLocationProvider.class.getName());
+    SplitLocationProvider splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    assertTrue(splitLocationProvider instanceof NoConstructorSplitLocationProvider);
+
+    conf.setVar(HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS, DefaultConstructorSplitLocationProvider.class.getName());
+    splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    assertTrue(splitLocationProvider instanceof DefaultConstructorSplitLocationProvider);
+
+    conf.setVar(HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS, ConfConstructorSplitLocationProvider.class.getName());
+    splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    assertTrue(splitLocationProvider instanceof ConfConstructorSplitLocationProvider);
   }
 }
