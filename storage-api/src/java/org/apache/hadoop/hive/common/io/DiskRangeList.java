@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.common.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-
 /** Java linked list iterator interface is convoluted, and moreover concurrent modifications
  * of the same list by multiple iterators are impossible. Hence, this.
  * Java also doesn't support multiple inheritance, so this cannot be done as "aspect"... */
@@ -230,19 +228,19 @@ public class DiskRangeList extends DiskRange {
     return result;
   }
 
+  /**
+   * This class provides just a simplistic iterator interface (check {@link DiskRangeList}).
+   * Thus, for equality/hashcode just check the actual DiskRange content.
+   * @return hashcode
+   */
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
-    DiskRangeList that = (DiskRangeList) o;
-    return Objects.equals(prev, that.prev) &&
-            Objects.equals(next, that.next);
+  public int hashCode() {
+    return super.hashCode();
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), prev, next);
+  public boolean equals(Object other) {
+    return super.equals(other);
   }
 
   public static class CreateHelper {
