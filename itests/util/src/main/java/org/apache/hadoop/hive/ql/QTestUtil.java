@@ -980,7 +980,7 @@ public class QTestUtil {
   }
 
   public ASTNode parseQuery(String tname) throws Exception {
-    return pd.parse(qMap.get(tname));
+    return pd.parse(qMap.get(tname)).getTree();
   }
 
   public List<Task<?>> analyzeAST(ASTNode ast) throws Exception {

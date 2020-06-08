@@ -34,6 +34,7 @@ import java.util.Stack;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -77,7 +78,18 @@ public final class ParseUtils {
   public static ASTNode parse(
       String command, Context ctx, String viewFullyQualifiedName) throws ParseException {
     ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(command, ctx, viewFullyQualifiedName);
+    Configuration configuration = ctx != null ? ctx.getConf() : null;
+    ParseResult parseResult = pd.parse(command, configuration);
+    if (ctx != null) {
+      if (viewFullyQualifiedName == null) {
+        // Top level query
+        ctx.setTokenRewriteStream(parseResult.getTokenRewriteStream());
+      } else {
+        // It is a view
+        ctx.addViewTokenRewriteStream(viewFullyQualifiedName, parseResult.getTokenRewriteStream());
+      }
+    }
+    ASTNode tree = parseResult.getTree();
     tree = findRootNonNullToken(tree);
     handleSetColRefs(tree);
     return tree;
