@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -2534,29 +2535,13 @@ public class StatsRulesProcFactory {
       newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
       stats.setNumRows(newNumRows);
 
-      // scale down/up the column statistics based on the changes in number of
-      // rows from each parent. For ex: If there are 2 parents for JOIN operator
-      // with 1st parent having 200 rows and 2nd parent having 2000 rows. Now if
-      // the new number of rows after applying join rule is 10, then the column
-      // stats for columns from 1st parent should be scaled down by 200/10 = 20x
-      // and stats for columns from 2nd parent should be scaled down by 200x
       List<ColStatistics> colStats = stats.getColumnStats();
       Set<String> colNameStatsAvailable = new HashSet<>();
       for (ColStatistics cs : colStats) {
         colNameStatsAvailable.add(cs.getColumnName());
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
-        long oldRowCount = rowCountParents.get(pos);
-        double ratio = (double) newNumRows / (double) oldRowCount;
         long oldDV = cs.getCountDistint();
-        long newDV = oldDV;
-
-        // if ratio is greater than 1, then number of rows increases. This can happen
-        // when some operators like GROUPBY duplicates the input rows in which case
-        // number of distincts should not change. Update the distinct count only when
-        // the output number of rows is less than input number of rows.
-        if (ratio <= 1.0) {
-          newDV = (long) Math.ceil(ratio * oldDV);
-        }
+        long newDV = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0).longValue();
 
         cs.setCountDistint(newDV);
         updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
