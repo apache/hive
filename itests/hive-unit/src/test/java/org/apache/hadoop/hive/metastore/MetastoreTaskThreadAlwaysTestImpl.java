@@ -52,7 +52,7 @@ public class MetastoreTaskThreadAlwaysTestImpl implements MetastoreTaskThread {
     LOG.info("Name of thread " + Thread.currentThread().getName() + " changed to " + TASK_NAME);
     Thread.currentThread().setName(TASK_NAME);
     try {
-      Thread.sleep(runFrequency(TimeUnit.MILLISECONDS));
+      Thread.sleep(10000);
     } catch (InterruptedException ie) {
       LOG.error("Task " + TASK_NAME + " interrupted: " + ie.getMessage(), ie);
     }

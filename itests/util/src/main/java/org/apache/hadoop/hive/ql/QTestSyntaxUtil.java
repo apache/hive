@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.processors.AddResourceProcessor;
@@ -103,12 +102,7 @@ public class QTestSyntaxUtil {
       CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
       if (proc instanceof IDriver) {
         try {
-          Context ctx = new Context(conf);
-          HiveTxnManager queryTxnMgr = SessionState.get().initTxnMgr(conf);
-          ctx.setHiveTxnManager(queryTxnMgr);
-          ctx.setCmd(cmd);
-          ctx.setHDFSCleanup(true);
-          tree = pd.parse(cmd, ctx);
+          tree = pd.parse(cmd, conf).getTree();
           qTestUtil.analyzeAST(tree);
         } catch (Exception e) {
           return false;

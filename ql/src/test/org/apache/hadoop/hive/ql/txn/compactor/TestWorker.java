@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import it.unimi.dsi.fastutil.booleans.AbstractBooleanBidirectionalIterator;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -59,6 +60,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1067,8 +1073,90 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(TxnState.ABORTED, openTxns.get(0).getState());
   }
 
+  // With high timeout, but fast run we should finish without a problem
+  @Test(timeout=1000)
+  public void testNormalRun() throws Exception {
+    runTimeoutTest(10000, false, true);
+  }
+
+  // With low timeout, but slow run we should finish without a problem
+  @Test(timeout=1000)
+  public void testTimeoutWithInterrupt() throws Exception {
+    runTimeoutTest(1, true, false);
+  }
+
+  // With low timeout, but slow run we should finish without a problem, even if the interrupt is swallowed
+  @Test(timeout=1000)
+  public void testTimeoutWithoutInterrupt() throws Exception {
+    runTimeoutTest(1, true, true);
+  }
+
+  private void runTimeoutTest(long timeout, boolean runForever, boolean swallowInterrupt) throws Exception {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    HiveConf timeoutConf = new HiveConf(conf);
+    TimeoutWorker timeoutWorker;
+
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
+    timeoutWorker = getTimeoutWorker(timeoutConf, executor, runForever, swallowInterrupt);
+
+    // Wait until at least 1st loop is finished
+    while (!timeoutWorker.looped.get()) {
+      Thread.sleep(10L);
+    }
+
+    timeoutWorker.looped.set(false);
+
+    // Wait until the 2nd loop is finished
+    while (!timeoutWorker.looped.get()) {
+      Thread.sleep(10L);
+    }
+
+    timeoutWorker.stop.set(true);
+    executor.shutdownNow();
+  }
+
+  private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
+      boolean swallowInterrupt) throws Exception {
+    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt);
+    timeoutWorker.setThreadId((int)timeoutWorker.getId());
+    timeoutWorker.setConf(conf);
+    timeoutWorker.init(new AtomicBoolean(false));
+    executor.submit(() -> timeoutWorker.run());
+    return timeoutWorker;
+  }
+
   @After
   public void tearDown() throws Exception {
     compactorTestCleanup();
+  }
+
+  private static final class TimeoutWorker extends Worker {
+    private boolean runForever;
+    private boolean swallowInterrupt;
+    private AtomicBoolean looped;
+
+    private TimeoutWorker(boolean runForever, boolean swallowInterrupt) {
+      this.runForever = runForever;
+      this.swallowInterrupt = swallowInterrupt;
+      this.looped = new AtomicBoolean(false);
+    }
+
+    protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+      looped.set(true);
+      if (runForever) {
+        while (!stop.get()) {
+          try {
+            looped.set(true);
+            Thread.sleep(Long.MAX_VALUE);
+          } catch (InterruptedException ie) {
+            if (!swallowInterrupt) {
+              throw ie;
+            }
+            Thread.sleep(Long.MAX_VALUE);
+          }
+        }
+      }
+      return true;
+    }
   }
 }

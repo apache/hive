@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,14 +68,19 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location:",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
+      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
+              atlasReplInfo.getStagingDir().toString());
+      replLogger.startLog();
       atlasRestClient = new AtlasRestClientBuilder(atlasReplInfo.getAtlasEndpoint())
               .getClient(atlasReplInfo.getConf());
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
       String entityGuid = checkHiveEntityGuid(atlasRequestBuilder, atlasReplInfo.getSrcCluster(),
               atlasReplInfo.getSrcDB());
       long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
-      dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
+      long numBytesWritten = dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
+      LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
+      replLogger.endLog(0L);
       return 0;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
@@ -83,7 +89,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     }
   }
 
-  private AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
+  public AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
     String errorFormat = "%s is mandatory config for Atlas metadata replication";
     //Also validates URL for endpoint.
     String endpoint = new URL(ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, conf, errorFormat))
@@ -99,7 +105,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return atlasReplInfo;
   }
 
-  private long lastStoredTimeStamp() throws SemanticException {
+  public long lastStoredTimeStamp() throws SemanticException {
     Path prevMetadataPath = new Path(work.getPrevAtlasDumpDir(), EximUtil.METADATA_NAME);
     BufferedReader br = null;
     try {
@@ -132,17 +138,17 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return ret;
   }
 
-  private void dumpAtlasMetaData(AtlasRequestBuilder atlasRequestBuilder, AtlasReplInfo atlasReplInfo)
+  public long dumpAtlasMetaData(AtlasRequestBuilder atlasRequestBuilder, AtlasReplInfo atlasReplInfo)
           throws SemanticException {
     InputStream inputStream = null;
+    long numBytesWritten = 0L;
     try {
       AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
               atlasReplInfo.getSrcCluster());
       inputStream = atlasRestClient.exportData(exportRequest);
       FileSystem fs = FileSystem.get(atlasReplInfo.getStagingDir().toUri(), atlasReplInfo.getConf());
       Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
-      long numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream);
-      LOG.info("Wrote to {} ({} bytes)", exportFilePath, numBytesWritten);
+      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream);
     } catch (SemanticException ex) {
       throw ex;
     } catch (Exception ex) {
@@ -156,6 +162,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
         }
       }
     }
+    return numBytesWritten;
   }
 
   private String checkHiveEntityGuid(AtlasRequestBuilder atlasRequestBuilder, String clusterName,
@@ -174,7 +181,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return guid;
   }
 
-  private void createDumpMetadata(AtlasReplInfo atlasReplInfo, long lastModifiedTime) throws SemanticException {
+  public void createDumpMetadata(AtlasReplInfo atlasReplInfo, long lastModifiedTime) throws SemanticException {
     Path dumpFile = new Path(atlasReplInfo.getStagingDir(), EximUtil.METADATA_NAME);
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(

@@ -113,6 +113,7 @@ spec:
 }
 
 def jobWrappers(closure) {
+  def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
@@ -121,8 +122,9 @@ def jobWrappers(closure) {
         closure()
       }
     }
+    finalLabel=currentBuild.currentResult
   } finally {
-    setPrLabel(currentBuild.currentResult)
+    setPrLabel(finalLabel)
   }
 }
 

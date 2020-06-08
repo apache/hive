@@ -102,7 +102,7 @@ public class TestStatsUpdaterThread {
     executeQuery("drop table simple_stats3");
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testSimpleUpdateWithThreads() throws Exception {
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();
@@ -119,7 +119,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testMultipleTables() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -145,7 +145,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=80000)
+  @Test(timeout=160000)
   public void testTxnTable() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -318,7 +318,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testExistingOnly() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
     StatsUpdaterThread su = createUpdater();
@@ -340,7 +340,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=80000)
+  @Test(timeout=160000)
   public void testQueueingWithThreads() throws Exception {
     final int PART_COUNT = 12;
     hiveConf.setInt(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.getVarname(), 5);
@@ -371,7 +371,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testAllPartitions() throws Exception {
     final int PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
@@ -394,7 +394,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testPartitionSubset() throws Exception {
     final int NONSTAT_PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
@@ -429,7 +429,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testPartitionsWithDifferentColsAll() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -458,7 +458,7 @@ public class TestStatsUpdaterThread {
   }
 
 
-  @Test(timeout=45000)
+  @Test(timeout=80000)
   public void testPartitionsWithDifferentColsExistingOnly() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
     StatsUpdaterThread su = createUpdater();
@@ -494,7 +494,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testParallelOps() throws Exception {
     // Set high worker count so we get a longer queue.
     hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 4);
@@ -545,14 +545,14 @@ public class TestStatsUpdaterThread {
 
   // A table which is target of replication should not be queued for stats update, and hence its
   // stats state should not change.
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testNoStatsUpdateForSimpleReplTable() throws Exception {
     testNoStatsUpdateForReplTable("simple", "");
   }
 
   // A table which is target of replication should not be queued for stats update, and hence its
   // stats state should not change.
-  @Test(timeout=40000)
+  @Test(timeout=80000)
   public void testNoStatsUpdateForTxnReplTable() throws Exception {
     testNoStatsUpdateForReplTable("txn",
             "TBLPROPERTIES (\"transactional\"=\"true\",\"transactional_properties\"=\"insert_only\")");
@@ -722,7 +722,7 @@ public class TestStatsUpdaterThread {
   private StatsUpdaterThread createUpdater() throws MetaException {
     StatsUpdaterThread su = new StatsUpdaterThread();
     su.setConf(hiveConf);
-    su.init(new AtomicBoolean(false), null);
+    su.init(new AtomicBoolean(false));
     return su;
   }
 }

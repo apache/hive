@@ -774,6 +774,8 @@ struct PartitionsByExprRequest {
   5: optional i16 maxParts=-1,
   6: optional string catName,
   7: optional string order
+  8: optional string validWriteIdList,
+  9: optional i64 id=-1 // table id
 }
 
 struct TableStatsResult {
@@ -792,7 +794,8 @@ struct TableStatsRequest {
  3: required list<string> colNames
  4: optional string catName,
  5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
- 6: required string engine //engine creating the current request
+ 6: required string engine, //engine creating the current request
+ 7: optional i64 id=-1 // table id
 }
 
 struct PartitionsStatsRequest {
@@ -860,7 +863,8 @@ struct PartitionValuesRequest {
   6: optional list<FieldSchema> partitionOrder;
   7: optional bool ascending = true;
   8: optional i64 maxParts = -1;
-  9: optional string catName
+  9: optional string catName,
+  10: optional string validWriteIdList
 }
 
 struct PartitionValuesRow {
@@ -878,7 +882,8 @@ struct GetPartitionsByNamesRequest {
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional string engine
+  7: optional string engine,
+  8: optional string validWriteIdList
 }
 
 struct GetPartitionsByNamesResult {
@@ -1398,7 +1403,8 @@ struct GetTableRequest {
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
-  10: optional string engine
+  10: optional string engine,
+  11: optional i64 id=-1 // table id
 }
 
 struct GetTableResult {
@@ -1940,7 +1946,90 @@ struct GetPartitionsRequest {
    7: GetPartitionsProjectionSpec projectionSpec
    8: GetPartitionsFilterSpec filterSpec, // TODO not yet implemented. Must be present but ignored
    9: optional list<string> processorCapabilities,
-   10: optional string processorIdentifier
+   10: optional string processorIdentifier,
+   11: optional string validWriteIdList
+}
+
+struct GetFieldsRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional EnvironmentContext envContext,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetFieldsResponse {
+   1: required list<FieldSchema> fields
+}
+
+struct GetSchemaRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional EnvironmentContext envContext,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetSchemaResponse {
+   1: required list<FieldSchema> fields
+}
+
+struct GetPartitionRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: required list<string> partVals,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetPartitionResponse {
+   1: required Partition partition
+}
+
+struct PartitionsRequest { // Not using Get prefix as that name is already used for a different method
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional i16 maxParts=-1,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct PartitionsResponse { // Not using Get prefix as that name is already used for a different method
+   1: required list<Partition> partitions
+}
+
+struct GetPartitionNamesPsRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional list<string> partValues,
+   5: optional i16 maxParts=-1,
+   6: optional string validWriteIdList,
+   7: optional i64 id=-1 // table id
+}
+
+struct GetPartitionNamesPsResponse {
+   1: required list<string> names
+}
+
+struct GetPartitionsPsWithAuthRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional list<string> partVals,
+   5: optional i16 maxParts=-1,
+   6: optional string userName,
+   7: optional list<string> groupNames,
+   8: optional string validWriteIdList,
+   9: optional i64 id=-1 // table id
+}
+
+struct GetPartitionsPsWithAuthResponse {
+   1: required list<Partition> partitions
 }
 
 // Exceptions.
@@ -2036,12 +2125,18 @@ service ThriftHiveMetastore extends fb303.FacebookService
                                 throws(1:MetaException o2)
 
   // Gets a list of FieldSchemas describing the columns of a particular table
-  list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
-  list<FieldSchema> get_fields_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_fields(1:string db_name, 2:string table_name) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+  list<FieldSchema> get_fields_with_environment_context(1:string db_name, 2:string table_name, 3:EnvironmentContext environment_context) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+
+  GetFieldsResponse get_fields_req(1: GetFieldsRequest req)
+        throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
 
   // Gets a list of FieldSchemas describing both the columns and the partition keys of a particular table
-  list<FieldSchema> get_schema(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
-  list<FieldSchema> get_schema_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema(1:string db_name, 2:string table_name) throws(1:MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema_with_environment_context(1:string db_name, 2:string table_name, 3:EnvironmentContext environment_context) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+
+  GetSchemaResponse get_schema_req(1: GetSchemaRequest req)
+        throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
 
   // create a Hive table. Following fields must be set
   // tableName
@@ -2203,6 +2298,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionResponse get_partition_req(1: GetPartitionRequest req)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
   Partition exchange_partition(1:map<string, string> partitionSpecs, 2:string source_db,
       3:string source_table_name, 4:string dest_db, 5:string dest_table_name)
       throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3,
@@ -2222,6 +2319,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // returns all the partitions for this table in reverse chronological order.
   // If max parts is given then it will return only that many.
   list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+PartitionsResponse get_partitions_req(1:PartitionsRequest req)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1,
      4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
@@ -2244,12 +2343,17 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name
   	3:list<string> part_vals, 4:i16 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Partition> get_partitions_ps_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1,
+  list<Partition> get_partitions_ps_with_auth(1:string db_name,
+    2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1,
      5: string user_name, 6: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(1:GetPartitionsPsWithAuthRequest req)
+    throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   list<string> get_partition_names_ps(1:string db_name,
   	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
   	                   throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionNamesPsResponse get_partition_names_ps_req(1:GetPartitionNamesPsRequest req)
+    throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   list<string> get_partition_names_req(1:PartitionsByExprRequest req)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)

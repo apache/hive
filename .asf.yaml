@@ -31,8 +31,8 @@ github:
     projects: false
   enabled_merge_buttons:
     squash:  true
-    merge:   true
-    rebase:  true
+    merge:   false
+    rebase:  false
 notifications:
   commits:      commits@hive.apache.org
   issues:       gitbox@hive.apache.org
