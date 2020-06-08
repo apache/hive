@@ -152,7 +152,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven.javadoc.plugin.version}</version>
         <executions>
           <execution>
             <id>resourcesdoc.xml</id>
@@ -187,6 +186,7 @@
                 </docletArtifact>
               </docletArtifacts>
               <additionalparam>-output ${project.build.outputDirectory}/resourcedoc.xml</additionalparam>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
             </configuration>
           </execution>
         </executions>
