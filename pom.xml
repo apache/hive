@@ -1429,6 +1429,7 @@
         </executions>
         <configuration>
 	  <excludes>
+	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
