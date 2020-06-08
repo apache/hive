@@ -4332,8 +4332,10 @@ public class ObjectStore implements RawStore, Configurable {
           }
         try {
           return convertToParts(listMPartitionsWithProjection(fieldNames, jdoFilter, params));
+        } catch (MetaException me) {
+          throw me;
         } catch (Exception e) {
-          throw new RuntimeException(e);
+          throw new MetaException(e.getMessage());
         }
       }
     }.run(true);
