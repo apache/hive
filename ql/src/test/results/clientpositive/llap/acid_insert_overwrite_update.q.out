@@ -26,11 +26,11 @@ POSTHOOK: Lineage: sequential_update.seq SCRIPT []
 PREHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	base_0000001
 PREHOOK: query: update sequential_update set mtime = current_timestamp, seq=1, prev_writeid = ROW__ID.writeId, prev_dirname = regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1)
 PREHOOK: type: QUERY
@@ -43,11 +43,11 @@ POSTHOOK: Output: default@sequential_update
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	delta_0000002_0000002_0000
 PREHOOK: query: insert overwrite table sequential_update values(current_timestamp, 0, current_timestamp, 0, '')
 PREHOOK: type: QUERY
@@ -73,11 +73,11 @@ POSTHOOK: Output: default@sequential_update
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	delta_0000004_0000004_0000
 PREHOOK: query: alter table sequential_update compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
@@ -86,11 +86,11 @@ POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	delta_0000004_0000004_0000
 PREHOOK: query: insert overwrite table sequential_update values(current_timestamp, 0, current_timestamp, 0, ''), (current_timestamp, 2, current_timestamp, 2, '')
 PREHOOK: type: QUERY
@@ -116,11 +116,11 @@ POSTHOOK: Output: default@sequential_update
 PREHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	base_0000005
 PREHOOK: query: alter table sequential_update compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
@@ -129,11 +129,11 @@ POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY	base_0000005
 PREHOOK: query: drop table if exists orc_test_txn
 PREHOOK: type: DROPTABLE
@@ -172,14 +172,14 @@ PREHOOK: Input: default@orc_test_txn
 PREHOOK: Input: default@orc_test_txn@year=2016
 PREHOOK: Input: default@orc_test_txn@year=2017
 PREHOOK: Input: default@orc_test_txn@year=2018
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from orc_test_txn
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn
 POSTHOOK: Input: default@orc_test_txn@year=2016
 POSTHOOK: Input: default@orc_test_txn@year=2017
 POSTHOOK: Input: default@orc_test_txn@year=2018
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 8	Henry	CSE	2016
 9	Harris	CSE	2017
 10	Haley	CSE	2018
@@ -207,14 +207,14 @@ PREHOOK: Input: default@orc_test_txn
 PREHOOK: Input: default@orc_test_txn@year=2016
 PREHOOK: Input: default@orc_test_txn@year=2017
 PREHOOK: Input: default@orc_test_txn@year=2018
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(id==1, 'LOOKS OKAY', 'BROKEN') from orc_test_txn
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn
 POSTHOOK: Input: default@orc_test_txn@year=2016
 POSTHOOK: Input: default@orc_test_txn@year=2017
 POSTHOOK: Input: default@orc_test_txn@year=2018
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY
 PREHOOK: query: alter table orc_test_txn partition(year='2016') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
@@ -234,12 +234,12 @@ PREHOOK: Input: default@orc_test_txn
 PREHOOK: Input: default@orc_test_txn@year=2016
 PREHOOK: Input: default@orc_test_txn@year=2017
 PREHOOK: Input: default@orc_test_txn@year=2018
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct IF(id==1, 'LOOKS OKAY', 'BROKEN') from orc_test_txn
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn
 POSTHOOK: Input: default@orc_test_txn@year=2016
 POSTHOOK: Input: default@orc_test_txn@year=2017
 POSTHOOK: Input: default@orc_test_txn@year=2018
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 LOOKS OKAY
