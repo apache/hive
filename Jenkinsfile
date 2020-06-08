@@ -180,7 +180,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("test -q")
+              buildHive("org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
             stage('Archive') {
