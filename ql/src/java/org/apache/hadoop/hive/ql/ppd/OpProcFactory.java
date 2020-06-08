@@ -761,8 +761,8 @@ public final class OpProcFactory {
       List<ExprNodeDesc> groupByKeys = ((GroupByOperator)nd).getConf().getKeys();
       Map<ExprNodeDesc, ExprNodeDesc> newToOldExprMap = prunedPred.getNewToOldExprMap();
       Map<String, List<ExprNodeDesc>> nonFinalCandidates = new HashMap<String, List<ExprNodeDesc>>();
-      for (Iterator<Map.Entry<String, List<ExprNodeDesc>>>
-           iter = candidates.entrySet().iterator(); iter.hasNext(); ) {
+      Iterator<Map.Entry<String, List<ExprNodeDesc>>> iter = candidates.entrySet().iterator();
+      while (iter.hasNext()) {
         Map.Entry<String, List<ExprNodeDesc>> entry = iter.next();
         List<ExprNodeDesc> residualExprs = new ArrayList<ExprNodeDesc>();
         List<ExprNodeDesc> finalCandidates = new ArrayList<ExprNodeDesc>();
@@ -801,9 +801,10 @@ public final class OpProcFactory {
         assert index >= 0;
         for (FastBitSet bitset : bitSets) {
           int keyPos = bitset.nextClearBit(0);
-          for (; keyPos < groupingSetPosition && keyPos != index;
-               keyPos = bitset.nextClearBit(keyPos + 1));
-          // If the column has not found in grouping sets, the expr should not be pushed down
+          while (keyPos < groupingSetPosition && keyPos != index) {
+            keyPos = bitset.nextClearBit(keyPos + 1);
+          }
+          // If the column has not be found in grouping sets, the expr should not be pushed down
           if (keyPos != index) {
             return false;
           }
