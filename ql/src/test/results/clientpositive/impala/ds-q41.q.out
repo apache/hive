@@ -1,0 +1,339 @@
+PREHOOK: query: explain cbo select  distinct(i_product_name)
+ from impala_tpcds_item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from impala_tpcds_item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  distinct(i_product_name)
+ from impala_tpcds_item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from impala_tpcds_item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
+  ImpalaAggregateRel(group=[{1}])
+    ImpalaJoinRel(condition=[=($2, $0)], joinType=[inner])
+      ImpalaProjectPassthroughRel(i_manufact=[$14], i_product_name=[$21])
+        ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(BETWEEN(false, CAST($13):BIGINT, 970:BIGINT, +(970:BIGINT, 40:BIGINT)), IS NOT NULL($14))])
+      ImpalaProjectPassthroughRel(i_manufact=[$0])
+        ImpalaAggregateRel(group=[{14}], agg#0=[count()], condition=[>($1, 0)])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(OR(AND(=($12, _UTF-16LE'Women'), OR(=($17, _UTF-16LE'frosted'), =($17, _UTF-16LE'rose')), OR(=($18, _UTF-16LE'Lb'), =($18, _UTF-16LE'Gross')), OR(=($15, _UTF-16LE'medium'), =($15, _UTF-16LE'large'))), AND(=($12, _UTF-16LE'Women'), OR(=($17, _UTF-16LE'chocolate'), =($17, _UTF-16LE'black')), OR(=($18, _UTF-16LE'Box'), =($18, _UTF-16LE'Dram')), OR(=($15, _UTF-16LE'economy'), =($15, _UTF-16LE'petite'))), AND(=($12, _UTF-16LE'Men'), OR(=($17, _UTF-16LE'slate'), =($17, _UTF-16LE'magenta')), OR(=($18, _UTF-16LE'Carton'), =($18, _UTF-16LE'Bundle')), OR(=($15, _UTF-16LE'N/A'), =($15, _UTF-16LE'small'))), AND(=($12, _UTF-16LE'Men'), OR(=($17, _UTF-16LE'cornflower'), =($17, _UTF-16LE'firebrick')), OR(=($18, _UTF-16LE'Pound'), =($18, _UTF-16LE'Oz')), OR(=($15, _UTF-16LE'medium'), =($15, _UTF-16LE'large'))), AND(=($12, _UTF-16LE'Women'), OR(=($17, _UTF-16LE'almond'), =($17, _UTF-16LE'steel')), OR(=($18, _UTF-16LE'Tsp'), =($18, _UTF-16LE'Case')), OR(=($15, _UTF-16LE'medium'), =($15, _UTF-16LE'large'))), AND(=($12, _UTF-16LE'Women'), OR(=($17, _UTF-16LE'purple'), =($17, _UTF-16LE'aquamarine')), OR(=($18, _UTF-16LE'Bunch'), =($18, _UTF-16LE'Gram')), OR(=($15, _UTF-16LE'economy'), =($15, _UTF-16LE'petite'))), AND(=($12, _UTF-16LE'Men'), OR(=($17, _UTF-16LE'lavender'), =($17, _UTF-16LE'papaya')), OR(=($18, _UTF-16LE'Pallet'), =($18, _UTF-16LE'Cup')), OR(=($15, _UTF-16LE'N/A'), =($15, _UTF-16LE'small'))), AND(=($12, _UTF-16LE'Men'), OR(=($17, _UTF-16LE'maroon'), =($17, _UTF-16LE'cyan')), OR(=($18, _UTF-16LE'Each'), =($18, _UTF-16LE'N/A')), OR(=($15, _UTF-16LE'medium'), =($15, _UTF-16LE'large')))), IS NOT NULL($14))])
+
+PREHOOK: query: explain select  distinct(i_product_name)
+ from impala_tpcds_item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from impala_tpcds_item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  distinct(i_product_name)
+ from impala_tpcds_item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from impala_tpcds_item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: i1.i_product_name
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  11:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: i1.i_product_name ASC NULLS LAST
+     limit: 100
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=12B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F03:PLAN FRAGMENT [HASH(i1.i_product_name)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:TOP-N [LIMIT=100]
+  |  order by: i1.i_product_name ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=6 row-size=12B cardinality=0
+  |  in pipelines: 05(GETNEXT), 10(OPEN)
+  |
+  10:AGGREGATE [FINALIZE]
+  |  group by: i1.i_product_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=5 row-size=12B cardinality=0
+  |  in pipelines: 10(GETNEXT), 00(OPEN)
+  |
+  09:EXCHANGE [HASH(i1.i_product_name)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=12B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.96MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=09, HASH(i1.i_product_name)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:AGGREGATE [STREAMING]
+  |  group by: i1.i_product_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=5 row-size=12B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: i1.i_manufact = default.impala_tpcds_item.i_manufact
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,4 row-size=48B cardinality=0
+  |  in pipelines: 00(GETNEXT), 07(OPEN)
+  |
+  |--08:EXCHANGE [BROADCAST]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=20B cardinality=0
+  |     in pipelines: 07(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_item i1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: i1.i_manufact IS NOT NULL, _impala_builtins.casttobigint(i1.i_manufact_id) >= CAST(970 AS BIGINT) AND _impala_builtins.casttobigint(i1.i_manufact_id) <= _impala_builtins.add(CAST(970 AS BIGINT), CAST(40 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=28B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F02:PLAN FRAGMENT [HASH(default.impala_tpcds_item.i_manufact)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=08, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  group by: default.impala_tpcds_item.i_manufact
+  |  having: _impala_builtins.count() > CAST(0 AS BIGINT)
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=20B cardinality=0
+  |  in pipelines: 07(GETNEXT), 01(OPEN)
+  |
+  06:EXCHANGE [HASH(default.impala_tpcds_item.i_manufact)]
+     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=20B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=06, HASH(default.impala_tpcds_item.i_manufact)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:AGGREGATE [STREAMING]
+  |  output: count()
+  |  group by: default.impala_tpcds_item.i_manufact
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=20B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_item.i_manufact IS NOT NULL, default.impala_tpcds_item.i_category = 'Women' AND default.impala_tpcds_item.i_color = 'frosted' OR default.impala_tpcds_item.i_color = 'rose' AND default.impala_tpcds_item.i_units = 'Lb' OR default.impala_tpcds_item.i_units = 'Gross' AND default.impala_tpcds_item.i_size = 'medium' OR default.impala_tpcds_item.i_size = 'large' OR default.impala_tpcds_item.i_category = 'Women' AND default.impala_tpcds_item.i_color = 'chocolate' OR default.impala_tpcds_item.i_color = 'black' AND default.impala_tpcds_item.i_units = 'Box' OR default.impala_tpcds_item.i_units = 'Dram' AND default.impala_tpcds_item.i_size = 'economy' OR default.impala_tpcds_item.i_size = 'petite' OR default.impala_tpcds_item.i_category = 'Men' AND default.impala_tpcds_item.i_color = 'slate' OR default.impala_tpcds_item.i_color = 'magenta' AND default.impala_tpcds_item.i_units = 'Carton' OR default.impala_tpcds_item.i_units = 'Bundle' AND default.impala_tpcds_item.i_size = 'N/A' OR default.impala_tpcds_item.i_size = 'small' OR default.impala_tpcds_item.i_category = 'Men' AND default.impala_tpcds_item.i_color = 'cornflower' OR default.impala_tpcds_item.i_color = 'firebrick' AND default.impala_tpcds_item.i_units = 'Pound' OR default.impala_tpcds_item.i_units = 'Oz' AND default.impala_tpcds_item.i_size = 'medium' OR default.impala_tpcds_item.i_size = 'large' OR default.impala_tpcds_item.i_category = 'Women' AND default.impala_tpcds_item.i_color = 'almond' OR default.impala_tpcds_item.i_color = 'steel' AND default.impala_tpcds_item.i_units = 'Tsp' OR default.impala_tpcds_item.i_units = 'Case' AND default.impala_tpcds_item.i_size = 'medium' OR default.impala_tpcds_item.i_size = 'large' OR default.impala_tpcds_item.i_category = 'Women' AND default.impala_tpcds_item.i_color = 'purple' OR default.impala_tpcds_item.i_color = 'aquamarine' AND default.impala_tpcds_item.i_units = 'Bunch' OR default.impala_tpcds_item.i_units = 'Gram' AND default.impala_tpcds_item.i_size = 'economy' OR default.impala_tpcds_item.i_size = 'petite' OR default.impala_tpcds_item.i_category = 'Men' AND default.impala_tpcds_item.i_color = 'lavender' OR default.impala_tpcds_item.i_color = 'papaya' AND default.impala_tpcds_item.i_units = 'Pallet' OR default.impala_tpcds_item.i_units = 'Cup' AND default.impala_tpcds_item.i_size = 'N/A' OR default.impala_tpcds_item.i_size = 'small' OR default.impala_tpcds_item.i_category = 'Men' AND default.impala_tpcds_item.i_color = 'maroon' OR default.impala_tpcds_item.i_color = 'cyan' AND default.impala_tpcds_item.i_units = 'Each' OR default.impala_tpcds_item.i_units = 'N/A' AND default.impala_tpcds_item.i_size = 'medium' OR default.impala_tpcds_item.i_size = 'large'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=60B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

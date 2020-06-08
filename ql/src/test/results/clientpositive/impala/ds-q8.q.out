@@ -1,0 +1,769 @@
+PREHOOK: query: explain cbo select  s_store_name
+      ,sum(ss_net_profit)
+ from impala_tpcds_store_sales
+     ,impala_tpcds_date_dim
+     ,impala_tpcds_store,
+     (select ca_zip
+     from (
+      SELECT substr(ca_zip,1,5) ca_zip
+      FROM impala_tpcds_customer_address
+      WHERE substr(ca_zip,1,5) IN (
+                          '47602','16704','35863','28577','83910','36201',
+                          '58412','48162','28055','41419','80332',
+                          '38607','77817','24891','16226','18410',
+                          '21231','59345','13918','51089','20317',
+                          '17167','54585','67881','78366','47770',
+                          '18360','51717','73108','14440','21800',
+                          '89338','45859','65501','34948','25973',
+                          '73219','25333','17291','10374','18829',
+                          '60736','82620','41351','52094','19326',
+                          '25214','54207','40936','21814','79077',
+                          '25178','75742','77454','30621','89193',
+                          '27369','41232','48567','83041','71948',
+                          '37119','68341','14073','16891','62878',
+                          '49130','19833','24286','27700','40979',
+                          '50412','81504','94835','84844','71954',
+                          '39503','57649','18434','24987','12350',
+                          '86379','27413','44529','98569','16515',
+                          '27287','24255','21094','16005','56436',
+                          '91110','68293','56455','54558','10298',
+                          '83647','32754','27052','51766','19444',
+                          '13869','45645','94791','57631','20712',
+                          '37788','41807','46507','21727','71836',
+                          '81070','50632','88086','63991','20244',
+                          '31655','51782','29818','63792','68605',
+                          '94898','36430','57025','20601','82080',
+                          '33869','22728','35834','29086','92645',
+                          '98584','98072','11652','78093','57553',
+                          '43830','71144','53565','18700','90209',
+                          '71256','38353','54364','28571','96560',
+                          '57839','56355','50679','45266','84680',
+                          '34306','34972','48530','30106','15371',
+                          '92380','84247','92292','68852','13338',
+                          '34594','82602','70073','98069','85066',
+                          '47289','11686','98862','26217','47529',
+                          '63294','51793','35926','24227','14196',
+                          '24594','32489','99060','49472','43432',
+                          '49211','14312','88137','47369','56877',
+                          '20534','81755','15794','12318','21060',
+                          '73134','41255','63073','81003','73873',
+                          '66057','51184','51195','45676','92696',
+                          '70450','90669','98338','25264','38919',
+                          '59226','58581','60298','17895','19489',
+                          '52301','80846','95464','68770','51634',
+                          '19988','18367','18421','11618','67975',
+                          '25494','41352','95430','15734','62585',
+                          '97173','33773','10425','75675','53535',
+                          '17879','41967','12197','67998','79658',
+                          '59130','72592','14851','43933','68101',
+                          '50636','25717','71286','24660','58058',
+                          '72991','95042','15543','33122','69280',
+                          '11912','59386','27642','65177','17672',
+                          '33467','64592','36335','54010','18767',
+                          '63193','42361','49254','33113','33159',
+                          '36479','59080','11855','81963','31016',
+                          '49140','29392','41836','32958','53163',
+                          '13844','73146','23952','65148','93498',
+                          '14530','46131','58454','13376','13378',
+                          '83986','12320','17193','59852','46081',
+                          '98533','52389','13086','68843','31013',
+                          '13261','60560','13443','45533','83583',
+                          '11489','58218','19753','22911','25115',
+                          '86709','27156','32669','13123','51933',
+                          '39214','41331','66943','14155','69998',
+                          '49101','70070','35076','14242','73021',
+                          '59494','15782','29752','37914','74686',
+                          '83086','34473','15751','81084','49230',
+                          '91894','60624','17819','28810','63180',
+                          '56224','39459','55233','75752','43639',
+                          '55349','86057','62361','50788','31830',
+                          '58062','18218','85761','60083','45484',
+                          '21204','90229','70041','41162','35390',
+                          '16364','39500','68908','26689','52868',
+                          '81335','40146','11340','61527','61794',
+                          '71997','30415','59004','29450','58117',
+                          '69952','33562','83833','27385','61860',
+                          '96435','48333','23065','32961','84919',
+                          '61997','99132','22815','56600','68730',
+                          '48017','95694','32919','88217','27116',
+                          '28239','58032','18884','16791','21343',
+                          '97462','18569','75660','15475')
+     intersect
+      select ca_zip
+      from (SELECT substr(ca_zip,1,5) ca_zip,count(*) cnt
+            FROM impala_tpcds_customer_address, impala_tpcds_customer
+            WHERE ca_address_sk = c_current_addr_sk and
+                  c_preferred_cust_flag='Y'
+            group by ca_zip
+            having count(*) > 10)A1)A2) V1
+ where ss_store_sk = s_store_sk
+  and ss_sold_date_sk = d_date_sk
+  and d_qoy = 2 and d_year = 1998
+  and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
+ group by s_store_name
+ order by s_store_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  s_store_name
+      ,sum(ss_net_profit)
+ from impala_tpcds_store_sales
+     ,impala_tpcds_date_dim
+     ,impala_tpcds_store,
+     (select ca_zip
+     from (
+      SELECT substr(ca_zip,1,5) ca_zip
+      FROM impala_tpcds_customer_address
+      WHERE substr(ca_zip,1,5) IN (
+                          '47602','16704','35863','28577','83910','36201',
+                          '58412','48162','28055','41419','80332',
+                          '38607','77817','24891','16226','18410',
+                          '21231','59345','13918','51089','20317',
+                          '17167','54585','67881','78366','47770',
+                          '18360','51717','73108','14440','21800',
+                          '89338','45859','65501','34948','25973',
+                          '73219','25333','17291','10374','18829',
+                          '60736','82620','41351','52094','19326',
+                          '25214','54207','40936','21814','79077',
+                          '25178','75742','77454','30621','89193',
+                          '27369','41232','48567','83041','71948',
+                          '37119','68341','14073','16891','62878',
+                          '49130','19833','24286','27700','40979',
+                          '50412','81504','94835','84844','71954',
+                          '39503','57649','18434','24987','12350',
+                          '86379','27413','44529','98569','16515',
+                          '27287','24255','21094','16005','56436',
+                          '91110','68293','56455','54558','10298',
+                          '83647','32754','27052','51766','19444',
+                          '13869','45645','94791','57631','20712',
+                          '37788','41807','46507','21727','71836',
+                          '81070','50632','88086','63991','20244',
+                          '31655','51782','29818','63792','68605',
+                          '94898','36430','57025','20601','82080',
+                          '33869','22728','35834','29086','92645',
+                          '98584','98072','11652','78093','57553',
+                          '43830','71144','53565','18700','90209',
+                          '71256','38353','54364','28571','96560',
+                          '57839','56355','50679','45266','84680',
+                          '34306','34972','48530','30106','15371',
+                          '92380','84247','92292','68852','13338',
+                          '34594','82602','70073','98069','85066',
+                          '47289','11686','98862','26217','47529',
+                          '63294','51793','35926','24227','14196',
+                          '24594','32489','99060','49472','43432',
+                          '49211','14312','88137','47369','56877',
+                          '20534','81755','15794','12318','21060',
+                          '73134','41255','63073','81003','73873',
+                          '66057','51184','51195','45676','92696',
+                          '70450','90669','98338','25264','38919',
+                          '59226','58581','60298','17895','19489',
+                          '52301','80846','95464','68770','51634',
+                          '19988','18367','18421','11618','67975',
+                          '25494','41352','95430','15734','62585',
+                          '97173','33773','10425','75675','53535',
+                          '17879','41967','12197','67998','79658',
+                          '59130','72592','14851','43933','68101',
+                          '50636','25717','71286','24660','58058',
+                          '72991','95042','15543','33122','69280',
+                          '11912','59386','27642','65177','17672',
+                          '33467','64592','36335','54010','18767',
+                          '63193','42361','49254','33113','33159',
+                          '36479','59080','11855','81963','31016',
+                          '49140','29392','41836','32958','53163',
+                          '13844','73146','23952','65148','93498',
+                          '14530','46131','58454','13376','13378',
+                          '83986','12320','17193','59852','46081',
+                          '98533','52389','13086','68843','31013',
+                          '13261','60560','13443','45533','83583',
+                          '11489','58218','19753','22911','25115',
+                          '86709','27156','32669','13123','51933',
+                          '39214','41331','66943','14155','69998',
+                          '49101','70070','35076','14242','73021',
+                          '59494','15782','29752','37914','74686',
+                          '83086','34473','15751','81084','49230',
+                          '91894','60624','17819','28810','63180',
+                          '56224','39459','55233','75752','43639',
+                          '55349','86057','62361','50788','31830',
+                          '58062','18218','85761','60083','45484',
+                          '21204','90229','70041','41162','35390',
+                          '16364','39500','68908','26689','52868',
+                          '81335','40146','11340','61527','61794',
+                          '71997','30415','59004','29450','58117',
+                          '69952','33562','83833','27385','61860',
+                          '96435','48333','23065','32961','84919',
+                          '61997','99132','22815','56600','68730',
+                          '48017','95694','32919','88217','27116',
+                          '28239','58032','18884','16791','21343',
+                          '97462','18569','75660','15475')
+     intersect
+      select ca_zip
+      from (SELECT substr(ca_zip,1,5) ca_zip,count(*) cnt
+            FROM impala_tpcds_customer_address, impala_tpcds_customer
+            WHERE ca_address_sk = c_current_addr_sk and
+                  c_preferred_cust_flag='Y'
+            group by ca_zip
+            having count(*) > 10)A1)A2) V1
+ where ss_store_sk = s_store_sk
+  and ss_sold_date_sk = d_date_sk
+  and d_qoy = 2 and d_year = 1998
+  and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
+ group by s_store_name
+ order by s_store_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
+  ImpalaAggregateRel(group=[{5}], agg#0=[sum($1)])
+    ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
+      ImpalaJoinRel(condition=[=($2, $3)], joinType=[inner])
+        ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_net_profit=[$21], ss_sold_date_sk=[$22])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
+        ImpalaProjectPassthroughRel(d_date_sk=[$0])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($10, 2), =($6, 1998), IS NOT NULL($0))])
+      ImpalaJoinRel(condition=[=($2, $3)], joinType=[inner])
+        ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], SUBSTRING=[SUBSTRING($25, 1:BIGINT, 2:BIGINT)])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL(SUBSTRING($25, 1:BIGINT, 2:BIGINT)))])
+        ImpalaProjectPassthroughRel(SUBSTRING=[SUBSTRING($0, 1:BIGINT, 2:BIGINT)])
+          ImpalaAggregateRel(group=[{0}], agg#0=[count($1)], condition=[=($1, 2)])
+            ImpalaUnionRel(all=[true])
+              ImpalaAggregateRel(group=[{0}], agg#0=[count()])
+                ImpalaProjectPassthroughRel(ca_zip=[SUBSTRING($9, 1:BIGINT, 5:BIGINT)])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN(SUBSTRING($9, 1:BIGINT, 5:BIGINT), _UTF-16LE'47602', _UTF-16LE'16704', _UTF-16LE'35863', _UTF-16LE'28577', _UTF-16LE'83910', _UTF-16LE'36201', _UTF-16LE'58412', _UTF-16LE'48162', _UTF-16LE'28055', _UTF-16LE'41419', _UTF-16LE'80332', _UTF-16LE'38607', _UTF-16LE'77817', _UTF-16LE'24891', _UTF-16LE'16226', _UTF-16LE'18410', _UTF-16LE'21231', _UTF-16LE'59345', _UTF-16LE'13918', _UTF-16LE'51089', _UTF-16LE'20317', _UTF-16LE'17167', _UTF-16LE'54585', _UTF-16LE'67881', _UTF-16LE'78366', _UTF-16LE'47770', _UTF-16LE'18360', _UTF-16LE'51717', _UTF-16LE'73108', _UTF-16LE'14440', _UTF-16LE'21800', _UTF-16LE'89338', _UTF-16LE'45859', _UTF-16LE'65501', _UTF-16LE'34948', _UTF-16LE'25973', _UTF-16LE'73219', _UTF-16LE'25333', _UTF-16LE'17291', _UTF-16LE'10374', _UTF-16LE'18829', _UTF-16LE'60736', _UTF-16LE'82620', _UTF-16LE'41351', _UTF-16LE'52094', _UTF-16LE'19326', _UTF-16LE'25214', _UTF-16LE'54207', _UTF-16LE'40936', _UTF-16LE'21814', _UTF-16LE'79077', _UTF-16LE'25178', _UTF-16LE'75742', _UTF-16LE'77454', _UTF-16LE'30621', _UTF-16LE'89193', _UTF-16LE'27369', _UTF-16LE'41232', _UTF-16LE'48567', _UTF-16LE'83041', _UTF-16LE'71948', _UTF-16LE'37119', _UTF-16LE'68341', _UTF-16LE'14073', _UTF-16LE'16891', _UTF-16LE'62878', _UTF-16LE'49130', _UTF-16LE'19833', _UTF-16LE'24286', _UTF-16LE'27700', _UTF-16LE'40979', _UTF-16LE'50412', _UTF-16LE'81504', _UTF-16LE'94835', _UTF-16LE'84844', _UTF-16LE'71954', _UTF-16LE'39503', _UTF-16LE'57649', _UTF-16LE'18434', _UTF-16LE'24987', _UTF-16LE'12350', _UTF-16LE'86379', _UTF-16LE'27413', _UTF-16LE'44529', _UTF-16LE'98569', _UTF-16LE'16515', _UTF-16LE'27287', _UTF-16LE'24255', _UTF-16LE'21094', _UTF-16LE'16005', _UTF-16LE'56436', _UTF-16LE'91110', _UTF-16LE'68293', _UTF-16LE'56455', _UTF-16LE'54558', _UTF-16LE'10298', _UTF-16LE'83647', _UTF-16LE'32754', _UTF-16LE'27052', _UTF-16LE'51766', _UTF-16LE'19444', _UTF-16LE'13869', _UTF-16LE'45645', _UTF-16LE'94791', _UTF-16LE'57631', _UTF-16LE'20712', _UTF-16LE'37788', _UTF-16LE'41807', _UTF-16LE'46507', _UTF-16LE'21727', _UTF-16LE'71836', _UTF-16LE'81070', _UTF-16LE'50632', _UTF-16LE'88086', _UTF-16LE'63991', _UTF-16LE'20244', _UTF-16LE'31655', _UTF-16LE'51782', _UTF-16LE'29818', _UTF-16LE'63792', _UTF-16LE'68605', _UTF-16LE'94898', _UTF-16LE'36430', _UTF-16LE'57025', _UTF-16LE'20601', _UTF-16LE'82080', _UTF-16LE'33869', _UTF-16LE'22728', _UTF-16LE'35834', _UTF-16LE'29086', _UTF-16LE'92645', _UTF-16LE'98584', _UTF-16LE'98072', _UTF-16LE'11652', _UTF-16LE'78093', _UTF-16LE'57553', _UTF-16LE'43830', _UTF-16LE'71144', _UTF-16LE'53565', _UTF-16LE'18700', _UTF-16LE'90209', _UTF-16LE'71256', _UTF-16LE'38353', _UTF-16LE'54364', _UTF-16LE'28571', _UTF-16LE'96560', _UTF-16LE'57839', _UTF-16LE'56355', _UTF-16LE'50679', _UTF-16LE'45266', _UTF-16LE'84680', _UTF-16LE'34306', _UTF-16LE'34972', _UTF-16LE'48530', _UTF-16LE'30106', _UTF-16LE'15371', _UTF-16LE'92380', _UTF-16LE'84247', _UTF-16LE'92292', _UTF-16LE'68852', _UTF-16LE'13338', _UTF-16LE'34594', _UTF-16LE'82602', _UTF-16LE'70073', _UTF-16LE'98069', _UTF-16LE'85066', _UTF-16LE'47289', _UTF-16LE'11686', _UTF-16LE'98862', _UTF-16LE'26217', _UTF-16LE'47529', _UTF-16LE'63294', _UTF-16LE'51793', _UTF-16LE'35926', _UTF-16LE'24227', _UTF-16LE'14196', _UTF-16LE'24594', _UTF-16LE'32489', _UTF-16LE'99060', _UTF-16LE'49472', _UTF-16LE'43432', _UTF-16LE'49211', _UTF-16LE'14312', _UTF-16LE'88137', _UTF-16LE'47369', _UTF-16LE'56877', _UTF-16LE'20534', _UTF-16LE'81755', _UTF-16LE'15794', _UTF-16LE'12318', _UTF-16LE'21060', _UTF-16LE'73134', _UTF-16LE'41255', _UTF-16LE'63073', _UTF-16LE'81003', _UTF-16LE'73873', _UTF-16LE'66057', _UTF-16LE'51184', _UTF-16LE'51195', _UTF-16LE'45676', _UTF-16LE'92696', _UTF-16LE'70450', _UTF-16LE'90669', _UTF-16LE'98338', _UTF-16LE'25264', _UTF-16LE'38919', _UTF-16LE'59226', _UTF-16LE'58581', _UTF-16LE'60298', _UTF-16LE'17895', _UTF-16LE'19489', _UTF-16LE'52301', _UTF-16LE'80846', _UTF-16LE'95464', _UTF-16LE'68770', _UTF-16LE'51634', _UTF-16LE'19988', _UTF-16LE'18367', _UTF-16LE'18421', _UTF-16LE'11618', _UTF-16LE'67975', _UTF-16LE'25494', _UTF-16LE'41352', _UTF-16LE'95430', _UTF-16LE'15734', _UTF-16LE'62585', _UTF-16LE'97173', _UTF-16LE'33773', _UTF-16LE'10425', _UTF-16LE'75675', _UTF-16LE'53535', _UTF-16LE'17879', _UTF-16LE'41967', _UTF-16LE'12197', _UTF-16LE'67998', _UTF-16LE'79658', _UTF-16LE'59130', _UTF-16LE'72592', _UTF-16LE'14851', _UTF-16LE'43933', _UTF-16LE'68101', _UTF-16LE'50636', _UTF-16LE'25717', _UTF-16LE'71286', _UTF-16LE'24660', _UTF-16LE'58058', _UTF-16LE'72991', _UTF-16LE'95042', _UTF-16LE'15543', _UTF-16LE'33122', _UTF-16LE'69280', _UTF-16LE'11912', _UTF-16LE'59386', _UTF-16LE'27642', _UTF-16LE'65177', _UTF-16LE'17672', _UTF-16LE'33467', _UTF-16LE'64592', _UTF-16LE'36335', _UTF-16LE'54010', _UTF-16LE'18767', _UTF-16LE'63193', _UTF-16LE'42361', _UTF-16LE'49254', _UTF-16LE'33113', _UTF-16LE'33159', _UTF-16LE'36479', _UTF-16LE'59080', _UTF-16LE'11855', _UTF-16LE'81963', _UTF-16LE'31016', _UTF-16LE'49140', _UTF-16LE'29392', _UTF-16LE'41836', _UTF-16LE'32958', _UTF-16LE'53163', _UTF-16LE'13844', _UTF-16LE'73146', _UTF-16LE'23952', _UTF-16LE'65148', _UTF-16LE'93498', _UTF-16LE'14530', _UTF-16LE'46131', _UTF-16LE'58454', _UTF-16LE'13376', _UTF-16LE'13378', _UTF-16LE'83986', _UTF-16LE'12320', _UTF-16LE'17193', _UTF-16LE'59852', _UTF-16LE'46081', _UTF-16LE'98533', _UTF-16LE'52389', _UTF-16LE'13086', _UTF-16LE'68843', _UTF-16LE'31013', _UTF-16LE'13261', _UTF-16LE'60560', _UTF-16LE'13443', _UTF-16LE'45533', _UTF-16LE'83583', _UTF-16LE'11489', _UTF-16LE'58218', _UTF-16LE'19753', _UTF-16LE'22911', _UTF-16LE'25115', _UTF-16LE'86709', _UTF-16LE'27156', _UTF-16LE'32669', _UTF-16LE'13123', _UTF-16LE'51933', _UTF-16LE'39214', _UTF-16LE'41331', _UTF-16LE'66943', _UTF-16LE'14155', _UTF-16LE'69998', _UTF-16LE'49101', _UTF-16LE'70070', _UTF-16LE'35076', _UTF-16LE'14242', _UTF-16LE'73021', _UTF-16LE'59494', _UTF-16LE'15782', _UTF-16LE'29752', _UTF-16LE'37914', _UTF-16LE'74686', _UTF-16LE'83086', _UTF-16LE'34473', _UTF-16LE'15751', _UTF-16LE'81084', _UTF-16LE'49230', _UTF-16LE'91894', _UTF-16LE'60624', _UTF-16LE'17819', _UTF-16LE'28810', _UTF-16LE'63180', _UTF-16LE'56224', _UTF-16LE'39459', _UTF-16LE'55233', _UTF-16LE'75752', _UTF-16LE'43639', _UTF-16LE'55349', _UTF-16LE'86057', _UTF-16LE'62361', _UTF-16LE'50788', _UTF-16LE'31830', _UTF-16LE'58062', _UTF-16LE'18218', _UTF-16LE'85761', _UTF-16LE'60083', _UTF-16LE'45484', _UTF-16LE'21204', _UTF-16LE'90229', _UTF-16LE'70041', _UTF-16LE'41162', _UTF-16LE'35390', _UTF-16LE'16364', _UTF-16LE'39500', _UTF-16LE'68908', _UTF-16LE'26689', _UTF-16LE'52868', _UTF-16LE'81335', _UTF-16LE'40146', _UTF-16LE'11340', _UTF-16LE'61527', _UTF-16LE'61794', _UTF-16LE'71997', _UTF-16LE'30415', _UTF-16LE'59004', _UTF-16LE'29450', _UTF-16LE'58117', _UTF-16LE'69952', _UTF-16LE'33562', _UTF-16LE'83833', _UTF-16LE'27385', _UTF-16LE'61860', _UTF-16LE'96435', _UTF-16LE'48333', _UTF-16LE'23065', _UTF-16LE'32961', _UTF-16LE'84919', _UTF-16LE'61997', _UTF-16LE'99132', _UTF-16LE'22815', _UTF-16LE'56600', _UTF-16LE'68730', _UTF-16LE'48017', _UTF-16LE'95694', _UTF-16LE'32919', _UTF-16LE'88217', _UTF-16LE'27116', _UTF-16LE'28239', _UTF-16LE'58032', _UTF-16LE'18884', _UTF-16LE'16791', _UTF-16LE'21343', _UTF-16LE'97462', _UTF-16LE'18569', _UTF-16LE'75660', _UTF-16LE'15475'), IS NOT NULL(SUBSTRING(SUBSTRING($9, 1:BIGINT, 5:BIGINT), 1:BIGINT, 2:BIGINT)))])
+              ImpalaAggregateRel(group=[{0}], agg#0=[count()])
+                ImpalaProjectPassthroughRel(ca_zip=[SUBSTRING($0, 1:BIGINT, 5:BIGINT)])
+                  ImpalaAggregateRel(group=[{1}], agg#0=[count()], condition=[>($1, 10)])
+                    ImpalaJoinRel(condition=[=($0, $2)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_zip=[$9])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IS NOT NULL($0), IS NOT NULL(SUBSTRING(SUBSTRING($9, 1:BIGINT, 5:BIGINT), 1:BIGINT, 2:BIGINT)))])
+                      ImpalaProjectPassthroughRel(c_current_addr_sk=[$4])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(=($10, _UTF-16LE'Y'), IS NOT NULL($4))])
+
+PREHOOK: query: explain select  s_store_name
+      ,sum(ss_net_profit)
+ from impala_tpcds_store_sales
+     ,impala_tpcds_date_dim
+     ,impala_tpcds_store,
+     (select ca_zip
+     from (
+      SELECT substr(ca_zip,1,5) ca_zip
+      FROM impala_tpcds_customer_address
+      WHERE substr(ca_zip,1,5) IN (
+                          '47602','16704','35863','28577','83910','36201',
+                          '58412','48162','28055','41419','80332',
+                          '38607','77817','24891','16226','18410',
+                          '21231','59345','13918','51089','20317',
+                          '17167','54585','67881','78366','47770',
+                          '18360','51717','73108','14440','21800',
+                          '89338','45859','65501','34948','25973',
+                          '73219','25333','17291','10374','18829',
+                          '60736','82620','41351','52094','19326',
+                          '25214','54207','40936','21814','79077',
+                          '25178','75742','77454','30621','89193',
+                          '27369','41232','48567','83041','71948',
+                          '37119','68341','14073','16891','62878',
+                          '49130','19833','24286','27700','40979',
+                          '50412','81504','94835','84844','71954',
+                          '39503','57649','18434','24987','12350',
+                          '86379','27413','44529','98569','16515',
+                          '27287','24255','21094','16005','56436',
+                          '91110','68293','56455','54558','10298',
+                          '83647','32754','27052','51766','19444',
+                          '13869','45645','94791','57631','20712',
+                          '37788','41807','46507','21727','71836',
+                          '81070','50632','88086','63991','20244',
+                          '31655','51782','29818','63792','68605',
+                          '94898','36430','57025','20601','82080',
+                          '33869','22728','35834','29086','92645',
+                          '98584','98072','11652','78093','57553',
+                          '43830','71144','53565','18700','90209',
+                          '71256','38353','54364','28571','96560',
+                          '57839','56355','50679','45266','84680',
+                          '34306','34972','48530','30106','15371',
+                          '92380','84247','92292','68852','13338',
+                          '34594','82602','70073','98069','85066',
+                          '47289','11686','98862','26217','47529',
+                          '63294','51793','35926','24227','14196',
+                          '24594','32489','99060','49472','43432',
+                          '49211','14312','88137','47369','56877',
+                          '20534','81755','15794','12318','21060',
+                          '73134','41255','63073','81003','73873',
+                          '66057','51184','51195','45676','92696',
+                          '70450','90669','98338','25264','38919',
+                          '59226','58581','60298','17895','19489',
+                          '52301','80846','95464','68770','51634',
+                          '19988','18367','18421','11618','67975',
+                          '25494','41352','95430','15734','62585',
+                          '97173','33773','10425','75675','53535',
+                          '17879','41967','12197','67998','79658',
+                          '59130','72592','14851','43933','68101',
+                          '50636','25717','71286','24660','58058',
+                          '72991','95042','15543','33122','69280',
+                          '11912','59386','27642','65177','17672',
+                          '33467','64592','36335','54010','18767',
+                          '63193','42361','49254','33113','33159',
+                          '36479','59080','11855','81963','31016',
+                          '49140','29392','41836','32958','53163',
+                          '13844','73146','23952','65148','93498',
+                          '14530','46131','58454','13376','13378',
+                          '83986','12320','17193','59852','46081',
+                          '98533','52389','13086','68843','31013',
+                          '13261','60560','13443','45533','83583',
+                          '11489','58218','19753','22911','25115',
+                          '86709','27156','32669','13123','51933',
+                          '39214','41331','66943','14155','69998',
+                          '49101','70070','35076','14242','73021',
+                          '59494','15782','29752','37914','74686',
+                          '83086','34473','15751','81084','49230',
+                          '91894','60624','17819','28810','63180',
+                          '56224','39459','55233','75752','43639',
+                          '55349','86057','62361','50788','31830',
+                          '58062','18218','85761','60083','45484',
+                          '21204','90229','70041','41162','35390',
+                          '16364','39500','68908','26689','52868',
+                          '81335','40146','11340','61527','61794',
+                          '71997','30415','59004','29450','58117',
+                          '69952','33562','83833','27385','61860',
+                          '96435','48333','23065','32961','84919',
+                          '61997','99132','22815','56600','68730',
+                          '48017','95694','32919','88217','27116',
+                          '28239','58032','18884','16791','21343',
+                          '97462','18569','75660','15475')
+     intersect
+      select ca_zip
+      from (SELECT substr(ca_zip,1,5) ca_zip,count(*) cnt
+            FROM impala_tpcds_customer_address, impala_tpcds_customer
+            WHERE ca_address_sk = c_current_addr_sk and
+                  c_preferred_cust_flag='Y'
+            group by ca_zip
+            having count(*) > 10)A1)A2) V1
+ where ss_store_sk = s_store_sk
+  and ss_sold_date_sk = d_date_sk
+  and d_qoy = 2 and d_year = 1998
+  and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
+ group by s_store_name
+ order by s_store_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  s_store_name
+      ,sum(ss_net_profit)
+ from impala_tpcds_store_sales
+     ,impala_tpcds_date_dim
+     ,impala_tpcds_store,
+     (select ca_zip
+     from (
+      SELECT substr(ca_zip,1,5) ca_zip
+      FROM impala_tpcds_customer_address
+      WHERE substr(ca_zip,1,5) IN (
+                          '47602','16704','35863','28577','83910','36201',
+                          '58412','48162','28055','41419','80332',
+                          '38607','77817','24891','16226','18410',
+                          '21231','59345','13918','51089','20317',
+                          '17167','54585','67881','78366','47770',
+                          '18360','51717','73108','14440','21800',
+                          '89338','45859','65501','34948','25973',
+                          '73219','25333','17291','10374','18829',
+                          '60736','82620','41351','52094','19326',
+                          '25214','54207','40936','21814','79077',
+                          '25178','75742','77454','30621','89193',
+                          '27369','41232','48567','83041','71948',
+                          '37119','68341','14073','16891','62878',
+                          '49130','19833','24286','27700','40979',
+                          '50412','81504','94835','84844','71954',
+                          '39503','57649','18434','24987','12350',
+                          '86379','27413','44529','98569','16515',
+                          '27287','24255','21094','16005','56436',
+                          '91110','68293','56455','54558','10298',
+                          '83647','32754','27052','51766','19444',
+                          '13869','45645','94791','57631','20712',
+                          '37788','41807','46507','21727','71836',
+                          '81070','50632','88086','63991','20244',
+                          '31655','51782','29818','63792','68605',
+                          '94898','36430','57025','20601','82080',
+                          '33869','22728','35834','29086','92645',
+                          '98584','98072','11652','78093','57553',
+                          '43830','71144','53565','18700','90209',
+                          '71256','38353','54364','28571','96560',
+                          '57839','56355','50679','45266','84680',
+                          '34306','34972','48530','30106','15371',
+                          '92380','84247','92292','68852','13338',
+                          '34594','82602','70073','98069','85066',
+                          '47289','11686','98862','26217','47529',
+                          '63294','51793','35926','24227','14196',
+                          '24594','32489','99060','49472','43432',
+                          '49211','14312','88137','47369','56877',
+                          '20534','81755','15794','12318','21060',
+                          '73134','41255','63073','81003','73873',
+                          '66057','51184','51195','45676','92696',
+                          '70450','90669','98338','25264','38919',
+                          '59226','58581','60298','17895','19489',
+                          '52301','80846','95464','68770','51634',
+                          '19988','18367','18421','11618','67975',
+                          '25494','41352','95430','15734','62585',
+                          '97173','33773','10425','75675','53535',
+                          '17879','41967','12197','67998','79658',
+                          '59130','72592','14851','43933','68101',
+                          '50636','25717','71286','24660','58058',
+                          '72991','95042','15543','33122','69280',
+                          '11912','59386','27642','65177','17672',
+                          '33467','64592','36335','54010','18767',
+                          '63193','42361','49254','33113','33159',
+                          '36479','59080','11855','81963','31016',
+                          '49140','29392','41836','32958','53163',
+                          '13844','73146','23952','65148','93498',
+                          '14530','46131','58454','13376','13378',
+                          '83986','12320','17193','59852','46081',
+                          '98533','52389','13086','68843','31013',
+                          '13261','60560','13443','45533','83583',
+                          '11489','58218','19753','22911','25115',
+                          '86709','27156','32669','13123','51933',
+                          '39214','41331','66943','14155','69998',
+                          '49101','70070','35076','14242','73021',
+                          '59494','15782','29752','37914','74686',
+                          '83086','34473','15751','81084','49230',
+                          '91894','60624','17819','28810','63180',
+                          '56224','39459','55233','75752','43639',
+                          '55349','86057','62361','50788','31830',
+                          '58062','18218','85761','60083','45484',
+                          '21204','90229','70041','41162','35390',
+                          '16364','39500','68908','26689','52868',
+                          '81335','40146','11340','61527','61794',
+                          '71997','30415','59004','29450','58117',
+                          '69952','33562','83833','27385','61860',
+                          '96435','48333','23065','32961','84919',
+                          '61997','99132','22815','56600','68730',
+                          '48017','95694','32919','88217','27116',
+                          '28239','58032','18884','16791','21343',
+                          '97462','18569','75660','15475')
+     intersect
+      select ca_zip
+      from (SELECT substr(ca_zip,1,5) ca_zip,count(*) cnt
+            FROM impala_tpcds_customer_address, impala_tpcds_customer
+            WHERE ca_address_sk = c_current_addr_sk and
+                  c_preferred_cust_flag='Y'
+            group by ca_zip
+            having count(*) > 10)A1)A2) V1
+ where ss_store_sk = s_store_sk
+  and ss_sold_date_sk = d_date_sk
+  and d_qoy = 2 and d_year = 1998
+  and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
+ group by s_store_name
+ order by s_store_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.impala_tpcds_store.s_store_name, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  31:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: default.impala_tpcds_store.s_store_name ASC NULLS LAST
+     limit: 100
+     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=17 row-size=28B cardinality=0
+     in pipelines: 16(GETNEXT)
+
+F11:PLAN FRAGMENT [HASH(default.impala_tpcds_store.s_store_name)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=31, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  16:TOP-N [LIMIT=100]
+  |  order by: default.impala_tpcds_store.s_store_name ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=17 row-size=28B cardinality=0
+  |  in pipelines: 16(GETNEXT), 30(OPEN)
+  |
+  30:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_net_profit)
+  |  group by: default.impala_tpcds_store.s_store_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=16 row-size=28B cardinality=0
+  |  in pipelines: 30(GETNEXT), 00(OPEN)
+  |
+  29:EXCHANGE [HASH(default.impala_tpcds_store.s_store_name)]
+     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=16 row-size=28B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=131.95MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=29, HASH(default.impala_tpcds_store.s_store_name)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  15:AGGREGATE [STREAMING]
+  |  output: sum(default.impala_tpcds_store_sales.ss_net_profit)
+  |  group by: default.impala_tpcds_store.s_store_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=16 row-size=28B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  14:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3,15 row-size=72B cardinality=0
+  |  in pipelines: 00(GETNEXT), 03(OPEN)
+  |
+  |--28:EXCHANGE [BROADCAST]
+  |     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3,15 row-size=48B cardinality=0
+  |     in pipelines: 03(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1 row-size=24B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--17:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=1 row-size=12B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=12B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=17, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_qoy = CAST(2 AS INT), default.impala_tpcds_date_dim.d_year = CAST(1998 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim.d_qoy = CAST(2 AS INT), default.impala_tpcds_date_dim.d_year = CAST(1998 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=12B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=28, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: _impala_builtins.substring(default.impala_tpcds_store.s_zip, 1, 2) = _impala_builtins.substring(ca_zip, 1, 2)
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=3,15 row-size=48B cardinality=0
+  |  in pipelines: 03(GETNEXT), 26(OPEN)
+  |
+  |--27:EXCHANGE [BROADCAST]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=15 row-size=20B cardinality=0
+  |     in pipelines: 26(GETNEXT)
+  |
+  03:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store.s_store_sk IS NOT NULL, _impala_builtins.substring(default.impala_tpcds_store.s_zip, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=28B cardinality=0
+     in pipelines: 03(GETNEXT)
+
+F10:PLAN FRAGMENT [HASH(ca_zip)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=27, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  26:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge($f1)
+  |  group by: ca_zip
+  |  having: _impala_builtins.count($f1) = CAST(2 AS BIGINT)
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=15 row-size=20B cardinality=0
+  |  in pipelines: 26(GETNEXT), 19(OPEN), 24(OPEN)
+  |
+  25:EXCHANGE [HASH(ca_zip)]
+     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=15 row-size=20B cardinality=0
+     in pipelines: 19(GETNEXT), 24(GETNEXT)
+
+F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=25, HASH(ca_zip)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:AGGREGATE [STREAMING]
+  |  output: count($f1)
+  |  group by: ca_zip
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=15 row-size=20B cardinality=0
+  |  in pipelines: 19(GETNEXT), 24(GETNEXT)
+  |
+  04:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=5 row-size=20B cardinality=0
+  |  in pipelines: 19(GETNEXT), 24(GETNEXT)
+  |
+  |--24:AGGREGATE [FINALIZE]
+  |  |  output: _impala_builtins.count:merge()
+  |  |  group by: _impala_builtins.substring(default.impala_tpcds_customer_address_0.ca_zip, 1, 5)
+  |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  |  tuple-ids=14 row-size=20B cardinality=0
+  |  |  in pipelines: 24(GETNEXT), 22(OPEN)
+  |  |
+  |  23:EXCHANGE [HASH(_impala_builtins.substring(default.impala_tpcds_customer_address_0.ca_zip, 1, 5))]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=14 row-size=20B cardinality=0
+  |     in pipelines: 22(GETNEXT)
+  |
+  19:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  group by: _impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, 1, 5)
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=20B cardinality=0
+  |  in pipelines: 19(GETNEXT), 05(OPEN)
+  |
+  18:EXCHANGE [HASH(_impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, 1, 5))]
+     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=20B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=18, HASH(_impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, 1, 5))]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:AGGREGATE [STREAMING]
+  |  output: count()
+  |  group by: _impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=20B cardinality=0
+  |  in pipelines: 05(GETNEXT)
+  |
+  05:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: _impala_builtins.substring(_impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)), CAST(1 AS BIGINT), CAST(2 AS BIGINT)) IS NOT NULL, _impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('47602', '16704', '35863', '28577', '83910', '36201', '58412', '48162', '28055', '41419', '80332', '38607', '77817', '24891', '16226', '18410', '21231', '59345', '13918', '51089', '20317', '17167', '54585', '67881', '78366', '47770', '18360', '51717', '73108', '14440', '21800', '89338', '45859', '65501', '34948', '25973', '73219', '25333', '17291', '10374', '18829', '60736', '82620', '41351', '52094', '19326', '25214', '54207', '40936', '21814', '79077', '25178', '75742', '77454', '30621', '89193', '27369', '41232', '48567', '83041', '71948', '37119', '68341', '14073', '16891', '62878', '49130', '19833', '24286', '27700', '40979', '50412', '81504', '94835', '84844', '71954', '39503', '57649', '18434', '24987', '12350', '86379', '27413', '44529', '98569', '16515', '27287', '24255', '21094', '16005', '56436', '91110', '68293', '56455', '54558', '10298', '83647', '32754', '27052', '51766', '19444', '13869', '45645', '94791', '57631', '20712', '37788', '41807', '46507', '21727', '71836', '81070', '50632', '88086', '63991', '20244', '31655', '51782', '29818', '63792', '68605', '94898', '36430', '57025', '20601', '82080', '33869', '22728', '35834', '29086', '92645', '98584', '98072', '11652', '78093', '57553', '43830', '71144', '53565', '18700', '90209', '71256', '38353', '54364', '28571', '96560', '57839', '56355', '50679', '45266', '84680', '34306', '34972', '48530', '30106', '15371', '92380', '84247', '92292', '68852', '13338', '34594', '82602', '70073', '98069', '85066', '47289', '11686', '98862', '26217', '47529', '63294', '51793', '35926', '24227', '14196', '24594', '32489', '99060', '49472', '43432', '49211', '14312', '88137', '47369', '56877', '20534', '81755', '15794', '12318', '21060', '73134', '41255', '63073', '81003', '73873', '66057', '51184', '51195', '45676', '92696', '70450', '90669', '98338', '25264', '38919', '59226', '58581', '60298', '17895', '19489', '52301', '80846', '95464', '68770', '51634', '19988', '18367', '18421', '11618', '67975', '25494', '41352', '95430', '15734', '62585', '97173', '33773', '10425', '75675', '53535', '17879', '41967', '12197', '67998', '79658', '59130', '72592', '14851', '43933', '68101', '50636', '25717', '71286', '24660', '58058', '72991', '95042', '15543', '33122', '69280', '11912', '59386', '27642', '65177', '17672', '33467', '64592', '36335', '54010', '18767', '63193', '42361', '49254', '33113', '33159', '36479', '59080', '11855', '81963', '31016', '49140', '29392', '41836', '32958', '53163', '13844', '73146', '23952', '65148', '93498', '14530', '46131', '58454', '13376', '13378', '83986', '12320', '17193', '59852', '46081', '98533', '52389', '13086', '68843', '31013', '13261', '60560', '13443', '45533', '83583', '11489', '58218', '19753', '22911', '25115', '86709', '27156', '32669', '13123', '51933', '39214', '41331', '66943', '14155', '69998', '49101', '70070', '35076', '14242', '73021', '59494', '15782', '29752', '37914', '74686', '83086', '34473', '15751', '81084', '49230', '91894', '60624', '17819', '28810', '63180', '56224', '39459', '55233', '75752', '43639', '55349', '86057', '62361', '50788', '31830', '58062', '18218', '85761', '60083', '45484', '21204', '90229', '70041', '41162', '35390', '16364', '39500', '68908', '26689', '52868', '81335', '40146', '11340', '61527', '61794', '71997', '30415', '59004', '29450', '58117', '69952', '33562', '83833', '27385', '61860', '96435', '48333', '23065', '32961', '84919', '61997', '99132', '22815', '56600', '68730', '48017', '95694', '32919', '88217', '27116', '28239', '58032', '18884', '16791', '21343', '97462', '18569', '75660', '15475')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=12B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F07:PLAN FRAGMENT [HASH(default.impala_tpcds_customer_address_0.ca_zip)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=23, HASH(_impala_builtins.substring(default.impala_tpcds_customer_address_0.ca_zip, 1, 5))]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  11:AGGREGATE [STREAMING]
+  |  output: count()
+  |  group by: _impala_builtins.substring(default.impala_tpcds_customer_address_0.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=14 row-size=20B cardinality=0
+  |  in pipelines: 22(GETNEXT)
+  |
+  22:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  group by: default.impala_tpcds_customer_address_0.ca_zip
+  |  having: _impala_builtins.count() > CAST(10 AS BIGINT)
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=20B cardinality=0
+  |  in pipelines: 22(GETNEXT), 07(OPEN)
+  |
+  21:EXCHANGE [HASH(default.impala_tpcds_customer_address_0.ca_zip)]
+     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=20B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.96MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=21, HASH(default.impala_tpcds_customer_address_0.ca_zip)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE [STREAMING]
+  |  output: count()
+  |  group by: default.impala_tpcds_customer_address_0.ca_zip
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=20B cardinality=0
+  |  in pipelines: 07(GETNEXT)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_customer_address_0.ca_address_sk = default.impala_tpcds_customer.c_current_addr_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=9,11 row-size=32B cardinality=0
+  |  in pipelines: 07(GETNEXT), 08(OPEN)
+  |
+  |--20:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=11 row-size=16B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_address_0.ca_address_sk IS NOT NULL, _impala_builtins.substring(_impala_builtins.substring(default.impala_tpcds_customer_address_0.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)), CAST(1 AS BIGINT), CAST(2 AS BIGINT)) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=16B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=20, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_customer, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer.c_current_addr_sk IS NOT NULL, default.impala_tpcds_customer.c_preferred_cust_flag = 'Y'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer.c_preferred_cust_flag = 'Y'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=11 row-size=16B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

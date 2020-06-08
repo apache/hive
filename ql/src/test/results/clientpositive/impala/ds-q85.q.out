@@ -1,0 +1,658 @@
+PREHOOK: query: explain cbo select  substr(r_reason_desc,1,20)
+       ,avg(ws_quantity)
+       ,avg(wr_refunded_cash)
+       ,avg(wr_fee)
+ from impala_tpcds_web_sales, impala_tpcds_web_returns, impala_tpcds_web_page, impala_tpcds_customer_demographics cd1,
+      impala_tpcds_customer_demographics cd2, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_reason 
+ where ws_web_page_sk = wp_web_page_sk
+   and ws_item_sk = wr_item_sk
+   and ws_order_number = wr_order_number
+   and ws_sold_date_sk = d_date_sk and d_year = 2001
+   and cd1.cd_demo_sk = wr_refunded_cdemo_sk 
+   and cd2.cd_demo_sk = wr_returning_cdemo_sk
+   and ca_address_sk = wr_refunded_addr_sk
+   and r_reason_sk = wr_reason_sk
+   and
+   (
+    (
+     cd1.cd_marital_status = 'M'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = '4 yr Degree'
+     and 
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 100.00 and 150.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'S'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'College' 
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 50.00 and 100.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'D'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'Secondary'
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 150.00 and 200.00
+    )
+   )
+   and
+   (
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('TX', 'VA', 'CA')
+     and ws_net_profit between 100 and 200  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('AR', 'NE', 'MO')
+     and ws_net_profit between 150 and 300  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('IA', 'MS', 'WA')
+     and ws_net_profit between 50 and 250  
+    )
+   )
+group by r_reason_desc
+order by substr(r_reason_desc,1,20)
+        ,avg(ws_quantity)
+        ,avg(wr_refunded_cash)
+        ,avg(wr_fee)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_customer_demographics
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_reason
+PREHOOK: Input: default@impala_tpcds_web_page
+PREHOOK: Input: default@impala_tpcds_web_returns
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  substr(r_reason_desc,1,20)
+       ,avg(ws_quantity)
+       ,avg(wr_refunded_cash)
+       ,avg(wr_fee)
+ from impala_tpcds_web_sales, impala_tpcds_web_returns, impala_tpcds_web_page, impala_tpcds_customer_demographics cd1,
+      impala_tpcds_customer_demographics cd2, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_reason 
+ where ws_web_page_sk = wp_web_page_sk
+   and ws_item_sk = wr_item_sk
+   and ws_order_number = wr_order_number
+   and ws_sold_date_sk = d_date_sk and d_year = 2001
+   and cd1.cd_demo_sk = wr_refunded_cdemo_sk 
+   and cd2.cd_demo_sk = wr_returning_cdemo_sk
+   and ca_address_sk = wr_refunded_addr_sk
+   and r_reason_sk = wr_reason_sk
+   and
+   (
+    (
+     cd1.cd_marital_status = 'M'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = '4 yr Degree'
+     and 
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 100.00 and 150.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'S'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'College' 
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 50.00 and 100.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'D'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'Secondary'
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 150.00 and 200.00
+    )
+   )
+   and
+   (
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('TX', 'VA', 'CA')
+     and ws_net_profit between 100 and 200  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('AR', 'NE', 'MO')
+     and ws_net_profit between 150 and 300  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('IA', 'MS', 'WA')
+     and ws_net_profit between 50 and 250  
+    )
+   )
+group by r_reason_desc
+order by substr(r_reason_desc,1,20)
+        ,avg(ws_quantity)
+        ,avg(wr_refunded_cash)
+        ,avg(wr_fee)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_customer_demographics
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_reason
+POSTHOOK: Input: default@impala_tpcds_web_page
+POSTHOOK: Input: default@impala_tpcds_web_returns
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
+  ImpalaSortRel(sort0=[$7], sort1=[$4], sort2=[$5], sort3=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+    ImpalaProjectRel(_o__c0=[SUBSTRING($0, 1:BIGINT, 20:BIGINT)], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3], (tok_function avg (tok_table_or_col ws_quantity))=[$1], (tok_function avg (tok_table_or_col wr_refunded_cash))=[$2], (tok_function avg (tok_table_or_col wr_fee))=[$3], (tok_function substr (tok_table_or_col r_reason_desc) 1 20)=[SUBSTRING($0, 1:BIGINT, 20:BIGINT)])
+      ImpalaAggregateRel(group=[{9}], agg#0=[avg($30)], agg#1=[avg($6)], agg#2=[avg($5)])
+        ImpalaJoinRel(condition=[AND(=($27, $0), =($29, $4), OR(AND($17, $18, $34), AND($19, $20, $35), AND($21, $22, $36)), OR(AND($11, $31), AND($12, $32), AND($13, $33)))], joinType=[inner])
+          ImpalaJoinRel(condition=[AND(=($23, $3), =($15, $24), =($16, $25))], joinType=[inner])
+            ImpalaJoinRel(condition=[=($14, $1)], joinType=[inner])
+              ImpalaJoinRel(condition=[=($10, $2)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($8, $7)], joinType=[inner])
+                  ImpalaProjectPassthroughRel(wr_item_sk=[$2], wr_refunded_cdemo_sk=[$4], wr_refunded_addr_sk=[$6], wr_returning_cdemo_sk=[$8], wr_order_number=[$13], wr_fee=[$18], wr_refunded_cash=[$20], CAST=[CAST($12):BIGINT])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($13), IS NOT NULL($4), IS NOT NULL($8), IS NOT NULL($6), IS NOT NULL(CAST($12):BIGINT))])
+                  ImpalaProjectPassthroughRel(r_reason_sk=[$0], r_reason_desc=[$2])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_reason]], condition=[IS NOT NULL($0)])
+                ImpalaProjectPassthroughRel(ca_address_sk=[$0], IN=[IN($8, _UTF-16LE'TX', _UTF-16LE'VA', _UTF-16LE'CA')], IN2=[IN($8, _UTF-16LE'AR', _UTF-16LE'NE', _UTF-16LE'MO')], IN3=[IN($8, _UTF-16LE'IA', _UTF-16LE'MS', _UTF-16LE'WA')])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(OR(IN($8, _UTF-16LE'TX', _UTF-16LE'VA', _UTF-16LE'CA'), IN($8, _UTF-16LE'AR', _UTF-16LE'NE', _UTF-16LE'MO'), IN($8, _UTF-16LE'IA', _UTF-16LE'MS', _UTF-16LE'WA')), =($10, _UTF-16LE'United States'), IS NOT NULL($0))])
+              ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3], ==[=($2, _UTF-16LE'M')], =4=[=($3, _UTF-16LE'4 yr Degree')], =5=[=($2, _UTF-16LE'S')], =6=[=($3, _UTF-16LE'College')], =7=[=($2, _UTF-16LE'D')], =8=[=($3, _UTF-16LE'Secondary')])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(=($2, _UTF-16LE'M'), =($2, _UTF-16LE'S'), =($2, _UTF-16LE'D')), OR(=($3, _UTF-16LE'4 yr Degree'), =($3, _UTF-16LE'College'), =($3, _UTF-16LE'Secondary')), IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($3))])
+            ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(=($2, _UTF-16LE'M'), =($2, _UTF-16LE'S'), =($2, _UTF-16LE'D')), OR(=($3, _UTF-16LE'4 yr Degree'), =($3, _UTF-16LE'College'), =($3, _UTF-16LE'Secondary')), IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($3))])
+          ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($2, $11)], joinType=[inner])
+              ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_web_page_sk=[$12], ws_order_number=[$17], CAST=[CAST($18):BIGINT], BETWEEN=[BETWEEN(false, $33, 100:DECIMAL(10, 0), 200:DECIMAL(10, 0))], BETWEEN6=[BETWEEN(false, $33, 150:DECIMAL(10, 0), 300:DECIMAL(10, 0))], BETWEEN7=[BETWEEN(false, $33, 50:DECIMAL(10, 0), 250:DECIMAL(10, 0))], BETWEEN8=[BETWEEN(false, $21, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0))], BETWEEN9=[BETWEEN(false, $21, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0))], BETWEEN10=[BETWEEN(false, $21, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(OR(BETWEEN(false, $21, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0)), BETWEEN(false, $21, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0)), BETWEEN(false, $21, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))), OR(BETWEEN(false, $33, 100:DECIMAL(10, 0), 200:DECIMAL(10, 0)), BETWEEN(false, $33, 150:DECIMAL(10, 0), 300:DECIMAL(10, 0)), BETWEEN(false, $33, 50:DECIMAL(10, 0), 250:DECIMAL(10, 0))), IS NOT NULL($3), IS NOT NULL($17), IS NOT NULL($12), IS NOT NULL($0))])
+              ImpalaProjectPassthroughRel(wp_web_page_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_page]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(d_date_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  substr(r_reason_desc,1,20)
+       ,avg(ws_quantity)
+       ,avg(wr_refunded_cash)
+       ,avg(wr_fee)
+ from impala_tpcds_web_sales, impala_tpcds_web_returns, impala_tpcds_web_page, impala_tpcds_customer_demographics cd1,
+      impala_tpcds_customer_demographics cd2, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_reason 
+ where ws_web_page_sk = wp_web_page_sk
+   and ws_item_sk = wr_item_sk
+   and ws_order_number = wr_order_number
+   and ws_sold_date_sk = d_date_sk and d_year = 2001
+   and cd1.cd_demo_sk = wr_refunded_cdemo_sk 
+   and cd2.cd_demo_sk = wr_returning_cdemo_sk
+   and ca_address_sk = wr_refunded_addr_sk
+   and r_reason_sk = wr_reason_sk
+   and
+   (
+    (
+     cd1.cd_marital_status = 'M'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = '4 yr Degree'
+     and 
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 100.00 and 150.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'S'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'College' 
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 50.00 and 100.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'D'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'Secondary'
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 150.00 and 200.00
+    )
+   )
+   and
+   (
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('TX', 'VA', 'CA')
+     and ws_net_profit between 100 and 200  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('AR', 'NE', 'MO')
+     and ws_net_profit between 150 and 300  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('IA', 'MS', 'WA')
+     and ws_net_profit between 50 and 250  
+    )
+   )
+group by r_reason_desc
+order by substr(r_reason_desc,1,20)
+        ,avg(ws_quantity)
+        ,avg(wr_refunded_cash)
+        ,avg(wr_fee)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_customer_demographics
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_reason
+PREHOOK: Input: default@impala_tpcds_web_page
+PREHOOK: Input: default@impala_tpcds_web_returns
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  substr(r_reason_desc,1,20)
+       ,avg(ws_quantity)
+       ,avg(wr_refunded_cash)
+       ,avg(wr_fee)
+ from impala_tpcds_web_sales, impala_tpcds_web_returns, impala_tpcds_web_page, impala_tpcds_customer_demographics cd1,
+      impala_tpcds_customer_demographics cd2, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_reason 
+ where ws_web_page_sk = wp_web_page_sk
+   and ws_item_sk = wr_item_sk
+   and ws_order_number = wr_order_number
+   and ws_sold_date_sk = d_date_sk and d_year = 2001
+   and cd1.cd_demo_sk = wr_refunded_cdemo_sk 
+   and cd2.cd_demo_sk = wr_returning_cdemo_sk
+   and ca_address_sk = wr_refunded_addr_sk
+   and r_reason_sk = wr_reason_sk
+   and
+   (
+    (
+     cd1.cd_marital_status = 'M'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = '4 yr Degree'
+     and 
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 100.00 and 150.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'S'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'College' 
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 50.00 and 100.00
+    )
+   or
+    (
+     cd1.cd_marital_status = 'D'
+     and
+     cd1.cd_marital_status = cd2.cd_marital_status
+     and
+     cd1.cd_education_status = 'Secondary'
+     and
+     cd1.cd_education_status = cd2.cd_education_status
+     and
+     ws_sales_price between 150.00 and 200.00
+    )
+   )
+   and
+   (
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('TX', 'VA', 'CA')
+     and ws_net_profit between 100 and 200  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('AR', 'NE', 'MO')
+     and ws_net_profit between 150 and 300  
+    )
+    or
+    (
+     ca_country = 'United States'
+     and
+     ca_state in ('IA', 'MS', 'WA')
+     and ws_net_profit between 50 and 250  
+    )
+   )
+group by r_reason_desc
+order by substr(r_reason_desc,1,20)
+        ,avg(ws_quantity)
+        ,avg(wr_refunded_cash)
+        ,avg(wr_fee)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_customer_demographics
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_reason
+POSTHOOK: Input: default@impala_tpcds_web_page
+POSTHOOK: Input: default@impala_tpcds_web_returns
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F10:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=76.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _o__c0, _o__c1, _o__c2, _o__c3
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  27:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: (tok_function substr (tok_table_or_col r_reason_desc) 1 20) ASC NULLS LAST, (tok_function avg (tok_table_or_col ws_quantity)) ASC NULLS LAST, (tok_function avg (tok_table_or_col wr_refunded_cash)) ASC NULLS LAST, (tok_function avg (tok_table_or_col wr_fee)) ASC NULLS LAST
+     limit: 100
+     mem-estimate=76.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=19 row-size=72B cardinality=0
+     in pipelines: 17(GETNEXT)
+
+F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=27, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  17:TOP-N [LIMIT=100]
+  |  order by: (tok_function substr (tok_table_or_col r_reason_desc) 1 20) ASC NULLS LAST, (tok_function avg (tok_table_or_col ws_quantity)) ASC NULLS LAST, (tok_function avg (tok_table_or_col wr_refunded_cash)) ASC NULLS LAST, (tok_function avg (tok_table_or_col wr_fee)) ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=19 row-size=72B cardinality=0
+  |  in pipelines: 17(GETNEXT), 26(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=18 row-size=72B cardinality=0
+  |  in pipelines: 26(GETNEXT)
+  |
+  26:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_quantity)), _impala_builtins.avg:merge(default.impala_tpcds_web_returns.wr_refunded_cash), _impala_builtins.avg:merge(default.impala_tpcds_web_returns.wr_fee)
+  |  group by: default.impala_tpcds_reason.r_reason_desc
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=17 row-size=36B cardinality=0
+  |  in pipelines: 26(GETNEXT), 01(OPEN)
+  |
+  25:EXCHANGE [HASH(default.impala_tpcds_reason.r_reason_desc)]
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=16 row-size=36B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=137.86MB mem-reservation=43.69MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, HASH(default.impala_tpcds_reason.r_reason_desc)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  16:AGGREGATE [STREAMING]
+  |  output: avg(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_quantity)), avg(default.impala_tpcds_web_returns.wr_refunded_cash), avg(default.impala_tpcds_web_returns.wr_fee)
+  |  group by: default.impala_tpcds_reason.r_reason_desc
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=16 row-size=36B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  15:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_returns.wr_item_sk = default.impala_tpcds_web_sales.ws_item_sk, default.impala_tpcds_web_returns.wr_order_number = default.impala_tpcds_web_sales.ws_order_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other join predicates: default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA') AND default.impala_tpcds_web_sales.ws_net_profit >= CAST(100 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(200 AS DECIMAL(10,0)) OR default.impala_tpcds_customer_address.ca_state IN ('AR', 'NE', 'MO') AND default.impala_tpcds_web_sales.ws_net_profit >= CAST(150 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(300 AS DECIMAL(10,0)) OR default.impala_tpcds_customer_address.ca_state IN ('IA', 'MS', 'WA') AND default.impala_tpcds_web_sales.ws_net_profit >= CAST(50 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(250 AS DECIMAL(10,0)), cd1.cd_marital_status = 'M' AND cd1.cd_education_status = '4 yr Degree' AND default.impala_tpcds_web_sales.ws_sales_price >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(150 AS DECIMAL(3,0)) OR cd1.cd_marital_status = 'S' AND cd1.cd_education_status = 'College' AND default.impala_tpcds_web_sales.ws_sales_price >= CAST(50 AS DECIMAL(2,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(100 AS DECIMAL(3,0)) OR cd1.cd_marital_status = 'D' AND cd1.cd_education_status = 'Secondary' AND default.impala_tpcds_web_sales.ws_sales_price >= CAST(150 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(200 AS DECIMAL(3,0))
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,8,10,12,14 row-size=192B cardinality=0
+  |  in pipelines: 01(GETNEXT), 10(OPEN)
+  |
+  |--24:EXCHANGE [BROADCAST]
+  |     mem-estimate=60.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=10,12,14 row-size=48B cardinality=0
+  |     in pipelines: 10(GETNEXT)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_returns.wr_returning_cdemo_sk = cd2.cd_demo_sk, cd1.cd_education_status = cd2.cd_education_status, cd1.cd_marital_status = cd2.cd_marital_status
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,8 row-size=144B cardinality=0
+  |  in pipelines: 01(GETNEXT), 08(OPEN)
+  |
+  |--21:EXCHANGE [BROADCAST]
+  |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=28B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_returns.wr_refunded_cdemo_sk = cd1.cd_demo_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=116B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--20:EXCHANGE [BROADCAST]
+  |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=28B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_returns.wr_refunded_addr_sk = default.impala_tpcds_customer_address.ca_address_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=88B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--19:EXCHANGE [BROADCAST]
+  |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=28B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: _impala_builtins.casttobigint(default.impala_tpcds_web_returns.wr_reason_sk) = default.impala_tpcds_reason.r_reason_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=60B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--18:EXCHANGE [BROADCAST]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=20B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_web_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_returns.wr_item_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_order_number IS NOT NULL, default.impala_tpcds_web_returns.wr_refunded_addr_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_refunded_cdemo_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_returning_cdemo_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_web_returns.wr_reason_sk) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=40B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=18, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_reason, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_reason.r_reason_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=20B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=19, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_country = 'United States', default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA') OR default.impala_tpcds_customer_address.ca_state IN ('AR', 'NE', 'MO') OR default.impala_tpcds_customer_address.ca_state IN ('IA', 'MS', 'WA')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_country = 'United States'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=28B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=20, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_customer_demographics cd1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cd1.cd_demo_sk IS NOT NULL, cd1.cd_education_status IS NOT NULL, cd1.cd_marital_status IS NOT NULL, cd1.cd_marital_status = 'M' OR cd1.cd_marital_status = 'S' OR cd1.cd_marital_status = 'D', cd1.cd_education_status = '4 yr Degree' OR cd1.cd_education_status = 'College' OR cd1.cd_education_status = 'Secondary'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=28B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=21, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_customer_demographics cd2, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cd2.cd_demo_sk IS NOT NULL, cd2.cd_education_status IS NOT NULL, cd2.cd_marital_status IS NOT NULL, cd2.cd_marital_status = 'M' OR cd2.cd_marital_status = 'S' OR cd2.cd_marital_status = 'D', cd2.cd_education_status = '4 yr Degree' OR cd2.cd_education_status = 'College' OR cd2.cd_education_status = 'Secondary'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=28B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=3.91MB mem-reservation=3.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=24, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  14:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=10,12,14 row-size=48B cardinality=0
+  |  in pipelines: 10(GETNEXT), 13(OPEN)
+  |
+  |--23:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=14 row-size=8B cardinality=0
+  |     in pipelines: 13(GETNEXT)
+  |
+  12:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_web_page_sk = default.impala_tpcds_web_page.wp_web_page_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=10,12 row-size=40B cardinality=0
+  |  in pipelines: 10(GETNEXT), 11(OPEN)
+  |
+  |--22:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=12 row-size=4B cardinality=0
+  |     in pipelines: 11(GETNEXT)
+  |
+  10:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_order_number IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_web_page_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_net_profit >= CAST(100 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(200 AS DECIMAL(10,0)) OR default.impala_tpcds_web_sales.ws_net_profit >= CAST(150 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(300 AS DECIMAL(10,0)) OR default.impala_tpcds_web_sales.ws_net_profit >= CAST(50 AS DECIMAL(10,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(250 AS DECIMAL(10,0)), default.impala_tpcds_web_sales.ws_sales_price >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(150 AS DECIMAL(3,0)) OR default.impala_tpcds_web_sales.ws_sales_price >= CAST(50 AS DECIMAL(2,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(100 AS DECIMAL(3,0)) OR default.impala_tpcds_web_sales.ws_sales_price >= CAST(150 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(200 AS DECIMAL(3,0))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=36B cardinality=0
+     in pipelines: 10(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=22, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  11:SCAN HDFS [default.impala_tpcds_web_page, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_page.wp_web_page_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=4B cardinality=0
+     in pipelines: 11(GETNEXT)
+
+F07:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=23, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=8B cardinality=0
+     in pipelines: 13(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

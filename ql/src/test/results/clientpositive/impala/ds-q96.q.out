@@ -1,0 +1,242 @@
+PREHOOK: query: explain cbo select  count(*) 
+from impala_tpcds_store_sales
+    ,impala_tpcds_household_demographics 
+    ,impala_tpcds_time_dim, impala_tpcds_store
+where ss_sold_time_sk = impala_tpcds_time_dim.t_time_sk   
+    and ss_hdemo_sk = impala_tpcds_household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and impala_tpcds_time_dim.t_hour = 16
+    and impala_tpcds_time_dim.t_minute >= 30
+    and impala_tpcds_household_demographics.hd_dep_count = 6
+    and impala_tpcds_store.s_store_name = 'ese'
+order by count(*)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_household_demographics
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Input: default@impala_tpcds_time_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  count(*) 
+from impala_tpcds_store_sales
+    ,impala_tpcds_household_demographics 
+    ,impala_tpcds_time_dim, impala_tpcds_store
+where ss_sold_time_sk = impala_tpcds_time_dim.t_time_sk   
+    and ss_hdemo_sk = impala_tpcds_household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and impala_tpcds_time_dim.t_hour = 16
+    and impala_tpcds_time_dim.t_minute >= 30
+    and impala_tpcds_household_demographics.hd_dep_count = 6
+    and impala_tpcds_store.s_store_name = 'ese'
+order by count(*)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_household_demographics
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Input: default@impala_tpcds_time_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(_o__c0=[$0])
+  ImpalaSortRel(sort0=[$1], dir0=[ASC], fetch=[100])
+    ImpalaProjectRel(_o__c0=[$0], (tok_functionstar count)=[$0])
+      ImpalaAggregateRel(group=[{}], agg#0=[count()])
+        ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
+              ImpalaProjectPassthroughRel(ss_sold_time_sk=[$0], ss_hdemo_sk=[$4], ss_store_sk=[$6])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($4), IS NOT NULL($0), IS NOT NULL($6))])
+              ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(=($3, 6), IS NOT NULL($0))])
+            ImpalaProjectPassthroughRel(t_time_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(>=($4, 30), =($3, 16), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(s_store_sk=[$0])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(=($5, _UTF-16LE'ese'), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  count(*) 
+from impala_tpcds_store_sales
+    ,impala_tpcds_household_demographics 
+    ,impala_tpcds_time_dim, impala_tpcds_store
+where ss_sold_time_sk = impala_tpcds_time_dim.t_time_sk   
+    and ss_hdemo_sk = impala_tpcds_household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and impala_tpcds_time_dim.t_hour = 16
+    and impala_tpcds_time_dim.t_minute >= 30
+    and impala_tpcds_household_demographics.hd_dep_count = 6
+    and impala_tpcds_store.s_store_name = 'ese'
+order by count(*)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_household_demographics
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Input: default@impala_tpcds_time_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  count(*) 
+from impala_tpcds_store_sales
+    ,impala_tpcds_household_demographics 
+    ,impala_tpcds_time_dim, impala_tpcds_store
+where ss_sold_time_sk = impala_tpcds_time_dim.t_time_sk   
+    and ss_hdemo_sk = impala_tpcds_household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and impala_tpcds_time_dim.t_hour = 16
+    and impala_tpcds_time_dim.t_minute >= 30
+    and impala_tpcds_household_demographics.hd_dep_count = 6
+    and impala_tpcds_store.s_store_name = 'ese'
+order by count(*)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_household_demographics
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Input: default@impala_tpcds_time_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _o__c0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  09:TOP-N [LIMIT=100]
+  |  order by: (tok_functionstar count) ASC NULLS LAST
+  |  mem-estimate=16B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=9 row-size=16B cardinality=1
+  |  in pipelines: 09(GETNEXT), 14(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=8 row-size=16B cardinality=1
+  |  in pipelines: 14(GETNEXT)
+  |
+  14:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=7 row-size=8B cardinality=1
+  |  in pipelines: 14(GETNEXT), 08(OPEN)
+  |
+  13:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=7 row-size=8B cardinality=1
+     in pipelines: 08(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=13, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:AGGREGATE
+  |  output: count()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=7 row-size=8B cardinality=1
+  |  in pipelines: 08(GETNEXT), 01(OPEN)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3,5 row-size=48B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--12:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=5 row-size=16B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_sold_time_sk = default.impala_tpcds_time_dim.t_time_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3 row-size=32B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3 row-size=12B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_hdemo_sk = default.impala_tpcds_household_demographics.hd_demo_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1 row-size=20B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--10:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=1 row-size=8B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=12B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=10, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_household_demographics, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_household_demographics.hd_demo_sk IS NOT NULL, default.impala_tpcds_household_demographics.hd_dep_count = CAST(6 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_household_demographics.hd_dep_count = CAST(6 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=8B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_time_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_time_dim.t_time_sk IS NOT NULL, default.impala_tpcds_time_dim.t_hour = CAST(16 AS INT), default.impala_tpcds_time_dim.t_minute >= CAST(30 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_time_dim.t_hour = CAST(16 AS INT), default.impala_tpcds_time_dim.t_minute >= CAST(30 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=12B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store.s_store_sk IS NOT NULL, default.impala_tpcds_store.s_store_name = 'ese'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_store.s_store_name = 'ese'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=16B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

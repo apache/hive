@@ -1,0 +1,333 @@
+PREHOOK: query: explain cbo select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   impala_tpcds_catalog_sales 
+   ,impala_tpcds_item 
+   ,impala_tpcds_date_dim
+where
+i_manufact_id = 66
+and i_item_sk = cs_item_sk 
+and d_date between '2002-03-29' and 
+        (cast('2002-03-29' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            impala_tpcds_catalog_sales 
+           ,impala_tpcds_date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '2002-03-29' and
+                             (cast('2002-03-29' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   impala_tpcds_catalog_sales 
+   ,impala_tpcds_item 
+   ,impala_tpcds_date_dim
+where
+i_manufact_id = 66
+and i_item_sk = cs_item_sk 
+and d_date between '2002-03-29' and 
+        (cast('2002-03-29' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            impala_tpcds_catalog_sales 
+           ,impala_tpcds_date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '2002-03-29' and
+                             (cast('2002-03-29' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(fetch=[100])
+  ImpalaAggregateRel(group=[{}], agg#0=[sum($2)])
+    ImpalaJoinRel(condition=[AND(=($5, $3), >($2, $6))], joinType=[inner])
+      ImpalaJoinRel(condition=[=($4, $0)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($3, $1)], joinType=[inner])
+          ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_discount_amt=[$22])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0), IS NOT NULL($22))])
+          ImpalaProjectPassthroughRel(i_item_sk=[$0])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(=($13, 66), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(d_date_sk=[$0])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 2002-03-29 00:00:00:TIMESTAMP(9), +(2002-03-29 00:00:00:TIMESTAMP(9), 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+      ImpalaProjectPassthroughRel(cs_item_sk=[$0], *=[*(1.3:DECIMAL(2, 1), $1)])
+        ImpalaAggregateRel(group=[{1}], agg#0=[avg($2)], condition=[IS NOT NULL($1)])
+          ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
+            ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_discount_amt=[$22])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0))])
+            ImpalaProjectPassthroughRel(d_date_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(_UTF-16LE'2002-03-29'):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2002-03-29'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   impala_tpcds_catalog_sales 
+   ,impala_tpcds_item 
+   ,impala_tpcds_date_dim
+where
+i_manufact_id = 66
+and i_item_sk = cs_item_sk 
+and d_date between '2002-03-29' and 
+        (cast('2002-03-29' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            impala_tpcds_catalog_sales 
+           ,impala_tpcds_date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '2002-03-29' and
+                             (cast('2002-03-29' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   impala_tpcds_catalog_sales 
+   ,impala_tpcds_item 
+   ,impala_tpcds_date_dim
+where
+i_manufact_id = 66
+and i_item_sk = cs_item_sk 
+and d_date between '2002-03-29' and 
+        (cast('2002-03-29' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            impala_tpcds_catalog_sales 
+           ,impala_tpcds_date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '2002-03-29' and
+                             (cast('2002-03-29' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_discount_amt)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  11:TOP-N [LIMIT=100]
+  |  order by: 
+  |  mem-estimate=16B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=13 row-size=16B cardinality=1
+  |  in pipelines: 11(GETNEXT), 19(OPEN)
+  |
+  19:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_discount_amt)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=16B cardinality=1
+  |  in pipelines: 19(GETNEXT), 10(OPEN)
+  |
+  18:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=16B cardinality=1
+     in pipelines: 10(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=18, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE
+  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_discount_amt)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=16B cardinality=1
+  |  in pipelines: 10(GETNEXT), 00(OPEN)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_item.i_item_sk = default.impala_tpcds_catalog_sales_0.cs_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other join predicates: default.impala_tpcds_catalog_sales.cs_ext_discount_amt > _impala_builtins.multiply(CAST(1.3 AS DECIMAL(2,1)), _impala_builtins.avg(default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt))
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,11 row-size=60B cardinality=0
+  |  in pipelines: 00(GETNEXT), 16(OPEN)
+  |
+  |--17:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=11 row-size=16B cardinality=0
+  |     in pipelines: 16(GETNEXT)
+  |
+  04:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=44B cardinality=0
+  |  in pipelines: 00(GETNEXT), 03(OPEN)
+  |
+  |--13:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=0
+  |     in pipelines: 03(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_item_sk = default.impala_tpcds_item.i_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=28B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--12:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=12B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_sales.cs_ext_discount_amt IS NOT NULL, default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=16B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_manufact_id = CAST(66 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_item.i_manufact_id = CAST(66 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=12B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=13, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  03:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('2002-03-29 00:00:00') AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp('2002-03-29 00:00:00'), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=0
+     in pipelines: 03(GETNEXT)
+
+F05:PLAN FRAGMENT [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=17, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  16:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.avg:merge(default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt)
+  |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
+  |  having: _impala_builtins.avg(default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt) IS NOT NULL
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=16B cardinality=0
+  |  in pipelines: 16(GETNEXT), 05(OPEN)
+  |
+  15:EXCHANGE [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
+     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=16B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.96MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=15, HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:AGGREGATE [STREAMING]
+  |  output: avg(default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt)
+  |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=10 row-size=16B cardinality=0
+  |  in pipelines: 05(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales_0.cs_sold_date_sk = default.impala_tpcds_date_dim_0.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=6,8 row-size=32B cardinality=0
+  |  in pipelines: 05(GETNEXT), 06(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=16B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_sales_0.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_0.cs_sold_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim_0.d_date) >= _impala_builtins.casttotimestamp('2002-03-29') AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim_0.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-03-29')), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=16B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

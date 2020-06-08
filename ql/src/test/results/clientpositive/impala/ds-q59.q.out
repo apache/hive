@@ -1,0 +1,508 @@
+PREHOOK: query: explain cbo with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from impala_tpcds_store_sales,impala_tpcds_date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales2,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205 and 1205 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205+ 12 and 1205 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from impala_tpcds_store_sales,impala_tpcds_date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales2,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205 and 1205 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205+ 12 and 1205 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
+  ImpalaProjectRel(s_store_name1=[$12], s_store_id1=[$11], d_week_seq1=[$0], _o__c3=[/($2, $17)], _o__c4=[/($3, $18)], _o__c5=[/($4, $19)], _o__c6=[/($5, $20)], _o__c7=[/($6, $21)], _o__c8=[/($7, $22)], _o__c9=[/($8, $23)])
+    ImpalaJoinRel(condition=[AND(=(CAST($0):BIGINT, -(CAST($15):BIGINT, 52)), =($16, $13))], joinType=[inner])
+      ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($9, $0)], joinType=[inner])
+          ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[sum($6)], agg#5=[sum($7)], agg#6=[sum($8)])
+            ImpalaProjectPassthroughRel($f0=[$1], $f1=[$9], $f2=[CASE($2, $10, null:DECIMAL(10, 0))], $f3=[CASE($3, $10, null:DECIMAL(10, 0))], $f4=[CASE($4, $10, null:DECIMAL(10, 0))], $f5=[CASE($5, $10, null:DECIMAL(10, 0))], $f6=[CASE($6, $10, null:DECIMAL(10, 0))], $f7=[CASE($7, $10, null:DECIMAL(10, 0))], $f8=[CASE($8, $10, null:DECIMAL(10, 0))])
+              ImpalaJoinRel(condition=[=($0, $11)], joinType=[inner])
+                ImpalaProjectPassthroughRel(d_date_sk=[$0], d_week_seq=[$4], ==[=($14, _UTF-16LE'Sunday')], =3=[=($14, _UTF-16LE'Monday')], =4=[=($14, _UTF-16LE'Tuesday')], =5=[=($14, _UTF-16LE'Wednesday')], =6=[=($14, _UTF-16LE'Thursday')], =7=[=($14, _UTF-16LE'Friday')], =8=[=($14, _UTF-16LE'Saturday')])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($0), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+                ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
+          ImpalaProjectPassthroughRel(d_week_seq=[$4])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1205:BIGINT, +(1205:BIGINT, 11:BIGINT)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+        ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
+          ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+          ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_id=[$1])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+      ImpalaJoinRel(condition=[=($9, $0)], joinType=[inner])
+        ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[sum($6)], agg#5=[sum($7)], agg#6=[sum($8)])
+          ImpalaProjectPassthroughRel($f0=[$1], $f1=[$9], $f2=[CASE($2, $10, null:DECIMAL(10, 0))], $f3=[CASE($3, $10, null:DECIMAL(10, 0))], $f4=[CASE($4, $10, null:DECIMAL(10, 0))], $f5=[CASE($5, $10, null:DECIMAL(10, 0))], $f6=[CASE($6, $10, null:DECIMAL(10, 0))], $f7=[CASE($7, $10, null:DECIMAL(10, 0))], $f8=[CASE($8, $10, null:DECIMAL(10, 0))])
+            ImpalaJoinRel(condition=[=($0, $11)], joinType=[inner])
+              ImpalaProjectPassthroughRel(d_date_sk=[$0], d_week_seq=[$4], ==[=($14, _UTF-16LE'Sunday')], =3=[=($14, _UTF-16LE'Monday')], =4=[=($14, _UTF-16LE'Tuesday')], =5=[=($14, _UTF-16LE'Wednesday')], =6=[=($14, _UTF-16LE'Thursday')], =7=[=($14, _UTF-16LE'Friday')], =8=[=($14, _UTF-16LE'Saturday')])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($0), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+              ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
+        ImpalaProjectPassthroughRel(d_week_seq=[$4])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, +(1205:BIGINT, 12:BIGINT), +(1205:BIGINT, 23:BIGINT)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+
+PREHOOK: query: explain with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from impala_tpcds_store_sales,impala_tpcds_date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales2,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205 and 1205 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205+ 12 and 1205 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from impala_tpcds_store_sales,impala_tpcds_date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales2,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205 and 1205 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,impala_tpcds_store,impala_tpcds_date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1205+ 12 and 1205 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=144.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: s_store_name1, s_store_id1, d_week_seq1, _o__c3, _o__c4, _o__c5, _o__c6, _o__c7, _o__c8, _o__c9
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  30:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: s_store_name1 ASC NULLS LAST, s_store_id1 ASC NULLS LAST, d_week_seq1 ASC NULLS LAST
+     limit: 100
+     mem-estimate=144.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=17 row-size=140B cardinality=0
+     in pipelines: 18(GETNEXT)
+
+F10:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=134.13MB mem-reservation=39.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=30, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  18:TOP-N [LIMIT=100]
+  |  order by: s_store_name1 ASC NULLS LAST, s_store_id1 ASC NULLS LAST, d_week_seq1 ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=17 row-size=140B cardinality=0
+  |  in pipelines: 18(GETNEXT), 21(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=16 row-size=140B cardinality=0
+  |  in pipelines: 21(GETNEXT)
+  |
+  17:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_0.s_store_sk = default.impala_tpcds_store_sales_0.ss_store_sk, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_week_seq) = _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_week_seq), 52)
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=3,4,6,8,13,14 row-size=300B cardinality=0
+  |  in pipelines: 21(GETNEXT), 27(OPEN)
+  |
+  |--29:EXCHANGE [BROADCAST]
+  |     mem-estimate=136.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=13,14 row-size=128B cardinality=0
+  |     in pipelines: 27(GETNEXT)
+  |
+  10:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=3,4,6,8 row-size=172B cardinality=0
+  |  in pipelines: 21(GETNEXT), 07(OPEN)
+  |
+  |--24:EXCHANGE [BROADCAST]
+  |     mem-estimate=52.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6,8 row-size=44B cardinality=0
+  |     in pipelines: 07(GETNEXT)
+  |
+  06:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_date_dim.d_week_seq = d.d_week_seq
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=3,4 row-size=128B cardinality=0
+  |  in pipelines: 21(GETNEXT), 05(OPEN)
+  |
+  |--22:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=8B cardinality=0
+  |     in pipelines: 05(GETNEXT)
+  |
+  21:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Sunday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Monday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Tuesday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Wednesday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Thursday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Friday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Saturday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END)
+  |  group by: default.impala_tpcds_date_dim.d_week_seq, default.impala_tpcds_store_sales.ss_store_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=3 row-size=120B cardinality=0
+  |  in pipelines: 21(GETNEXT), 01(OPEN)
+  |
+  20:EXCHANGE [HASH(default.impala_tpcds_date_dim.d_week_seq,default.impala_tpcds_store_sales.ss_store_sk)]
+     mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=120B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=20, HASH(default.impala_tpcds_date_dim.d_week_seq,default.impala_tpcds_store_sales.ss_store_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:AGGREGATE [STREAMING]
+  |  output: sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Sunday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Monday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Tuesday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Wednesday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Thursday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Friday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Saturday' THEN default.impala_tpcds_store_sales.ss_sales_price ELSE NULL END)
+  |  group by: default.impala_tpcds_date_dim.d_week_seq, default.impala_tpcds_store_sales.ss_store_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=3 row-size=120B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_date_dim.d_date_sk = default.impala_tpcds_store_sales.ss_sold_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=32B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--19:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=12B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_week_seq) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=20B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=19, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=12B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=22, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:SCAN HDFS [default.impala_tpcds_date_dim d, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: d.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(d.d_week_seq) IS NOT NULL, _impala_builtins.casttobigint(d.d_month_seq) >= CAST(1205 AS BIGINT) AND _impala_builtins.casttobigint(d.d_month_seq) <= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(11 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=8B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=24, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store.s_store_id = default.impala_tpcds_store_0.s_store_id
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=6,8 row-size=44B cardinality=0
+  |  in pipelines: 07(GETNEXT), 08(OPEN)
+  |
+  |--23:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=16B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store.s_store_id IS NOT NULL, default.impala_tpcds_store.s_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=28B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=23, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store_0.s_store_id IS NOT NULL, default.impala_tpcds_store_0.s_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=16B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F08:PLAN FRAGMENT [HASH(default.impala_tpcds_date_dim_0.d_week_seq,default.impala_tpcds_store_sales_0.ss_store_sk)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=130.07MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=29, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  16:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_date_dim_0.d_week_seq = d_0.d_week_seq
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=13,14 row-size=128B cardinality=0
+  |  in pipelines: 27(GETNEXT), 15(OPEN)
+  |
+  |--28:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=14 row-size=8B cardinality=0
+  |     in pipelines: 15(GETNEXT)
+  |
+  27:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Sunday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Monday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Tuesday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Wednesday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Thursday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Friday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Saturday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END)
+  |  group by: default.impala_tpcds_date_dim_0.d_week_seq, default.impala_tpcds_store_sales_0.ss_store_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=120B cardinality=0
+  |  in pipelines: 27(GETNEXT), 11(OPEN)
+  |
+  26:EXCHANGE [HASH(default.impala_tpcds_date_dim_0.d_week_seq,default.impala_tpcds_store_sales_0.ss_store_sk)]
+     mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=120B cardinality=0
+     in pipelines: 11(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=26, HASH(default.impala_tpcds_date_dim_0.d_week_seq,default.impala_tpcds_store_sales_0.ss_store_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  14:AGGREGATE [STREAMING]
+  |  output: sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Sunday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Monday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Tuesday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Wednesday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Thursday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Friday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_day_name = 'Saturday' THEN default.impala_tpcds_store_sales_0.ss_sales_price ELSE NULL END)
+  |  group by: default.impala_tpcds_date_dim_0.d_week_seq, default.impala_tpcds_store_sales_0.ss_store_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=120B cardinality=0
+  |  in pipelines: 11(GETNEXT)
+  |
+  13:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_date_dim_0.d_date_sk = default.impala_tpcds_store_sales_0.ss_sold_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=10,12 row-size=32B cardinality=0
+  |  in pipelines: 11(GETNEXT), 12(OPEN)
+  |
+  |--25:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=12 row-size=12B cardinality=0
+  |     in pipelines: 12(GETNEXT)
+  |
+  11:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_week_seq) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=20B cardinality=0
+     in pipelines: 11(GETNEXT)
+
+F07:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=25, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales_0.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales_0.ss_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=12B cardinality=0
+     in pipelines: 12(GETNEXT)
+
+F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=28, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  15:SCAN HDFS [default.impala_tpcds_date_dim d_0, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: d_0.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(d_0.d_week_seq) IS NOT NULL, _impala_builtins.casttobigint(d_0.d_month_seq) >= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(12 AS BIGINT)) AND _impala_builtins.casttobigint(d_0.d_month_seq) <= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(23 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=8B cardinality=0
+     in pipelines: 15(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

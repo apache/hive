@@ -1,0 +1,451 @@
+PREHOOK: query: explain cbo select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from impala_tpcds_store_sales
+                ,impala_tpcds_date_dim
+                ,impala_tpcds_store
+                ,impala_tpcds_item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1185 and 1185+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from impala_tpcds_store_sales
+                ,impala_tpcds_date_dim
+                ,impala_tpcds_store
+                ,impala_tpcds_item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1185 and 1185+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  ImpalaProjectRel(i_category=[$6], i_class=[$5], i_brand=[$4], i_product_name=[$7], d_year=[$1], d_qoy=[$3], d_moy=[$2], s_store_id=[$0], sumsales=[$8], rank_window_0=[rank() OVER (PARTITION BY $6 ORDER BY $8 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+    ImpalaAggregateRel(group=[{5, 7, 8, 9, 11, 12, 13, 14}], groups=[[{5, 7, 8, 9, 11, 12, 13, 14}, {7, 8, 9, 11, 12, 13, 14}, {7, 9, 11, 12, 13, 14}, {7, 11, 12, 13, 14}, {11, 12, 13, 14}, {11, 12, 13}, {12, 13}, {13}, {}]], agg#0=[sum($3)])
+      ImpalaJoinRel(condition=[=($0, $10)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($2, $6)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
+            ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_store_sk=[$6], ss_sold_date_sk=[$22], COALESCE=[COALESCE(*($12, CAST($9):DECIMAL(10, 0) NOT NULL), 0:DECIMAL(10, 0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($1))])
+            ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_id=[$1])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
+          ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8], d_qoy=[$10])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1185:BIGINT, +(1185:BIGINT, 11:BIGINT)), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IS NOT NULL($0)])
+
+PREHOOK: query: explain select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from impala_tpcds_store_sales
+                ,impala_tpcds_date_dim
+                ,impala_tpcds_store
+                ,impala_tpcds_item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1185 and 1185+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from impala_tpcds_store_sales
+                ,impala_tpcds_date_dim
+                ,impala_tpcds_store
+                ,impala_tpcds_item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1185 and 1185+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=100.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy, s_store_id, sumsales, rank_window_0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  20:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: i_category ASC NULLS LAST, i_class ASC NULLS LAST, i_brand ASC NULLS LAST, i_product_name ASC NULLS LAST, d_year ASC NULLS LAST, d_qoy ASC NULLS LAST, d_moy ASC NULLS LAST, s_store_id ASC NULLS LAST, sumsales ASC NULLS LAST, rank_window_0 ASC NULLS LAST
+     limit: 100
+     mem-estimate=100.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=25 row-size=96B cardinality=0
+     in pipelines: 13(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.09MB mem-reservation=16.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=20, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:TOP-N [LIMIT=100]
+  |  order by: i_category ASC NULLS LAST, i_class ASC NULLS LAST, i_brand ASC NULLS LAST, i_product_name ASC NULLS LAST, d_year ASC NULLS LAST, d_qoy ASC NULLS LAST, d_moy ASC NULLS LAST, s_store_id ASC NULLS LAST, sumsales ASC NULLS LAST, rank_window_0 ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=25 row-size=96B cardinality=0
+  |  in pipelines: 13(GETNEXT), 10(OPEN)
+  |
+  12:SELECT
+  |  predicates: rank_window_0 <= CAST(100 AS BIGINT)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=18 row-size=96B cardinality=0
+  |  in pipelines: 10(GETNEXT)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=18 row-size=96B cardinality=0
+  |  in pipelines: 10(GETNEXT)
+  |
+  11:ANALYTIC
+  |  functions: _impala_builtins.rank()
+  |  partition by: CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN default.impala_tpcds_item.i_category WHEN 9 THEN default.impala_tpcds_item.i_category WHEN 10 THEN default.impala_tpcds_item.i_category WHEN 11 THEN default.impala_tpcds_item.i_category WHEN 12 THEN default.impala_tpcds_item.i_category WHEN 13 THEN default.impala_tpcds_item.i_category WHEN 14 THEN default.impala_tpcds_item.i_category WHEN 15 THEN NULL END
+  |  order by: CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN 7 WHEN 8 THEN 8 WHEN 9 THEN 9 WHEN 10 THEN 10 WHEN 11 THEN 11 WHEN 12 THEN 12 WHEN 13 THEN 13 WHEN 14 THEN 14 WHEN 15 THEN 15 END DESC
+  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=23,22 row-size=100B cardinality=0
+  |  in pipelines: 10(GETNEXT)
+  |
+  10:SORT
+  |  order by: CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN default.impala_tpcds_item.i_category WHEN 9 THEN default.impala_tpcds_item.i_category WHEN 10 THEN default.impala_tpcds_item.i_category WHEN 11 THEN default.impala_tpcds_item.i_category WHEN 12 THEN default.impala_tpcds_item.i_category WHEN 13 THEN default.impala_tpcds_item.i_category WHEN 14 THEN default.impala_tpcds_item.i_category WHEN 15 THEN NULL END ASC NULLS FIRST, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN 7 WHEN 8 THEN 8 WHEN 9 THEN 9 WHEN 10 THEN 10 WHEN 11 THEN 11 WHEN 12 THEN 12 WHEN 13 THEN 13 WHEN 14 THEN 14 WHEN 15 THEN 15 END DESC NULLS FIRST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=23 row-size=92B cardinality=0
+  |  in pipelines: 10(GETNEXT), 09(OPEN)
+  |
+  19:EXCHANGE [HASH(CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN default.impala_tpcds_item.i_category WHEN 9 THEN default.impala_tpcds_item.i_category WHEN 10 THEN default.impala_tpcds_item.i_category WHEN 11 THEN default.impala_tpcds_item.i_category WHEN 12 THEN default.impala_tpcds_item.i_category WHEN 13 THEN default.impala_tpcds_item.i_category WHEN 14 THEN default.impala_tpcds_item.i_category WHEN 15 THEN NULL END)]
+     mem-estimate=96.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=17 row-size=92B cardinality=0
+     in pipelines: 09(GETNEXT)
+
+F04:PLAN FRAGMENT [HASH(CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_store.s_store_id) WHEN 8 THEN murmur_hash(NULL) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 10 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 14 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.13GB mem-reservation=307.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=19, HASH(CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN default.impala_tpcds_item.i_category WHEN 9 THEN default.impala_tpcds_item.i_category WHEN 10 THEN default.impala_tpcds_item.i_category WHEN 11 THEN default.impala_tpcds_item.i_category WHEN 12 THEN default.impala_tpcds_item.i_category WHEN 13 THEN default.impala_tpcds_item.i_category WHEN 14 THEN default.impala_tpcds_item.i_category WHEN 15 THEN NULL END)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:AGGREGATE [FINALIZE]
+  |  output: aggif(valid_tid(7,8,9,10,11,12,13,14,15) IN (CAST(7 AS INT), CAST(8 AS INT), CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT), CAST(12 AS INT), CAST(13 AS INT), CAST(14 AS INT), CAST(15 AS INT)), CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN _impala_builtins.sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(8 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(9 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(10 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(11 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(12 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(13 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(14 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) WHEN CAST(15 AS INT) THEN sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0)) END)
+  |  group by: CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_store.s_store_id WHEN CAST(8 AS INT) THEN NULL WHEN CAST(9 AS INT) THEN NULL WHEN CAST(10 AS INT) THEN NULL WHEN CAST(11 AS INT) THEN NULL WHEN CAST(12 AS INT) THEN NULL WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_date_dim.d_year WHEN CAST(8 AS INT) THEN default.impala_tpcds_date_dim.d_year WHEN CAST(9 AS INT) THEN default.impala_tpcds_date_dim.d_year WHEN CAST(10 AS INT) THEN default.impala_tpcds_date_dim.d_year WHEN CAST(11 AS INT) THEN NULL WHEN CAST(12 AS INT) THEN NULL WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_date_dim.d_moy WHEN CAST(8 AS INT) THEN default.impala_tpcds_date_dim.d_moy WHEN CAST(9 AS INT) THEN NULL WHEN CAST(10 AS INT) THEN NULL WHEN CAST(11 AS INT) THEN NULL WHEN CAST(12 AS INT) THEN NULL WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_date_dim.d_qoy WHEN CAST(8 AS INT) THEN default.impala_tpcds_date_dim.d_qoy WHEN CAST(9 AS INT) THEN default.impala_tpcds_date_dim.d_qoy WHEN CAST(10 AS INT) THEN NULL WHEN CAST(11 AS INT) THEN NULL WHEN CAST(12 AS INT) THEN NULL WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(8 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(9 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(11 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(12 AS INT) THEN default.impala_tpcds_item.i_brand WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(8 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(9 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(11 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(12 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(13 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(8 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(9 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(11 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(12 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(13 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(14 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_product_name WHEN CAST(8 AS INT) THEN default.impala_tpcds_item.i_product_name WHEN CAST(9 AS INT) THEN default.impala_tpcds_item.i_product_name WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_product_name WHEN CAST(11 AS INT) THEN default.impala_tpcds_item.i_product_name WHEN CAST(12 AS INT) THEN NULL WHEN CAST(13 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL WHEN CAST(15 AS INT) THEN NULL END, CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN CAST(7 AS INT) THEN CAST(7 AS INT) WHEN CAST(8 AS INT) THEN CAST(8 AS INT) WHEN CAST(9 AS INT) THEN CAST(9 AS INT) WHEN CAST(10 AS INT) THEN CAST(10 AS INT) WHEN CAST(11 AS INT) THEN CAST(11 AS INT) WHEN CAST(12 AS INT) THEN CAST(12 AS INT) WHEN CAST(13 AS INT) THEN CAST(13 AS INT) WHEN CAST(14 AS INT) THEN CAST(14 AS INT) WHEN CAST(15 AS INT) THEN CAST(15 AS INT) END
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=17 row-size=92B cardinality=0
+  |  in pipelines: 09(GETNEXT), 18(OPEN)
+  |
+  18:AGGREGATE [FINALIZE]
+  |  Class 0
+  |    output: _impala_builtins.sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: default.impala_tpcds_store.s_store_id, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 1
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 2
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, NULL, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 3
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 4
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 5
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, NULL
+  |  Class 6
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, NULL
+  |  Class 7
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, NULL, NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_category, NULL
+  |  Class 8
+  |    output: sum:merge(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), 0))
+  |    group by: NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+  |  mem-estimate=1.01GB mem-reservation=273.94MB thread-reservation=0
+  |  tuple-ids=7N,8N,9N,10N,11N,12N,13N,14N,15N row-size=792B cardinality=0
+  |  in pipelines: 18(GETNEXT), 01(OPEN)
+  |
+  17:EXCHANGE [HASH(CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_store.s_store_id) WHEN 8 THEN murmur_hash(NULL) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 10 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 14 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END)]
+     mem-estimate=828.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=7N,8N,9N,10N,11N,12N,13N,14N,15N row-size=792B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.02GB mem-reservation=279.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=17, HASH(CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_store.s_store_id) WHEN 8 THEN murmur_hash(NULL) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 10 THEN murmur_hash(default.impala_tpcds_date_dim.d_year) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_moy) WHEN 9 THEN murmur_hash(NULL) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 8 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 9 THEN murmur_hash(default.impala_tpcds_date_dim.d_qoy) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_brand) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 12 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 13 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 14 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 15 THEN murmur_hash(NULL) END,CASE valid_tid(7,8,9,10,11,12,13,14,15) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 8 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_product_name) WHEN 12 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) WHEN 14 THEN murmur_hash(NULL) WHEN 15 THEN murmur_hash(NULL) END)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:AGGREGATE [STREAMING]
+  |  Class 0
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: default.impala_tpcds_store.s_store_id, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 1
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 2
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, NULL, default.impala_tpcds_date_dim.d_qoy, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 3
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, default.impala_tpcds_date_dim.d_year, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 4
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_product_name
+  |  Class 5
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, NULL
+  |  Class 6
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category, NULL
+  |  Class 7
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, NULL, NULL, NULL, NULL, NULL, default.impala_tpcds_item.i_category, NULL
+  |  Class 8
+  |    output: sum(_impala_builtins.coalesce(_impala_builtins.multiply(default.impala_tpcds_store_sales.ss_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity)), CAST(0 AS DECIMAL(10,0))))
+  |    group by: NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+  |  mem-estimate=1.01GB mem-reservation=274.00MB thread-reservation=0
+  |  tuple-ids=7N,8N,9N,10N,11N,12N,13N,14N,15N row-size=792B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_item.i_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3,5 row-size=116B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=60.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=5 row-size=56B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3 row-size=60B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--15:EXCHANGE [BROADCAST]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3 row-size=20B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1 row-size=40B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=1 row-size=16B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=24B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store.s_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=16B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=15, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) >= CAST(1185 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) <= _impala_builtins.add(CAST(1185 AS BIGINT), CAST(11 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=20B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=56B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -1,0 +1,450 @@
+PREHOOK: query: explain cbo select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_store_sales
+  ,impala_tpcds_store_returns
+  ,impala_tpcds_store
+  ,impala_tpcds_date_dim d1
+  ,impala_tpcds_date_dim d2
+where
+    d2.d_year = 1998
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_store_sales
+  ,impala_tpcds_store_returns
+  ,impala_tpcds_store
+  ,impala_tpcds_date_dim d1
+  ,impala_tpcds_date_dim d2
+where
+    d2.d_year = 1998
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  ImpalaAggregateRel(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)], agg#1=[sum($11)], agg#2=[sum($12)], agg#3=[sum($13)], agg#4=[sum($14)])
+    ImpalaProjectPassthroughRel($f0=[$14], $f1=[$15], $f2=[$16], $f3=[$17], $f4=[$18], $f5=[$19], $f6=[$20], $f7=[$21], $f8=[$22], $f9=[$23], $f10=[CAST(CASE(<=(-($11, $5), 30), 1, 0)):BIGINT], $f11=[CAST(CASE(AND(>(-($11, $5), 30), <=(-($11, $5), 60)), 1, 0)):BIGINT], $f12=[CAST(CASE(AND(>(-($11, $5), 60), <=(-($11, $5), 90)), 1, 0)):BIGINT], $f13=[CAST(CASE(AND(>(-($11, $5), 90), <=(-($11, $5), 120)), 1, 0)):BIGINT], $f14=[CAST(CASE(>(-($11, $5), 120), 1, 0)):BIGINT])
+      ImpalaJoinRel(condition=[=($2, $13)], joinType=[inner])
+        ImpalaJoinRel(condition=[AND(=($3, $10), =($0, $8), =($1, $9))], joinType=[inner])
+          ImpalaJoinRel(condition=[=($4, $6)], joinType=[inner])
+            ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$6], ss_ticket_number=[$8], ss_sold_date_sk=[$22], CAST=[CAST($22):BIGINT])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($8), IS NOT NULL($1), IS NOT NULL($2), IS NOT NULL($6), IS NOT NULL($22))])
+            ImpalaProjectPassthroughRel(d_date_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+          ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
+            ImpalaProjectPassthroughRel(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9], CAST=[CAST($0):BIGINT])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($9), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($0))])
+            ImpalaProjectPassthroughRel(d_date_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1998), =($8, 9), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_id=[$16], s_street_number=[$18], s_street_name=[$19], s_street_type=[$20], s_suite_number=[$21], s_city=[$22], s_county=[$23], s_state=[$24], s_zip=[$25])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
+
+PREHOOK: query: explain select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_store_sales
+  ,impala_tpcds_store_returns
+  ,impala_tpcds_store
+  ,impala_tpcds_date_dim d1
+  ,impala_tpcds_date_dim d2
+where
+    d2.d_year = 1998
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_store_sales
+  ,impala_tpcds_store_returns
+  ,impala_tpcds_store
+  ,impala_tpcds_date_dim d1
+  ,impala_tpcds_date_dim d2
+where
+    d2.d_year = 1998
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=156.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_company_id, default.impala_tpcds_store.s_street_number, default.impala_tpcds_store.s_street_name, default.impala_tpcds_store.s_street_type, default.impala_tpcds_store.s_suite_number, default.impala_tpcds_store.s_city, default.impala_tpcds_store.s_county, default.impala_tpcds_store.s_state, default.impala_tpcds_store.s_zip, _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 30 THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 30 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 60 THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 60 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 90 THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 90 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 120 THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 120 THEN 1 ELSE 0 END))
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  17:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: default.impala_tpcds_store.s_store_name ASC NULLS LAST, default.impala_tpcds_store.s_company_id ASC NULLS LAST, default.impala_tpcds_store.s_street_number ASC NULLS LAST, default.impala_tpcds_store.s_street_name ASC NULLS LAST, default.impala_tpcds_store.s_street_type ASC NULLS LAST, default.impala_tpcds_store.s_suite_number ASC NULLS LAST, default.impala_tpcds_store.s_city ASC NULLS LAST, default.impala_tpcds_store.s_county ASC NULLS LAST, default.impala_tpcds_store.s_state ASC NULLS LAST, default.impala_tpcds_store.s_zip ASC NULLS LAST
+     limit: 100
+     mem-estimate=156.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=152B cardinality=0
+     in pipelines: 10(GETNEXT)
+
+F05:PLAN FRAGMENT [HASH(default.impala_tpcds_store.s_store_name,default.impala_tpcds_store.s_company_id,default.impala_tpcds_store.s_street_number,default.impala_tpcds_store.s_street_name,default.impala_tpcds_store.s_street_type,default.impala_tpcds_store.s_suite_number,default.impala_tpcds_store.s_city,default.impala_tpcds_store.s_county,default.impala_tpcds_store.s_state,default.impala_tpcds_store.s_zip)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.15MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:TOP-N [LIMIT=100]
+  |  order by: default.impala_tpcds_store.s_store_name ASC NULLS LAST, default.impala_tpcds_store.s_company_id ASC NULLS LAST, default.impala_tpcds_store.s_street_number ASC NULLS LAST, default.impala_tpcds_store.s_street_name ASC NULLS LAST, default.impala_tpcds_store.s_street_type ASC NULLS LAST, default.impala_tpcds_store.s_suite_number ASC NULLS LAST, default.impala_tpcds_store.s_city ASC NULLS LAST, default.impala_tpcds_store.s_county ASC NULLS LAST, default.impala_tpcds_store.s_state ASC NULLS LAST, default.impala_tpcds_store.s_zip ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=10 row-size=152B cardinality=0
+  |  in pipelines: 10(GETNEXT), 16(OPEN)
+  |
+  16:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 30 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 30 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 60 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 60 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 90 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 90 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= 120 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > 120 THEN 1 ELSE 0 END))
+  |  group by: default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_company_id, default.impala_tpcds_store.s_street_number, default.impala_tpcds_store.s_street_name, default.impala_tpcds_store.s_street_type, default.impala_tpcds_store.s_suite_number, default.impala_tpcds_store.s_city, default.impala_tpcds_store.s_county, default.impala_tpcds_store.s_state, default.impala_tpcds_store.s_zip
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=9 row-size=152B cardinality=0
+  |  in pipelines: 16(GETNEXT), 00(OPEN)
+  |
+  15:EXCHANGE [HASH(default.impala_tpcds_store.s_store_name,default.impala_tpcds_store.s_company_id,default.impala_tpcds_store.s_street_number,default.impala_tpcds_store.s_street_name,default.impala_tpcds_store.s_street_type,default.impala_tpcds_store.s_suite_number,default.impala_tpcds_store.s_city,default.impala_tpcds_store.s_county,default.impala_tpcds_store.s_state,default.impala_tpcds_store.s_zip)]
+     mem-estimate=156.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=152B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=133.99MB mem-reservation=39.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=15, HASH(default.impala_tpcds_store.s_store_name,default.impala_tpcds_store.s_company_id,default.impala_tpcds_store.s_street_number,default.impala_tpcds_store.s_street_name,default.impala_tpcds_store.s_street_type,default.impala_tpcds_store.s_suite_number,default.impala_tpcds_store.s_city,default.impala_tpcds_store.s_county,default.impala_tpcds_store.s_state,default.impala_tpcds_store.s_zip)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= CAST(30 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > CAST(30 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= CAST(60 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > CAST(60 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= CAST(90 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > CAST(90 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) <= CAST(120 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_returned_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_sold_date_sk)) > CAST(120 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END))
+  |  group by: default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_company_id, default.impala_tpcds_store.s_street_number, default.impala_tpcds_store.s_street_name, default.impala_tpcds_store.s_street_type, default.impala_tpcds_store.s_suite_number, default.impala_tpcds_store.s_city, default.impala_tpcds_store.s_county, default.impala_tpcds_store.s_state, default.impala_tpcds_store.s_zip
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=9 row-size=152B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  08:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3,5,7 row-size=184B cardinality=0
+  |  in pipelines: 00(GETNEXT), 07(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=120.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=7 row-size=116B cardinality=0
+  |     in pipelines: 07(GETNEXT)
+  |
+  06:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_customer_sk = default.impala_tpcds_store_returns.sr_customer_sk, default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_store_returns.sr_item_sk, default.impala_tpcds_store_sales.ss_ticket_number = default.impala_tpcds_store_returns.sr_ticket_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1,3,5 row-size=68B cardinality=0
+  |  in pipelines: 00(GETNEXT), 03(OPEN)
+  |
+  |--13:EXCHANGE [BROADCAST]
+  |     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3,5 row-size=36B cardinality=0
+  |     in pipelines: 03(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_sold_date_sk = d1.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1 row-size=32B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=1 row-size=4B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_ticket_number IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=28B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_date_dim d1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: d1.d_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=4B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=13, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_returns.sr_returned_date_sk = d2.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=3,5 row-size=36B cardinality=0
+  |  in pipelines: 03(GETNEXT), 04(OPEN)
+  |
+  |--12:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=5 row-size=12B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store_returns.sr_customer_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_returned_date_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_ticket_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=24B cardinality=0
+     in pipelines: 03(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=12, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_date_dim d2, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: d2.d_date_sk IS NOT NULL, d2.d_moy = CAST(9 AS INT), d2.d_year = CAST(1998 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: d2.d_moy = CAST(9 AS INT), d2.d_year = CAST(1998 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=12B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:SCAN HDFS [default.impala_tpcds_store, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store.s_store_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=7 row-size=116B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

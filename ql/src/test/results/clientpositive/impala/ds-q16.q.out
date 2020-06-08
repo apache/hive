@@ -1,0 +1,410 @@
+PREHOOK: query: explain cbo select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   impala_tpcds_catalog_sales cs1
+  ,impala_tpcds_date_dim
+  ,impala_tpcds_customer_address
+  ,impala_tpcds_call_center
+where
+    d_date between '1999-4-01' and 
+           (cast('1999-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'IL'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Richland County','Bronx County','Maverick County','Mesa County',
+                  'Raleigh County'
+)
+and exists (select *
+            from impala_tpcds_catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from impala_tpcds_catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_call_center
+PREHOOK: Input: default@impala_tpcds_catalog_returns
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   impala_tpcds_catalog_sales cs1
+  ,impala_tpcds_date_dim
+  ,impala_tpcds_customer_address
+  ,impala_tpcds_call_center
+where
+    d_date between '1999-4-01' and 
+           (cast('1999-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'IL'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Richland County','Bronx County','Maverick County','Mesa County',
+                  'Raleigh County'
+)
+and exists (select *
+            from impala_tpcds_catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from impala_tpcds_catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_call_center
+POSTHOOK: Input: default@impala_tpcds_catalog_returns
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(order count=[$0], total shipping cost=[$1], total net profit=[$2])
+  ImpalaSortRel(sort0=[$3], dir0=[ASC], fetch=[100])
+    ImpalaProjectRel(order count=[$0], total shipping cost=[$1], total net profit=[$2], (tok_functiondi count (tok_table_or_col cs_order_number))=[$0])
+      ImpalaAggregateRel(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
+        ImpalaJoinRel(condition=[=($4, $14)], joinType=[left])
+          ImpalaJoinRel(condition=[AND(<>($3, $13), =($4, $14))], joinType=[semi])
+            ImpalaJoinRel(condition=[=($2, $11)], joinType=[inner])
+              ImpalaJoinRel(condition=[=($1, $9)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($0, $7)], joinType=[inner])
+                  ImpalaProjectPassthroughRel(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$10], cs_call_center_sk=[$11], cs_warehouse_sk=[$14], cs_order_number=[$17], cs_ext_ship_cost=[$28], cs_net_profit=[$33])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($2), IS NOT NULL($10), IS NOT NULL($11), IS NOT NULL($17))])
+                  ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-04-01 00:00:00:TIMESTAMP(9), +(1999-04-01 00:00:00:TIMESTAMP(9), 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+                ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_state=[CAST(_UTF-16LE'IL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($8, _UTF-16LE'IL'), IS NOT NULL($0))])
+              ImpalaProjectPassthroughRel(cc_call_center_sk=[$0], cc_county=[$25])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_call_center]], condition=[AND(IN($25, _UTF-16LE'Richland County', _UTF-16LE'Bronx County', _UTF-16LE'Maverick County', _UTF-16LE'Mesa County', _UTF-16LE'Raleigh County'), IS NOT NULL($0))])
+            ImpalaProjectPassthroughRel(cs_warehouse_sk=[$14], cs_order_number=[$17])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($17), IS NOT NULL($14))])
+          ImpalaProjectPassthroughRel(literalTrue=[true], cr_order_number0=[$0])
+            ImpalaAggregateRel(group=[{16}])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[IS NOT NULL($16)])
+
+PREHOOK: query: explain select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   impala_tpcds_catalog_sales cs1
+  ,impala_tpcds_date_dim
+  ,impala_tpcds_customer_address
+  ,impala_tpcds_call_center
+where
+    d_date between '1999-4-01' and 
+           (cast('1999-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'IL'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Richland County','Bronx County','Maverick County','Mesa County',
+                  'Raleigh County'
+)
+and exists (select *
+            from impala_tpcds_catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from impala_tpcds_catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_call_center
+PREHOOK: Input: default@impala_tpcds_catalog_returns
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   impala_tpcds_catalog_sales cs1
+  ,impala_tpcds_date_dim
+  ,impala_tpcds_customer_address
+  ,impala_tpcds_call_center
+where
+    d_date between '1999-4-01' and 
+           (cast('1999-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'IL'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Richland County','Bronx County','Maverick County','Mesa County',
+                  'Raleigh County'
+)
+and exists (select *
+            from impala_tpcds_catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from impala_tpcds_catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_call_center
+POSTHOOK: Input: default@impala_tpcds_catalog_returns
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: order count, total shipping cost, total net profit
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  15:TOP-N [LIMIT=100]
+  |  order by: (tok_functiondi count (tok_table_or_col cs_order_number)) ASC NULLS LAST
+  |  mem-estimate=48B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=16 row-size=48B cardinality=1
+  |  in pipelines: 15(GETNEXT), 26(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=15 row-size=48B cardinality=1
+  |  in pipelines: 26(GETNEXT)
+  |
+  26:AGGREGATE [FINALIZE]
+  |  output: count:merge(cs1.cs_order_number), sum:merge(cs1.cs_ext_ship_cost), sum:merge(cs1.cs_net_profit)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=14 row-size=40B cardinality=1
+  |  in pipelines: 26(GETNEXT), 14(OPEN)
+  |
+  25:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=40B cardinality=1
+     in pipelines: 14(GETNEXT)
+
+F07:PLAN FRAGMENT [HASH(cs1.cs_order_number)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  14:AGGREGATE
+  |  output: count(cs1.cs_order_number), sum:merge(cs1.cs_ext_ship_cost), sum:merge(cs1.cs_net_profit)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=14 row-size=40B cardinality=1
+  |  in pipelines: 14(GETNEXT), 24(OPEN)
+  |
+  24:AGGREGATE
+  |  output: _impala_builtins.sum:merge(cs1.cs_ext_ship_cost), _impala_builtins.sum:merge(cs1.cs_net_profit)
+  |  group by: cs1.cs_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=40B cardinality=0
+  |  in pipelines: 24(GETNEXT), 01(OPEN)
+  |
+  23:EXCHANGE [HASH(cs1.cs_order_number)]
+     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=40B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=137.78MB mem-reservation=43.69MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=23, HASH(cs1.cs_order_number)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:AGGREGATE [STREAMING]
+  |  output: sum(cs1.cs_ext_ship_cost), sum(cs1.cs_net_profit)
+  |  group by: cs1.cs_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=40B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  12:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_order_number = cr1.cr_order_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: _impala_builtins.if(TupleIsNull(12), NULL, TRUE) IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,12N row-size=88B cardinality=0
+  |  in pipelines: 01(GETNEXT), 21(OPEN)
+  |
+  |--22:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=12 row-size=8B cardinality=0
+  |     in pipelines: 21(GETNEXT)
+  |
+  09:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_order_number = cs2.cs_order_number
+  |  other join predicates: cs1.cs_warehouse_sk != cs2.cs_warehouse_sk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=80B cardinality=0
+  |  in pipelines: 01(GETNEXT), 08(OPEN)
+  |
+  |--19:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=12B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_call_center_sk = default.impala_tpcds_call_center.cc_call_center_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=80B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--18:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=16B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_ship_addr_sk = default.impala_tpcds_customer_address.ca_address_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=64B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--17:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_ship_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=48B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=16B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_catalog_sales cs1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cs1.cs_call_center_sk IS NOT NULL, cs1.cs_order_number IS NOT NULL, cs1.cs_ship_addr_sk IS NOT NULL, cs1.cs_ship_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=32B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('1999-04-01 00:00:00') AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp('1999-04-01 00:00:00'), INTERVAL CAST(5184000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=16B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=17, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_state = 'IL'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_state = 'IL'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=18, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_call_center, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_call_center.cc_call_center_sk IS NOT NULL, default.impala_tpcds_call_center.cc_county IN ('Richland County', 'Bronx County', 'Maverick County', 'Mesa County', 'Raleigh County')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_call_center.cc_county IN ('Richland County', 'Bronx County', 'Maverick County', 'Mesa County', 'Raleigh County')
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=19, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_catalog_sales cs2, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cs2.cs_order_number IS NOT NULL, cs2.cs_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=12B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F06:PLAN FRAGMENT [HASH(cr1.cr_order_number)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=22, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  21:AGGREGATE [FINALIZE]
+  |  group by: cr1.cr_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=8B cardinality=0
+  |  in pipelines: 21(GETNEXT), 10(OPEN)
+  |
+  20:EXCHANGE [HASH(cr1.cr_order_number)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=8B cardinality=0
+     in pipelines: 10(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=20, HASH(cr1.cr_order_number)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  11:AGGREGATE [STREAMING]
+  |  group by: cr1.cr_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=8B cardinality=0
+  |  in pipelines: 10(GETNEXT)
+  |
+  10:SCAN HDFS [default.impala_tpcds_catalog_returns cr1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cr1.cr_order_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=8B cardinality=0
+     in pipelines: 10(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

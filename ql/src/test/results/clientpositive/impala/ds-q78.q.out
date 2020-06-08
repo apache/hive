@@ -1,0 +1,641 @@
+PREHOOK: query: explain cbo with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from impala_tpcds_web_sales
+   left join impala_tpcds_web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join impala_tpcds_date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from impala_tpcds_catalog_sales
+   left join impala_tpcds_catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join impala_tpcds_date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from impala_tpcds_store_sales
+   left join impala_tpcds_store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join impala_tpcds_date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty,0)+coalesce(cs_qty,0)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=ss_item_sk and cs_customer_sk=ss_customer_sk)
+where (coalesce(ws_qty,0)>0 or coalesce(cs_qty, 0)>0) and ss_sold_year=2001
+order by 
+  ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  ratio
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_returns
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Input: default@impala_tpcds_web_returns
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from impala_tpcds_web_sales
+   left join impala_tpcds_web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join impala_tpcds_date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from impala_tpcds_catalog_sales
+   left join impala_tpcds_catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join impala_tpcds_date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from impala_tpcds_store_sales
+   left join impala_tpcds_store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join impala_tpcds_date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty,0)+coalesce(cs_qty,0)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=ss_item_sk and cs_customer_sk=ss_customer_sk)
+where (coalesce(ws_qty,0)>0 or coalesce(cs_qty, 0)>0) and ss_sold_year=2001
+order by 
+  ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  ratio
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_returns
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Input: default@impala_tpcds_web_returns
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(ss_customer_sk=[$0], ratio=[$1], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[$5], other_chan_wholesale_cost=[$6], other_chan_sales_price=[$7])
+  ImpalaSortRel(sort0=[$0], sort1=[$8], sort2=[$9], sort3=[$10], sort4=[$5], sort5=[$6], sort6=[$7], sort7=[$1], dir0=[ASC], dir1=[DESC], dir2=[DESC], dir3=[DESC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], fetch=[100])
+    ImpalaProjectRel(ss_customer_sk=[$1], ratio=[ROUND(/(CAST($2):DOUBLE, CAST(+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))):DOUBLE), 2:BIGINT)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))], other_chan_wholesale_cost=[+(COALESCE($8, 0:DECIMAL(10, 0)), COALESCE($13, 0:DECIMAL(10, 0)))], other_chan_sales_price=[+(COALESCE($9, 0:DECIMAL(10, 0)), COALESCE($14, 0:DECIMAL(10, 0)))], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4])
+      ImpalaJoinRel(condition=[AND(=($10, $0), =($11, $1))], joinType=[left])
+        ImpalaJoinRel(condition=[AND(=($5, $0), =($6, $1))], joinType=[left])
+          ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($5)], agg#1=[sum($2)], agg#2=[sum($3)])
+            ImpalaJoinRel(condition=[=($4, $6)], joinType=[inner])
+              ImpalaProjectPassthroughRel(ss_item_sk=[$0], ss_customer_sk=[$1], ss_wholesale_cost=[$4], ss_sales_price=[$5], ss_sold_date_sk=[$6], CAST=[CAST($3):BIGINT])
+                ImpalaJoinRel(condition=[AND(=($8, $2), =($0, $7))], joinType=[left])
+                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_quantity=[$9], ss_wholesale_cost=[$10], ss_sales_price=[$12], ss_sold_date_sk=[$22])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[IS NOT NULL($22)])
+                  ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($9), IS NOT NULL($2))])
+              ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+          ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($5)], agg#1=[sum($3)], agg#2=[sum($4)])
+            ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
+              ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$1], ws_bill_customer_sk=[$2], ws_wholesale_cost=[$5], ws_sales_price=[$6], CAST=[CAST($4):BIGINT])
+                ImpalaJoinRel(condition=[AND(=($8, $3), =($1, $7))], joinType=[left])
+                  ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_bill_customer_sk=[$4], ws_order_number=[$17], ws_quantity=[$18], ws_wholesale_cost=[$19], ws_sales_price=[$21])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3), IS NOT NULL($4))])
+                  ImpalaProjectPassthroughRel(wr_item_sk=[$2], wr_order_number=[$13])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_returns]], condition=[AND(IS NOT NULL($13), IS NOT NULL($2))])
+              ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(cs_item_sk=[$1], cs_bill_customer_sk=[$0], $f2=[$2], $f3=[$3], $f4=[$4])
+          ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($5)], agg#1=[sum($3)], agg#2=[sum($4)])
+            ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
+              ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2], cs_wholesale_cost=[$5], cs_sales_price=[$6], CAST=[CAST($4):BIGINT])
+                ImpalaJoinRel(condition=[AND(=($8, $3), =($2, $7))], joinType=[left])
+                  ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_order_number=[$17], cs_quantity=[$18], cs_wholesale_cost=[$19], cs_sales_price=[$21])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($0), IS NOT NULL($15), IS NOT NULL($3))])
+                  ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($16), IS NOT NULL($2))])
+              ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+
+PREHOOK: query: explain with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from impala_tpcds_web_sales
+   left join impala_tpcds_web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join impala_tpcds_date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from impala_tpcds_catalog_sales
+   left join impala_tpcds_catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join impala_tpcds_date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from impala_tpcds_store_sales
+   left join impala_tpcds_store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join impala_tpcds_date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty,0)+coalesce(cs_qty,0)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=ss_item_sk and cs_customer_sk=ss_customer_sk)
+where (coalesce(ws_qty,0)>0 or coalesce(cs_qty, 0)>0) and ss_sold_year=2001
+order by 
+  ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  ratio
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_returns
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Input: default@impala_tpcds_web_returns
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from impala_tpcds_web_sales
+   left join impala_tpcds_web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join impala_tpcds_date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from impala_tpcds_catalog_sales
+   left join impala_tpcds_catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join impala_tpcds_date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from impala_tpcds_store_sales
+   left join impala_tpcds_store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join impala_tpcds_date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty,0)+coalesce(cs_qty,0)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=ss_item_sk and cs_customer_sk=ss_customer_sk)
+where (coalesce(ws_qty,0)>0 or coalesce(cs_qty, 0)>0) and ss_sold_year=2001
+order by 
+  ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  ratio
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_returns
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Input: default@impala_tpcds_web_returns
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=136.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: ss_customer_sk, ratio, store_qty, store_wholesale_cost, store_sales_price, other_chan_qty, other_chan_wholesale_cost, other_chan_sales_price
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  36:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: ss_customer_sk ASC NULLS LAST, ss_qty DESC NULLS FIRST, ss_wc DESC NULLS FIRST, ss_sp DESC NULLS FIRST, other_chan_qty ASC NULLS LAST, other_chan_wholesale_cost ASC NULLS LAST, other_chan_sales_price ASC NULLS LAST, ratio ASC NULLS LAST
+     limit: 100
+     mem-estimate=136.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=21 row-size=132B cardinality=0
+     in pipelines: 21(GETNEXT)
+
+F12:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=132.04MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=36, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  21:TOP-N [LIMIT=100]
+  |  order by: ss_customer_sk ASC NULLS LAST, ss_qty DESC NULLS FIRST, ss_wc DESC NULLS FIRST, ss_sp DESC NULLS FIRST, other_chan_qty ASC NULLS LAST, other_chan_wholesale_cost ASC NULLS LAST, other_chan_sales_price ASC NULLS LAST, ratio ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=21 row-size=132B cardinality=0
+  |  in pipelines: 21(GETNEXT), 25(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=20 row-size=132B cardinality=0
+  |  in pipelines: 25(GETNEXT)
+  |
+  20:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_customer_sk = default.impala_tpcds_catalog_sales.cs_bill_customer_sk, default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_catalog_sales.cs_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: _impala_builtins.coalesce(_impala_builtins.sum(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT) OR _impala_builtins.coalesce(_impala_builtins.sum(_impala_builtins.casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT)
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=5,12N,19N row-size=156B cardinality=0
+  |  in pipelines: 25(GETNEXT), 34(OPEN)
+  |
+  |--35:EXCHANGE [BROADCAST]
+  |     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=19 row-size=52B cardinality=0
+  |     in pipelines: 34(GETNEXT)
+  |
+  13:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_customer_sk = default.impala_tpcds_web_sales.ws_bill_customer_sk, default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_web_sales.ws_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=5,12N row-size=104B cardinality=0
+  |  in pipelines: 25(GETNEXT), 29(OPEN)
+  |
+  |--30:EXCHANGE [BROADCAST]
+  |     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=12 row-size=52B cardinality=0
+  |     in pipelines: 29(GETNEXT)
+  |
+  25:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |  group by: default.impala_tpcds_store_sales.ss_item_sk, default.impala_tpcds_store_sales.ss_customer_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=5 row-size=52B cardinality=0
+  |  in pipelines: 25(GETNEXT), 01(OPEN)
+  |
+  24:EXCHANGE [HASH(default.impala_tpcds_store_sales.ss_item_sk,default.impala_tpcds_store_sales.ss_customer_sk)]
+     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=52B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=24, HASH(default.impala_tpcds_store_sales.ss_item_sk,default.impala_tpcds_store_sales.ss_customer_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_wholesale_cost), sum(default.impala_tpcds_store_sales.ss_sales_price)
+  |  group by: default.impala_tpcds_store_sales.ss_item_sk, default.impala_tpcds_store_sales.ss_customer_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=5 row-size=52B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1N,3 row-size=60B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--23:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3 row-size=8B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_store_returns.sr_item_sk, default.impala_tpcds_store_sales.ss_ticket_number = default.impala_tpcds_store_returns.sr_ticket_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: default.impala_tpcds_store_returns.sr_ticket_number IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,1N row-size=52B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--22:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=1 row-size=16B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
+     partition predicates: default.impala_tpcds_store_sales.ss_sold_date_sk IS NOT NULL
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=36B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=22, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store_returns.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_ticket_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=16B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=23, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=8B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F07:PLAN FRAGMENT [HASH(default.impala_tpcds_web_sales.ws_item_sk,default.impala_tpcds_web_sales.ws_bill_customer_sk)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=30, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  29:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
+  |  group by: default.impala_tpcds_web_sales.ws_item_sk, default.impala_tpcds_web_sales.ws_bill_customer_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=52B cardinality=0
+  |  in pipelines: 29(GETNEXT), 07(OPEN)
+  |
+  28:EXCHANGE [HASH(default.impala_tpcds_web_sales.ws_item_sk,default.impala_tpcds_web_sales.ws_bill_customer_sk)]
+     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=52B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=28, HASH(default.impala_tpcds_web_sales.ws_item_sk,default.impala_tpcds_web_sales.ws_bill_customer_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_quantity)), sum(default.impala_tpcds_web_sales.ws_wholesale_cost), sum(default.impala_tpcds_web_sales.ws_sales_price)
+  |  group by: default.impala_tpcds_web_sales.ws_item_sk, default.impala_tpcds_web_sales.ws_bill_customer_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=52B cardinality=0
+  |  in pipelines: 07(GETNEXT)
+  |
+  11:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_sold_date_sk = default.impala_tpcds_date_dim_0.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=6,8N,10 row-size=60B cardinality=0
+  |  in pipelines: 07(GETNEXT), 10(OPEN)
+  |
+  |--27:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=10 row-size=8B cardinality=0
+  |     in pipelines: 10(GETNEXT)
+  |
+  09:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_item_sk = default.impala_tpcds_web_returns.wr_item_sk, default.impala_tpcds_web_sales.ws_order_number = default.impala_tpcds_web_returns.wr_order_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: default.impala_tpcds_web_returns.wr_order_number IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=6,8N row-size=52B cardinality=0
+  |  in pipelines: 07(GETNEXT), 08(OPEN)
+  |
+  |--26:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=16B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_sales.ws_bill_customer_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=36B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=26, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_web_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_returns.wr_item_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_order_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=16B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=27, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim_0.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=8B cardinality=0
+     in pipelines: 10(GETNEXT)
+
+F11:PLAN FRAGMENT [HASH(default.impala_tpcds_catalog_sales.cs_bill_customer_sk,default.impala_tpcds_catalog_sales.cs_item_sk)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=35, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  34:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  group by: default.impala_tpcds_catalog_sales.cs_bill_customer_sk, default.impala_tpcds_catalog_sales.cs_item_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=19 row-size=52B cardinality=0
+  |  in pipelines: 34(GETNEXT), 14(OPEN)
+  |
+  33:EXCHANGE [HASH(default.impala_tpcds_catalog_sales.cs_bill_customer_sk,default.impala_tpcds_catalog_sales.cs_item_sk)]
+     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=19 row-size=52B cardinality=0
+     in pipelines: 14(GETNEXT)
+
+F08:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=33, HASH(default.impala_tpcds_catalog_sales.cs_bill_customer_sk,default.impala_tpcds_catalog_sales.cs_item_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  19:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), sum(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  group by: default.impala_tpcds_catalog_sales.cs_bill_customer_sk, default.impala_tpcds_catalog_sales.cs_item_sk
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=19 row-size=52B cardinality=0
+  |  in pipelines: 14(GETNEXT)
+  |
+  18:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_sold_date_sk = default.impala_tpcds_date_dim_1.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=13,15N,17 row-size=60B cardinality=0
+  |  in pipelines: 14(GETNEXT), 17(OPEN)
+  |
+  |--32:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=17 row-size=8B cardinality=0
+  |     in pipelines: 17(GETNEXT)
+  |
+  16:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_item_sk = default.impala_tpcds_catalog_returns.cr_item_sk, default.impala_tpcds_catalog_sales.cs_order_number = default.impala_tpcds_catalog_returns.cr_order_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: default.impala_tpcds_catalog_returns.cr_order_number IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=13,15N row-size=52B cardinality=0
+  |  in pipelines: 14(GETNEXT), 15(OPEN)
+  |
+  |--31:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=15 row-size=16B cardinality=0
+  |     in pipelines: 15(GETNEXT)
+  |
+  14:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=36B cardinality=0
+     in pipelines: 14(GETNEXT)
+
+F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=31, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  15:SCAN HDFS [default.impala_tpcds_catalog_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_returns.cr_item_sk IS NOT NULL, default.impala_tpcds_catalog_returns.cr_order_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=15 row-size=16B cardinality=0
+     in pipelines: 15(GETNEXT)
+
+F10:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=32, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  17:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim_1.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=17 row-size=8B cardinality=0
+     in pipelines: 17(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

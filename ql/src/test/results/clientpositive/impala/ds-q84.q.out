@@ -1,0 +1,317 @@
+PREHOOK: query: explain cbo select  c_customer_id as customer_id
+       , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
+ from impala_tpcds_customer
+     ,impala_tpcds_customer_address
+     ,impala_tpcds_customer_demographics
+     ,impala_tpcds_household_demographics
+     ,impala_tpcds_income_band
+     ,impala_tpcds_store_returns
+ where ca_city             =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  37855
+   and ib_upper_bound   <=  37855 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_customer_demographics
+PREHOOK: Input: default@impala_tpcds_household_demographics
+PREHOOK: Input: default@impala_tpcds_income_band
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  c_customer_id as customer_id
+       , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
+ from impala_tpcds_customer
+     ,impala_tpcds_customer_address
+     ,impala_tpcds_customer_demographics
+     ,impala_tpcds_household_demographics
+     ,impala_tpcds_income_band
+     ,impala_tpcds_store_returns
+ where ca_city             =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  37855
+   and ib_upper_bound   <=  37855 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_customer_demographics
+POSTHOOK: Input: default@impala_tpcds_household_demographics
+POSTHOOK: Input: default@impala_tpcds_income_band
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(customer_id=[$0], customername=[$1])
+  ImpalaSortRel(sort0=[$2], dir0=[ASC], fetch=[100])
+    ImpalaProjectRel(customer_id=[$0], customername=[$4], c_customer_id=[$0])
+      ImpalaJoinRel(condition=[=($8, $2)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($6, $1)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($3, $5)], joinType=[inner])
+            ImpalaProjectPassthroughRel(c_customer_id=[$1], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], ||=[||(||(COALESCE($9, _UTF-16LE''), _UTF-16LE', '), COALESCE($8, _UTF-16LE''))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(IS NOT NULL($4), IS NOT NULL($2), IS NOT NULL($3))])
+            ImpalaProjectPassthroughRel(ca_address_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($6, _UTF-16LE'Hopewell'), IS NOT NULL($0))])
+          ImpalaJoinRel(condition=[=($1, $0)], joinType=[inner])
+            ImpalaProjectPassthroughRel(cd_demo_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(sr_cdemo_sk=[$4])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[IS NOT NULL($4)])
+        ImpalaJoinRel(condition=[=($2, $1)], joinType=[inner])
+          ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+          ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[AND(>=($1, 37855), <=(CAST($2):BIGINT, +(37855:BIGINT, 50000:BIGINT)), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  c_customer_id as customer_id
+       , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
+ from impala_tpcds_customer
+     ,impala_tpcds_customer_address
+     ,impala_tpcds_customer_demographics
+     ,impala_tpcds_household_demographics
+     ,impala_tpcds_income_band
+     ,impala_tpcds_store_returns
+ where ca_city             =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  37855
+   and ib_upper_bound   <=  37855 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_customer
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_customer_demographics
+PREHOOK: Input: default@impala_tpcds_household_demographics
+PREHOOK: Input: default@impala_tpcds_income_band
+PREHOOK: Input: default@impala_tpcds_store_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  c_customer_id as customer_id
+       , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
+ from impala_tpcds_customer
+     ,impala_tpcds_customer_address
+     ,impala_tpcds_customer_demographics
+     ,impala_tpcds_household_demographics
+     ,impala_tpcds_income_band
+     ,impala_tpcds_store_returns
+ where ca_city             =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  37855
+   and ib_upper_bound   <=  37855 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_customer
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_customer_demographics
+POSTHOOK: Input: default@impala_tpcds_household_demographics
+POSTHOOK: Input: default@impala_tpcds_income_band
+POSTHOOK: Input: default@impala_tpcds_store_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=40.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: customer_id, customername
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  18:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: c_customer_id ASC NULLS LAST
+     limit: 100
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=36B cardinality=0
+     in pipelines: 12(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=5.88MB mem-reservation=5.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=18, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:TOP-N [LIMIT=100]
+  |  order by: c_customer_id ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=13 row-size=36B cardinality=0
+  |  in pipelines: 12(GETNEXT), 01(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=12 row-size=36B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  11:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_customer.c_current_hdemo_sk = default.impala_tpcds_household_demographics.hd_demo_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,8,10 row-size=92B cardinality=0
+  |  in pipelines: 01(GETNEXT), 08(OPEN)
+  |
+  |--17:EXCHANGE [BROADCAST]
+  |     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8,10 row-size=20B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_customer.c_current_cdemo_sk = default.impala_tpcds_customer_demographics.cd_demo_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=72B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--15:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4,6 row-size=8B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_customer.c_current_addr_sk = default.impala_tpcds_customer_address.ca_address_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=64B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--13:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=16B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_customer, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer.c_current_addr_sk IS NOT NULL, default.impala_tpcds_customer.c_current_cdemo_sk IS NOT NULL, default.impala_tpcds_customer.c_current_hdemo_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=48B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=13, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_city = 'Hopewell'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_city = 'Hopewell'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=16B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=15, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_customer_demographics.cd_demo_sk = default.impala_tpcds_store_returns.sr_cdemo_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=4,6 row-size=8B cardinality=0
+  |  in pipelines: 04(GETNEXT), 05(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=4B cardinality=0
+  |     in pipelines: 05(GETNEXT)
+  |
+  04:SCAN HDFS [default.impala_tpcds_customer_demographics, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_demographics.cd_demo_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=4B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_store_returns.sr_cdemo_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=4B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_household_demographics.hd_income_band_sk = default.impala_tpcds_income_band.ib_income_band_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=8,10 row-size=20B cardinality=0
+  |  in pipelines: 08(GETNEXT), 09(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=10 row-size=12B cardinality=0
+  |     in pipelines: 09(GETNEXT)
+  |
+  08:SCAN HDFS [default.impala_tpcds_household_demographics, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_household_demographics.hd_demo_sk IS NOT NULL, default.impala_tpcds_household_demographics.hd_income_band_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=8B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:SCAN HDFS [default.impala_tpcds_income_band, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_income_band.ib_income_band_sk IS NOT NULL, default.impala_tpcds_income_band.ib_lower_bound >= CAST(37855 AS INT), _impala_builtins.casttobigint(default.impala_tpcds_income_band.ib_upper_bound) <= _impala_builtins.add(CAST(37855 AS BIGINT), CAST(50000 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_income_band.ib_lower_bound >= CAST(37855 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=12B cardinality=0
+     in pipelines: 09(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

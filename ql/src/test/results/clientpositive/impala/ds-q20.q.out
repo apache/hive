@@ -1,0 +1,297 @@
+PREHOOK: query: explain cbo select  i_item_id
+       ,i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from     impala_tpcds_catalog_sales
+     ,impala_tpcds_item 
+     ,impala_tpcds_date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Shoes', 'Electronics', 'Children')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-03-14' as date) 
+                     and (cast('2001-03-14' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  i_item_id
+       ,i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from     impala_tpcds_catalog_sales
+     ,impala_tpcds_item 
+     ,impala_tpcds_date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Shoes', 'Electronics', 'Children')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-03-14' as date) 
+                     and (cast('2001-03-14' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$2], sort1=[$3], sort2=[$0], sort3=[$1], sort4=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+  ImpalaProjectRel(i_item_id=[$0], i_item_desc=[$1], i_category=[$4], i_class=[$3], i_current_price=[$2], itemrevenue=[$5], revenueratio=[/(*($5, 100:DECIMAL(10, 0)), sum($5) OVER (PARTITION BY $3 ORDER BY $3 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING))])
+    ImpalaAggregateRel(group=[{5, 6, 7, 8, 9}], agg#0=[sum($2)])
+      ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
+          ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(d_date_sk=[$0])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'2001-03-14'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2001-03-14'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($12, _UTF-16LE'Shoes', _UTF-16LE'Electronics', _UTF-16LE'Children'), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  i_item_id
+       ,i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from     impala_tpcds_catalog_sales
+     ,impala_tpcds_item 
+     ,impala_tpcds_date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Shoes', 'Electronics', 'Children')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-03-14' as date) 
+                     and (cast('2001-03-14' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  i_item_id
+       ,i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from     impala_tpcds_catalog_sales
+     ,impala_tpcds_item 
+     ,impala_tpcds_date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Shoes', 'Electronics', 'Children')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-03-14' as date) 
+                     and (cast('2001-03-14' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=88.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: i_item_id, i_item_desc, i_category, i_class, i_current_price, itemrevenue, revenueratio
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  15:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: i_category ASC NULLS LAST, i_class ASC NULLS LAST, i_item_id ASC NULLS LAST, i_item_desc ASC NULLS LAST, revenueratio ASC NULLS LAST
+     limit: 100
+     mem-estimate=88.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=84B cardinality=0
+     in pipelines: 09(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=15, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:TOP-N [LIMIT=100]
+  |  order by: i_category ASC NULLS LAST, i_class ASC NULLS LAST, i_item_id ASC NULLS LAST, i_item_desc ASC NULLS LAST, revenueratio ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=12 row-size=84B cardinality=0
+  |  in pipelines: 09(GETNEXT), 07(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=7 row-size=84B cardinality=0
+  |  in pipelines: 07(GETNEXT)
+  |
+  08:ANALYTIC
+  |  functions: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
+  |  partition by: default.impala_tpcds_item.i_class
+  |  order by: default.impala_tpcds_item.i_class ASC NULLS FIRST
+  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=10,9 row-size=84B cardinality=0
+  |  in pipelines: 07(GETNEXT)
+  |
+  07:SORT
+  |  order by: default.impala_tpcds_item.i_class ASC NULLS FIRST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=10 row-size=68B cardinality=0
+  |  in pipelines: 07(GETNEXT), 13(OPEN)
+  |
+  14:EXCHANGE [HASH(default.impala_tpcds_item.i_class)]
+     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=68B cardinality=0
+     in pipelines: 13(GETNEXT)
+
+F03:PLAN FRAGMENT [HASH(default.impala_tpcds_item.i_item_id,default.impala_tpcds_item.i_item_desc,default.impala_tpcds_item.i_current_price,default.impala_tpcds_item.i_class,default.impala_tpcds_item.i_category)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=14, HASH(default.impala_tpcds_item.i_class)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_sales_price)
+  |  group by: default.impala_tpcds_item.i_item_id, default.impala_tpcds_item.i_item_desc, default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=6 row-size=68B cardinality=0
+  |  in pipelines: 13(GETNEXT), 01(OPEN)
+  |
+  12:EXCHANGE [HASH(default.impala_tpcds_item.i_item_id,default.impala_tpcds_item.i_item_desc,default.impala_tpcds_item.i_current_price,default.impala_tpcds_item.i_class,default.impala_tpcds_item.i_category)]
+     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=68B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=131.96MB mem-reservation=37.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=12, HASH(default.impala_tpcds_item.i_item_id,default.impala_tpcds_item.i_item_desc,default.impala_tpcds_item.i_current_price,default.impala_tpcds_item.i_class,default.impala_tpcds_item.i_category)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:AGGREGATE [STREAMING]
+  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)
+  |  group by: default.impala_tpcds_item.i_item_id, default.impala_tpcds_item.i_item_desc, default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=6 row-size=68B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_item_sk = default.impala_tpcds_item.i_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=92B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=64.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=60B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=32B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--10:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=16B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=16B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=10, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp(_impala_builtins.casttodate('2001-03-14')) AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('2001-03-14')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=16B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_category IN ('Shoes', 'Electronics', 'Children')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_item.i_category IN ('Shoes', 'Electronics', 'Children')
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=60B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -1,0 +1,361 @@
+PREHOOK: query: explain cbo select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 30) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 60) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 90) and
+                 (ws_ship_date_sk - ws_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_web_sales
+  ,impala_tpcds_warehouse
+  ,impala_tpcds_ship_mode
+  ,impala_tpcds_web_site
+  ,impala_tpcds_date_dim
+where
+    d_month_seq between 1215 and 1215 + 11
+and ws_ship_date_sk   = d_date_sk
+and ws_warehouse_sk   = w_warehouse_sk
+and ws_ship_mode_sk   = sm_ship_mode_sk
+and ws_web_site_sk    = web_site_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+       ,web_name
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_ship_mode
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Input: default@impala_tpcds_web_site
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 30) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 60) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 90) and
+                 (ws_ship_date_sk - ws_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_web_sales
+  ,impala_tpcds_warehouse
+  ,impala_tpcds_ship_mode
+  ,impala_tpcds_web_site
+  ,impala_tpcds_date_dim
+where
+    d_month_seq between 1215 and 1215 + 11
+and ws_ship_date_sk   = d_date_sk
+and ws_warehouse_sk   = w_warehouse_sk
+and ws_ship_mode_sk   = sm_ship_mode_sk
+and ws_web_site_sk    = web_site_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+       ,web_name
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_ship_mode
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Input: default@impala_tpcds_web_site
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$3], 31-60 days=[$4], 61-90 days=[$5], 91-120 days=[$6], >120 days=[$7])
+  ImpalaSortRel(sort0=[$8], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
+    ImpalaProjectRel(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$3], 31-60 days=[$4], 61-90 days=[$5], 91-120 days=[$6], >120 days=[$7], (tok_function substr (tok_table_or_col w_warehouse_name) 1 20)=[$0])
+      ImpalaAggregateRel(group=[{11, 13, 15}], agg#0=[sum($4)], agg#1=[sum($5)], agg#2=[sum($6)], agg#3=[sum($7)], agg#4=[sum($8)])
+        ImpalaJoinRel(condition=[=($1, $14)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($3, $10)], joinType=[inner])
+              ImpalaJoinRel(condition=[=($0, $9)], joinType=[inner])
+                ImpalaProjectPassthroughRel(ws_ship_date_sk=[$2], ws_web_site_sk=[$13], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15], CAST=[CAST(CASE(<=(-(CAST($2):BIGINT, CAST($0):BIGINT), 30), 1, 0)):BIGINT], CAST5=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 30), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 60)), 1, 0)):BIGINT], CAST6=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 60), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 90)), 1, 0)):BIGINT], CAST7=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 90), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 120)), 1, 0)):BIGINT], CAST8=[CAST(CASE(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 120), 1, 0)):BIGINT])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($14), IS NOT NULL($13), IS NOT NULL($2))])
+                ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1215:BIGINT, +(1215:BIGINT, 11:BIGINT)), IS NOT NULL($0))])
+              ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], SUBSTRING=[SUBSTRING($2, 1:BIGINT, 20:BIGINT)])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(sm_ship_mode_sk=[$0], sm_type=[$2])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_ship_mode]], condition=[IS NOT NULL($0)])
+          ImpalaProjectPassthroughRel(web_site_sk=[$0], web_name=[$4])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_site]], condition=[IS NOT NULL($0)])
+
+PREHOOK: query: explain select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 30) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 60) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 90) and
+                 (ws_ship_date_sk - ws_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_web_sales
+  ,impala_tpcds_warehouse
+  ,impala_tpcds_ship_mode
+  ,impala_tpcds_web_site
+  ,impala_tpcds_date_dim
+where
+    d_month_seq between 1215 and 1215 + 11
+and ws_ship_date_sk   = d_date_sk
+and ws_warehouse_sk   = w_warehouse_sk
+and ws_ship_mode_sk   = sm_ship_mode_sk
+and ws_web_site_sk    = web_site_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+       ,web_name
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_ship_mode
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Input: default@impala_tpcds_web_site
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 30) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 60) and 
+                 (ws_ship_date_sk - ws_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 90) and
+                 (ws_ship_date_sk - ws_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (ws_ship_date_sk - ws_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   impala_tpcds_web_sales
+  ,impala_tpcds_warehouse
+  ,impala_tpcds_ship_mode
+  ,impala_tpcds_web_site
+  ,impala_tpcds_date_dim
+where
+    d_month_seq between 1215 and 1215 + 11
+and ws_ship_date_sk   = d_date_sk
+and ws_warehouse_sk   = w_warehouse_sk
+and ws_ship_mode_sk   = sm_ship_mode_sk
+and ws_web_site_sk    = web_site_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,web_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+       ,web_name
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_ship_mode
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Input: default@impala_tpcds_web_site
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=92.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _o__c0, sm_type, web_name, 30 days, 31-60 days, 61-90 days, 91-120 days, >120 days
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  18:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: (tok_function substr (tok_table_or_col w_warehouse_name) 1 20) ASC NULLS LAST, sm_type ASC NULLS LAST, web_name ASC NULLS LAST
+     limit: 100
+     mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=88B cardinality=0
+     in pipelines: 11(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.08MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=18, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  11:TOP-N [LIMIT=100]
+  |  order by: (tok_function substr (tok_table_or_col w_warehouse_name) 1 20) ASC NULLS LAST, sm_type ASC NULLS LAST, web_name ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=12 row-size=88B cardinality=0
+  |  in pipelines: 11(GETNEXT), 17(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=11 row-size=88B cardinality=0
+  |  in pipelines: 17(GETNEXT)
+  |
+  17:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= 30 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > 30 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= 60 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > 60 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= 90 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > 90 AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= 120 THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > 120 THEN 1 ELSE 0 END))
+  |  group by: _impala_builtins.substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20), default.impala_tpcds_ship_mode.sm_type, default.impala_tpcds_web_site.web_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=10 row-size=76B cardinality=0
+  |  in pipelines: 17(GETNEXT), 01(OPEN)
+  |
+  16:EXCHANGE [HASH(_impala_builtins.substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20),default.impala_tpcds_ship_mode.sm_type,default.impala_tpcds_web_site.web_name)]
+     mem-estimate=80.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=76B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=135.82MB mem-reservation=41.75MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, HASH(_impala_builtins.substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20),default.impala_tpcds_ship_mode.sm_type,default.impala_tpcds_web_site.web_name)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= CAST(30 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > CAST(30 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= CAST(60 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > CAST(60 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= CAST(90 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > CAST(90 AS BIGINT) AND _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) <= CAST(120 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_ship_date_sk), _impala_builtins.casttobigint(default.impala_tpcds_web_sales.ws_sold_date_sk)) > CAST(120 AS BIGINT) THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END))
+  |  group by: _impala_builtins.substring(default.impala_tpcds_warehouse.w_warehouse_name, CAST(1 AS BIGINT), CAST(20 AS BIGINT)), default.impala_tpcds_ship_mode.sm_type, default.impala_tpcds_web_site.web_name
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=10 row-size=76B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_web_site_sk = default.impala_tpcds_web_site.web_site_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,8 row-size=76B cardinality=0
+  |  in pipelines: 01(GETNEXT), 08(OPEN)
+  |
+  |--15:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=16B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_ship_mode_sk = default.impala_tpcds_ship_mode.sm_ship_mode_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=60B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=16B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_warehouse_sk = default.impala_tpcds_warehouse.w_warehouse_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=44B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--13:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_ship_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=28B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--12:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=8B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_sales.ws_ship_date_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_ship_mode_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_warehouse_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_web_site_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=20B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) >= CAST(1215 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) <= _impala_builtins.add(CAST(1215 AS BIGINT), CAST(11 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=8B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=13, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_warehouse, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_warehouse.w_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_ship_mode, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_ship_mode.sm_ship_mode_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=15, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_web_site, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_site.web_site_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=16B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

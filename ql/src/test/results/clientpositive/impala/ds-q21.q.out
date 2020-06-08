@@ -1,0 +1,301 @@
+PREHOOK: query: explain cbo select  *
+ from(select w_warehouse_name
+            ,i_item_id
+            ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))
+                     then inv_quantity_on_hand 
+                      else 0 end) as inv_before
+            ,sum(case when (cast(d_date as date) >= cast ('1999-03-20' as date))
+                      then inv_quantity_on_hand 
+                      else 0 end) as inv_after
+   from impala_tpcds_inventory
+       ,impala_tpcds_warehouse
+       ,impala_tpcds_item
+       ,impala_tpcds_date_dim
+   where i_current_price between 0.99 and 1.49
+     and i_item_sk          = inv_item_sk
+     and inv_warehouse_sk   = w_warehouse_sk
+     and inv_date_sk    = d_date_sk
+     and d_date between (cast ('1999-03-20' as date) - 30 days)
+                    and (cast ('1999-03-20' as date) + 30 days)
+   group by w_warehouse_name, i_item_id) x
+ where (case when inv_before > 0 
+             then inv_after / inv_before 
+             else null
+             end) between 2.0/3.0 and 3.0/2.0
+ order by w_warehouse_name
+         ,i_item_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_inventory
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select  *
+ from(select w_warehouse_name
+            ,i_item_id
+            ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))
+                     then inv_quantity_on_hand 
+                      else 0 end) as inv_before
+            ,sum(case when (cast(d_date as date) >= cast ('1999-03-20' as date))
+                      then inv_quantity_on_hand 
+                      else 0 end) as inv_after
+   from impala_tpcds_inventory
+       ,impala_tpcds_warehouse
+       ,impala_tpcds_item
+       ,impala_tpcds_date_dim
+   where i_current_price between 0.99 and 1.49
+     and i_item_sk          = inv_item_sk
+     and inv_warehouse_sk   = w_warehouse_sk
+     and inv_date_sk    = d_date_sk
+     and d_date between (cast ('1999-03-20' as date) - 30 days)
+                    and (cast ('1999-03-20' as date) + 30 days)
+   group by w_warehouse_name, i_item_id) x
+ where (case when inv_before > 0 
+             then inv_after / inv_before 
+             else null
+             end) between 2.0/3.0 and 3.0/2.0
+ order by w_warehouse_name
+         ,i_item_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_inventory
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], condition=[BETWEEN(false, CAST(CASE(>($2, 0), /(CAST($3):DOUBLE, CAST($2):DOUBLE), null:DOUBLE)):DECIMAL(30, 15) NOT NULL, /(2:DECIMAL(1, 0), 3:DECIMAL(1, 0)), /(3:DECIMAL(1, 0), 2:DECIMAL(1, 0)))])
+    ImpalaProjectPassthroughRel($f0=[$5], $f1=[$7], $f2=[CAST(CASE($9, $3, 0)):BIGINT], $f3=[CAST(CASE($10, $3, 0)):BIGINT])
+      ImpalaJoinRel(condition=[=($0, $8)], joinType=[inner])
+        ImpalaJoinRel(condition=[=($6, $1)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($2, $4)], joinType=[inner])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(IS NOT NULL($2), IS NOT NULL($1), IS NOT NULL($0))])
+            ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
+          ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(BETWEEN(false, $5, 0.99:DECIMAL(2, 2), 1.49:DECIMAL(3, 2)), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(d_date_sk=[$0], <=[<(CAST($2):DATE NOT NULL, CAST(_UTF-16LE'1999-03-20'):DATE NOT NULL)], >==[>=(CAST($2):DATE NOT NULL, CAST(_UTF-16LE'1999-03-20'):DATE NOT NULL)])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), -(CAST(CAST(_UTF-16LE'1999-03-20'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND), +(CAST(CAST(_UTF-16LE'1999-03-20'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+
+PREHOOK: query: explain select  *
+ from(select w_warehouse_name
+            ,i_item_id
+            ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))
+                     then inv_quantity_on_hand 
+                      else 0 end) as inv_before
+            ,sum(case when (cast(d_date as date) >= cast ('1999-03-20' as date))
+                      then inv_quantity_on_hand 
+                      else 0 end) as inv_after
+   from impala_tpcds_inventory
+       ,impala_tpcds_warehouse
+       ,impala_tpcds_item
+       ,impala_tpcds_date_dim
+   where i_current_price between 0.99 and 1.49
+     and i_item_sk          = inv_item_sk
+     and inv_warehouse_sk   = w_warehouse_sk
+     and inv_date_sk    = d_date_sk
+     and d_date between (cast ('1999-03-20' as date) - 30 days)
+                    and (cast ('1999-03-20' as date) + 30 days)
+   group by w_warehouse_name, i_item_id) x
+ where (case when inv_before > 0 
+             then inv_after / inv_before 
+             else null
+             end) between 2.0/3.0 and 3.0/2.0
+ order by w_warehouse_name
+         ,i_item_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_inventory
+PREHOOK: Input: default@impala_tpcds_item
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select  *
+ from(select w_warehouse_name
+            ,i_item_id
+            ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))
+                     then inv_quantity_on_hand 
+                      else 0 end) as inv_before
+            ,sum(case when (cast(d_date as date) >= cast ('1999-03-20' as date))
+                      then inv_quantity_on_hand 
+                      else 0 end) as inv_after
+   from impala_tpcds_inventory
+       ,impala_tpcds_warehouse
+       ,impala_tpcds_item
+       ,impala_tpcds_date_dim
+   where i_current_price between 0.99 and 1.49
+     and i_item_sk          = inv_item_sk
+     and inv_warehouse_sk   = w_warehouse_sk
+     and inv_date_sk    = d_date_sk
+     and d_date between (cast ('1999-03-20' as date) - 30 days)
+                    and (cast ('1999-03-20' as date) + 30 days)
+   group by w_warehouse_name, i_item_id) x
+ where (case when inv_before > 0 
+             then inv_after / inv_before 
+             else null
+             end) between 2.0/3.0 and 3.0/2.0
+ order by w_warehouse_name
+         ,i_item_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_inventory
+POSTHOOK: Input: default@impala_tpcds_item
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=44.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.impala_tpcds_warehouse.w_warehouse_name, default.impala_tpcds_item.i_item_id, _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END))
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  14:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: default.impala_tpcds_warehouse.w_warehouse_name ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST
+     limit: 100
+     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=40B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F04:PLAN FRAGMENT [HASH(default.impala_tpcds_warehouse.w_warehouse_name,default.impala_tpcds_item.i_item_id)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=14, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:TOP-N [LIMIT=100]
+  |  order by: default.impala_tpcds_warehouse.w_warehouse_name ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=9 row-size=40B cardinality=0
+  |  in pipelines: 08(GETNEXT), 13(OPEN)
+  |
+  13:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END))
+  |  group by: default.impala_tpcds_warehouse.w_warehouse_name, default.impala_tpcds_item.i_item_id
+  |  having: _impala_builtins.casttodecimal(CASE WHEN _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)) > CAST(0 AS BIGINT) THEN _impala_builtins.divide(_impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END))), _impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)))) ELSE NULL END) >= _impala_builtins.divide(CAST(2 AS DECIMAL(1,0)), CAST(3 AS DECIMAL(1,0))) AND _impala_builtins.casttodecimal(CASE WHEN _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)) > CAST(0 AS BIGINT) THEN _impala_builtins.divide(_impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END))), _impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE 0 END)))) ELSE NULL END) <= _impala_builtins.divide(CAST(3 AS DECIMAL(1,0)), CAST(2 AS DECIMAL(1,0)))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=40B cardinality=0
+  |  in pipelines: 13(GETNEXT), 00(OPEN)
+  |
+  12:EXCHANGE [HASH(default.impala_tpcds_warehouse.w_warehouse_name,default.impala_tpcds_item.i_item_id)]
+     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=40B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=12, HASH(default.impala_tpcds_warehouse.w_warehouse_name,default.impala_tpcds_item.i_item_id)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:AGGREGATE [STREAMING]
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) < _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN _impala_builtins.casttodate(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttodate('1999-03-20') THEN default.impala_tpcds_inventory.inv_quantity_on_hand ELSE CAST(0 AS INT) END))
+  |  group by: default.impala_tpcds_warehouse.w_warehouse_name, default.impala_tpcds_item.i_item_id
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=40B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  06:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_inventory.inv_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=76B cardinality=0
+  |  in pipelines: 00(GETNEXT), 05(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=16B cardinality=0
+  |     in pipelines: 05(GETNEXT)
+  |
+  04:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_inventory.inv_item_sk = default.impala_tpcds_item.i_item_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=60B cardinality=0
+  |  in pipelines: 00(GETNEXT), 03(OPEN)
+  |
+  |--10:EXCHANGE [BROADCAST]
+  |     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=24B cardinality=0
+  |     in pipelines: 03(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_inventory.inv_warehouse_sk = default.impala_tpcds_warehouse.w_warehouse_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=36B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--09:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=16B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_inventory, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_inventory.inv_date_sk IS NOT NULL, default.impala_tpcds_inventory.inv_item_sk IS NOT NULL, default.impala_tpcds_inventory.inv_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=20B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=09, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_warehouse, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_warehouse.w_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=16B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=10, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  03:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_current_price >= CAST(0.99 AS DECIMAL(2,2)) AND default.impala_tpcds_item.i_current_price <= CAST(1.49 AS DECIMAL(3,2))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=24B cardinality=0
+     in pipelines: 03(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _IMPALA_BUILTINS.MILLISECONDS_SUB(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('1999-03-20')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND) AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('1999-03-20')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

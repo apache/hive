@@ -1,0 +1,1294 @@
+PREHOOK: query: explain cbo select   
+         w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+        ,ship_carriers
+        ,year
+      ,sum(jan_sales) as jan_sales
+      ,sum(feb_sales) as feb_sales
+      ,sum(mar_sales) as mar_sales
+      ,sum(apr_sales) as apr_sales
+      ,sum(may_sales) as may_sales
+      ,sum(jun_sales) as jun_sales
+      ,sum(jul_sales) as jul_sales
+      ,sum(aug_sales) as aug_sales
+      ,sum(sep_sales) as sep_sales
+      ,sum(oct_sales) as oct_sales
+      ,sum(nov_sales) as nov_sales
+      ,sum(dec_sales) as dec_sales
+      ,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+      ,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+      ,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+      ,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+      ,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+      ,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+      ,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+      ,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+      ,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+      ,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+      ,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+      ,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+      ,sum(jan_net) as jan_net
+      ,sum(feb_net) as feb_net
+      ,sum(mar_net) as mar_net
+      ,sum(apr_net) as apr_net
+      ,sum(may_net) as may_net
+      ,sum(jun_net) as jun_net
+      ,sum(jul_net) as jul_net
+      ,sum(aug_net) as aug_net
+      ,sum(sep_net) as sep_net
+      ,sum(oct_net) as oct_net
+      ,sum(nov_net) as nov_net
+      ,sum(dec_net) as dec_net
+ from (
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then ws_sales_price* ws_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then ws_sales_price* ws_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then ws_sales_price* ws_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then ws_sales_price* ws_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then ws_sales_price* ws_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then ws_sales_price* ws_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then ws_sales_price* ws_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then ws_sales_price* ws_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then ws_sales_price* ws_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then ws_sales_price* ws_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then ws_sales_price* ws_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then ws_sales_price* ws_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_web_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+        ,impala_tpcds_ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+      and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 and 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ union all
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then cs_ext_list_price* cs_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then cs_ext_list_price* cs_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then cs_ext_list_price* cs_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then cs_ext_list_price* cs_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then cs_ext_list_price* cs_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then cs_ext_list_price* cs_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then cs_ext_list_price* cs_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then cs_ext_list_price* cs_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then cs_ext_list_price* cs_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then cs_ext_list_price* cs_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then cs_ext_list_price* cs_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then cs_ext_list_price* cs_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_catalog_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+       ,impala_tpcds_ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+      and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 AND 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ ) x
+ group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_ship_mode
+PREHOOK: Input: default@impala_tpcds_time_dim
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select   
+         w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+        ,ship_carriers
+        ,year
+      ,sum(jan_sales) as jan_sales
+      ,sum(feb_sales) as feb_sales
+      ,sum(mar_sales) as mar_sales
+      ,sum(apr_sales) as apr_sales
+      ,sum(may_sales) as may_sales
+      ,sum(jun_sales) as jun_sales
+      ,sum(jul_sales) as jul_sales
+      ,sum(aug_sales) as aug_sales
+      ,sum(sep_sales) as sep_sales
+      ,sum(oct_sales) as oct_sales
+      ,sum(nov_sales) as nov_sales
+      ,sum(dec_sales) as dec_sales
+      ,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+      ,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+      ,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+      ,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+      ,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+      ,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+      ,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+      ,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+      ,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+      ,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+      ,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+      ,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+      ,sum(jan_net) as jan_net
+      ,sum(feb_net) as feb_net
+      ,sum(mar_net) as mar_net
+      ,sum(apr_net) as apr_net
+      ,sum(may_net) as may_net
+      ,sum(jun_net) as jun_net
+      ,sum(jul_net) as jul_net
+      ,sum(aug_net) as aug_net
+      ,sum(sep_net) as sep_net
+      ,sum(oct_net) as oct_net
+      ,sum(nov_net) as nov_net
+      ,sum(dec_net) as dec_net
+ from (
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then ws_sales_price* ws_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then ws_sales_price* ws_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then ws_sales_price* ws_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then ws_sales_price* ws_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then ws_sales_price* ws_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then ws_sales_price* ws_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then ws_sales_price* ws_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then ws_sales_price* ws_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then ws_sales_price* ws_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then ws_sales_price* ws_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then ws_sales_price* ws_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then ws_sales_price* ws_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_web_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+        ,impala_tpcds_ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+      and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 and 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ union all
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then cs_ext_list_price* cs_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then cs_ext_list_price* cs_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then cs_ext_list_price* cs_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then cs_ext_list_price* cs_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then cs_ext_list_price* cs_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then cs_ext_list_price* cs_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then cs_ext_list_price* cs_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then cs_ext_list_price* cs_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then cs_ext_list_price* cs_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then cs_ext_list_price* cs_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then cs_ext_list_price* cs_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then cs_ext_list_price* cs_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_catalog_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+       ,impala_tpcds_ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+      and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 AND 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ ) x
+ group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_ship_mode
+POSTHOOK: Input: default@impala_tpcds_time_dim
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_city=[$2], w_county=[$3], w_state=[$4], w_country=[$5], ship_carriers=[||(||(_UTF-16LE'MSC', _UTF-16LE','), _UTF-16LE'GERMA')], year=[CAST(2001):INTEGER], jan_sales=[$6], feb_sales=[$7], mar_sales=[$8], apr_sales=[$9], may_sales=[$10], jun_sales=[$11], jul_sales=[$12], aug_sales=[$13], sep_sales=[$14], oct_sales=[$15], nov_sales=[$16], dec_sales=[$17], jan_sales_per_sq_foot=[$18], feb_sales_per_sq_foot=[$19], mar_sales_per_sq_foot=[$20], apr_sales_per_sq_foot=[$21], may_sales_per_sq_foot=[$22], jun_sales_per_sq_foot=[$23], jul_sales_per_sq_foot=[$24], aug_sales_per_sq_foot=[$25], sep_sales_per_sq_foot=[$26], oct_sales_per_sq_foot=[$27], nov_sales_per_sq_foot=[$28], dec_sales_per_sq_foot=[$29], jan_net=[$30], feb_net=[$31], mar_net=[$32], apr_net=[$33], may_net=[$34], jun_net=[$35], jul_net=[$36], aug_net=[$37], sep_net=[$38], oct_net=[$39], nov_net=[$40], dec_net=[$41])
+  ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
+    ImpalaAggregateRel(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)], agg#24=[sum($30)], agg#25=[sum($31)], agg#26=[sum($32)], agg#27=[sum($33)], agg#28=[sum($34)], agg#29=[sum($35)], agg#30=[sum($36)], agg#31=[sum($37)], agg#32=[sum($38)], agg#33=[sum($39)], agg#34=[sum($40)], agg#35=[sum($41)])
+      ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f8=[$6], $f9=[$7], $f10=[$8], $f11=[$9], $f12=[$10], $f13=[$11], $f14=[$12], $f15=[$13], $f16=[$14], $f17=[$15], $f18=[$16], $f19=[$17], $f20=[/($6, CAST($1):DECIMAL(10, 0) NOT NULL)], $f21=[/($7, CAST($1):DECIMAL(10, 0) NOT NULL)], $f22=[/($8, CAST($1):DECIMAL(10, 0) NOT NULL)], $f23=[/($9, CAST($1):DECIMAL(10, 0) NOT NULL)], $f24=[/($10, CAST($1):DECIMAL(10, 0) NOT NULL)], $f25=[/($11, CAST($1):DECIMAL(10, 0) NOT NULL)], $f26=[/($12, CAST($1):DECIMAL(10, 0) NOT NULL)], $f27=[/($13, CAST($1):DECIMAL(10, 0) NOT NULL)], $f28=[/($14, CAST($1):DECIMAL(10, 0) NOT NULL)], $f29=[/($15, CAST($1):DECIMAL(10, 0) NOT NULL)], $f30=[/($16, CAST($1):DECIMAL(10, 0) NOT NULL)], $f31=[/($17, CAST($1):DECIMAL(10, 0) NOT NULL)], $f32=[$18], $f33=[$19], $f34=[$20], $f35=[$21], $f36=[$22], $f37=[$23], $f38=[$24], $f39=[$25], $f40=[$26], $f41=[$27], $f42=[$28], $f43=[$29])
+        ImpalaUnionRel(all=[true])
+          ImpalaAggregateRel(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)])
+            ImpalaProjectPassthroughRel($f0=[$9], $f1=[$10], $f2=[$11], $f3=[$12], $f4=[$13], $f5=[$14], $f7=[CASE($16, $4, 0:DECIMAL(10, 0))], $f8=[CASE($17, $4, 0:DECIMAL(10, 0))], $f9=[CASE($18, $4, 0:DECIMAL(10, 0))], $f10=[CASE($19, $4, 0:DECIMAL(10, 0))], $f11=[CASE($20, $4, 0:DECIMAL(10, 0))], $f12=[CASE($21, $4, 0:DECIMAL(10, 0))], $f13=[CASE($22, $4, 0:DECIMAL(10, 0))], $f14=[CASE($23, $4, 0:DECIMAL(10, 0))], $f15=[CASE($24, $4, 0:DECIMAL(10, 0))], $f16=[CASE($25, $4, 0:DECIMAL(10, 0))], $f17=[CASE($26, $4, 0:DECIMAL(10, 0))], $f18=[CASE($27, $4, 0:DECIMAL(10, 0))], $f19=[CASE($16, $5, 0:DECIMAL(10, 0))], $f20=[CASE($17, $5, 0:DECIMAL(10, 0))], $f21=[CASE($18, $5, 0:DECIMAL(10, 0))], $f22=[CASE($19, $5, 0:DECIMAL(10, 0))], $f23=[CASE($20, $5, 0:DECIMAL(10, 0))], $f24=[CASE($21, $5, 0:DECIMAL(10, 0))], $f25=[CASE($22, $5, 0:DECIMAL(10, 0))], $f26=[CASE($23, $5, 0:DECIMAL(10, 0))], $f27=[CASE($24, $5, 0:DECIMAL(10, 0))], $f28=[CASE($25, $5, 0:DECIMAL(10, 0))], $f29=[CASE($26, $5, 0:DECIMAL(10, 0))], $f30=[CASE($27, $5, 0:DECIMAL(10, 0))])
+              ImpalaJoinRel(condition=[=($0, $15)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($3, $8)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_sold_time_sk=[$1], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15], *=[*($21, CAST($18):DECIMAL(10, 0) NOT NULL)], *5=[*($32, CAST($18):DECIMAL(10, 0) NOT NULL)])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($14))])
+                      ImpalaProjectPassthroughRel(t_time_sk=[$0])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, CAST($2):BIGINT, 9453:BIGINT, +(9453:BIGINT, 28800:BIGINT)), IS NOT NULL($0))])
+                    ImpalaProjectPassthroughRel(sm_ship_mode_sk=[$0])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_ship_mode]], condition=[AND(IN($4, _UTF-16LE'MSC', _UTF-16LE'GERMA'), IS NOT NULL($0))])
+                  ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2], w_warehouse_sq_ft=[$3], w_city=[$8], w_county=[$9], w_state=[$10], w_country=[$12])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
+                ImpalaProjectPassthroughRel(d_date_sk=[$0], ==[=($8, 1)], =2=[=($8, 2)], =3=[=($8, 3)], =4=[=($8, 4)], =5=[=($8, 5)], =6=[=($8, 6)], =7=[=($8, 7)], =8=[=($8, 8)], =9=[=($8, 9)], =10=[=($8, 10)], =11=[=($8, 11)], =12=[=($8, 12)])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+          ImpalaAggregateRel(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)])
+            ImpalaProjectPassthroughRel($f0=[$9], $f1=[$10], $f2=[$11], $f3=[$12], $f4=[$13], $f5=[$14], $f7=[CASE($16, $4, 0:DECIMAL(10, 0))], $f8=[CASE($17, $4, 0:DECIMAL(10, 0))], $f9=[CASE($18, $4, 0:DECIMAL(10, 0))], $f10=[CASE($19, $4, 0:DECIMAL(10, 0))], $f11=[CASE($20, $4, 0:DECIMAL(10, 0))], $f12=[CASE($21, $4, 0:DECIMAL(10, 0))], $f13=[CASE($22, $4, 0:DECIMAL(10, 0))], $f14=[CASE($23, $4, 0:DECIMAL(10, 0))], $f15=[CASE($24, $4, 0:DECIMAL(10, 0))], $f16=[CASE($25, $4, 0:DECIMAL(10, 0))], $f17=[CASE($26, $4, 0:DECIMAL(10, 0))], $f18=[CASE($27, $4, 0:DECIMAL(10, 0))], $f19=[CASE($16, $5, 0:DECIMAL(10, 0))], $f20=[CASE($17, $5, 0:DECIMAL(10, 0))], $f21=[CASE($18, $5, 0:DECIMAL(10, 0))], $f22=[CASE($19, $5, 0:DECIMAL(10, 0))], $f23=[CASE($20, $5, 0:DECIMAL(10, 0))], $f24=[CASE($21, $5, 0:DECIMAL(10, 0))], $f25=[CASE($22, $5, 0:DECIMAL(10, 0))], $f26=[CASE($23, $5, 0:DECIMAL(10, 0))], $f27=[CASE($24, $5, 0:DECIMAL(10, 0))], $f28=[CASE($25, $5, 0:DECIMAL(10, 0))], $f29=[CASE($26, $5, 0:DECIMAL(10, 0))], $f30=[CASE($27, $5, 0:DECIMAL(10, 0))])
+              ImpalaJoinRel(condition=[=($0, $15)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($3, $8)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_sold_time_sk=[$1], cs_ship_mode_sk=[$13], cs_warehouse_sk=[$14], *=[*($25, CAST($18):DECIMAL(10, 0) NOT NULL)], *5=[*($31, CAST($18):DECIMAL(10, 0) NOT NULL)])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($14), IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($13))])
+                      ImpalaProjectPassthroughRel(t_time_sk=[$0])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, CAST($2):BIGINT, 9453:BIGINT, +(9453:BIGINT, 28800:BIGINT)), IS NOT NULL($0))])
+                    ImpalaProjectPassthroughRel(sm_ship_mode_sk=[$0])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_ship_mode]], condition=[AND(IN($4, _UTF-16LE'MSC', _UTF-16LE'GERMA'), IS NOT NULL($0))])
+                  ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2], w_warehouse_sq_ft=[$3], w_city=[$8], w_county=[$9], w_state=[$10], w_country=[$12])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
+                ImpalaProjectPassthroughRel(d_date_sk=[$0], ==[=($8, 1)], =2=[=($8, 2)], =3=[=($8, 3)], =4=[=($8, 4)], =5=[=($8, 5)], =6=[=($8, 6)], =7=[=($8, 7)], =8=[=($8, 8)], =9=[=($8, 9)], =10=[=($8, 10)], =11=[=($8, 11)], =12=[=($8, 12)])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+
+PREHOOK: query: explain select   
+         w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+        ,ship_carriers
+        ,year
+      ,sum(jan_sales) as jan_sales
+      ,sum(feb_sales) as feb_sales
+      ,sum(mar_sales) as mar_sales
+      ,sum(apr_sales) as apr_sales
+      ,sum(may_sales) as may_sales
+      ,sum(jun_sales) as jun_sales
+      ,sum(jul_sales) as jul_sales
+      ,sum(aug_sales) as aug_sales
+      ,sum(sep_sales) as sep_sales
+      ,sum(oct_sales) as oct_sales
+      ,sum(nov_sales) as nov_sales
+      ,sum(dec_sales) as dec_sales
+      ,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+      ,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+      ,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+      ,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+      ,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+      ,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+      ,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+      ,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+      ,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+      ,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+      ,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+      ,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+      ,sum(jan_net) as jan_net
+      ,sum(feb_net) as feb_net
+      ,sum(mar_net) as mar_net
+      ,sum(apr_net) as apr_net
+      ,sum(may_net) as may_net
+      ,sum(jun_net) as jun_net
+      ,sum(jul_net) as jul_net
+      ,sum(aug_net) as aug_net
+      ,sum(sep_net) as sep_net
+      ,sum(oct_net) as oct_net
+      ,sum(nov_net) as nov_net
+      ,sum(dec_net) as dec_net
+ from (
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then ws_sales_price* ws_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then ws_sales_price* ws_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then ws_sales_price* ws_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then ws_sales_price* ws_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then ws_sales_price* ws_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then ws_sales_price* ws_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then ws_sales_price* ws_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then ws_sales_price* ws_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then ws_sales_price* ws_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then ws_sales_price* ws_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then ws_sales_price* ws_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then ws_sales_price* ws_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_web_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+        ,impala_tpcds_ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+      and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 and 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ union all
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then cs_ext_list_price* cs_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then cs_ext_list_price* cs_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then cs_ext_list_price* cs_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then cs_ext_list_price* cs_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then cs_ext_list_price* cs_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then cs_ext_list_price* cs_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then cs_ext_list_price* cs_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then cs_ext_list_price* cs_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then cs_ext_list_price* cs_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then cs_ext_list_price* cs_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then cs_ext_list_price* cs_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then cs_ext_list_price* cs_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_catalog_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+       ,impala_tpcds_ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+      and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 AND 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ ) x
+ group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Input: default@impala_tpcds_ship_mode
+PREHOOK: Input: default@impala_tpcds_time_dim
+PREHOOK: Input: default@impala_tpcds_warehouse
+PREHOOK: Input: default@impala_tpcds_web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select   
+         w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+        ,ship_carriers
+        ,year
+      ,sum(jan_sales) as jan_sales
+      ,sum(feb_sales) as feb_sales
+      ,sum(mar_sales) as mar_sales
+      ,sum(apr_sales) as apr_sales
+      ,sum(may_sales) as may_sales
+      ,sum(jun_sales) as jun_sales
+      ,sum(jul_sales) as jul_sales
+      ,sum(aug_sales) as aug_sales
+      ,sum(sep_sales) as sep_sales
+      ,sum(oct_sales) as oct_sales
+      ,sum(nov_sales) as nov_sales
+      ,sum(dec_sales) as dec_sales
+      ,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+      ,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+      ,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+      ,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+      ,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+      ,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+      ,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+      ,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+      ,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+      ,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+      ,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+      ,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+      ,sum(jan_net) as jan_net
+      ,sum(feb_net) as feb_net
+      ,sum(mar_net) as mar_net
+      ,sum(apr_net) as apr_net
+      ,sum(may_net) as may_net
+      ,sum(jun_net) as jun_net
+      ,sum(jul_net) as jul_net
+      ,sum(aug_net) as aug_net
+      ,sum(sep_net) as sep_net
+      ,sum(oct_net) as oct_net
+      ,sum(nov_net) as nov_net
+      ,sum(dec_net) as dec_net
+ from (
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then ws_sales_price* ws_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then ws_sales_price* ws_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then ws_sales_price* ws_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then ws_sales_price* ws_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then ws_sales_price* ws_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then ws_sales_price* ws_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then ws_sales_price* ws_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then ws_sales_price* ws_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then ws_sales_price* ws_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then ws_sales_price* ws_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then ws_sales_price* ws_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then ws_sales_price* ws_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then ws_net_paid_inc_ship_tax * ws_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_web_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+        ,impala_tpcds_ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+      and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 and 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ union all
+     select 
+      w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,'MSC' || ',' || 'GERMA' as ship_carriers
+       ,d_year as year
+      ,sum(case when d_moy = 1 
+           then cs_ext_list_price* cs_quantity else 0 end) as jan_sales
+      ,sum(case when d_moy = 2 
+           then cs_ext_list_price* cs_quantity else 0 end) as feb_sales
+      ,sum(case when d_moy = 3 
+           then cs_ext_list_price* cs_quantity else 0 end) as mar_sales
+      ,sum(case when d_moy = 4 
+           then cs_ext_list_price* cs_quantity else 0 end) as apr_sales
+      ,sum(case when d_moy = 5 
+           then cs_ext_list_price* cs_quantity else 0 end) as may_sales
+      ,sum(case when d_moy = 6 
+           then cs_ext_list_price* cs_quantity else 0 end) as jun_sales
+      ,sum(case when d_moy = 7 
+           then cs_ext_list_price* cs_quantity else 0 end) as jul_sales
+      ,sum(case when d_moy = 8 
+           then cs_ext_list_price* cs_quantity else 0 end) as aug_sales
+      ,sum(case when d_moy = 9 
+           then cs_ext_list_price* cs_quantity else 0 end) as sep_sales
+      ,sum(case when d_moy = 10 
+           then cs_ext_list_price* cs_quantity else 0 end) as oct_sales
+      ,sum(case when d_moy = 11
+           then cs_ext_list_price* cs_quantity else 0 end) as nov_sales
+      ,sum(case when d_moy = 12
+           then cs_ext_list_price* cs_quantity else 0 end) as dec_sales
+      ,sum(case when d_moy = 1 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jan_net
+      ,sum(case when d_moy = 2 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as feb_net
+      ,sum(case when d_moy = 3 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as mar_net
+      ,sum(case when d_moy = 4 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as apr_net
+      ,sum(case when d_moy = 5 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as may_net
+      ,sum(case when d_moy = 6 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jun_net
+      ,sum(case when d_moy = 7 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as jul_net
+      ,sum(case when d_moy = 8 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as aug_net
+      ,sum(case when d_moy = 9 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as sep_net
+      ,sum(case when d_moy = 10 
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as oct_net
+      ,sum(case when d_moy = 11
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as nov_net
+      ,sum(case when d_moy = 12
+           then cs_net_paid_inc_ship * cs_quantity else 0 end) as dec_net
+     from
+          impala_tpcds_catalog_sales
+         ,impala_tpcds_warehouse
+         ,impala_tpcds_date_dim
+         ,impala_tpcds_time_dim
+       ,impala_tpcds_ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+      and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2001
+      and t_time between 9453 AND 9453+28800 
+      and sm_carrier in ('MSC','GERMA')
+     group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+       ,d_year
+ ) x
+ group by 
+        w_warehouse_name
+      ,w_warehouse_sq_ft
+      ,w_city
+      ,w_county
+      ,w_state
+      ,w_country
+      ,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Input: default@impala_tpcds_ship_mode
+POSTHOOK: Input: default@impala_tpcds_time_dim
+POSTHOOK: Input: default@impala_tpcds_warehouse
+POSTHOOK: Input: default@impala_tpcds_web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F14:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=644.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: $f0, $f1, $f2, $f3, $f4, $f5, _impala_builtins.concat(_impala_builtins.concat('MSC', ','), 'GERMA'), CAST(2001 AS INT), _impala_builtins.sum($f6), _impala_builtins.sum($f7), _impala_builtins.sum($f8), _impala_builtins.sum($f9), _impala_builtins.sum($f10), _impala_builtins.sum($f11), _impala_builtins.sum($f12), _impala_builtins.sum($f13), _impala_builtins.sum($f14), _impala_builtins.sum($f15), _impala_builtins.sum($f16), _impala_builtins.sum($f17), _impala_builtins.sum(_impala_builtins.divide($f6, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f7, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f8, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f9, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f10, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f11, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f12, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f13, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f14, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f15, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f16, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f17, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum($f18), _impala_builtins.sum($f19), _impala_builtins.sum($f20), _impala_builtins.sum($f21), _impala_builtins.sum($f22), _impala_builtins.sum($f23), _impala_builtins.sum($f24), _impala_builtins.sum($f25), _impala_builtins.sum($f26), _impala_builtins.sum($f27), _impala_builtins.sum($f28), _impala_builtins.sum($f29)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  37:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: $f0 ASC NULLS LAST
+     limit: 100
+     mem-estimate=644.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=24 row-size=640B cardinality=0
+     in pipelines: 22(GETNEXT)
+
+F13:PLAN FRAGMENT [HASH($f0,$f1,$f2,$f3,$f4,$f5)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.63MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=37, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  22:TOP-N [LIMIT=100]
+  |  order by: $f0 ASC NULLS LAST
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=24 row-size=640B cardinality=0
+  |  in pipelines: 22(GETNEXT), 36(OPEN)
+  |
+  36:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge($f6), _impala_builtins.sum:merge($f7), _impala_builtins.sum:merge($f8), _impala_builtins.sum:merge($f9), _impala_builtins.sum:merge($f10), _impala_builtins.sum:merge($f11), _impala_builtins.sum:merge($f12), _impala_builtins.sum:merge($f13), _impala_builtins.sum:merge($f14), _impala_builtins.sum:merge($f15), _impala_builtins.sum:merge($f16), _impala_builtins.sum:merge($f17), _impala_builtins.sum:merge(_impala_builtins.divide($f6, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f7, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f8, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f9, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f10, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f11, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f12, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f13, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f14, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f15, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f16, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge(_impala_builtins.divide($f17, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum:merge($f18), _impala_builtins.sum:merge($f19), _impala_builtins.sum:merge($f20), _impala_builtins.sum:merge($f21), _impala_builtins.sum:merge($f22), _impala_builtins.sum:merge($f23), _impala_builtins.sum:merge($f24), _impala_builtins.sum:merge($f25), _impala_builtins.sum:merge($f26), _impala_builtins.sum:merge($f27), _impala_builtins.sum:merge($f28), _impala_builtins.sum:merge($f29)
+  |  group by: $f0, $f1, $f2, $f3, $f4, $f5
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=23 row-size=640B cardinality=0
+  |  in pipelines: 36(GETNEXT), 28(OPEN), 34(OPEN)
+  |
+  35:EXCHANGE [HASH($f0,$f1,$f2,$f3,$f4,$f5)]
+     mem-estimate=644.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=23 row-size=640B cardinality=0
+     in pipelines: 28(GETNEXT), 34(GETNEXT)
+
+F12:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=256.44MB mem-reservation=68.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=35, HASH($f0,$f1,$f2,$f3,$f4,$f5)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  21:AGGREGATE [STREAMING]
+  |  output: sum($f6), sum($f7), sum($f8), sum($f9), sum($f10), sum($f11), sum($f12), sum($f13), sum($f14), sum($f15), sum($f16), sum($f17), sum(_impala_builtins.divide($f6, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f7, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f8, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f9, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f10, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f11, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f12, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f13, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f14, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f15, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f16, _impala_builtins.casttodecimal($f1))), sum(_impala_builtins.divide($f17, _impala_builtins.casttodecimal($f1))), sum($f18), sum($f19), sum($f20), sum($f21), sum($f22), sum($f23), sum($f24), sum($f25), sum($f26), sum($f27), sum($f28), sum($f29)
+  |  group by: $f0, $f1, $f2, $f3, $f4, $f5
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=23 row-size=640B cardinality=0
+  |  in pipelines: 28(GETNEXT), 34(GETNEXT)
+  |
+  00:UNION
+  |  pass-through-operands: all
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=0 row-size=448B cardinality=0
+  |  in pipelines: 28(GETNEXT), 34(GETNEXT)
+  |
+  |--34:AGGREGATE [FINALIZE]
+  |  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 1 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 2 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 3 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 4 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 5 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 6 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 7 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 8 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 9 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 10 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 11 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 12 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 1 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 2 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 3 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 4 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 5 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 6 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 7 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 8 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 9 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 10 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 11 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = 12 THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE 0 END)
+  |  |  group by: default.impala_tpcds_warehouse_0.w_warehouse_name, default.impala_tpcds_warehouse_0.w_warehouse_sq_ft, default.impala_tpcds_warehouse_0.w_city, default.impala_tpcds_warehouse_0.w_county, default.impala_tpcds_warehouse_0.w_state, default.impala_tpcds_warehouse_0.w_country
+  |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  |  tuple-ids=22 row-size=448B cardinality=0
+  |  |  in pipelines: 34(GETNEXT), 11(OPEN)
+  |  |
+  |  33:EXCHANGE [HASH(default.impala_tpcds_warehouse_0.w_warehouse_name,default.impala_tpcds_warehouse_0.w_warehouse_sq_ft,default.impala_tpcds_warehouse_0.w_city,default.impala_tpcds_warehouse_0.w_county,default.impala_tpcds_warehouse_0.w_state,default.impala_tpcds_warehouse_0.w_country)]
+  |     mem-estimate=452.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=22 row-size=448B cardinality=0
+  |     in pipelines: 11(GETNEXT)
+  |
+  28:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 1 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 2 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 3 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 4 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 5 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 6 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 7 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 8 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 9 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 10 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 11 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 12 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 1 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 2 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 3 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 4 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 5 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 6 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 7 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 8 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 9 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 10 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 11 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_date_dim.d_moy = 12 THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE 0 END)
+  |  group by: default.impala_tpcds_warehouse.w_warehouse_name, default.impala_tpcds_warehouse.w_warehouse_sq_ft, default.impala_tpcds_warehouse.w_city, default.impala_tpcds_warehouse.w_county, default.impala_tpcds_warehouse.w_state, default.impala_tpcds_warehouse.w_country
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=448B cardinality=0
+  |  in pipelines: 28(GETNEXT), 01(OPEN)
+  |
+  27:EXCHANGE [HASH(default.impala_tpcds_warehouse.w_warehouse_name,default.impala_tpcds_warehouse.w_warehouse_sq_ft,default.impala_tpcds_warehouse.w_city,default.impala_tpcds_warehouse.w_county,default.impala_tpcds_warehouse.w_state,default.impala_tpcds_warehouse.w_country)]
+     mem-estimate=452.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=11 row-size=448B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=135.87MB mem-reservation=41.75MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=27, HASH(default.impala_tpcds_warehouse.w_warehouse_name,default.impala_tpcds_warehouse.w_warehouse_sq_ft,default.impala_tpcds_warehouse.w_city,default.impala_tpcds_warehouse.w_county,default.impala_tpcds_warehouse.w_state,default.impala_tpcds_warehouse.w_country)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE [STREAMING]
+  |  output: sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(2 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(3 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(4 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(5 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(6 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(7 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(8 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(9 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(10 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(11 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_sales_price, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(2 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(3 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(4 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(5 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(6 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(7 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(8 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(9 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(10 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(11 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_web_sales.ws_net_paid_inc_ship_tax, _impala_builtins.casttodecimal(default.impala_tpcds_web_sales.ws_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END)
+  |  group by: default.impala_tpcds_warehouse.w_warehouse_name, default.impala_tpcds_warehouse.w_warehouse_sq_ft, default.impala_tpcds_warehouse.w_city, default.impala_tpcds_warehouse.w_county, default.impala_tpcds_warehouse.w_state, default.impala_tpcds_warehouse.w_country
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=448B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_sold_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=1,3,5,7,9 row-size=132B cardinality=0
+  |  in pipelines: 01(GETNEXT), 08(OPEN)
+  |
+  |--26:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=9 row-size=12B cardinality=0
+  |     in pipelines: 08(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_warehouse_sk = default.impala_tpcds_warehouse.w_warehouse_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=1,3,5,7 row-size=120B cardinality=0
+  |  in pipelines: 01(GETNEXT), 06(OPEN)
+  |
+  |--25:EXCHANGE [BROADCAST]
+  |     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=7 row-size=68B cardinality=0
+  |     in pipelines: 06(GETNEXT)
+  |
+  05:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_ship_mode_sk = default.impala_tpcds_ship_mode.sm_ship_mode_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=1,3,5 row-size=52B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--24:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=5 row-size=16B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_web_sales.ws_sold_time_sk = default.impala_tpcds_time_dim.t_time_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=1,3 row-size=36B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--23:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=3 row-size=8B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_web_sales.ws_ship_mode_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_time_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=1 row-size=28B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=23, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpcds_time_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_time_dim.t_time_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_time_dim.t_time) >= CAST(9453 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_time_dim.t_time) <= _impala_builtins.add(CAST(9453 AS BIGINT), CAST(28800 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=8B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=24, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpcds_ship_mode, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_ship_mode.sm_ship_mode_sk IS NOT NULL, default.impala_tpcds_ship_mode.sm_carrier IN ('MSC', 'GERMA')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_ship_mode.sm_carrier IN ('MSC', 'GERMA')
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=16B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=25, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:SCAN HDFS [default.impala_tpcds_warehouse, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_warehouse.w_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=7 row-size=68B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=26, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=12B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=135.87MB mem-reservation=41.75MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, HASH(default.impala_tpcds_warehouse_0.w_warehouse_name,default.impala_tpcds_warehouse_0.w_warehouse_sq_ft,default.impala_tpcds_warehouse_0.w_city,default.impala_tpcds_warehouse_0.w_county,default.impala_tpcds_warehouse_0.w_state,default.impala_tpcds_warehouse_0.w_country)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  20:AGGREGATE [STREAMING]
+  |  output: sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(2 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(3 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(4 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(5 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(6 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(7 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(8 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(9 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(10 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(11 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_ext_list_price, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(2 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(3 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(4 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(5 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(6 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(7 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(8 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(9 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(10 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(11 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(CASE WHEN default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) THEN _impala_builtins.multiply(default.impala_tpcds_catalog_sales.cs_net_paid_inc_ship, _impala_builtins.casttodecimal(default.impala_tpcds_catalog_sales.cs_quantity)) ELSE CAST(0 AS DECIMAL(10,0)) END)
+  |  group by: default.impala_tpcds_warehouse_0.w_warehouse_name, default.impala_tpcds_warehouse_0.w_warehouse_sq_ft, default.impala_tpcds_warehouse_0.w_city, default.impala_tpcds_warehouse_0.w_county, default.impala_tpcds_warehouse_0.w_state, default.impala_tpcds_warehouse_0.w_country
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=22 row-size=448B cardinality=0
+  |  in pipelines: 11(GETNEXT)
+  |
+  19:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_sold_date_sk = default.impala_tpcds_date_dim_0.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=12,14,16,18,20 row-size=132B cardinality=0
+  |  in pipelines: 11(GETNEXT), 18(OPEN)
+  |
+  |--32:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=20 row-size=12B cardinality=0
+  |     in pipelines: 18(GETNEXT)
+  |
+  17:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_warehouse_sk = default.impala_tpcds_warehouse_0.w_warehouse_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=12,14,16,18 row-size=120B cardinality=0
+  |  in pipelines: 11(GETNEXT), 16(OPEN)
+  |
+  |--31:EXCHANGE [BROADCAST]
+  |     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=18 row-size=68B cardinality=0
+  |     in pipelines: 16(GETNEXT)
+  |
+  15:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_ship_mode_sk = default.impala_tpcds_ship_mode_0.sm_ship_mode_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=12,14,16 row-size=52B cardinality=0
+  |  in pipelines: 11(GETNEXT), 14(OPEN)
+  |
+  |--30:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=16 row-size=16B cardinality=0
+  |     in pipelines: 14(GETNEXT)
+  |
+  13:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_sold_time_sk = default.impala_tpcds_time_dim_0.t_time_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=12,14 row-size=36B cardinality=0
+  |  in pipelines: 11(GETNEXT), 12(OPEN)
+  |
+  |--29:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=14 row-size=8B cardinality=0
+  |     in pipelines: 12(GETNEXT)
+  |
+  11:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_catalog_sales.cs_ship_mode_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_time_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=28B cardinality=0
+     in pipelines: 11(GETNEXT)
+
+F07:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=29, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:SCAN HDFS [default.impala_tpcds_time_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_time_dim_0.t_time_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_time_dim_0.t_time) >= CAST(9453 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_time_dim_0.t_time) <= _impala_builtins.add(CAST(9453 AS BIGINT), CAST(28800 AS BIGINT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=8B cardinality=0
+     in pipelines: 12(GETNEXT)
+
+F08:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=30, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  14:SCAN HDFS [default.impala_tpcds_ship_mode, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_ship_mode_0.sm_ship_mode_sk IS NOT NULL, default.impala_tpcds_ship_mode_0.sm_carrier IN ('MSC', 'GERMA')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_ship_mode_0.sm_carrier IN ('MSC', 'GERMA')
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=16 row-size=16B cardinality=0
+     in pipelines: 14(GETNEXT)
+
+F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=31, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  16:SCAN HDFS [default.impala_tpcds_warehouse, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_warehouse_0.w_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=18 row-size=68B cardinality=0
+     in pipelines: 16(GETNEXT)
+
+F10:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=32, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  18:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year = CAST(2001 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_date_dim_0.d_year = CAST(2001 AS INT)
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=20 row-size=12B cardinality=0
+     in pipelines: 18(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
