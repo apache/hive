@@ -286,10 +286,9 @@ class MetaStoreDirectSql {
       initQueries.add(pm.newQuery(MCreationMetadata.class, "dbName == ''"));
       initQueries.add(pm.newQuery(MPartitionPrivilege.class, "principalName == ''"));
       initQueries.add(pm.newQuery(MPartitionColumnPrivilege.class, "principalName == ''"));
-      Query q;
-      while ((q = initQueries.peekFirst()) != null) {
+
+      for (Query q : initQueries) {
         q.execute();
-        initQueries.pollFirst();
       }
 
       return true;
@@ -472,8 +471,11 @@ class MetaStoreDirectSql {
     }
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    return executeWithArray(
+    List<String> tableNames = executeWithArray(
         queryParams, pms.toArray(), queryText, limit);
+    List<String> results = new ArrayList<String>(tableNames);
+    queryParams.closeAll();
+    return results;
   }
 
   /**
@@ -493,8 +495,11 @@ class MetaStoreDirectSql {
     pms.add(TableType.MATERIALIZED_VIEW.toString());
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    return executeWithArray(
-        queryParams, pms.toArray(), queryText);
+    List<String> mvs = executeWithArray(
+          queryParams, pms.toArray(), queryText);
+    List<String> results = new ArrayList<String>(mvs);
+    queryParams.closeAll();
+    return results;
   }
 
   /**
@@ -1129,6 +1134,7 @@ class MetaStoreDirectSql {
     int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
     long queryTime = doTrace ? System.nanoTime() : 0;
     MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+    query.closeAll();
     return sqlResult;
   }
 
@@ -2225,7 +2231,7 @@ class MetaStoreDirectSql {
     }
 
     Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
         queryParams, pms.toArray(), queryText));
 
     if (!sqlResult.isEmpty()) {
@@ -2254,6 +2260,7 @@ class MetaStoreDirectSql {
         ret.add(currKey);
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 
@@ -2292,7 +2299,7 @@ class MetaStoreDirectSql {
     }
 
     Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
         queryParams, pms.toArray(), queryText));
 
     if (!sqlResult.isEmpty()) {
@@ -2313,6 +2320,7 @@ class MetaStoreDirectSql {
         ret.add(currKey);
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 
@@ -2350,7 +2358,7 @@ class MetaStoreDirectSql {
     }
 
     Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
         queryParams, pms.toArray(), queryText));
 
     if (!sqlResult.isEmpty()) {
@@ -2370,6 +2378,7 @@ class MetaStoreDirectSql {
             rely));
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 
@@ -2407,7 +2416,7 @@ class MetaStoreDirectSql {
     }
 
     Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
         queryParams, pms.toArray(), queryText));
 
     if (!sqlResult.isEmpty()) {
@@ -2427,6 +2436,7 @@ class MetaStoreDirectSql {
             rely));
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 
@@ -2490,6 +2500,7 @@ class MetaStoreDirectSql {
         ret.add(currConstraint);
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 
@@ -2553,6 +2564,7 @@ class MetaStoreDirectSql {
         ret.add(currConstraint);
       }
     }
+    queryParams.closeAll();
     return ret;
   }
 

@@ -2745,7 +2745,7 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean dropPartitionCommon(MPartition part) throws MetaException,
     InvalidObjectException, InvalidInputException {
     boolean success = false;
-    try {
+    try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
       if (part != null) {
         List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
@@ -2759,17 +2759,19 @@ public class ObjectStore implements RawStore, Configurable {
             part.getTable().getDatabase().getCatalogName(),
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            Lists.newArrayList(partName));
+            Lists.newArrayList(partName), wrapper);
 
         if (CollectionUtils.isNotEmpty(partGrants)) {
           pm.deletePersistentAll(partGrants);
         }
+        wrapper.close();
 
         List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
             part.getTable().getDatabase().getCatalogName(),
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            Lists.newArrayList(partName));
+            Lists.newArrayList(partName), wrapper);
+
         if (CollectionUtils.isNotEmpty(partColumnGrants)) {
           pm.deletePersistentAll(partColumnGrants);
         }
@@ -4838,6 +4840,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         }
         pm.makePersistentAll(mConstraintsList);
+        query.closeAll();
       }
       // Finally replace CD
       oldSd.setCD(newSd.getCD());
@@ -7315,7 +7318,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(
-      String catName, String dbName, String tableName, List<String> partNames) {
+      String catName, String dbName, String tableName, List<String> partNames, QueryWrapper wrapper) {
     boolean success = false;
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
@@ -7328,7 +7331,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityColList = queryByPartitionNames(catName,
           dbName, tableName, partNames, MPartitionColumnPrivilege.class,
           "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName");
+          "partition.table.database.catalogName", wrapper);
       LOG.debug("Done executing query for listPartitionAllColumnGrants");
       pm.retrieveAll(mSecurityColList);
       success = commitTransaction();
@@ -7348,6 +7351,7 @@ public class ObjectStore implements RawStore, Configurable {
           "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName,
@@ -7383,7 +7387,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<MPartitionPrivilege> listPartitionGrants(String catName, String dbName, String tableName,
-      List<String> partNames) {
+      List<String> partNames, QueryWrapper wrapper) {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
 
@@ -7395,7 +7399,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityTabPartList = queryByPartitionNames(catName,
           dbName, tableName, partNames, MPartitionPrivilege.class, "partition.table.tableName",
           "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName");
+          "partition.table.database.catalogName", wrapper);
       LOG.debug("Done executing query for listPartitionGrants");
       pm.retrieveAll(mSecurityTabPartList);
       success = commitTransaction();
@@ -7415,13 +7419,15 @@ public class ObjectStore implements RawStore, Configurable {
           "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
       List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol,
-      String catCol) {
+      String catCol, QueryWrapper wrapper) {
     Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
         dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
+    wrapper.query = queryAndParams.getLeft();
     return (List<T>)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight());
   }
 
@@ -9476,6 +9482,7 @@ public class ObjectStore implements RawStore, Configurable {
         catName, dbName, tableName, partNames, MPartitionColumnStatistics.class,
         "tableName", "dbName", "partition.partitionName", "catName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   @Override
@@ -12872,15 +12879,16 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try {
+    try (Query q = pm.newQuery(MRuntimeStat.class)) {
       openTransaction();
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
-      Query q = pm.newQuery(MRuntimeStat.class);
       q.setFilter("createTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -12923,6 +12931,7 @@ public class ObjectStore implements RawStore, Configurable {
         break;
       }
     }
+    query.closeAll();
     return ret;
   }
 
@@ -13014,10 +13023,9 @@ public class ObjectStore implements RawStore, Configurable {
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
-    try {
+    try (Query q = pm.newQuery(MScheduledQuery.class,
+        "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null")) {
       openTransaction();
-      Query q = pm.newQuery(MScheduledQuery.class,
-          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -13272,15 +13280,16 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try {
+    try (Query q = pm.newQuery(MScheduledExecution.class)) {
       openTransaction();
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
-      Query q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("startTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -13295,10 +13304,9 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try {
+    try (Query q = pm.newQuery(MScheduledExecution.class)) {
       openTransaction();
       int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
-      Query q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("lastUpdateTime <= maxLastUpdateTime && (state == 'INITED' || state == 'EXECUTING')");
       q.declareParameters("int maxLastUpdateTime");
 
@@ -13317,6 +13325,10 @@ public class ObjectStore implements RawStore, Configurable {
       recoverInvalidScheduledQueryState(timeoutSecs);
       committed = commitTransaction();
       return results.size();
+    } catch (InvalidOperationException | MetaException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -13339,5 +13351,6 @@ public class ObjectStore implements RawStore, Configurable {
         pm.makePersistent(e);
       }
     }
+    q.closeAll();
   }
 }
