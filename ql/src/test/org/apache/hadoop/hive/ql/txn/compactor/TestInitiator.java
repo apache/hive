@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -821,9 +822,10 @@ public class TestInitiator extends CompactorTest {
   }
 
   @Test
-  public void testInitiatorMetrics() throws Exception {
+  public void testInitiatorMetricsEnabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
-    Table t = newTable("default", "im", true);
+    Table t = newTable("default", "ime", true);
     List<LockComponent> components = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
@@ -833,12 +835,12 @@ public class TestInitiator extends CompactorTest {
       addDeltaFile(t, p, 23L, 24L, 2);
 
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
-      comp.setTablename("im");
+      comp.setTablename("ime");
       comp.setPartitionname("ds=part" + (i + 1));
       comp.setOperationType(DataOperationType.UPDATE);
       components.add(comp);
     }
-    burnThroughTransactions("default", "im", 23);
+    burnThroughTransactions("default", "ime", 23);
     long txnid = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -846,7 +848,7 @@ public class TestInitiator extends CompactorTest {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeid = allocateWriteId("default", "im", txnid);
+    long writeid = allocateWriteId("default", "ime", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -860,6 +862,50 @@ public class TestInitiator extends CompactorTest {
     startInitiator();
 
     Assert.assertEquals(10,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
+  }
+
+  @Test
+  public void testInitiatorMetricsDisabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
+    Metrics.initialize(conf);
+    Table t = newTable("default", "imd", true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+      comp.setTablename("imd");
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions("default", "imd", 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId("default", "imd", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(10, compacts.size());
+
+    // The metrics will appear after the next Initiator run
+    startInitiator();
+
+    Assert.assertEquals(0,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
   }
 

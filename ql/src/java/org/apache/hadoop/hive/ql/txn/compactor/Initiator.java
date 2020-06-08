@@ -95,6 +95,7 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -114,8 +115,10 @@ public class Initiator extends MetaStoreCompactorThread {
 
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          // Update compaction metrics based on showCompactions result
-          updateCompactionMetrics(currentCompactions);
+          if (metricsEnabled) {
+            // Update compaction metrics based on showCompactions result
+            updateCompactionMetrics(currentCompactions);
+          }
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
