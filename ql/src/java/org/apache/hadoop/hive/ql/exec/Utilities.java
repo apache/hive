@@ -1676,8 +1676,9 @@ public final class Utilities {
   /**
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
    */
-  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path, boolean isBaseDir) throws IOException {
-    removeTempOrDuplicateFiles(fs, path, null,null,null, isBaseDir);
+  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path, Configuration hconf, boolean isBaseDir)
+      throws IOException {
+    removeTempOrDuplicateFiles(fs, path, null, null, hconf, isBaseDir);
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, Path path,
