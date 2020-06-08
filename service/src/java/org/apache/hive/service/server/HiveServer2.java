@@ -424,7 +424,7 @@ public class HiveServer2 extends CompositeService {
           builder.setContextRootRewriteTarget("/hiveserver2.jsp");
 
           webServer = builder.build();
-          webServer.addServlet("query_page", "/query_page", QueryProfileServlet.class);
+          webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
         }
       }
