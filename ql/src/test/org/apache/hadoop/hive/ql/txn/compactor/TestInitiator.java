@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for the compactor Initiator thread.
  */
 public class TestInitiator extends CompactorTest {
+  private final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
 
   @Test
   public void nothing() throws Exception {
@@ -825,6 +826,7 @@ public class TestInitiator extends CompactorTest {
   public void testInitiatorMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
+    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
     Table t = newTable("default", "ime", true);
     List<LockComponent> components = new ArrayList<>();
 
@@ -861,7 +863,7 @@ public class TestInitiator extends CompactorTest {
     // The metrics will appear after the next Initiator run
     startInitiator();
 
-    Assert.assertEquals(10,
+    Assert.assertEquals(originalValue + 10,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
   }
 
@@ -869,6 +871,7 @@ public class TestInitiator extends CompactorTest {
   public void testInitiatorMetricsDisabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
+    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
     Table t = newTable("default", "imd", true);
     List<LockComponent> components = new ArrayList<>();
 
@@ -905,8 +908,8 @@ public class TestInitiator extends CompactorTest {
     // The metrics will appear after the next Initiator run
     startInitiator();
 
-    Assert.assertEquals(0,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
+    Assert.assertEquals(originalValue,
+        Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
   }
 
   @Test
