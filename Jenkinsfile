@@ -180,7 +180,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("install -q")
+              buildHive("test -q")
             }
           } finally {
             stage('Archive') {
