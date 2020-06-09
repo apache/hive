@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField FILES_ADDED_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAdded", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField FILES_ADDED_CHECKSUM_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAddedChecksum", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField SUB_DIRECTORY_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("subDirectoryList", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField PARTITION_VAL_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionVal", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private List<String> filesAdded; // required
   private List<String> filesAddedChecksum; // optional
   private List<String> subDirectoryList; // optional
+  private List<String> partitionVal; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     REPLACE((short)1, "replace"),
     FILES_ADDED((short)2, "filesAdded"),
     FILES_ADDED_CHECKSUM((short)3, "filesAddedChecksum"),
-    SUB_DIRECTORY_LIST((short)4, "subDirectoryList");
+    SUB_DIRECTORY_LIST((short)4, "subDirectoryList"),
+    PARTITION_VAL((short)5, "partitionVal");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return FILES_ADDED_CHECKSUM;
         case 4: // SUB_DIRECTORY_LIST
           return SUB_DIRECTORY_LIST;
+        case 5: // PARTITION_VAL
+          return PARTITION_VAL;
         default:
           return null;
       }
@@ -124,7 +129,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __REPLACE_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPLACE,_Fields.FILES_ADDED_CHECKSUM,_Fields.SUB_DIRECTORY_LIST};
+  private static final _Fields optionals[] = {_Fields.REPLACE,_Fields.FILES_ADDED_CHECKSUM,_Fields.SUB_DIRECTORY_LIST,_Fields.PARTITION_VAL};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,6 +142,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.SUB_DIRECTORY_LIST, new org.apache.thrift.meta_data.FieldMetaData("subDirectoryList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.PARTITION_VAL, new org.apache.thrift.meta_data.FieldMetaData("partitionVal", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -171,6 +179,10 @@ import org.slf4j.LoggerFactory;
       List<String> __this__subDirectoryList = new ArrayList<String>(other.subDirectoryList);
       this.subDirectoryList = __this__subDirectoryList;
     }
+    if (other.isSetPartitionVal()) {
+      List<String> __this__partitionVal = new ArrayList<String>(other.partitionVal);
+      this.partitionVal = __this__partitionVal;
+    }
   }
 
   public InsertEventRequestData deepCopy() {
@@ -184,6 +196,7 @@ import org.slf4j.LoggerFactory;
     this.filesAdded = null;
     this.filesAddedChecksum = null;
     this.subDirectoryList = null;
+    this.partitionVal = null;
   }
 
   public boolean isReplace() {
@@ -322,6 +335,44 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getPartitionValSize() {
+    return (this.partitionVal == null) ? 0 : this.partitionVal.size();
+  }
+
+  public java.util.Iterator<String> getPartitionValIterator() {
+    return (this.partitionVal == null) ? null : this.partitionVal.iterator();
+  }
+
+  public void addToPartitionVal(String elem) {
+    if (this.partitionVal == null) {
+      this.partitionVal = new ArrayList<String>();
+    }
+    this.partitionVal.add(elem);
+  }
+
+  public List<String> getPartitionVal() {
+    return this.partitionVal;
+  }
+
+  public void setPartitionVal(List<String> partitionVal) {
+    this.partitionVal = partitionVal;
+  }
+
+  public void unsetPartitionVal() {
+    this.partitionVal = null;
+  }
+
+  /** Returns true if field partitionVal is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartitionVal() {
+    return this.partitionVal != null;
+  }
+
+  public void setPartitionValIsSet(boolean value) {
+    if (!value) {
+      this.partitionVal = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case REPLACE:
@@ -356,6 +407,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case PARTITION_VAL:
+      if (value == null) {
+        unsetPartitionVal();
+      } else {
+        setPartitionVal((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -372,6 +431,9 @@ import org.slf4j.LoggerFactory;
 
     case SUB_DIRECTORY_LIST:
       return getSubDirectoryList();
+
+    case PARTITION_VAL:
+      return getPartitionVal();
 
     }
     throw new IllegalStateException();
@@ -392,6 +454,8 @@ import org.slf4j.LoggerFactory;
       return isSetFilesAddedChecksum();
     case SUB_DIRECTORY_LIST:
       return isSetSubDirectoryList();
+    case PARTITION_VAL:
+      return isSetPartitionVal();
     }
     throw new IllegalStateException();
   }
@@ -445,6 +509,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_partitionVal = true && this.isSetPartitionVal();
+    boolean that_present_partitionVal = true && that.isSetPartitionVal();
+    if (this_present_partitionVal || that_present_partitionVal) {
+      if (!(this_present_partitionVal && that_present_partitionVal))
+        return false;
+      if (!this.partitionVal.equals(that.partitionVal))
+        return false;
+    }
+
     return true;
   }
 
@@ -471,6 +544,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_subDirectoryList);
     if (present_subDirectoryList)
       list.add(subDirectoryList);
+
+    boolean present_partitionVal = true && (isSetPartitionVal());
+    list.add(present_partitionVal);
+    if (present_partitionVal)
+      list.add(partitionVal);
 
     return list.hashCode();
   }
@@ -519,6 +597,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetSubDirectoryList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.subDirectoryList, other.subDirectoryList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPartitionVal()).compareTo(other.isSetPartitionVal());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPartitionVal()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionVal, other.partitionVal);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -573,6 +661,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.subDirectoryList);
+      }
+      first = false;
+    }
+    if (isSetPartitionVal()) {
+      if (!first) sb.append(", ");
+      sb.append("partitionVal:");
+      if (this.partitionVal == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.partitionVal);
       }
       first = false;
     }
@@ -687,6 +785,24 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // PARTITION_VAL
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list741 = iprot.readListBegin();
+                struct.partitionVal = new ArrayList<String>(_list741.size);
+                String _elem742;
+                for (int _i743 = 0; _i743 < _list741.size; ++_i743)
+                {
+                  _elem742 = iprot.readString();
+                  struct.partitionVal.add(_elem742);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPartitionValIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -709,9 +825,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
-          for (String _iter741 : struct.filesAdded)
+          for (String _iter744 : struct.filesAdded)
           {
-            oprot.writeString(_iter741);
+            oprot.writeString(_iter744);
           }
           oprot.writeListEnd();
         }
@@ -722,9 +838,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
-            for (String _iter742 : struct.filesAddedChecksum)
+            for (String _iter745 : struct.filesAddedChecksum)
             {
-              oprot.writeString(_iter742);
+              oprot.writeString(_iter745);
             }
             oprot.writeListEnd();
           }
@@ -736,9 +852,23 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(SUB_DIRECTORY_LIST_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.subDirectoryList.size()));
-            for (String _iter743 : struct.subDirectoryList)
+            for (String _iter746 : struct.subDirectoryList)
             {
-              oprot.writeString(_iter743);
+              oprot.writeString(_iter746);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.partitionVal != null) {
+        if (struct.isSetPartitionVal()) {
+          oprot.writeFieldBegin(PARTITION_VAL_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionVal.size()));
+            for (String _iter747 : struct.partitionVal)
+            {
+              oprot.writeString(_iter747);
             }
             oprot.writeListEnd();
           }
@@ -764,9 +894,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
-        for (String _iter744 : struct.filesAdded)
+        for (String _iter748 : struct.filesAdded)
         {
-          oprot.writeString(_iter744);
+          oprot.writeString(_iter748);
         }
       }
       BitSet optionals = new BitSet();
@@ -779,25 +909,37 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSubDirectoryList()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetPartitionVal()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetReplace()) {
         oprot.writeBool(struct.replace);
       }
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
-          for (String _iter745 : struct.filesAddedChecksum)
+          for (String _iter749 : struct.filesAddedChecksum)
           {
-            oprot.writeString(_iter745);
+            oprot.writeString(_iter749);
           }
         }
       }
       if (struct.isSetSubDirectoryList()) {
         {
           oprot.writeI32(struct.subDirectoryList.size());
-          for (String _iter746 : struct.subDirectoryList)
+          for (String _iter750 : struct.subDirectoryList)
           {
-            oprot.writeString(_iter746);
+            oprot.writeString(_iter750);
+          }
+        }
+      }
+      if (struct.isSetPartitionVal()) {
+        {
+          oprot.writeI32(struct.partitionVal.size());
+          for (String _iter751 : struct.partitionVal)
+          {
+            oprot.writeString(_iter751);
           }
         }
       }
@@ -807,46 +949,59 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list747 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.filesAdded = new ArrayList<String>(_list747.size);
-        String _elem748;
-        for (int _i749 = 0; _i749 < _list747.size; ++_i749)
+        org.apache.thrift.protocol.TList _list752 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list752.size);
+        String _elem753;
+        for (int _i754 = 0; _i754 < _list752.size; ++_i754)
         {
-          _elem748 = iprot.readString();
-          struct.filesAdded.add(_elem748);
+          _elem753 = iprot.readString();
+          struct.filesAdded.add(_elem753);
         }
       }
       struct.setFilesAddedIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.replace = iprot.readBool();
         struct.setReplaceIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list750 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filesAddedChecksum = new ArrayList<String>(_list750.size);
-          String _elem751;
-          for (int _i752 = 0; _i752 < _list750.size; ++_i752)
+          org.apache.thrift.protocol.TList _list755 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list755.size);
+          String _elem756;
+          for (int _i757 = 0; _i757 < _list755.size; ++_i757)
           {
-            _elem751 = iprot.readString();
-            struct.filesAddedChecksum.add(_elem751);
+            _elem756 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem756);
           }
         }
         struct.setFilesAddedChecksumIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list753 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.subDirectoryList = new ArrayList<String>(_list753.size);
-          String _elem754;
-          for (int _i755 = 0; _i755 < _list753.size; ++_i755)
+          org.apache.thrift.protocol.TList _list758 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.subDirectoryList = new ArrayList<String>(_list758.size);
+          String _elem759;
+          for (int _i760 = 0; _i760 < _list758.size; ++_i760)
           {
-            _elem754 = iprot.readString();
-            struct.subDirectoryList.add(_elem754);
+            _elem759 = iprot.readString();
+            struct.subDirectoryList.add(_elem759);
           }
         }
         struct.setSubDirectoryListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        {
+          org.apache.thrift.protocol.TList _list761 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVal = new ArrayList<String>(_list761.size);
+          String _elem762;
+          for (int _i763 = 0; _i763 < _list761.size; ++_i763)
+          {
+            _elem762 = iprot.readString();
+            struct.partitionVal.add(_elem762);
+          }
+        }
+        struct.setPartitionValIsSet(true);
       }
     }
   }
