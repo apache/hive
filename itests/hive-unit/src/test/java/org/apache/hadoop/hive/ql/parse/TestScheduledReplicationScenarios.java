@@ -26,11 +26,20 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -41,6 +50,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -172,7 +183,12 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     String withClause = " WITH('" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
-            + "'='/replica_external_base')";
+            + "'='/replica_external_base', '" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA
+            + "' = 'true' ,'" + HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA + "' = 'true' , '"
+            + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'" + ",'"+ HiveConf.ConfVars.REPL_ATLAS_ENDPOINT
+        + "' = 'http://localhost:21000/atlas'" +  ",'"+ HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB + "' = 'tgt'"
+        +  ",'"+ HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME + "' = 'cluster0'"
+        +  ",'"+ HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME + "' = 'cluster1')";
     primary.run("use " + primaryDbName)
             .run("create external table t2 (id int)")
             .run("insert into t2 values(1)")
@@ -183,7 +199,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load " + primaryDbName + " INTO "
-              + replicatedDbName);
+              + replicatedDbName + withClause);
       Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
               Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
@@ -196,7 +212,20 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResult("t2")
               .run("select id from t2 order by id")
               .verifyResults(new String[]{"1", "2"});
-
+      long lastReplId = Long.parseLong(primary.status(replicatedDbName).getOutput().get(0));
+      DumpMetaData dumpMetaData = new DumpMetaData(ackPath.getParent(), primary.hiveConf);
+      List<ReplicationMetric> replicationMetrics = MetricCollector.getInstance().getMetrics();
+      Assert.assertEquals(2, replicationMetrics.size());
+      //Generate expected metrics
+      List<ReplicationMetric> expectedReplicationMetrics = new ArrayList<>();
+      expectedReplicationMetrics.add(generateExpectedMetric("s1_t2", 0, primaryDbName,
+          Metadata.ReplicationType.BOOTSTRAP, ackPath.getParent().toString(), lastReplId, Status.SUCCESS,
+          generateDumpStages(true)));
+      expectedReplicationMetrics.add(generateExpectedMetric("s2_t2",
+          dumpMetaData.getDumpExecutionId(), replicatedDbName,
+          Metadata.ReplicationType.BOOTSTRAP, ackPath.getParent().toString(), lastReplId, Status.SUCCESS,
+          generateLoadStages(true)));
+      checkMetrics(expectedReplicationMetrics, replicationMetrics);
       // First incremental, after bootstrap
       primary.run("use " + primaryDbName)
               .run("insert into t2 values(3)")
@@ -215,6 +244,130 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2_t2");
     }
   }
+
+  private void checkMetrics(List<ReplicationMetric> expectedReplicationMetrics,
+                            List<ReplicationMetric> actualMetrics) {
+    Assert.assertEquals(expectedReplicationMetrics.size(), actualMetrics.size());
+    int metricCounter = 0;
+    for (ReplicationMetric actualMetric : actualMetrics) {
+      for (ReplicationMetric expecMetric : expectedReplicationMetrics) {
+        if (actualMetric.getPolicy().equalsIgnoreCase(expecMetric.getPolicy())) {
+          Assert.assertEquals(expecMetric.getDumpExecutionId(), actualMetric.getDumpExecutionId());
+          Assert.assertEquals(expecMetric.getMetadata().getDbName(), actualMetric.getMetadata().getDbName());
+          Assert.assertEquals(expecMetric.getMetadata().getLastReplId(),
+              actualMetric.getMetadata().getLastReplId());
+          Assert.assertEquals(expecMetric.getMetadata().getStagingDir(),
+              actualMetric.getMetadata().getStagingDir());
+          Assert.assertEquals(expecMetric.getMetadata().getReplicationType(),
+              actualMetric.getMetadata().getReplicationType());
+          Assert.assertEquals(expecMetric.getProgress().getStatus(), actualMetric.getProgress().getStatus());
+          Assert.assertEquals(expecMetric.getProgress().getStages().size(),
+              actualMetric.getProgress().getStages().size());
+          List<Stage> expectedStages = expecMetric.getProgress().getStages();
+          List<Stage> actualStages = actualMetric.getProgress().getStages();
+          int counter = 0;
+          for (Stage actualStage : actualStages) {
+            for (Stage expeStage : expectedStages) {
+              if (actualStage.getName().equalsIgnoreCase(expeStage.getName())) {
+                Assert.assertEquals(expeStage.getStatus(), actualStage.getStatus());
+                Assert.assertEquals(expeStage.getMetrics().size(), actualStage.getMetrics().size());
+                for (Metric actMetric : actualStage.getMetrics()) {
+                  for (Metric expMetric : expeStage.getMetrics()) {
+                    if (actMetric.getName().equalsIgnoreCase(expMetric.getName())) {
+                      Assert.assertEquals(expMetric.getTotalCount(), actMetric.getTotalCount());
+                      Assert.assertEquals(expMetric.getCurrentCount(), actMetric.getCurrentCount());
+                    }
+                  }
+                }
+                counter++;
+                if (counter == actualStages.size()) {
+                  break;
+                }
+              }
+            }
+          }
+          metricCounter++;
+          if (metricCounter == actualMetrics.size()) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private List<Stage> generateLoadStages(boolean isBootstrap) {
+    List<Stage> stages = new ArrayList<>();
+    //Ranger
+    Stage rangerDump = new Stage("RANGER_LOAD", Status.SUCCESS, 0);
+    Metric rangerMetric = new Metric(ReplUtils.MetricName.POLICIES.name(), 0);
+    rangerDump.addMetric(rangerMetric);
+    stages.add(rangerDump);
+    //Atlas
+    Stage atlasDump = new Stage("ATLAS_LOAD", Status.SUCCESS, 0);
+    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
+    atlasDump.addMetric(atlasMetric);
+    stages.add(atlasDump);
+    //Hive
+    Stage replDump = new Stage("REPL_LOAD", Status.SUCCESS, 0);
+    if (isBootstrap) {
+      Metric hiveMetric = new Metric(ReplUtils.MetricName.TABLES.name(), 1);
+      hiveMetric.setCurrentCount(1);
+      replDump.addMetric(hiveMetric);
+      hiveMetric = new Metric(ReplUtils.MetricName.FUNCTIONS.name(), 0);
+      replDump.addMetric(hiveMetric);
+    } else {
+      Metric hiveMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 1);
+      hiveMetric.setCurrentCount(1);
+      replDump.addMetric(hiveMetric);
+    }
+    stages.add(replDump);
+    return stages;
+  }
+
+  private List<Stage> generateDumpStages(boolean isBootstrap) {
+    List<Stage> stages = new ArrayList<>();
+    //Ranger
+    Stage rangerDump = new Stage("RANGER_DUMP", Status.SUCCESS, 0);
+    Metric rangerMetric = new Metric(ReplUtils.MetricName.POLICIES.name(), 0);
+    rangerDump.addMetric(rangerMetric);
+    stages.add(rangerDump);
+    //Atlas
+    Stage atlasDump = new Stage("ATLAS_DUMP", Status.SUCCESS, 0);
+    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
+    atlasDump.addMetric(atlasMetric);
+    stages.add(atlasDump);
+    //Hive
+    Stage replDump = new Stage("REPL_DUMP", Status.SUCCESS, 0);
+    if (isBootstrap) {
+      Metric hiveMetric = new Metric(ReplUtils.MetricName.TABLES.name(), 1);
+      hiveMetric.setCurrentCount(1);
+      replDump.addMetric(hiveMetric);
+      hiveMetric = new Metric(ReplUtils.MetricName.FUNCTIONS.name(), 0);
+      replDump.addMetric(hiveMetric);
+    } else {
+      Metric hiveMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 1);
+      hiveMetric.setCurrentCount(1);
+      replDump.addMetric(hiveMetric);
+    }
+    stages.add(replDump);
+    return stages;
+  }
+
+  private ReplicationMetric generateExpectedMetric(String policy, long dumpExecId, String dbName,
+                                                   Metadata.ReplicationType replicationType, String staging,
+                                                   long lastReplId, Status status, List<Stage> stages) {
+    Metadata metadata = new Metadata(dbName, replicationType, staging);
+    metadata.setLastReplId(lastReplId);
+    ReplicationMetric replicationMetric = new ReplicationMetric(0, policy, dumpExecId, metadata);
+    Progress progress = new Progress();
+    progress.setStatus(status);
+    for (Stage stage : stages) {
+      progress.addStage(stage);
+    }
+    replicationMetric.setProgress(progress);
+    return replicationMetric;
+  }
+
   private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws IOException {
     long oldTime = System.currentTimeMillis();
     long sleepInterval = 2;

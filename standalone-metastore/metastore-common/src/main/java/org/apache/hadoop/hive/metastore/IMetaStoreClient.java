@@ -4053,4 +4053,13 @@ public interface IMetaStoreClient {
    */
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
 
+  /**
+   * Adds replication metrics for the replication policies.
+   * @param replicationMetricList
+   * @throws MetaException
+   */
+  void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException;
+
+  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                replicationMetricsRequest) throws MetaException, TException;
 }

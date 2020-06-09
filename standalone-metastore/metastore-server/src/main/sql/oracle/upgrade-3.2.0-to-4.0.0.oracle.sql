@@ -88,6 +88,19 @@ ALTER TABLE TXNS MODIFY TXN_ID default TXNS_TXN_ID_SEQ.nextval;
 RENAME TABLE NEXT_TXN_ID TO TXN_LOCK_TBL;
 ALTER TABLE TXN_LOCK_TBL RENAME COLUMN NTXN_NEXT TO TXN_LOCK;
 
+--Create table replication metrics
+CREATE TABLE "REPLICATION_METRICS" (
+  "RM_SCHEDULED_EXECUTION_ID" number PRIMARY KEY,
+  "RM_POLICY" varchar2(256) NOT NULL,
+  "RM_DUMP_EXECUTION_ID" number NOT NULL,
+  "RM_METADATA" varchar2(4000),
+  "RM_PROGRESS" varchar2(4000)
+);
+
+--Create indexes for the replication metrics table
+CREATE INDEX POLICY_IDX ON "REPLICATION_METRICS" ("RM_POLICY");
+CREATE INDEX DUMP_IDX ON "REPLICATION_METRICS" ("RM_DUMP_EXECUTION_ID");
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0' AS Status from dual;
