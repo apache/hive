@@ -32,9 +32,8 @@ public class ImpalaQueryDesc extends FileSinkDesc {
 
   private final ImpalaCompiledPlan compiledPlan;
 
-  public ImpalaQueryDesc(FileSinkDesc wrappedFileSinkDesc, ImpalaCompiledPlan compiledPlan) {
-    super(wrappedFileSinkDesc);
-    this.compiledPlan = compiledPlan;
+  public ImpalaQueryDesc(ImpalaCompiledPlan plan) {
+    compiledPlan = plan;
   }
 
   @Override

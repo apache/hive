@@ -403,10 +403,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F35:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=60.05KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: _impala_builtins.subtract(CAST(2001 AS INT), CAST(1 AS INT)), CAST(2001 AS INT), i_brand_id, i_class_id, i_category_id, i_manufact_id, prev_yr_cnt, curr_yr_cnt, sales_cnt_diff, sales_amt_diff
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=56B mem-reservation=0B thread-reservation=0
   |
   86:MERGING-EXCHANGE [UNPARTITIONED]
      order by: sales_cnt_diff ASC NULLS LAST, sales_amt_diff ASC NULLS LAST

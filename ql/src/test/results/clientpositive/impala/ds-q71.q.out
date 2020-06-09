@@ -214,10 +214,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=48.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=48.04KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: brand_id, brand, t_hour, t_minute, ext_price
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=44B mem-reservation=0B thread-reservation=0
   |
   24:MERGING-EXCHANGE [UNPARTITIONED]
      order by: ext_price DESC NULLS FIRST, (tok_table_or_col i_brand_id) ASC NULLS LAST

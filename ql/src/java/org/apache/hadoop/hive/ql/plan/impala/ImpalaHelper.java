@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaWindowingFixRule;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
+import org.apache.hadoop.fs.Path;
 import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.InternalException;
@@ -99,12 +100,12 @@ public class ImpalaHelper {
   }
 
   public ImpalaCompiledPlan compilePlan(HiveConf conf, RelNode rootRelNode, String db, String userName,
-      boolean isExplain) throws HiveException {
+      Path resultPath, boolean isExplain) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel);
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       TQueryOptions options = createQueryOptions(conf);
-      ImpalaPlanner impalaPlanner = new ImpalaPlanner(db, userName, options);
+      ImpalaPlanner impalaPlanner = new ImpalaPlanner(db, userName, options, resultPath);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);

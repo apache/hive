@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.conf.HiveConf.Engine;
+import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -90,8 +91,11 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties());
       }
+
       sink = work.getSink();
+
       if (conf.getEngine() == Engine.IMPALA &&
+              conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING &&
               queryPlan.getOperation() == HiveOperation.QUERY) {
         // Currently we only support streaming from Impala execution engine
         fetch = new ImpalaStreamingFetchOperator(work, job, source, getVirtualColumns(source),

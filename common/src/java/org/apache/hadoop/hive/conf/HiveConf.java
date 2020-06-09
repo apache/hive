@@ -192,6 +192,48 @@ public class HiveConf extends Configuration {
     }
   }
 
+  public enum ImpalaResultMethod {
+    INVALID_METHOD {
+      @Override
+      public String toString() {
+        return "invalid Impala result method";
+      }
+    },
+    FILE {
+      @Override
+      public String toString() {
+        return "file";
+      }
+    },
+    STREAMING {
+      @Override
+      public String toString() {
+        return "streaming";
+      }
+    }
+  }
+
+  public enum ImpalaExecutionMode {
+    INVALID_MODE {
+      @Override
+      public String toString() {
+        return "invalid Impala execution mode";
+      }
+    },
+    PLAN {
+      @Override
+      public String toString() {
+        return "plan";
+      }
+    },
+    QUERY {
+      @Override
+      public String toString() {
+        return "query";
+      }
+    }
+  }
+
   public interface EncoderDecoder<K, V> {
     V encode(K key);
     K decode(V value);
@@ -4092,8 +4134,14 @@ public class HiveConf extends Configuration {
         "Chooses whether query fragments will run in container or in llap"),
 
     // Impala specific configuration properties
+    HIVE_IMPALA_RESULT_METHOD("hive.impala.result.method", ImpalaResultMethod.FILE.toString(), new StringSet(true,
+          ImpalaResultMethod.FILE.toString(), ImpalaResultMethod.STREAMING.toString()),
+        "Chooses method used to convey results from Impala. file mode writes the result set to a " +
+        "file determined during planning, streaming mode sends the results over the network."),
+
     HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21150", "Address for Impala execution engine."),
-    HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", "plan", new StringSet("plan", "query"),
+    HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", ImpalaExecutionMode.PLAN.toString(),
+        new StringSet(true, ImpalaExecutionMode.PLAN.toString(), ImpalaExecutionMode.QUERY.toString()),
             "Chooses whether Impala will execute a provided plan or a query string"),
     HIVE_IMPALA_REQUEST_POOL("hive.impala.request.pool", "default-pool",
              new StringSet(true, "default-pool", "root.default"), "Admission pool used for Impala queries"),
@@ -6208,13 +6256,33 @@ public class HiveConf extends Configuration {
    * @return Currently configured runtime.
    */
   public Runtime getRuntime() {
-    Runtime runtime;
     try {
-      runtime = Runtime.valueOf(this.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).toUpperCase());
+      return Runtime.valueOf(this.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).toUpperCase());
     } catch (Exception e) {
       return Runtime.INVALID_RUNTIME;
     }
-    return runtime;
+  }
+
+  /**
+   * @return Currently configured Impala result method.
+   */
+  public ImpalaResultMethod getImpalaResultMethod() {
+    try {
+      return ImpalaResultMethod.valueOf(this.getVar(ConfVars.HIVE_IMPALA_RESULT_METHOD).toUpperCase());
+    } catch (Exception e) {
+      return ImpalaResultMethod.INVALID_METHOD;
+    }
+  }
+
+  /**
+   * @return Currently configured Impala execution mode.
+   */
+  public ImpalaExecutionMode getImpalaExecutionMode() {
+    try {
+      return ImpalaExecutionMode.valueOf(this.getVar(ConfVars.HIVE_IMPALA_EXECUTION_MODE).toUpperCase());
+    } catch (Exception e) {
+      return ImpalaExecutionMode.INVALID_MODE;
+    }
   }
 
   /**

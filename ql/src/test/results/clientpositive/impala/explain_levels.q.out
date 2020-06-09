@@ -54,7 +54,7 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-PLAN-ROOT SINK
+WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
 05:MERGING-EXCHANGE [UNPARTITIONED]
 02:SORT
 04:AGGREGATE [FINALIZE]
@@ -125,7 +125,8 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-PLAN-ROOT SINK
+WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+|  partitions=1
 |
 05:MERGING-EXCHANGE [UNPARTITIONED]
 |  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
@@ -215,10 +216,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-|  Per-Host Resources: mem-estimate=124.00KB mem-reservation=0B thread-reservation=1
-PLAN-ROOT SINK
+|  Per-Host Resources: mem-estimate=124.12KB mem-reservation=0B thread-reservation=1
+WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+|  partitions=1
 |  output exprs: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus, _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg(default.impala_tpch_lineitem.l_discount), _impala_builtins.count()
-|  mem-estimate=0B mem-reservation=0B thread-reservation=0
+|  mem-estimate=120B mem-reservation=0B thread-reservation=0
 |
 05:MERGING-EXCHANGE [UNPARTITIONED]
 |  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
@@ -331,10 +333,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=124.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=124.12KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus, _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg(default.impala_tpch_lineitem.l_discount), _impala_builtins.count()
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=120B mem-reservation=0B thread-reservation=0
   |
   05:MERGING-EXCHANGE [UNPARTITIONED]
      order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST

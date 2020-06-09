@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.Engine;
+import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
@@ -250,7 +251,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -7388,15 +7388,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
-      throws SemanticException {
-    return genFileSinkPlan(dest, qb, input, null);
-  }
-
-  @SuppressWarnings("nls")
-  protected Operator genFileSinkPlan(String dest, QB qb, Operator input,
-      ImpalaCompiledPlan impalaCompiledPlan)
-      throws SemanticException {
+  protected Operator genFileSinkPlan(String dest, QB qb, Operator input) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBMetaData qbm = qb.getMetaData();
@@ -7849,6 +7841,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String fileFormat;
           if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
             fileFormat = "SequenceFile";
+            // Setting this here may affect queries if a session changes execution engines
+            // or runtimes. See HIVE-23699.
             HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, fileFormat);
             tableDescriptor =
                 PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
@@ -7857,7 +7851,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // write out formatted thrift objects to SequenceFile
             conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
           } else {
-            fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+            if (conf.getEngine() == Engine.IMPALA) {
+              // IMPALA execution currently only supports writing results as TextFile
+              fileFormat = "TextFile";
+              // Setting this here may affect queries if a session changes execution engines
+              // or runtimes. See HIVE-23699.
+              HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, fileFormat);
+            } else {
+              fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+            }
             Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
             if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
               boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
@@ -8007,8 +8009,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert,
-        impalaCompiledPlan);
+        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert);
     if (isMmCreate) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
@@ -8250,8 +8251,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           boolean destTableIsMaterialization, Path queryTmpdir,
                                           SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
-                                          Integer dest_type, QB qb, boolean isDirectInsert,
-                                          ImpalaCompiledPlan compiledPlan) throws SemanticException {
+                                          Integer dest_type, QB qb, boolean isDirectInsert) throws SemanticException {
     boolean isInsertOverwrite = false;
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8277,10 +8277,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
         qb.isCTAS() || qb.isMaterializedView(), isDirectInsert);
-
-    if (compiledPlan != null) {
-      fileSinkDesc = new ImpalaQueryDesc(fileSinkDesc, compiledPlan);
-    }
 
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
@@ -15589,9 +15585,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    // At least one mr/tez/spark job
-    if (Utilities.getNumClusterJobs(getRootTasks()) == 0) {
-      LOG.info("Not eligible for results caching - no mr/tez/spark jobs");
+    // At least one mr/tez/spark job or an impala plan that is not streaming
+    if (Utilities.getNumClusterJobs(getRootTasks()) == 0 &&
+        (!isImpalaPlan(conf) || conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING)) {
+      LOG.info("Not eligible for results caching - no mr/tez/spark/impala jobs");
       return false;
     }
 

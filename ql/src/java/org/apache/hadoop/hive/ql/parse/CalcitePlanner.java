@@ -138,6 +138,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -148,6 +149,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.DummyScanOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -312,6 +314,7 @@ import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
@@ -1682,8 +1685,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Preconditions.checkNotNull(this.impalaHelper);
       final String dbname = SessionState.get().getCurrentDatabase();
       final String username = StringUtils.defaultString(SessionState.get().getUserName());
-      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          conf, impalaRel, dbname, username, ctx.isExplainPlan());
 
       // CDPD-8391: Refactor and get rid of this at some point, the DummyScanOperator
       // isn't really needed.
@@ -1697,10 +1698,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
       if (getQB().getParseInfo().getDestSchemaForClause(dest) != null
-          && this.getQB().getTableDesc() == null) {
+          && getQB().getTableDesc() == null) {
         throw new RuntimeException("Insert operations not handled yet.");
       }
-      return genFileSinkPlan(dest, getQB(), tableScanOp, compiledPlan);
+      FileSinkOperator fso = (FileSinkOperator) genFileSinkPlan(dest, getQB(), tableScanOp);
+      Path resultDir = null;
+      if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
+        resultDir = fso.getConf().getDirName();
+      }
+      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
+          conf, impalaRel, dbname, username, resultDir, ctx.isExplainPlan());
+      return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }

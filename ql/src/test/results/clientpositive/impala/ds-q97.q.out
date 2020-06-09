@@ -135,9 +135,10 @@ STAGE PLANS:
       Impala Plan: 
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=24B mem-reservation=0B thread-reservation=0
   |
   10:TOP-N [LIMIT=100]
   |  order by: 

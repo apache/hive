@@ -301,10 +301,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=136.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=136.13KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: ss_customer_sk, ratio, store_qty, store_wholesale_cost, store_sales_price, other_chan_qty, other_chan_wholesale_cost, other_chan_sales_price
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=132B mem-reservation=0B thread-reservation=0
   |
   36:MERGING-EXCHANGE [UNPARTITIONED]
      order by: ss_customer_sk ASC NULLS LAST, ss_qty DESC NULLS FIRST, ss_wc DESC NULLS FIRST, ss_sp DESC NULLS FIRST, other_chan_qty ASC NULLS LAST, other_chan_wholesale_cost ASC NULLS LAST, other_chan_sales_price ASC NULLS LAST, ratio ASC NULLS LAST

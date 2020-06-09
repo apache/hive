@@ -946,10 +946,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F14:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=644.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=644.62KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: $f0, $f1, $f2, $f3, $f4, $f5, _impala_builtins.concat(_impala_builtins.concat('MSC', ','), 'GERMA'), CAST(2001 AS INT), _impala_builtins.sum($f6), _impala_builtins.sum($f7), _impala_builtins.sum($f8), _impala_builtins.sum($f9), _impala_builtins.sum($f10), _impala_builtins.sum($f11), _impala_builtins.sum($f12), _impala_builtins.sum($f13), _impala_builtins.sum($f14), _impala_builtins.sum($f15), _impala_builtins.sum($f16), _impala_builtins.sum($f17), _impala_builtins.sum(_impala_builtins.divide($f6, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f7, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f8, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f9, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f10, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f11, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f12, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f13, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f14, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f15, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f16, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum(_impala_builtins.divide($f17, _impala_builtins.casttodecimal($f1))), _impala_builtins.sum($f18), _impala_builtins.sum($f19), _impala_builtins.sum($f20), _impala_builtins.sum($f21), _impala_builtins.sum($f22), _impala_builtins.sum($f23), _impala_builtins.sum($f24), _impala_builtins.sum($f25), _impala_builtins.sum($f26), _impala_builtins.sum($f27), _impala_builtins.sum($f28), _impala_builtins.sum($f29)
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=640B mem-reservation=0B thread-reservation=0
   |
   37:MERGING-EXCHANGE [UNPARTITIONED]
      order by: $f0 ASC NULLS LAST

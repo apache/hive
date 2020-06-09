@@ -482,10 +482,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=32.03KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: default.impala_tpcds_store.s_store_name, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit)
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=28B mem-reservation=0B thread-reservation=0
   |
   31:MERGING-EXCHANGE [UNPARTITIONED]
      order by: default.impala_tpcds_store.s_store_name ASC NULLS LAST

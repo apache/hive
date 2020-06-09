@@ -266,10 +266,11 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F31:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=192.00KB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+Per-Host Resources: mem-estimate=192.12KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: CASE WHEN _impala_builtins.count() > CAST(98972190 AS BIGINT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales_0.ss_ext_discount_amt) ELSE _impala_builtins.avg(default.impala_tpcds_store_sales_1.ss_net_profit) END, CASE WHEN _impala_builtins.count() > CAST(160856845 AS BIGINT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales_3.ss_ext_discount_amt) ELSE _impala_builtins.avg(default.impala_tpcds_store_sales_4.ss_net_profit) END, CASE WHEN _impala_builtins.count() > CAST(12733327 AS BIGINT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales_6.ss_ext_discount_amt) ELSE _impala_builtins.avg(default.impala_tpcds_store_sales_7.ss_net_profit) END, CASE WHEN _impala_builtins.count() > CAST(96251173 AS BIGINT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales_9.ss_ext_discount_amt) ELSE _impala_builtins.avg(default.impala_tpcds_store_sales_10.ss_net_profit) END, CASE WHEN _impala_builtins.count() > CAST(80049606 AS BIGINT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales_12.ss_ext_discount_amt) ELSE _impala_builtins.avg(default.impala_tpcds_store_sales_13.ss_net_profit) END
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=128B mem-reservation=0B thread-reservation=0
   |
   91:EXCHANGE [UNPARTITIONED]
      mem-estimate=192.00KB mem-reservation=0B thread-reservation=0

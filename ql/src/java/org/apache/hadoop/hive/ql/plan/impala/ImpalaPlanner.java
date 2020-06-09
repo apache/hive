@@ -17,17 +17,21 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.fs.Path;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.common.Pair;
 import org.apache.impala.planner.DataPartition;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.ParallelPlanner;
@@ -37,6 +41,7 @@ import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
+import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TColumn;
@@ -52,6 +57,7 @@ import org.apache.impala.thrift.TResultSetMetadata;
 import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.apache.impala.thrift.TSessionState;
 import org.apache.impala.thrift.TSessionType;
+import org.apache.impala.thrift.TSortingOrder;
 import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.thrift.TUniqueId;
 import org.apache.impala.util.EventSequence;
@@ -75,11 +81,14 @@ public class ImpalaPlanner {
 
   private ImpalaPlannerContext ctx_;
   private List<TNetworkAddress> hostLocations = new ArrayList<>();
+  // Path where result files are written when hive.impala.execution.mode is file.
+  private final Path resultPath;
 
-  public ImpalaPlanner(String dbname, String username, TQueryOptions options) throws HiveException {
+  public ImpalaPlanner(String dbname, String username, TQueryOptions options, Path resultPath) throws HiveException {
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
 
+    this.resultPath = resultPath;
     TQueryCtx queryCtx = createQueryContext(dbname, username, options, hostLocations.get(0));
 
     AuthorizationFactory authFactory = new NoopAuthorizationFactory();
@@ -236,7 +245,21 @@ public class ImpalaPlanner {
     rootFragment.verifyTree();
 
     // create the data sink
-    rootFragment.setSink(new PlanRootSink(ctx_.getResultExprs()));
+    List<Expr> resultExprs = ctx_.getResultExprs();
+    if (resultPath != null) {
+      String resultSinkPath = resultPath.toUri().toString();
+      ImpalaResultLocation resultLocation = new ImpalaResultLocation(resultExprs, resultSinkPath);
+      ctx_.getRootAnalyzer().getDescTbl().setTargetTable(resultLocation);
+      List<Integer> referencedColumns =  new ArrayList<>();
+      // Creates a table sink that uses ImpalaResultLocation that is used to specify the
+      // desired location of query results
+      TableSink sink = TableSink.create(resultLocation, TableSink.Op.INSERT,
+          ImmutableList.<Expr>of(), resultExprs, referencedColumns, false, false,
+          new Pair<>(ImmutableList.<Integer> of(), TSortingOrder.LEXICAL), -1, true);
+      rootFragment.setSink(sink);
+    } else {
+      rootFragment.setSink(new PlanRootSink(resultExprs));
+    }
 
     Planner.checkForDisableCodegen(rootFragment.getPlanRoot(), ctx_);
     // finalize exchanges: this ensures that for hash partitioned joins, the partitioning
@@ -244,6 +267,7 @@ public class ImpalaPlanner {
     for (PlanFragment fragment: fragments) {
       fragment.finalizeExchanges(ctx_.getRootAnalyzer());
     }
+
 
     Collections.reverse(fragments);
     ctx_.getTimeline().markEvent("Distributed plan created");

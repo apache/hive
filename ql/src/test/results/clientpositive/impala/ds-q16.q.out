@@ -172,9 +172,10 @@ STAGE PLANS:
       Impala Plan: 
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
-  PLAN-ROOT SINK
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: order count, total shipping cost, total net profit
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=48B mem-reservation=0B thread-reservation=0
   |
   15:TOP-N [LIMIT=100]
   |  order by: (tok_functiondi count (tok_table_or_col cs_order_number)) ASC NULLS LAST

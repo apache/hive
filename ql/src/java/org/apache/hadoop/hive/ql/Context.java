@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import com.google.common.base.Preconditions;
+
 import java.io.DataInput;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.Runtime;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -68,7 +71,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -961,11 +963,19 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
-    // Always allow spark to run in a cluster mode. Without this, depending on
-    // user's local hadoop settings, true may be returned, which causes plan to be
-    // stored in local path.
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return false;
+    if (conf instanceof HiveConf) {
+      HiveConf hconf = (HiveConf) conf;
+
+      // Always allow spark to run in a cluster mode. Without this, depending on
+      // user's local hadoop settings, true may be returned, which causes plan to be
+      // stored in local path.
+      if (hconf.getRuntime() == Runtime.SPARK) {
+        return false;
+      }
+
+      if (hconf.getRuntime() == Runtime.IMPALA) {
+        return false;
+      }
     }
 
     return ShimLoader.getHadoopShims().isLocalMode(conf);

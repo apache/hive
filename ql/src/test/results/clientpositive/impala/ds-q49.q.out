@@ -583,9 +583,10 @@ STAGE PLANS:
       Impala Plan: 
 F22:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reservation=1
-  PLAN-ROOT SINK
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
   |  output exprs: channel, item, return_ratio, return_rank, currency_rank
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=52B mem-reservation=0B thread-reservation=0
   |
   43:TOP-N [LIMIT=100]
   |  order by: channel ASC NULLS LAST, return_rank ASC NULLS LAST, currency_rank ASC NULLS LAST
