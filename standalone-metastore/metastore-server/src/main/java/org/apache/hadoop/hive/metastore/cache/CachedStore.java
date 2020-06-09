@@ -2890,6 +2890,16 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    rawStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return rawStore.getReplicationMetrics(replicationMetricsRequest);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
     return rawStore.getScheduledQuery(scheduleKey);
   }
