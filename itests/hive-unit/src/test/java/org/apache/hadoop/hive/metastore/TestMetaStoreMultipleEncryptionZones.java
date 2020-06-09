@@ -1302,29 +1302,29 @@ public class TestMetaStoreMultipleEncryptionZones {
     ReplChangeManager.getInstance(hiveConfCmClearer).recycle(dirTbl3, RecycleType.MOVE, true);
 
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
-            ReplChangeManager.getCmRoot(part11).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())));
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part12.getName(), fileChksum12,
-            ReplChangeManager.getCmRoot(part12).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())));
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
-            ReplChangeManager.getCmRoot(part21).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())));
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part22.getName(), fileChksum22,
-            ReplChangeManager.getCmRoot(part22).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())));
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
-            ReplChangeManager.getCmRoot(part31).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())));
     assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
-            ReplChangeManager.getCmRoot(part32).toString())));
+            ReplChangeManager.getInstance(conf).getCmRoot(part32).toString())));
 
     fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
-            ReplChangeManager.getCmRoot(part11).toString()),
+            ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
             now - 86400*1000*2, now - 86400*1000*2);
     fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
-            ReplChangeManager.getCmRoot(part21).toString()),
+            ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
             now - 86400*1000*2, now - 86400*1000*2);
     fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
-            ReplChangeManager.getCmRoot(part31).toString()),
+            ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
             now - 86400*1000*2, now - 86400*1000*2);
     fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
-            ReplChangeManager.getCmRoot(part32).toString()),
+            ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
             now - 86400*1000*2, now - 86400*1000*2);
 
     ReplChangeManager.scheduleCMClearer(hiveConfCmClearer);
@@ -1339,17 +1339,17 @@ public class TestMetaStoreMultipleEncryptionZones {
         Assert.fail("timeout, cmroot has not been cleared");
       }
       if (!fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
-              ReplChangeManager.getCmRoot(part11).toString())) &&
+              ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())) &&
               fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part12.getName(), fileChksum12,
-                      ReplChangeManager.getCmRoot(part12).toString())) &&
+                      ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())) &&
               !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
-                      ReplChangeManager.getCmRoot(part21).toString())) &&
+                      ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())) &&
               fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part22.getName(), fileChksum22,
-                      ReplChangeManager.getCmRoot(part22).toString())) &&
+                      ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())) &&
               !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
-                      ReplChangeManager.getCmRoot(part31).toString())) &&
+                      ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())) &&
               !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
-                      ReplChangeManager.getCmRoot(part32).toString()))) {
+                      ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()))) {
         cleared = true;
       }
     } while (!cleared);

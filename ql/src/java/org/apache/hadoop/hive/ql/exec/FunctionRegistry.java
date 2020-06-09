@@ -140,8 +140,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -287,6 +285,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("quote", GenericUDFQuote.class);
     system.registerGenericUDF("nvl", GenericUDFCoalesce.class); //HIVE-20961
     system.registerGenericUDF("split", GenericUDFSplit.class);
+    system.registerGenericUDF("split_map_privs", GenericUDFStringToPrivilege.class);
     system.registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     system.registerGenericUDF("translate", GenericUDFTranslate.class);
     system.registerGenericUDF("validate_acid_sort_order", GenericUDFValidateAcidSortOrder.class);
@@ -469,12 +468,15 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
+    system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
+    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
     system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
+    system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
@@ -1360,6 +1362,13 @@ public final class FunctionRegistry {
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {
     return GenericUDFOPPositive.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
+   * Returns whether the exprNodeDesc is a node of "negative".
+   */
+  public static boolean isOpNegative(ExprNodeDesc desc) {
+    return GenericUDFOPNegative.class == getGenericUDFClassFromExprDesc(desc);
   }
 
   /**

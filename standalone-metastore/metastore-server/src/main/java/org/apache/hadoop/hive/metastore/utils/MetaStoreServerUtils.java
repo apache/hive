@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,7 +182,7 @@ public class MetaStoreServerUtils {
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
           TableName.getQualified(catName, dbName, tableName), partNames, colNames);
-      return new ArrayList<ColumnStatisticsObj>();
+      return Collections.emptyList();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
         useDensityFunctionForNDVEstimation, ndvTuner);
@@ -1016,6 +1017,21 @@ public class MetaStoreServerUtils {
           if (input.getSd() == null) {
             return StorageDescriptorKey.UNSET_KEY;
           }
+
+          // if sd has skewed columns we better not group partition, since different partitions
+          // could have different skewed info like skewed location
+          if (input.getSd().getSkewedInfo() != null
+              && input.getSd().getSkewedInfo().getSkewedColNames() != null
+              && !input.getSd().getSkewedInfo().getSkewedColNames().isEmpty()) {
+            return new StorageDescriptorKey(input.getSd());
+          }
+
+          // if partitions don't have the same number of buckets we can not group their SD,
+          // this could lead to incorrect number of buckets
+          if (input.getSd().getNumBuckets()
+              != partitions.iterator().next().getSd().getNumBuckets()) {
+            return new StorageDescriptorKey(input.getSd());
+          }
           // if the partition is within table, use the tableSDKey to group it with other partitions
           // within the table directory
           if (input.getSd().getLocation() != null && input.getSd().getLocation()
@@ -1433,12 +1449,16 @@ public class MetaStoreServerUtils {
           return result;
         }
 
-        String partitionName = parts[0];
+        // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
+        // it should be converted to lower case
+        String partitionName = parts[0].toLowerCase();
+        // Do not convert the partitionValue to lowercase
+        String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           if (result == null) {
-            result = currPath.getName();
+            result = partitionName + "=" + partitionValue;
           } else {
-            result = currPath.getName() + Path.SEPARATOR + result;
+            result = partitionName + "=" + partitionValue + Path.SEPARATOR + result;
           }
         }
       }

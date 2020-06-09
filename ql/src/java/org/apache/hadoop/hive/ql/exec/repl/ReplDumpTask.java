@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -39,9 +40,14 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
+import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -51,6 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.EximUtil.ManagedTableCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -65,7 +72,11 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.BootstrapDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.IncrementalDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.thrift.TException;
@@ -73,8 +84,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.HashSet;
@@ -82,16 +99,22 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Base64;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
+  private static final long serialVersionUID = 1L;
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
-  Set<String> tablesForBootstrap = new HashSet<>();
+  private Set<String> tablesForBootstrap = new HashSet<>();
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -120,42 +143,171 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      Hive hiveDb = getHive();
-      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
-                      .getBytes(StandardCharsets.UTF_8.name())));
-      Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
-      DumpMetaData dmd = new DumpMetaData(currentDumpPath, conf);
-      // Initialize ReplChangeManager instance since we will require it to encode file URI.
-      ReplChangeManager.getInstance(conf);
-      Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
-      Long lastReplId;
-      if (!dumpRoot.getFileSystem(conf).exists(dumpRoot)
-              || dumpRoot.getFileSystem(conf).listStatus(dumpRoot).length == 0) {
-        lastReplId = bootStrapDump(currentDumpPath, dmd, cmRoot, hiveDb);
+      if (work.tableDataCopyIteratorsInitialized()) {
+        initiateDataCopyTasks();
       } else {
-        work.setEventFrom(getEventFromPreviousDumpMetadata(dumpRoot));
-        lastReplId = incrementalDump(currentDumpPath, dmd, cmRoot, hiveDb);
+        Path dumpRoot = getEncodedDumpRootPath();
+        Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
+        boolean isBootstrap = (previousValidHiveDumpPath == null);
+        //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
+        if (shouldDump(previousValidHiveDumpPath)) {
+          Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
+          Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+          work.setCurrentDumpPath(currentDumpPath);
+          work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
+          if (shouldDumpAtlasMetadata()) {
+            addAtlasDumpTask(isBootstrap, previousValidHiveDumpPath);
+            LOG.info("Added task to dump atlas metadata.");
+          }
+          if (shouldDumpAuthorizationMetadata()) {
+            initiateAuthorizationDumpTask();
+          }
+          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
+          // Initialize ReplChangeManager instance since we will require it to encode file URI.
+          ReplChangeManager.getInstance(conf);
+          Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
+          Long lastReplId;
+          if (isBootstrap) {
+            lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, getHive());
+          } else {
+            work.setEventFrom(getEventFromPreviousDumpMetadata(previousValidHiveDumpPath));
+            lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
+          }
+          work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
+          initiateDataCopyTasks();
+        } else {
+          LOG.info("Previous Dump is not yet loaded");
+        }
       }
-      prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
   }
 
-  private Long getEventFromPreviousDumpMetadata(Path dumpRoot) throws IOException, SemanticException {
-    FileStatus[] statuses = dumpRoot.getFileSystem(conf).listStatus(dumpRoot);
-    if (statuses.length > 0) {
-      FileStatus latestUpdatedStatus = statuses[0];
-      for (FileStatus status : statuses) {
-        if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
-          latestUpdatedStatus = status;
+  private void initiateAuthorizationDumpTask() throws SemanticException {
+    if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
+      Path rangerDumpRoot = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_RANGER_BASE_DIR);
+      LOG.info("Exporting Authorization Metadata from {} at {} ", RANGER_AUTHORIZER, rangerDumpRoot);
+      RangerDumpWork rangerDumpWork = new RangerDumpWork(rangerDumpRoot, work.dbNameOrPattern,
+          work.getMetricCollector());
+      Task<RangerDumpWork> rangerDumpTask = TaskFactory.get(rangerDumpWork, conf);
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
+      }
+      childTasks.add(rangerDumpTask);
+    } else {
+      throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for replication ");
+    }
+  }
+
+  private boolean shouldDumpAuthorizationMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
+  }
+
+  private boolean shouldDumpAtlasMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
+  }
+
+  private Path getEncodedDumpRootPath() throws UnsupportedEncodingException {
+    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+            Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
+                    .getBytes(StandardCharsets.UTF_8.name())));
+  }
+
+  private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException {
+    Path lastDumpPath = getLatestDumpPath(dumpRoot);
+    if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
+      //Resume previous dump
+      LOG.info("Resuming the dump with existing dump directory {}", lastDumpPath);
+      work.setShouldOverwrite(true);
+      return lastDumpPath;
+    } else {
+      return new Path(dumpRoot, getNextDumpDir());
+    }
+  }
+
+  private void initiateDataCopyTasks() throws SemanticException {
+    TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
+    if (childTasks == null) {
+      childTasks = new ArrayList<>();
+    }
+    childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
+    childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
+    if (childTasks.isEmpty()) {
+      //All table data copy work finished.
+      finishRemainingTasks();
+    } else {
+      DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+    }
+  }
+
+  private void addAtlasDumpTask(boolean bootstrap, Path prevHiveDumpDir) {
+    Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
+                            : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
+        work.getMetricCollector());
+    Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
+    childTasks = new ArrayList<>();
+    childTasks.add(atlasDumpTask);
+  }
+
+
+  private void finishRemainingTasks() throws SemanticException {
+    Path dumpAckFile = new Path(work.getCurrentDumpPath(),
+            ReplUtils.REPL_HIVE_BASE_DIR + File.separator
+                    + ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Utils.create(dumpAckFile, conf);
+    prepareReturnValues(work.getResultValues());
+    work.getMetricCollector().reportEnd(Status.SUCCESS);
+    deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
+  }
+
+  private void prepareReturnValues(List<String> values) throws SemanticException {
+    LOG.debug("prepareReturnValues : " + dumpSchema);
+    for (String s : values) {
+      LOG.debug("    > " + s);
+    }
+    Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
+  }
+
+  private void deleteAllPreviousDumpMeta(Path currentDumpPath) {
+    try {
+      Path dumpRoot = getDumpRoot(currentDumpPath);
+      FileSystem fs = dumpRoot.getFileSystem(conf);
+      if (fs.exists(dumpRoot)) {
+        FileStatus[] statuses = fs.listStatus(dumpRoot,
+          path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
+        for (FileStatus status : statuses) {
+          fs.delete(status.getPath(), true);
         }
       }
-      DumpMetaData dmd = new DumpMetaData(latestUpdatedStatus.getPath(), conf);
+    } catch (Exception ex) {
+      LOG.warn("Possible leak on disk, could not delete the previous dump directory:" + currentDumpPath, ex);
+    }
+  }
+
+  private Path getDumpRoot(Path currentDumpPath) {
+    if (ReplDumpWork.testDeletePreviousDumpMetaPath && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+      //testDeleteDumpMetaDumpPath to be used only for test.
+      return null;
+    } else {
+      return currentDumpPath.getParent();
+    }
+  }
+
+  private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
+    if (previousDumpPath != null) {
+      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf);
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }
@@ -165,12 +317,46 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0L;
   }
 
-  private void prepareReturnValues(List<String> values) throws SemanticException {
-    LOG.debug("prepareReturnValues : " + dumpSchema);
-    for (String s : values) {
-      LOG.debug("    > " + s);
+  private Path getPreviousValidDumpMetadataPath(Path dumpRoot) throws IOException {
+    FileStatus latestValidStatus = null;
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot);
+      for (FileStatus status : statuses) {
+        LOG.info("Evaluating previous dump dir path:{}", status.getPath());
+        if (latestValidStatus == null) {
+          latestValidStatus = validDump(status.getPath()) ? status : null;
+        } else if (validDump(status.getPath())
+                && status.getModificationTime() > latestValidStatus.getModificationTime()) {
+          latestValidStatus = status;
+        }
+      }
     }
-    Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
+    Path latestDumpDir = (latestValidStatus == null)
+         ? null : new Path(latestValidStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+    LOG.info("Selecting latest valid dump dir as {}", (latestDumpDir == null) ? "null" : latestDumpDir.toString());
+    return latestDumpDir;
+  }
+
+  private boolean validDump(Path dumpDir) throws IOException {
+    //Check if it was a successful dump
+    if (dumpDir != null) {
+      FileSystem fs = dumpDir.getFileSystem(conf);
+      Path hiveDumpDir = new Path(dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
+      return fs.exists(new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString()));
+    }
+    return false;
+  }
+
+  private boolean shouldDump(Path previousDumpPath) throws IOException {
+    //If no previous dump means bootstrap. So return true as there was no
+    //previous dump to load
+    if (previousDumpPath == null) {
+      return true;
+    } else {
+      FileSystem fs = previousDumpPath.getFileSystem(conf);
+      return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+    }
   }
 
   /**
@@ -277,9 +463,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String validTxnList = null;
     long waitUntilTime = 0;
     long bootDumpBeginReplId = -1;
-
+    List<EximUtil.ManagedTableCopyPath> managedTableCopyPaths = Collections.emptyList();
+    List<DirCopyWork> extTableCopyWorks = Collections.emptyList();
     List<String> tableList = work.replScope.includeAllTables() ? null : new ArrayList<>();
-
     // If we are bootstrapping ACID tables, we need to perform steps similar to a regular
     // bootstrap (See bootstrapDump() for more details. Only difference here is instead of
     // waiting for the concurrent transactions to finish, we start dumping the incremental events
@@ -293,26 +479,23 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
       waitUntilTime = System.currentTimeMillis() + timeoutInMs;
     }
-
     // TODO : instead of simply restricting by message format, we should eventually
     // move to a jdbc-driver-stype registering of message format, and picking message
     // factory per event to decode. For now, however, since all messages have the
     // same factory, restricting by message format is effectively a guard against
     // older leftover data that would cause us problems.
-
     work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);
-
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
         new ReplEventFilter(work.replScope),
         new EventBoundaryFilter(work.eventFrom, work.eventTo));
-
     EventUtils.MSClientNotificationFetcher evFetcher
         = new EventUtils.MSClientNotificationFetcher(hiveDb);
-
+    int maxEventLimit  = getMaxEventAllowed(work.maxEventLimit());
     EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
-        evFetcher, work.eventFrom, work.maxEventLimit(), evFilter);
-
+        evFetcher, work.eventFrom, maxEventLimit, evFilter);
     lastReplId = work.eventTo;
+    Path ackFile = new Path(dumpRoot, ReplAck.EVENTS_DUMP.toString());
+    long resumeFrom = Utils.fileExists(ackFile, conf) ? getResumeFrom(ackFile) : work.eventFrom;
 
     // Right now the only pattern allowed to be specified is *, which matches all the database
     // names. So passing dbname as is works since getDbNotificationEventsCount can exclude filter
@@ -322,30 +505,39 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String dbName = (null != work.dbNameOrPattern && !work.dbNameOrPattern.isEmpty())
         ? work.dbNameOrPattern
         : "?";
-    int maxEventLimit = work.maxEventLimit();
-    replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(),
-            evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo, maxEventLimit),
+    long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
+        maxEventLimit);
+    replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
             work.eventFrom, work.eventTo, maxEventLimit);
     replLogger.startLog();
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
+    work.getMetricCollector().reportStageStart(getName(), metricMap);
+    long dumpedCount = resumeFrom - work.eventFrom;
+    if (dumpedCount > 0) {
+      LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
+    }
+    cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
     while (evIter.hasNext()) {
       NotificationEvent ev = evIter.next();
       lastReplId = ev.getEventId();
+      if (ev.getEventId() <= resumeFrom) {
+        continue;
+      }
       Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-      dumpEvent(ev, evRoot, cmRoot, hiveDb);
+      dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
+      Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
     }
-
     replLogger.endLog(lastReplId.toString());
-
     LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
-
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId);
     // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
     // so that REPL LOAD would drop the tables which are not included in current policy.
     if (work.oldReplScope != null) {
       dmd.setReplScope(work.replScope);
     }
-    dmd.write();
-
+    dmd.write(true);
     // Examine all the tables if required.
     if (shouldExamineTablesToDump() || (tableList != null)) {
       // If required wait more for any transactions open at the time of starting the ACID bootstrap.
@@ -353,9 +545,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         assert (waitUntilTime > 0);
         validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
       }
-
-      Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
-
+      /* When same dump dir is resumed because of check-pointing, we need to clear the existing metadata.
+      We need to rewrite the metadata as the write id list will be changed.
+      We can't reuse the previous write id as it might be invalid due to compaction. */
+      Path bootstrapRoot = new Path(dumpRoot, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+      Path metadataPath = new Path(bootstrapRoot, EximUtil.METADATA_PATH_NAME);
+      FileSystem fs = FileSystem.get(metadataPath.toUri(), conf);
+      try {
+        fs.delete(metadataPath, true);
+      } catch (FileNotFoundException e) {
+        // no worries
+      }
+      Path dbRootMetadata = new Path(metadataPath, dbName);
+      Path dbRootData = new Path(bootstrapRoot, EximUtil.DATA_PATH_NAME + File.separator + dbName);
+      managedTableCopyPaths = new ArrayList<>();
+      List<Path> extTableLocations = new LinkedList<>();
       try (Writer writer = new Writer(dumpRoot, conf)) {
         for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           try {
@@ -364,14 +568,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // Dump external table locations if required.
             if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
                   && shouldDumpExternalTableLocation()) {
-              writer.dataLocationDump(table);
+              extTableLocations.addAll(writer.dataLocationDump(table));
             }
 
             // Dump the table to be bootstrapped if required.
             if (shouldBootstrapDumpTable(table)) {
               HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-              dumpTable(dbName, tableName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
-                      tableTuple);
+              managedTableCopyPaths.addAll(
+                      dumpTable(dbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
+                              hiveDb, tableTuple));
             }
             if (tableList != null && isTableSatifiesConfig(table)) {
               tableList.add(tableName);
@@ -384,9 +589,76 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
       dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
+      extTableCopyWorks = dirLocationsToCopy(extTableLocations);
     }
-
+    work.setDirCopyIterator(extTableCopyWorks.iterator());
+    work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
+    work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId);
     return lastReplId;
+  }
+
+  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, Path dumpRoot) {
+    ReplicationMetricCollector collector;
+    if (isBootstrap) {
+      collector = new BootstrapDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf);
+    } else {
+      collector = new IncrementalDumpMetricCollector(work.dbNameOrPattern, dumpRoot.toString(), conf);
+    }
+    return collector;
+  }
+
+  private int getMaxEventAllowed(int currentEventMaxLimit) {
+    int maxDirItems = Integer.parseInt(conf.get(ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG, "0"));
+    if (maxDirItems > 0) {
+      maxDirItems = maxDirItems - ReplUtils.RESERVED_DIR_ITEMS_COUNT;
+      if (maxDirItems < currentEventMaxLimit) {
+        LOG.warn("Changing the maxEventLimit from {} to {} as the '" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG
+                        + "' limit encountered. Set this config appropriately to increase the maxEventLimit",
+                currentEventMaxLimit, maxDirItems);
+        currentEventMaxLimit = maxDirItems;
+      }
+    }
+    return currentEventMaxLimit;
+  }
+  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws IOException {
+    Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        FileSystem fs = FileSystem.get(nextEventRoot.toUri(), conf);
+        try {
+          fs.delete(nextEventRoot, true);
+        } catch (FileNotFoundException e) {
+          // no worries
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private long getResumeFrom(Path ackFile) throws SemanticException {
+    BufferedReader br = null;
+    try {
+      FileSystem fs = ackFile.getFileSystem(conf);
+      br = new BufferedReader(new InputStreamReader(fs.open(ackFile), Charset.defaultCharset()));
+      long lastEventID = Long.parseLong(br.readLine());
+      return lastEventID;
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    } finally {
+      if (br != null) {
+        try {
+          br.close();
+        } catch (IOException e) {
+          throw new SemanticException(e);
+        }
+      }
+    }
   }
 
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
@@ -404,16 +676,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
   }
 
-  private Path getBootstrapDbRoot(Path dumpRoot, String dbName, boolean isIncrementalPhase) {
-    if (isIncrementalPhase) {
-      dumpRoot = new Path(dumpRoot, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-    }
-    return new Path(dumpRoot, dbName);
-  }
-
-  private void dumpEvent(NotificationEvent ev, Path evRoot, Path cmRoot, Hive db) throws Exception {
+  private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db) throws Exception {
     EventHandler.Context context = new EventHandler.Context(
         evRoot,
+        dumpRoot,
         cmRoot,
         db,
         conf,
@@ -424,6 +690,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
+    work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
     replLogger.eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
@@ -481,6 +748,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     LOG.info("Table list file " + tableListFile.toUri() + " is created for table list - " + tableList);
   }
 
+  private List<DirCopyWork> dirLocationsToCopy(List<Path> sourceLocations)
+          throws HiveException {
+    List<DirCopyWork> list = new ArrayList<>(sourceLocations.size());
+    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    // this is done to remove any scheme related information that will be present in the base path
+    // specifically when we are replicating to cloud storage
+    Path basePath = new Path(baseDir);
+    for (Path sourcePath : sourceLocations) {
+      Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+      list.add(new DirCopyWork(sourcePath, targetPath));
+    }
+    return list;
+  }
+
   Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb)
           throws Exception {
     // bootstrap case
@@ -492,14 +773,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     List<String> tableList;
 
     LOG.info("Bootstrap Dump for db {}", work.dbNameOrPattern);
+    List<DirCopyWork> extTableCopyWorks = new ArrayList<>();
+    List<ManagedTableCopyPath> managedTableCopyPaths = new ArrayList<>();
     long timeoutInMs = HiveConf.getTimeVar(conf,
             HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
-
     String validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
+    Path metadataPath = new Path(dumpRoot, EximUtil.METADATA_PATH_NAME);
+    if (shouldResumePreviousDump(dmd)) {
+      //clear the metadata. We need to rewrite the metadata as the write id list will be changed
+      //We can't reuse the previous write id as it might be invalid due to compaction
+      metadataPath.getFileSystem(conf).delete(metadataPath, true);
+    }
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("Dumping db: " + dbName);
-
       // TODO : Currently we don't support separate table list for each database.
       tableList = work.replScope.includeAllTables() ? null : new ArrayList<>();
       Database db = hiveDb.getDatabase(dbName);
@@ -509,16 +796,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         throw new HiveException("Replication dump not allowed for replicated database" +
                 " with first incremental dump pending : " + dbName);
       }
+      int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
+      int estimatedNumFunctions = hiveDb.getAllFunctions().size();
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
-              Utils.getAllTables(hiveDb, dbName, work.replScope).size(),
-              hiveDb.getAllFunctions().size());
+              estimatedNumTables,
+              estimatedNumFunctions);
       replLogger.startLog();
-      Path dbRoot = dumpDbMetadata(dbName, dumpRoot, bootDumpBeginReplId, hiveDb);
-      dumpFunctionMetadata(dbName, dumpRoot, hiveDb);
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) estimatedNumTables);
+      metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) estimatedNumFunctions);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
+      Path dbRoot = dumpDbMetadata(dbName, metadataPath, bootDumpBeginReplId, hiveDb);
+      Path dbDataRoot = new Path(new Path(dumpRoot, EximUtil.DATA_PATH_NAME), dbName);
+      dumpFunctionMetadata(dbName, dbRoot, hiveDb);
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
       Exception caught = null;
       try (Writer writer = new Writer(dbRoot, conf)) {
+        List<Path> extTableLocations = new LinkedList<>();
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
           Table table = null;
@@ -529,10 +824,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             if (shouldDumpExternalTableLocation()
                     && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
               LOG.debug("Adding table {} to external tables list", tblName);
-              writer.dataLocationDump(tableTuple.object);
+              extTableLocations.addAll(writer.dataLocationDump(tableTuple.object));
             }
-            dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
-                tableTuple);
+            managedTableCopyPaths.addAll(dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
+                    bootDumpBeginReplId,
+                    hiveDb, tableTuple));
           } catch (InvalidTableException te) {
             // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
             // Just log a debug message and skip it.
@@ -544,6 +840,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
         }
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
+        extTableCopyWorks = dirLocationsToCopy(extTableLocations);
       } catch (Exception e) {
         caught = e;
       } finally {
@@ -554,11 +851,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             throw e;
           } else {
             LOG.error("failed to reset the db state for " + uniqueKey
-                + " on failure of repl dump", e);
+                    + " on failure of repl dump", e);
             throw caught;
           }
         }
-        if(caught != null) {
+        if (caught != null) {
           throw caught;
         }
       }
@@ -566,22 +863,52 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     Long bootDumpEndReplId = currentNotificationId(hiveDb);
     LOG.info("Preparing to return {},{}->{}",
-        dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
-    dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
-    dmd.write();
+            dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
+    long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId);
+    dmd.write(true);
 
-    // Set the correct last repl id to return to the user
-    // Currently returned bootDumpBeginReplId as we don't consolidate the events after bootstrap
+    work.setDirCopyIterator(extTableCopyWorks.iterator());
+    work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
+    work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
     return bootDumpBeginReplId;
+  }
+
+  private boolean shouldResumePreviousDump(DumpMetaData dumpMetaData) {
+    try {
+      return dumpMetaData.getEventFrom() != null;
+    } catch (Exception e) {
+      LOG.info("No previous dump present");
+      return false;
+    }
+  }
+
+  private boolean shouldResumePreviousDump(Path lastDumpPath, boolean isBootStrap) throws IOException {
+    if (validDump(lastDumpPath)) {
+      return false;
+    }
+    Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    if (isBootStrap) {
+      return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
+    }
+    // In case of incremental we should resume if _events_dump file is present and is valid
+    Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
+    long resumeFrom = 0;
+    try {
+      resumeFrom = getResumeFrom(lastEventFile);
+    } catch (SemanticException ex) {
+      LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
+    }
+    return resumeFrom > 0L;
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {
     return hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
   }
 
-  Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId, Hive hiveDb) throws Exception {
-    Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, false);
+  Path dumpDbMetadata(String dbName, Path metadataRoot, long lastReplId, Hive hiveDb) throws Exception {
     // TODO : instantiating FS objects are generally costly. Refactor
+    Path dbRoot = new Path(metadataRoot, dbName);
     FileSystem fs = dbRoot.getFileSystem(conf);
     Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
     HiveWrapper.Tuple<Database> database = new HiveWrapper(hiveDb, dbName, lastReplId).database();
@@ -589,12 +916,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId,
-      Hive hiveDb, HiveWrapper.Tuple<Table> tuple) throws Exception {
+  List<ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList, Path dbRootMetadata,
+                                       Path dbRootData, long lastReplId, Hive hiveDb,
+                                       HiveWrapper.Tuple<Table> tuple) throws Exception {
     LOG.info("Bootstrap Dump for table " + tblName);
     TableSpec tableSpec = new TableSpec(tuple.object);
     TableExport.Paths exportPaths =
-        new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
+        new TableExport.Paths(work.astRepresentationForErrorMsg, dbRootMetadata, dbRootData, tblName, conf, true);
     String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
     if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
@@ -608,10 +936,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
-    new TableExport(
-        exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write();
-
+    List<ManagedTableCopyPath> managedTableCopyPaths = new TableExport(
+            exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser,
+        conf, mmCtx).write(false);
+    work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
     replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
+    if (tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE)
+            || Utils.shouldDumpMetaDataOnly(conf)) {
+      return Collections.emptyList();
+    }
+    return managedTableCopyPaths;
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
@@ -680,7 +1014,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,
       boolean isMetadataOnly) {
-    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true, true);
+    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true);
   }
 
   private String getNextDumpDir() {
@@ -688,10 +1022,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // make it easy to write .q unit tests, instead of unique id generation.
       // however, this does mean that in writing tests, we have to be aware that
       // repl dump will clash with prior dumps, and thus have to clean up properly.
-      if (ReplDumpWork.testInjectDumpDir == null) {
+      String nextDump = ReplDumpWork.getInjectNextDumpDirForTest();
+      if (nextDump == null) {
         return "next";
       } else {
-        return ReplDumpWork.testInjectDumpDir;
+        return nextDump;
       }
     } else {
       return UUID.randomUUID().toString();
@@ -701,8 +1036,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  void dumpFunctionMetadata(String dbName, Path dumpRoot, Hive hiveDb) throws Exception {
-    Path functionsRoot = new Path(new Path(dumpRoot, dbName), ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+  private Path getLatestDumpPath(Path dumpRoot) throws IOException {
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot);
+      if (statuses.length > 0) {
+        FileStatus latestValidStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          LOG.info("Evaluating previous dump dir path:{}", status.getPath());
+          if (status.getModificationTime() > latestValidStatus.getModificationTime()) {
+            latestValidStatus = status;
+          }
+        }
+        return latestValidStatus.getPath();
+      }
+    }
+    return null;
+  }
+
+  void dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Hive hiveDb) throws Exception {
+    Path functionsRoot = new Path(dbMetadataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     List<String> functionNames = hiveDb.getFunctions(dbName, "*");
     for (String functionName : functionNames) {
       HiveWrapper.Tuple<Function> tuple = functionTuple(functionName, dbName, hiveDb);
@@ -716,6 +1069,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         FunctionSerializer serializer = new FunctionSerializer(tuple.object, conf);
         serializer.writeTo(jsonWriter, tuple.replicationSpec);
       }
+      work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.FUNCTIONS.name(), 1);
       replLogger.functionLog(functionName);
     }
   }

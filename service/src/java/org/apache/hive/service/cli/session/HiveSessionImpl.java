@@ -76,6 +76,7 @@ import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.KillQueryImpl;
+import org.apache.hive.service.server.KillQueryZookeeperManager;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,7 +168,11 @@ public class HiveSessionImpl implements HiveSession {
     } catch (Exception e) {
       throw new HiveSQLException(e);
     }
-    sessionState.setKillQuery(new KillQueryImpl(operationManager));
+    KillQueryZookeeperManager killQueryZookeeperManager = null;
+    if (sessionManager != null) {
+      killQueryZookeeperManager = sessionManager.getKillQueryZookeeperManager();
+    }
+    sessionState.setKillQuery(new KillQueryImpl(operationManager, killQueryZookeeperManager));
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();
@@ -183,8 +188,6 @@ public class HiveSessionImpl implements HiveSession {
 
     // Process global init file: .hiverc
     processGlobalInitFile();
-    // Set fetch size in session conf map
-    sessionConfMap = setFetchSize(sessionConfMap);
 
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
@@ -273,22 +276,6 @@ public class HiveSessionImpl implements HiveSession {
     } catch (IOException e) {
       LOG.warn("Failed on initializing global .hiverc file", e);
     }
-  }
-
-  private Map<String, String> setFetchSize(Map<String, String> sessionConfMap) {
-    int maxFetchSize =
-      sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
-    String confFetchSize = sessionConfMap != null ?
-      sessionConfMap.get(
-        "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname) :
-        null;
-    if (confFetchSize != null && !confFetchSize.isEmpty()) {
-        int fetchSize = Integer.parseInt(confFetchSize);
-        sessionConfMap.put(
-          "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-          Integer.toString(fetchSize > maxFetchSize ? maxFetchSize : fetchSize));
-    }
-    return sessionConfMap;
   }
 
   private void configureSession(Map<String, String> sessionConfMap) throws HiveSQLException {

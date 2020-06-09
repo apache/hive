@@ -123,7 +123,12 @@ int _kStageTypeValues[] = {
   StageType::REPL_STATE_LOG,
   StageType::REPL_TXN,
   StageType::REPL_INCREMENTAL_LOAD,
-  StageType::SCHEDULED_QUERY_MAINT
+  StageType::SCHEDULED_QUERY_MAINT,
+  StageType::ACK,
+  StageType::RANGER_DUMP,
+  StageType::RANGER_LOAD,
+  StageType::ATLAS_DUMP,
+  StageType::ATLAS_LOAD
 };
 const char* _kStageTypeNames[] = {
   "CONDITIONAL",
@@ -143,9 +148,14 @@ const char* _kStageTypeNames[] = {
   "REPL_STATE_LOG",
   "REPL_TXN",
   "REPL_INCREMENTAL_LOAD",
-  "SCHEDULED_QUERY_MAINT"
+  "SCHEDULED_QUERY_MAINT",
+  "ACK",
+  "RANGER_DUMP",
+  "RANGER_LOAD",
+  "ATLAS_DUMP",
+  "ATLAS_LOAD"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(18, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(23, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 
 Adjacency::~Adjacency() throw() {

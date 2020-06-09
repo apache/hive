@@ -57,7 +57,9 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -70,7 +72,6 @@ import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
-import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -394,7 +395,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 JavaUtils.getClassLoader());
         return (URIResolverHook) ReflectionUtils.newInstance(uriResolverClass, null);
       } catch (Exception e) {
-        LOG.error("Exception loading uri resolver hook" + e);
+        LOG.error("Exception loading uri resolver hook", e);
         return null;
       }
     }
@@ -440,8 +441,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String newVar = MetastoreConf.getAsString(conf, oneVar);
       if (oldVar == null ||
           (oneVar.isCaseSensitive() ? !oldVar.equals(newVar) : !oldVar.equalsIgnoreCase(newVar))) {
-        LOG.info("Mestastore configuration " + oneVar.toString() +
-            " changed from " + oldVar + " to " + newVar);
+        LOG.info("Mestastore configuration {} changed from {} to {}",
+            oneVar, oldVar, newVar);
         compatible = false;
       }
     }
@@ -457,8 +458,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void reconnect() throws MetaException {
     if (localMetaStore) {
       // For direct DB connections we don't yet support reestablishing connections.
-      throw new MetaException("For direct MetaStore DB connections, we don't support retries" +
-          " at the client level.");
+      throw new MetaException("Retries for direct MetaStore DB connections "
+          + "are not supported by this client");
     } else {
       close();
 
@@ -577,14 +578,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
-        LOG.info("Trying to connect to metastore with URI (" + store + ")");
+        LOG.info("Trying to connect to metastore with URI ({})", store);
 
         try {
           if (useSSL) {
             try {
               String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
               if (trustStorePath.isEmpty()) {
-                throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH.toString()
+                throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
                     + " Not configured for SSL connection");
               }
               String trustStorePassword =
@@ -593,10 +594,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
                   trustStorePath, trustStorePassword);
-              LOG.debug("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
+              final int newCount = connCount.incrementAndGet();
+              LOG.debug(
+                  "Opened an SSL connection to metastore, current connections: {}",
+                  newCount);
               if (LOG.isTraceEnabled()) {
-                LOG.trace("", new LogUtils.StackTraceLogger("METASTORE SSL CONNECTION TRACE - open - " +
-                        System.identityHashCode(this)));
+                LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
+                    System.identityHashCode(this), new Exception());
               }
             } catch (IOException e) {
               throw new IllegalArgumentException(e);
@@ -632,7 +636,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
             } catch (IOException sasle) {
               // IOException covers SaslException
-              LOG.error("Couldn't create client transport", sasle);
+              LOG.error("Could not create client transport", sasle);
               throw new MetaException(sasle.toString());
             }
           } else if (useSasl) {
@@ -665,7 +669,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     transport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
               }
             } catch (IOException ioe) {
-              LOG.error("Couldn't create client transport", ioe);
+              LOG.error("Failed to create client transport", ioe);
               throw new MetaException(ioe.toString());
             }
           } else {
@@ -684,21 +688,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           try {
             if (!transport.isOpen()) {
               transport.open();
-              LOG.info("Opened a connection to metastore, URI (" + store + ") current connections: " + connCount.incrementAndGet());
+              final int newCount = connCount.incrementAndGet();
+              LOG.info("Opened a connection to metastore, URI ({}) "
+                  + "current connections: {}", store, newCount);
               if (LOG.isTraceEnabled()) {
-                LOG.trace("", new LogUtils.StackTraceLogger("METASTORE CONNECTION TRACE - open - " +
-                        System.identityHashCode(this)));
+                LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
+                    System.identityHashCode(this), new Exception());
               }
             }
             isConnected = true;
           } catch (TTransportException e) {
             tte = e;
-            if (LOG.isDebugEnabled()) {
-              LOG.warn("Failed to connect to the MetaStore Server URI (" + store + ")", e);
-            } else {
-              // Don't print full exception trace if DEBUG is not on.
-              LOG.warn("Failed to connect to the MetaStore Server URI (" + store + ")");
-            }
+            LOG.warn("Failed to connect to the MetaStore Server URI ({})",
+                store);
+            LOG.debug("Failed to connect to the MetaStore Server URI ({})",
+                store, e);
           }
 
           if (isConnected && !useSasl && !usePasswordAuth &&
@@ -751,8 +755,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     snapshotActiveConf();
-
-    LOG.info("Connected to metastore.");
   }
 
   private void snapshotActiveConf() {
@@ -782,10 +784,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // just in case, we make this call.
     if ((transport != null) && transport.isOpen()) {
       transport.close();
-      LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
+      final int newCount = connCount.decrementAndGet();
+      LOG.info("Closed a connection to metastore, current connections: {}",
+          newCount);
       if (LOG.isTraceEnabled()) {
-        LOG.trace("", new LogUtils.StackTraceLogger("METASTORE CONNECTION TRACE - close - " +
-                System.identityHashCode(this)));
+        LOG.trace("METASTORE CONNECTION TRACE - close [{}]",
+            System.identityHashCode(this), new Exception());
       }
     }
   }
@@ -1806,7 +1810,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
                                                int maxParts) throws TException {
     List<PartitionSpec> partitionSpecs =
-            client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
+        client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
     partitionSpecs = FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs);
     return PartitionSpecProxy.Factory.get(partitionSpecs);
   }
@@ -1834,6 +1838,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // TODO should we add capabilities here as well as it returns Partition objects
     return listPartitionsWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, max_parts, user_name,
         group_names);
+  }
+
+  @Override
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    if (req.getValidWriteIdList() == null) {
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+    }
+    GetPartitionsPsWithAuthResponse res = client.get_partitions_ps_with_auth_req(req);
+    List<Partition> parts = deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
+    res.setPartitions(parts);
+    return res;
   }
 
   @Override
@@ -1921,6 +1938,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (max_parts >= 0) {
       req.setMaxParts(shrinkMaxtoShort(max_parts));
     }
+    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(db_name, tbl_name)));
     PartitionsByExprResult r;
     try {
       r = client.get_partitions_by_expr(req);
@@ -1931,7 +1949,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         throw te;
       }
       throw new IncompatibleMetastoreException(
-          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+          "Metastore does not support listPartitionsByExpr: " + te.getMessage());
     }
 
     r.setPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, r.getPartitions()));
@@ -1939,6 +1957,47 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     //deepCopyPartitions(r.getPartitions(), result);
     result.addAll(r.getPartitions());
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
+  }
+
+  @Override
+  public boolean listPartitionsSpecByExpr(String dbName, String tblName,
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      throws TException {
+    return listPartitionsSpecByExpr(getDefaultCatalog(conf), dbName, tblName, expr, defaultPartName,
+        maxParts, result);
+  }
+
+  @Override
+  public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      throws TException {
+    assert result != null;
+    PartitionsByExprRequest req = new PartitionsByExprRequest(
+        dbName, tblName, ByteBuffer.wrap(expr));
+    if (defaultPartitionName != null) {
+      req.setDefaultPartitionName(defaultPartitionName);
+    }
+    if (maxParts >= 0) {
+      req.setMaxParts(maxParts);
+    }
+    PartitionsSpecByExprResult r;
+    try {
+      r = client.get_partitions_spec_by_expr(req);
+    } catch (TApplicationException te) {
+      if (te.getType() != TApplicationException.UNKNOWN_METHOD
+          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
+        throw te;
+      }
+      throw new IncompatibleMetastoreException(
+          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+    }
+
+    // do client side filtering
+    r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
+        isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
+
+    result.addAll(r.getPartitionsSpec());
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 
   @Override
@@ -1970,6 +2029,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    if (req.getValidWriteIdList() == null) {
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+    }
+    GetPartitionResponse res = client.get_partition_req(req);
+    res.setPartition(deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition())));
+    return res;
+  }
+
+  @Override
   public Partition getPartition(String catName, String dbName, String tblName,
                                 List<String> partVals) throws TException {
     Partition p = client.get_partition(prependCatalogToDbName(catName, dbName, conf), tblName, partVals);
@@ -1980,6 +2051,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws TException {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
+  }
+
+  @Override
+  public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+
+    if (req.getValidWriteIdList() == null) {
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+    }
+    PartitionsResponse res = client.get_partitions_req(req);
+    List<Partition> parts = deepCopyPartitions(
+            FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
+    res.setPartitions(parts);
+    return res;
   }
 
   @Override
@@ -2004,6 +2089,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
+    gpbnr.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(db_name, tbl_name)));
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2011,7 +2097,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       gpbnr.setProcessorIdentifier(processorIdentifier);
-
     List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
@@ -2069,6 +2154,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setCapabilities(version);
     req.setGetColumnStats(getColumnStats);
+    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
     if (getColumnStats) {
       req.setEngine(engine);
     }
@@ -2093,7 +2179,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
-    req.setValidWriteIdList(validWriteIdList);
+    if (validWriteIdList != null) {
+      req.setValidWriteIdList(validWriteIdList);
+    }else{
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
+    }
     req.setGetColumnStats(getColumnStats);
     if (getColumnStats) {
       req.setEngine(engine);
@@ -2319,6 +2409,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    if (req.getValidWriteIdList() == null) {
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+    }
+    GetPartitionNamesPsResponse res = client.get_partition_names_ps_req(req);
+    List<String> partNames = FilterUtils.filterPartitionNamesIfEnabled(
+            isClientFilterEnabled, filterHook, getDefaultCatalog(conf), req.getDbName(),
+            req.getTblName(), res.getNames());
+    res.setNames(partNames);
+    return res;
+  }
+
+  @Override
   public List<String> listPartitionNames(String catName, String dbName, String tableName,
                                          int maxParts) throws TException {
     List<String> partNames =
@@ -2341,6 +2445,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         part_vals, shrinkMaxtoShort(max_parts));
     return FilterUtils.filterPartitionNamesIfEnabled(
         isClientFilterEnabled, filterHook, catName, db_name, tbl_name, partNames);
+  }
+
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order, short maxParts)
+      throws MetaException, TException, NoSuchObjectException {
+
+    PartitionsByExprRequest req = new PartitionsByExprRequest(
+        dbName, tblName, ByteBuffer.wrap(exprBytes));
+    if (defaultPartName != null) {
+      req.setDefaultPartitionName(defaultPartName);
+    }
+    if (maxParts >= 0) {
+      req.setMaxParts(maxParts);
+    }
+    if (order != null) {
+      req.setOrder(order);
+    }
+    req.setCatName(catName);
+    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
+        dbName, tblName, client.get_partition_names_req(req));
   }
 
   @Override
@@ -2451,6 +2576,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throws TException {
     List<FieldSchema> fields = client.get_fields(prependCatalogToDbName(catName, db, conf), tableName);
     return deepCopyFieldSchemas(fields);
+  }
+
+  @Override
+  public GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    return client.get_fields_req(req);
   }
 
   @Override
@@ -2571,6 +2702,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
     rqst.setEngine(engine);
+    rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
     return client.get_table_statistics_req(rqst).getTableStats();
   }
 
@@ -2608,6 +2740,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
         partNames, engine);
     rqst.setCatName(catName);
+    rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
     return client.get_partitions_statistics_req(rqst).getPartStats();
   }
 
@@ -2656,6 +2789,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     List<FieldSchema> fields = client.get_schema_with_environment_context(prependCatalogToDbName(
         catName, db, conf), tableName, envCxt);
     return deepCopyFieldSchemas(fields);
+  }
+
+  @Override
+  public GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    EnvironmentContext envCxt = null;
+    String addedJars = MetastoreConf.getVar(conf, ConfVars.ADDED_JARS);
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(addedJars)) {
+      Map<String, String> props = new HashMap<>();
+      props.put("hive.added.jars.path", addedJars);
+      envCxt = new EnvironmentContext(props);
+      req.setEnvContext(envCxt);
+    }
+    return client.get_schema_req(req);
   }
 
   @Override
@@ -3392,13 +3539,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
     NotificationEventResponse rsp = client.get_next_notification(rqst);
-    LOG.debug("Got back " + rsp.getEventsSize() + " events");
+    LOG.debug("Got back {} events", rsp.getEventsSize());
     NotificationEventResponse filtered = new NotificationEventResponse();
     if (rsp != null && rsp.getEvents() != null) {
       long nextEventId = lastEventId + 1;
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
-        LOG.debug("Got event with id : " + e.getEventId());
+        LOG.debug("Got event with id : {}", e.getEventId());
         if (e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +
@@ -3613,6 +3760,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
     req.setCatName(catName);
+    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
     return client.get_aggr_stats_for(req);
   }
 
@@ -4007,6 +4155,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_serde(new GetSerdeRequest(serDeName));
   }
 
+  private String getValidWriteIdList(String fullTableName) {
+    if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
+      return null;
+    }
+
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(
+        conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+    ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
+    return writeIdList!=null?writeIdList.toString():null;
+  }
+
   private short shrinkMaxtoShort(int max) {
     if (max < 0) {
       return -1;
@@ -4109,6 +4268,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
     client.scheduled_query_maintenance(request);
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                         replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
   }
 
   /**

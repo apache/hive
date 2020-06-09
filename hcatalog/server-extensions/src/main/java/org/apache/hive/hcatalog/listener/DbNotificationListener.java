@@ -302,9 +302,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       try {
         FileStatus file = files[i];
         i++;
-        return ReplChangeManager.encodeFileUri(file.getPath().toString(),
+        return ReplChangeManager.getInstance(conf).encodeFileUri(file.getPath().toString(),
             ReplChangeManager.checksumFor(file.getPath(), fs), null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         throw new RuntimeException(e);
       }
     }
@@ -521,9 +521,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     public String next() {
       String result;
       try {
-        result = ReplChangeManager.encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
+        result = ReplChangeManager.getInstance(conf).
+                encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
                 subDirs != null ? subDirs.get(i) : null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         // File operations failed
         LOG.error("Encoding file URI failed with error " + e.getMessage());
         throw new RuntimeException(e.getMessage());

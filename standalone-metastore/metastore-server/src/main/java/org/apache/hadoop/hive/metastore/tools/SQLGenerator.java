@@ -99,7 +99,7 @@ public final class SQLGenerator {
   }
 
   /**
-   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB
+   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB.
    *
    * @param tblColumns e.g. "T(a,b,c)"
    * @param rows       e.g. list of Strings like 3,4,'d'
@@ -110,7 +110,7 @@ public final class SQLGenerator {
   }
 
   /**
-   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB
+   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB.
    *
    * @param tblColumns e.g. "T(a,b,c)"
    * @param rows       e.g. list of Strings like 3,4,'d'
@@ -263,7 +263,7 @@ public final class SQLGenerator {
    * @throws SQLException
    */
   public PreparedStatement prepareStmtWithParameters(Connection dbConn, String sql, List<String> parameters)
-          throws SQLException {
+      throws SQLException {
     PreparedStatement pst = dbConn.prepareStatement(addEscapeCharacters(sql));
     if ((parameters == null) || parameters.isEmpty()) {
       return pst;
@@ -292,4 +292,36 @@ public final class SQLGenerator {
     return s;
   }
 
+
+  /**
+   * Creates a lock statement for open/commit transaction based on the dbProduct in shared read / exclusive mode.
+   * @param shared shared or exclusive lock
+   * @return sql statement to execute
+   * @throws MetaException if the dbProduct is unknown
+   */
+  public String createTxnLockStatement(boolean shared) throws MetaException{
+    String txnLockTable = "TXN_LOCK_TBL";
+    switch (dbProduct) {
+    case MYSQL:
+      // For Mysql we do not use lock table statement for two reasons
+      // It is not released automatically on commit/rollback
+      // It requires to lock every table that will be used by the statement
+      // https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html
+      return "SELECT  \"TXN_LOCK\" FROM \"" + txnLockTable + "\" " + (shared ? "LOCK IN SHARE MODE" : "FOR UPDATE");
+    case POSTGRES:
+      // https://www.postgresql.org/docs/9.4/sql-lock.html
+    case DERBY:
+      // https://db.apache.org/derby/docs/10.4/ref/rrefsqlj40506.html
+    case ORACLE:
+      // https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9015.htm
+      return "LOCK TABLE \"" + txnLockTable + "\" IN " + (shared ? "SHARE" : "EXCLUSIVE") + " MODE";
+    case SQLSERVER:
+      // https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver15
+      return "SELECT * FROM \"" + txnLockTable + "\" WITH (" + (shared ? "TABLOCK" : "TABLOCKX") + ", HOLDLOCK)";
+    default:
+      String msg = "Unrecognized database product name <" + dbProduct + ">";
+      LOG.error(msg);
+      throw new MetaException(msg);
+    }
+  }
 }

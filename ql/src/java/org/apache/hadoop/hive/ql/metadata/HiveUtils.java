@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -274,19 +275,12 @@ public final class HiveUtils {
   /**
    * Regenerate an identifier as part of unparsing it back to SQL text.
    */
-  public static String unparseIdentifier(String identifier) {
-    return unparseIdentifier(identifier, null);
-  }
-
   public static String unparseIdentifier(String identifier, Configuration conf) {
-    // In the future, if we support arbitrary characters in
-    // identifiers, then we'll need to escape any backticks
+    // We support arbitrary characters in
+    // identifiers, then we need to escape any backticks
     // in identifier by doubling them up.
-
-    // the time has come
-    String qIdSupport = conf == null ? null :
-      HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
-    if ( qIdSupport != null && !"none".equals(qIdSupport) ) {
+    Quotation quotation = Quotation.from(conf);
+    if (quotation != Quotation.NONE) {
       identifier = identifier.replaceAll("`", "``");
     }
     return "`" + identifier + "`";

@@ -65,7 +65,8 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
     // If we are not dumping data about a table, we shouldn't be dumping basic statistics
     // as well, since that won't be accurate. So reset them to what they would look like for an
     // empty table.
-    if (Utils.shouldDumpMetaDataOnly(qlMdTable, withinContext.hiveConf)) {
+    if (Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTable, withinContext.hiveConf)) {
       qlMdTable.setStatsStateLikeNewTable();
     }
 
@@ -78,14 +79,11 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
         withinContext.replicationSpec,
         withinContext.hiveConf);
 
-    Path dataPath = new Path(withinContext.eventRoot, "data");
     Iterable<String> files = eventMessage.getFiles();
     if (files != null) {
       // encoded filename/checksum of files, write into _files
-      try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
-        for (String file : files) {
-          fileListWriter.write(file + "\n");
-        }
+      for (String file : files) {
+        writeFileEntry(qlMdTable, null, file, withinContext);
       }
     }
 

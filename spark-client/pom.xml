@@ -25,11 +25,9 @@
     <version>4.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.apache.hive</groupId>
   <artifactId>hive-spark-client</artifactId>
   <packaging>jar</packaging>
   <name>Hive Spark Remote Client</name>
-  <version>4.0.0-SNAPSHOT</version>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -80,6 +78,10 @@
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
           <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.java.dev.jets3t</groupId>
+          <artifactId>jets3t</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>

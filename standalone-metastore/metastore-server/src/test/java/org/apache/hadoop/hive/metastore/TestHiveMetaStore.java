@@ -1856,15 +1856,21 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testAlterTable() throws Exception {
     String dbName = "alterdb";
-    String invTblName = "alter-tbl";
+    String invTblName = "alter§tbl";
     String tblName = "altertbl";
 
     try {
       client.dropTable(dbName, tblName);
       silentDropDatabase(dbName);
 
+      String dbLocation =
+          "/tmp/warehouse/_testDB_table_create_";
+      String mgdLocation =
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
+          .setLocation(dbLocation)
+          .setManagedLocation(mgdLocation)
           .create(client, conf);
 
       ArrayList<FieldSchema> invCols = new ArrayList<>(2);
@@ -2099,26 +2105,32 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String dbLocation =
+          "/tmp/warehouse/_testDB_table_create_";
+      String mgdLocation =
           MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
+          .setManagedLocation(mgdLocation)
           .create(client, conf);
       Database db = client.getDatabase(dbName);
 
       Table tbl = new TableBuilder()
           .setDbName(dbName)
           .setTableName(tblName_1)
+          .setType(TableType.EXTERNAL_TABLE.name())
           .addCol("name", ColumnType.STRING_TYPE_NAME)
           .addCol("income", ColumnType.INT_TYPE_NAME)
+          .addTableParam("EXTERNAL", "TRUE")
           .create(client, conf);
 
       tbl = client.getTable(dbName, tblName_1);
 
       Path path = new Path(tbl.getSd().getLocation());
       System.err.println("Table's location " + path + ", Database's location " + db.getLocationUri());
+      assertEquals("Table type is expected to be EXTERNAL", TableType.EXTERNAL_TABLE.name(), tbl.getTableType());
       assertEquals("Table location is not a subset of the database location",
-          path.getParent().toString(), db.getLocationUri());
+          db.getLocationUri(), path.getParent().toString());
 
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));

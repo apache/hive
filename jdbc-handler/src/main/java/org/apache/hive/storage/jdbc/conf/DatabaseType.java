@@ -23,5 +23,6 @@ public enum DatabaseType {
   POSTGRES,
   MSSQL,
   METASTORE,
-  JETHRO_DATA
+  JETHRO_DATA,
+  HIVE
 }

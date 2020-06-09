@@ -160,7 +160,8 @@ public class QueryTracker extends AbstractService {
     String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber,
     int attemptNumber,
     String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-    String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId) throws IOException {
+      String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId,
+      ContainerRunnerImpl.UgiPool ugiPool) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     // Note: This is a readLock to prevent a race with queryComplete. Operations
@@ -191,7 +192,7 @@ public class QueryTracker extends AbstractService {
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
                 tokenInfo.userName, tokenInfo.appId, amNodeId, vertex.getTokenIdentifier(), appToken,
-                vertex.getIsExternalSubmission());
+                vertex.getIsExternalSubmission(), ugiPool);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
@@ -211,9 +212,9 @@ public class QueryTracker extends AbstractService {
         LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
       }
       if (!vertex.getIsExternalSubmission()) {
+        String[] localDirs = (ShuffleHandler.get().isDirWatcherEnabled()) ? queryInfo.getLocalDirs() : null;
         ShuffleHandler.get()
-            .registerDag(appIdString, dagIdentifier, appToken,
-                user, queryInfo.getLocalDirs());
+            .registerDag(appIdString, dagIdentifier, appToken, user, localDirs);
       }
 
       return queryInfo.registerFragment(
@@ -437,7 +438,12 @@ public class QueryTracker extends AbstractService {
 
   @Override
   public void serviceStop() {
-    executorService.shutdownNow();
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      LOG.warn("cannot finish QueryTracker cleanup because of InterruptedException", e);
+    }
     LOG.info(getName() + " stopped");
   }
 

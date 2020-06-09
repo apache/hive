@@ -882,7 +882,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
+            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME, true).toString(), null);
         db.setOwnerName(PUBLIC);
         db.setOwnerType(PrincipalType.ROLE);
         db.setCatalogName(DEFAULT_CATALOG_NAME);
@@ -910,8 +910,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (JDOException e) {
         LOG.warn("Retrying creating default database after error: " + e.getMessage(), e);
         try {
-          createDefaultDB_core(getMS());
-        } catch (InvalidObjectException e1) {
+          RawStore ms = getMS();
+          createDefaultCatalog(ms, wh);
+          createDefaultDB_core(ms);
+        } catch (InvalidObjectException | InvalidOperationException e1) {
           throw new MetaException(e1.getMessage());
         }
       } catch (InvalidObjectException|InvalidOperationException e) {
@@ -1113,6 +1115,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void shutdown() {
       cleanupRawStore();
       PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
+      ThreadPool.shutdown();
     }
 
     @Override
@@ -1395,7 +1398,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(db.getName(), null)) {
+      if (!MetaStoreUtils.validateName(db.getName(), conf)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
 
@@ -2758,10 +2761,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         isReplicated = isDbReplicationTarget(db);
 
         // drop any partitions
-        tbl = get_table_core(catName, dbname, name);
+        tbl = get_table_core(catName, dbname, name, null);
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
+
+        // Check if table is part of a materialized view.
+        // If it is, it cannot be dropped.
+        List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
+        if (!isPartOfMV.isEmpty()) {
+            throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
+                    " views %s%n", isPartOfMV));
+        }
+
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
@@ -5016,7 +5028,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
 
+    /**
+     * Use {@link #get_partition_req(GetPartitionRequest)} ()} instead.
+     *
+     */
     @Override
+    @Deprecated
     public Partition get_partition(final String db_name, final String tbl_name,
         final List<String> part_vals) throws MetaException, NoSuchObjectException {
       String[] parsedDbName = parseDbName(db_name, conf);
@@ -5039,6 +5056,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
+    public GetPartitionResponse get_partition_req(GetPartitionRequest req)
+        throws MetaException, NoSuchObjectException, TException {
+      // TODO Move the logic from get_partition to here, as that method is getting deprecated
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      Partition p = get_partition(dbName, req.getTblName(), req.getPartVals());
+      GetPartitionResponse res = new GetPartitionResponse();
+      res.setPartition(p);
+      return res;
+    }
+
     /**
      * Fire a pre-event for read table operation, if there are any
      * pre-event listeners registered
@@ -5049,7 +5077,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Supplier<Table> tableSupplier = Suppliers.memoize(new Supplier<Table>() {
           @Override public Table get() {
             try {
-              Table t = getMS().getTable(catName, dbName, tblName);
+              Table t = getMS().getTable(catName, dbName, tblName, null);
               if (t == null) {
                 throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
                     + " table not found");
@@ -5065,6 +5093,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public Partition get_partition_with_auth(final String db_name,
         final String tbl_name, final List<String> part_vals,
         final String user_name, final List<String> group_names)
@@ -5093,7 +5122,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    /**
+     * Use {@link #get_partitions_req(PartitionsRequest)} ()} instead.
+     *
+     */
     @Override
+    @Deprecated
     public List<Partition> get_partitions(final String db_name, final String tbl_name,
         final short max_parts) throws NoSuchObjectException, MetaException {
       String[] parsedDbName = parseDbName(db_name, conf);
@@ -5121,6 +5155,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public PartitionsResponse get_partitions_req(PartitionsRequest req)
+        throws NoSuchObjectException, MetaException, TException {
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      List<Partition> partitions = get_partitions(dbName, req.getTblName(), req.getMaxParts());
+      PartitionsResponse res = new PartitionsResponse();
+      res.setPartitions(partitions);
+      return res;
+    }
+
+    @Override
+    @Deprecated
     public List<Partition> get_partitions_with_auth(final String dbName,
         final String tblName, final short maxParts, final String userName,
         final List<String> groupNames) throws TException {
@@ -5187,6 +5232,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<PartitionSpec> get_partitions_pspec(final String db_name, final String tbl_name, final int max_parts)
       throws NoSuchObjectException, MetaException  {
 
@@ -5275,6 +5321,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<String> get_partition_names(final String db_name, final String tbl_name,
         final short max_parts) throws NoSuchObjectException, MetaException {
       String[] parsedDbName = parseDbName(db_name, conf);
@@ -5616,7 +5663,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        Table oldt = get_table_core(catName, dbname, name);
+        Table oldt = get_table_core(catName, dbname, name, null);
         if (transformer != null && !isInTest) {
           newTable = transformer.transformAlterTable(newTable, processorCapabilities, processorId);
         }
@@ -5774,13 +5821,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    /**
+     * Use {@link #get_fields_req(GetFieldsRequest)} ()} instead.
+     *
+     */
     @Override
+    @Deprecated
     public List<FieldSchema> get_fields(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
       return get_fields_with_environment_context(db, tableName, null);
     }
 
     @Override
+    @Deprecated
     public List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
         final EnvironmentContext envContext)
         throws MetaException, UnknownTableException, UnknownDBException {
@@ -5825,6 +5878,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
+    public GetFieldsResponse get_fields_req(GetFieldsRequest req)
+        throws MetaException, UnknownTableException, UnknownDBException, TException {
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      List<FieldSchema> fields = get_fields_with_environment_context(
+          dbName, req.getTblName(), req.getEnvContext());
+      GetFieldsResponse res = new GetFieldsResponse();
+      res.setFields(fields);
+      return res;
+    }
+
     private StorageSchemaReader getStorageSchemaReader() throws MetaException {
       if (storageSchemaReader == null) {
         String className =
@@ -5842,24 +5906,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     /**
-     * Return the schema of the table. This function includes partition columns
-     * in addition to the regular columns.
+     * Use {@link #get_schema_req(GetSchemaRequest)} ()} instead.
      *
-     * @param db
-     *          Name of the database
-     * @param tableName
-     *          Name of the table
-     * @return List of columns, each column is a FieldSchema structure
-     * @throws MetaException
-     * @throws UnknownTableException
-     * @throws UnknownDBException
      */
     @Override
+    @Deprecated
     public List<FieldSchema> get_schema(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
       return get_schema_with_environment_context(db,tableName, null);
     }
-
 
     /**
      * Return the schema of the table. This function includes partition columns
@@ -5877,6 +5932,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws UnknownDBException
      */
     @Override
+    @Deprecated
     public List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
           final EnvironmentContext envContext)
         throws MetaException, UnknownTableException, UnknownDBException {
@@ -5895,7 +5951,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new UnknownTableException(e.getMessage());
         }
         // Pass unparsed db name here
-        List<FieldSchema> fieldSchemas = get_fields_with_environment_context(db, base_table_name,envContext);
+        List<FieldSchema> fieldSchemas = get_fields_with_environment_context(db, base_table_name,
+            envContext);
 
         if (tbl == null || fieldSchemas == null) {
           throw new UnknownTableException(tableName + " doesn't exist");
@@ -5919,6 +5976,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("get_schema_with_environment_context", success, ex, tableName);
       }
+    }
+
+    @Override
+    public GetSchemaResponse get_schema_req(GetSchemaRequest req)
+        throws MetaException, UnknownTableException, UnknownDBException, TException {
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      List<FieldSchema> fields = get_schema_with_environment_context(
+          dbName, req.getTblName(), req.getEnvContext());
+      GetSchemaResponse res = new GetSchemaResponse();
+      res.setFields(fields);
+      return res;
     }
 
     @Override
@@ -6025,6 +6093,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public Partition get_partition_by_name(final String db_name, final String tbl_name,
         final String part_name) throws TException {
 
@@ -6131,6 +6200,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<Partition> get_partitions_ps(final String db_name,
         final String tbl_name, final List<String> part_vals,
         final short max_parts) throws TException {
@@ -6156,7 +6226,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    /**
+     * Use {@link #get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest)} ()} instead.
+     *
+     */
     @Override
+    @Deprecated
     public List<Partition> get_partitions_ps_with_auth(final String db_name,
         final String tbl_name, final List<String> part_vals,
         final short max_parts, final String userName,
@@ -6185,6 +6260,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)
+            throws MetaException, NoSuchObjectException, TException {
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      List<Partition> partitions = get_partitions_ps_with_auth(dbName, req.getTblName(),
+              req.getPartVals(), req.getMaxParts(), req.getUserName(), req.getGroupNames());
+      GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
+      res.setPartitions(partitions);
+      return res;
+    }
+
+    /**
+     * Use {@link #get_partition_names_ps_req(GetPartitionNamesPsRequest)} ()} instead.
+     *
+     */
+    @Override
+    @Deprecated
     public List<String> get_partition_names_ps(final String db_name,
         final String tbl_name, final List<String> part_vals, final short max_parts)
         throws TException {
@@ -6210,14 +6301,48 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)
+            throws MetaException, NoSuchObjectException, TException {
+      String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+      List<String> names = get_partition_names_ps(dbName, req.getTblName(), req.getPartValues(),
+              req.getMaxParts());
+      GetPartitionNamesPsResponse res = new GetPartitionNamesPsResponse();
+      res.setNames(names);
+      return res;
+    }
+
+    @Override
+    public List<String> get_partition_names_req(PartitionsByExprRequest req)
+        throws MetaException, NoSuchObjectException, TException {
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startTableFunction("get_partition_names_req", catName,
+          dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        authorizeTableForPartitionMetadata(catName, dbName, tblName);
+        ret = getMS().listPartitionNames(catName, dbName, tblName,
+            req.getDefaultPartitionName(), req.getExpr(), req.getOrder(), req.getMaxParts());
+        ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
+            filterHook, catName, dbName, tblName, ret);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partition_names_req", ret != null, ex, tblName);
+      }
+      return ret;
+    }
+
+    @Override
     public List<String> partition_name_to_vals(String part_name) throws TException {
       if (part_name.length() == 0) {
-        return new ArrayList<>();
+        return Collections.emptyList();
       }
       LinkedHashMap<String, String> map = Warehouse.makeSpecFromName(part_name);
-      List<String> part_vals = new ArrayList<>();
-      part_vals.addAll(map.values());
-      return part_vals;
+      return new ArrayList<>(map.values());
     }
 
     @Override
@@ -6248,8 +6373,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return convertedPartName;
     }
 
-    @Deprecated
     @Override
+    @Deprecated
     public ColumnStatistics get_table_column_statistics(String dbName, String tableName,
       String colName) throws TException {
       String[] parsedDbName = parseDbName(dbName, conf);
@@ -6305,8 +6430,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
-    @Deprecated
     @Override
+    @Deprecated
     public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws TException {
       // Note: this method appears to be unused within Hive.
@@ -6638,6 +6763,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<Partition> get_partitions_by_filter(final String dbName, final String tblName,
                                                     final String filter, final short maxParts)
         throws TException {
@@ -6666,6 +6792,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<PartitionSpec> get_part_specs_by_filter(final String dbName, final String tblName,
                                                         final String filter, final int maxParts)
         throws TException {
@@ -6698,6 +6825,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       finally {
         endFunction("get_partitions_by_filter_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), null, tblName);
       }
+    }
+
+    @Override
+    public PartitionsSpecByExprResult get_partitions_spec_by_expr(
+        PartitionsByExprRequest req) throws TException {
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      startTableFunction("get_partitions_spec_by_expr", catName, dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      PartitionsSpecByExprResult ret = null;
+      Exception ex = null;
+      try {
+        checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
+        List<Partition> partitions = new LinkedList<>();
+        boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName,
+            req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
+        Table table = get_table_core(catName, dbName, tblName);
+        List<PartitionSpec> partitionSpecs =
+            MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
+        ret = new PartitionsSpecByExprResult(partitionSpecs, hasUnknownPartitions);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partitions_spec_by_expr", ret != null, ex, tblName);
+      }
+      return ret;
     }
 
     @Override
@@ -6738,6 +6892,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public int get_num_partitions_by_filter(final String dbName,
                                             final String tblName, final String filter)
             throws TException {
@@ -6779,9 +6934,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @Deprecated
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
-                                                   final List<String> partNames) throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames, false, null);
+                                                   final List<String> partNames)
+            throws TException {
+      return get_partitions_by_names(dbName, tblName, partNames);
     }
 
     @Override
@@ -6795,8 +6952,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
-           final List<String> partNames, boolean getColStats, String engine) throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames, getColStats, engine, null, null);
+           final List<String> partNames, boolean getColStats, String engine, String validWriteIdList)
+        throws TException {
+      return get_partitions_by_names(
+          dbName, tblName, partNames, getColStats, engine, null, null);
     }
 
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
@@ -8603,22 +8762,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
       switch (rqst.getData().getSetField()) {
-      case INSERT_DATA:
-        String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-        InsertEvent event =
-            new InsertEvent(catName, rqst.getDbName(), rqst.getTableName(), rqst.getPartitionVals(),
-                rqst.getData().getInsertData(), rqst.isSuccessful(), this);
-
-        /*
-         * The transactional listener response will be set already on the event, so there is not need
-         * to pass the response to the non-transactional listener.
-         */
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.INSERT, event);
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
-
-        return new FireEventResponse();
-
-      default:
+        case INSERT_DATA:
+        case INSERT_DATAS:
+        String catName =
+            rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+        String dbName = rqst.getDbName();
+        String tblName = rqst.getTableName();
+        boolean isSuccessful = rqst.isSuccessful();
+        List<InsertEvent> events = new ArrayList<>();
+        if (rqst.getData().isSetInsertData()) {
+          events.add(new InsertEvent(catName, dbName, tblName,
+              rqst.getPartitionVals(),
+              rqst.getData().getInsertData(), isSuccessful, this));
+        } else {
+          // this is a bulk fire insert event operation
+          // we use the partition values field from the InsertEventRequestData object
+          // instead of the FireEventRequest object
+          for (InsertEventRequestData insertData : rqst.getData().getInsertDatas()) {
+            if (!insertData.isSetPartitionVal()) {
+              throw new MetaException(
+                  "Partition values must be set when firing multiple insert events");
+            }
+            events.add(new InsertEvent(catName, dbName, tblName,
+                insertData.getPartitionVal(),
+                insertData, isSuccessful, this));
+          }
+        }
+        FireEventResponse response = new FireEventResponse();
+        for (InsertEvent event : events) {
+          /*
+           * The transactional listener response will be set already on the event, so there is not need
+           * to pass the response to the non-transactional listener.
+           */
+          MetaStoreListenerNotifier
+              .notifyEvent(transactionalListeners, EventType.INSERT, event);
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
+          if (event.getParameters() != null && event.getParameters()
+              .containsKey(
+                  MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+            response.addToEventIds(Long.valueOf(event.getParameters()
+                .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+          } else {
+            String msg = "Insert event id not generated for ";
+            if (event.getPartitionObj() != null) {
+              msg += "partition " + Arrays
+                  .toString(event.getPartitionObj().getValues().toArray()) + " of ";
+            }
+            msg +=
+                " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                    .getTableName();
+            LOG.warn(msg);
+          }
+        }
+        return response;
+        default:
         throw new TException("Event type " + rqst.getData().getSetField().toString()
             + " not currently supported.");
       }
@@ -9791,6 +9988,37 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_scheduled_query", ex == null, ex);
       }
     }
+
+    @Override
+    public void add_replication_metrics(ReplicationMetricList replicationMetricList) throws MetaException{
+      startFunction("add_replication_metrics");
+      Exception ex = null;
+      try {
+        getMS().addReplicationMetrics(replicationMetricList);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("add_replication_metrics", ex == null, ex);
+      }
+    }
+
+    @Override
+    public ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest
+                                                               getReplicationMetricsRequest) throws MetaException{
+      startFunction("get_replication_metrics");
+      Exception ex = null;
+      try {
+        return getMS().getReplicationMetrics(getReplicationMetricsRequest);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_replication_metrics", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
@@ -10002,11 +10230,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      Lock startLock = new ReentrantLock();
-      Condition startCondition = startLock.newCondition();
-      AtomicBoolean startedServing = new AtomicBoolean();
-      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, startLock,
-          startCondition, startedServing);
+      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, true, null);
     } catch (Throwable t) {
       // Catch the exception, log it and rethrow it.
       HMSHandler.LOG
@@ -10024,7 +10248,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
       throws Throwable {
-    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), null, null, null);
+    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), false, null);
   }
 
   /**
@@ -10036,21 +10260,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
                                     Configuration conf) throws Throwable {
-    startMetaStore(port, bridge, conf, null, null, null);
+    startMetaStore(port, bridge, conf, false, null);
   }
 
   /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
+   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
-   * @param port
+   * @param port The port on which the Thrift server will start to serve
    * @param bridge
-   * @param conf
-   *          configuration overrides
+   * @param conf Configuration overrides
+   * @param startMetaStoreThreads Start the background threads (initiator, cleaner, statsupdater, etc.)
+   * @param startedBackgroundThreads If startMetaStoreThreads is true, this AtomicBoolean will be switched to true,
+   *  when all of the background threads are scheduled. Useful for testing purposes to wait
+   *  until the MetaStore is fully initialized.
    * @throws Throwable
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
-      Configuration conf, Lock startLock, Condition startCondition,
-      AtomicBoolean startedServing) throws Throwable {
+      Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
     isMetaStoreRemote = true;
     // Server will create new threads up to max as necessary. After an idle
     // period, it will destroy threads to keep the number of threads in the
@@ -10183,10 +10409,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
 
-    if (startLock != null) {
-      startMetaStoreThreads(conf, startLock, startCondition, startedServing,
-                isMetastoreHousekeepingLeader(conf, getServerHostName()));
-      signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
+    if (startMetaStoreThreads) {
+      Lock metaStoreThreadsLock = new ReentrantLock();
+      Condition startCondition = metaStoreThreadsLock.newCondition();
+      AtomicBoolean startedServing = new AtomicBoolean();
+      startMetaStoreThreads(conf, metaStoreThreadsLock, startCondition, startedServing,
+                isMetastoreHousekeepingLeader(conf, getServerHostName()), startedBackgroundThreads);
+      signalOtherThreadsToStart(tServer, metaStoreThreadsLock, startCondition, startedServing);
     }
 
     // If dynamic service discovery through ZooKeeper is enabled, add this server to the ZooKeeper.
@@ -10216,8 +10445,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_WORKER_THREADS));
     HMSHandler.LOG
         .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN));
-    HMSHandler.LOG.info("metastore.compactor.history.reaper.interval = {}",
-        MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, TimeUnit.MINUTES));
     HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
     HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",
@@ -10331,8 +10558,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *                 started only in a leader HMS.
    */
   private static void startMetaStoreThreads(final Configuration conf, final Lock startLock,
-                                            final Condition startCondition, final
-                                            AtomicBoolean startedServing, boolean isLeader) {
+      final Condition startCondition, final AtomicBoolean startedServing, boolean isLeader,
+      final AtomicBoolean startedBackGroundThreads) {
     // A thread is spun up to start these other threads.  That's because we can't start them
     // until after the TServer has started, but once TServer.serve is called we aren't given back
     // control.
@@ -10385,6 +10612,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         if (isLeader) {
           ReplChangeManager.scheduleCMClearer(conf);
+        }
+        if (startedBackGroundThreads != null) {
+          startedBackGroundThreads.set(true);
         }
       }
     };
@@ -10448,12 +10678,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 

@@ -116,4 +116,8 @@ public final class LlapHiveUtils {
     }
   }
 
+  public static boolean isLlapMode(HiveConf conf) {
+    return "llap".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+  }
+
 }

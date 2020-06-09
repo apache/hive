@@ -203,7 +203,7 @@ public class TestReplicationWithTableMigration {
         .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
         .run("insert into tflattextpart partition(country='us') values(3333)")
         .run(
-            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
+            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp/fol' ")
         .run("insert into tacidloc values(1)")
         .run("insert into tacidloc values(2)")
         .run("insert into tacidloc values(3)")
@@ -211,7 +211,7 @@ public class TestReplicationWithTableMigration {
             "create table tacidpartloc (place string) partitioned by (country string) clustered by(place) "
                 +
                 "into 3 buckets stored as orc ")
-        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
+        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/fol/part'")
         .run("insert into tacidpartloc partition(country='india') values('mumbai')")
         .run("insert into tacidpartloc partition(country='us') values('sf')")
         .run("insert into tacidpartloc partition(country='france') values('paris')")

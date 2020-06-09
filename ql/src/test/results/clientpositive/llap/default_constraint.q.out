@@ -44,8 +44,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -565,8 +563,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[i]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -836,8 +832,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1406,8 +1400,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1569,8 +1561,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1745,8 +1735,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1825,8 +1813,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1902,7 +1888,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                         Statistics: Num rows: 1 Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint(127Y is not null) (type: boolean)
+                          predicate: enforce_constraint(_col0 is not null) (type: boolean)
                           Statistics: Num rows: 1 Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: double), CAST( _col5 AS decimal(9,2)) (type: decimal(9,2))
@@ -2012,8 +1998,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2091,8 +2075,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2171,8 +2153,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2248,7 +2228,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                         Statistics: Num rows: 1 Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint(108Y is not null) (type: boolean)
+                          predicate: enforce_constraint(_col0 is not null) (type: boolean)
                           Statistics: Num rows: 1 Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: double), CAST( _col5 AS decimal(9,2)) (type: decimal(9,2))
@@ -2608,8 +2588,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -2771,8 +2749,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 

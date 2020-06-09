@@ -38,6 +38,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   protected long memNeeded = 0;
   protected long memAvailable = 0;
   protected String runtimeStatsTmpDir;
+  protected int bucketingVersion = -2;
 
   /**
    * A map of output column name to input expression map. This is used by
@@ -171,4 +172,13 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
     throw new RuntimeException();
   }
 
+  @Override
+  public int getBucketingVersion() {
+    return bucketingVersion;
+  }
+
+  @Override
+  public void setBucketingVersion(int bucketingVersion) {
+    this.bucketingVersion = bucketingVersion;
+  }
 }

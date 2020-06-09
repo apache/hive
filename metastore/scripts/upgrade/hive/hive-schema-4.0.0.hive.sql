@@ -1418,7 +1418,7 @@ SELECT DISTINCT
     HL.`HL_TABLE`,
     HL.`HL_PARTITION`,
     CASE WHEN HL.`HL_LOCK_STATE` = 'a' THEN 'acquired' WHEN HL.`HL_LOCK_STATE` = 'w' THEN 'waiting' END AS LOCK_STATE,
-    CASE WHEN HL.`HL_LOCK_TYPE` = 'e' THEN 'exclusive' WHEN HL.`HL_LOCK_TYPE` = 'r' THEN 'shared' WHEN HL.`HL_LOCK_TYPE` = 'w' THEN 'semi-shared' END AS LOCK_TYPE,
+    CASE WHEN HL.`HL_LOCK_TYPE` = 'e' THEN 'exclusive' WHEN HL.`HL_LOCK_TYPE` = 'x' THEN 'excl_write' WHEN HL.`HL_LOCK_TYPE` = 'r' THEN 'shared_read' WHEN HL.`HL_LOCK_TYPE` = 'w' THEN 'shared_write' END AS LOCK_TYPE,
     FROM_UNIXTIME(HL.`HL_LAST_HEARTBEAT`),
     FROM_UNIXTIME(HL.`HL_ACQUIRED_AT`),
     HL.`HL_USER`,
@@ -1677,7 +1677,8 @@ WHERE
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer();
+  AND array_contains(split_map_privs(P.`TBL_COL_PRIV`),"SELECT") AND P.`AUTHORIZER`=current_authorizer();
+
 
 CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
@@ -1700,7 +1701,18 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+  (SELECT
+        Q.`GRANTOR`,
+        Q.`GRANT_OPTION`,
+        Q.`PRINCIPAL_NAME`,
+        Q.`PRINCIPAL_TYPE`,
+        Q.`AUTHORIZER`,
+        Q.`COLUMN_NAME`,
+        `TBL_COL_PRIV_TMP`.`TBL_COL_PRIV`,
+        Q.`TBL_ID`
+       FROM `sys`.`TBL_COL_PRIVS` AS Q
+       LATERAL VIEW explode(split_map_privs(Q.`TBL_COL_PRIV`)) `TBL_COL_PRIV_TMP` AS `TBL_COL_PRIV`) P
+                          JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
                           LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)

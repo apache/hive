@@ -248,7 +248,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       FileSystem fs = emptyScratchDir.getFileSystem(job);
       fs.mkdirs(emptyScratchDir);
     } catch (IOException e) {
-      e.printStackTrace();
       console.printError("Error launching map-reduce job", "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return 5;
@@ -279,10 +278,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // set input format information if necessary
     setInputAttributes(job);
 
-    // Turn on speculative execution for reducers
-    boolean useSpeculativeExecReducers = HiveConf.getBoolVar(job,
-        HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
-    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, useSpeculativeExecReducers);
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
+    job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
 
@@ -428,7 +426,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
     } catch (Exception e) {
-      e.printStackTrace();
       setException(e);
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {

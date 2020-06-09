@@ -25,21 +25,23 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.fs.FileSystem;
-import java.io.BufferedWriter;
+
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,23 +56,17 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
-  private void writeDumpFiles(Context withinContext, Iterable<String> files, Path dataPath) throws IOException {
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext)
+          throws IOException, LoginException, MetaException, HiveFatalException {
     // encoded filename/checksum of files, write into _files
-    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
-      for (String file : files) {
-        fileListWriter.write(file + "\n");
-      }
+    for (String file : files) {
+      writeFileEntry(qlMdTable, ptn, file, withinContext);
     }
   }
 
   private void createDumpFile(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
-                  List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
+                  List<Partition> qlPtns, List<List<String>> fileListArray)
+          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
     if (fileListArray == null || fileListArray.isEmpty()) {
       return;
     }
@@ -85,18 +81,17 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
             withinContext.hiveConf);
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
-      Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      writeDumpFiles(withinContext, fileListArray.get(0), dataPath);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        Path dataPath = new Path(withinContext.eventRoot, qlPtns.get(idx).getName());
-        writeDumpFiles(withinContext, fileListArray.get(idx), dataPath);
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext);
       }
     }
   }
 
   private void createDumpFileForTable(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
-                    List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
+                    List<Partition> qlPtns, List<List<String>> fileListArray)
+          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
     Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
     Context context = new Context(withinContext);
     context.setEventRoot(newPath);

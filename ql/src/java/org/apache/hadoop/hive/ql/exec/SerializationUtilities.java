@@ -28,8 +28,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -694,7 +694,7 @@ public class SerializationUtilities {
    */
   public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
     if (roots.isEmpty()) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     CompilationOpContext ctx = roots.get(0).getCompilationOpContext();

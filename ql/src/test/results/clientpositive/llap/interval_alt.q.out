@@ -1,0 +1,168 @@
+PREHOOK: query: select 1+1 in (1,2,3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1+1 in (1,2,3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select (1+1) in (1,2,3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1+1) in (1,2,3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select true=false in (true,false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select true=false in (true,false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select false=false in (true,false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select false=false in (true,false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+false
+PREHOOK: query: select interval '5-5' year to month
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select interval '5-5' year to month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+5-5
+PREHOOK: query: select
+	(1) second,
+	 2  seconds,
+	(1) minute,
+	 2  minutes,
+	(1) hour,
+	 2  hours,
+	(1) day,
+	 2  days,
+	(1) month,
+	 2  months,
+	(1) year,
+	 2  years
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+	(1) second,
+	 2  seconds,
+	(1) minute,
+	 2  minutes,
+	(1) hour,
+	 2  hours,
+	(1) day,
+	 2  days,
+	(1) month,
+	 2  months,
+	(1) year,
+	 2  years
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0 00:00:01.000000000	0 00:00:02.000000000	0 00:01:00.000000000	0 00:02:00.000000000	0 01:00:00.000000000	0 02:00:00.000000000	1 00:00:00.000000000	2 00:00:00.000000000	0-1	0-2	1-0	2-0
+PREHOOK: query: select date '2012-01-01' + 30 days
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date '2012-01-01' + 30 days
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2012-01-31 00:00:00
+PREHOOK: query: select date '2012-01-01' - 30 days
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date '2012-01-01' - 30 days
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2011-12-02 00:00:00
+PREHOOK: query: create table t_n18 (dt int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n18
+POSTHOOK: query: create table t_n18 (dt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n18
+PREHOOK: query: insert into t_n18 values (1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n18
+POSTHOOK: query: insert into t_n18 values (1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n18
+POSTHOOK: Lineage: t_n18.dt SCRIPT []
+PREHOOK: query: explain
+select
+	date '2012-01-01' + interval (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + interval (dt || '-1') year to month
+	from t_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n18
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select
+	date '2012-01-01' + interval (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + interval (dt || '-1') year to month
+	from t_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n18
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n18
+          Select Operator
+            expressions: (DATE'2012-01-01' + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (DATE'2012-01-01' - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), TIMESTAMP'2012-01-04 00:00:00' (type: timestamp), (DATE'2012-01-01' + IntervalYearMonthLiteralProcessor(concat(CAST( dt AS STRING), '-1'))) (type: date)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: select
+        date '2012-01-01' + interval (-dt*dt) day,
+        date '2012-01-01' - interval (-dt*dt) day,
+        date '2012-01-01' + 1 day + '2' days,
+        date '2012-01-01' + interval (dt || '-1') year to month
+        from t_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n18
+#### A masked pattern was here ####
+POSTHOOK: query: select
+        date '2012-01-01' + interval (-dt*dt) day,
+        date '2012-01-01' - interval (-dt*dt) day,
+        date '2012-01-01' + 1 day + '2' days,
+        date '2012-01-01' + interval (dt || '-1') year to month
+        from t_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n18
+#### A masked pattern was here ####
+2011-12-31 00:00:00	2012-01-02 00:00:00	2012-01-04 00:00:00	2013-02-01
+2011-12-28 00:00:00	2012-01-05 00:00:00	2012-01-04 00:00:00	2014-02-01

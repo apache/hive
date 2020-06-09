@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -115,6 +116,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
+  private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
+
   private transient TableSample tableSample;
 
   private transient Table tableMetadata;
@@ -133,10 +136,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   public TableScanDesc(final String alias, Table tblMetadata) {
-    this(alias, null, tblMetadata);
+    this(alias, null, tblMetadata, null);
   }
 
   public TableScanDesc(final String alias, List<VirtualColumn> vcs, Table tblMetadata) {
+    this(alias, vcs, tblMetadata, null);
+  }
+
+  public TableScanDesc(final String alias, List<VirtualColumn> vcs, Table tblMetadata,
+      TableScanOperator.ProbeDecodeContext probeDecodeContext) {
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
@@ -144,17 +152,19 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     if (tblMetadata != null) {
       dbName = tblMetadata.getDbName();
       tableName = tblMetadata.getTableName();
+      numBuckets = tblMetadata.getNumBuckets();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }
+    this.probeDecodeContext = probeDecodeContext;
   }
 
   @Override
   public Object clone() {
     List<VirtualColumn> vcs = new ArrayList<VirtualColumn>(getVirtualCols());
-    return new TableScanDesc(getAlias(), vcs, this.tableMetadata);
+    return new TableScanDesc(getAlias(), vcs, this.tableMetadata, this.probeDecodeContext);
   }
 
   @Explain(displayName = "alias")
@@ -236,6 +246,18 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
     this.filterExpr = filterExpr;
+  }
+
+  @Explain(displayName = "probeDecodeDetails", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public String getProbeDecodeString() {
+    if (probeDecodeContext == null) {
+      return null;
+    }
+    return probeDecodeContext.toString();
+  }
+
+  public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContext = probeDecodeContext;
   }
 
   public Serializable getFilterObject() {

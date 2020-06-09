@@ -286,6 +286,7 @@ public final class PlanUtils {
       outputFormat = IgnoreKeyTextOutputFormat.class;
     }
     properties.setProperty(serdeConstants.SERIALIZATION_LIB, serdeClass.getName());
+    properties.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     return new TableDesc(inputFormat, outputFormat, properties);
   }
 
@@ -659,7 +660,7 @@ public final class PlanUtils {
   public static List<FieldSchema> getFieldSchemasFromColumnInfo(
       List<ColumnInfo> cols, String fieldPrefix) {
     if ((cols == null) || (cols.size() == 0)) {
-      return new ArrayList<FieldSchema>();
+      return Collections.emptyList();
     }
 
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
@@ -1171,7 +1172,7 @@ public final class PlanUtils {
 
       // Adds tables only for create view (PPD filter can be appended by outer query)
       Table table = topOp.getConf().getTableMetadata();
-      PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo));
+      PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo, parentViewInfo == null));
     }
   }
 

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -89,6 +92,10 @@ public class Initiator extends MetaStoreCompactorThread {
 
       int abortedThreshold = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
+      long abortedTimeThreshold = HiveConf
+          .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
+              TimeUnit.MILLISECONDS);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -106,11 +113,18 @@ public class Initiator extends MetaStoreCompactorThread {
           long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
           prevStart = startedAt;
 
-          //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold, compactionInterval)
-              .stream().filter(ci -> checkCompactionElig(ci, currentCompactions)).collect(Collectors.toSet());
+          if (metricsEnabled) {
+            // Update compaction metrics based on showCompactions result
+            updateCompactionMetrics(currentCompactions);
+          }
+
+          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
+              abortedTimeThreshold, compactionInterval)
+              .stream()
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions))
+              .collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
 
@@ -149,12 +163,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
-
-          // Clean anything from the txns table that has no components left in txn_components.
-          txnHandler.cleanEmptyAbortedTxns();
-
-          // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
-          txnHandler.cleanTxnToWriteIdTable();
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
@@ -229,8 +237,8 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
   }
@@ -269,6 +277,16 @@ public class Initiator extends MetaStoreCompactorThread {
       LOG.debug("Found too many aborted transactions for " + ci.getFullPartitionName() + ", " +
           "initiating major compaction");
       return CompactionType.MAJOR;
+    }
+
+    if (ci.hasOldAbort) {
+      HiveConf.ConfVars oldAbortedTimeoutProp =
+          HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD;
+      LOG.debug("Found an aborted transaction for " + ci.getFullPartitionName()
+          + " with age older than threshold " + oldAbortedTimeoutProp + ": " + conf
+          .getTimeVar(oldAbortedTimeoutProp, TimeUnit.HOURS) + " hours. "
+          + "Initiating minor compaction.");
+      return CompactionType.MINOR;
     }
 
     if (runJobAsSelf(runAs)) {
@@ -423,7 +441,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean checkCompactionElig(CompactionInfo ci, ShowCompactResponse currentCompactions) {
+  private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
     LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
 
     // Check if we already have initiated or are working on a compaction for this partition
@@ -476,5 +494,33 @@ public class Initiator extends MetaStoreCompactorThread {
       }
     }
     return true;
+  }
+
+  @VisibleForTesting
+  protected static void updateCompactionMetrics(ShowCompactResponse showCompactResponse) {
+    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+
+    // Get the last compaction for each db/table/partition
+    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
+      String key = element.getDbname() + "/" + element.getTablename() +
+          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
+      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
+      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
+    }
+
+    // Get the current count for each state
+    Map<String, Long> counts = lastElements.values().stream()
+        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
+
+    // Update metrics
+    for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
+      String key = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
+      Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
+      if (count != null) {
+        Metrics.getOrCreateGauge(key).set(count.intValue());
+      } else {
+        Metrics.getOrCreateGauge(key).set(0);
+      }
+    }
   }
 }

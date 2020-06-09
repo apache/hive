@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -1474,7 +1475,6 @@ public class AcidUtils {
       }
       return dirToSnapshots;
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IOException(e);
     }
   }
@@ -1936,22 +1936,26 @@ public class AcidUtils {
 
   private static List<HdfsFileStatusWithId> tryListLocatedHdfsStatus(Ref<Boolean> useFileIds, FileSystem fs,
       Path directory) {
-    List<HdfsFileStatusWithId> childrenWithId = null;
     if (useFileIds == null) {
-      return childrenWithId;
+      return null;
     }
-    Boolean val = useFileIds.value;
+
+    List<HdfsFileStatusWithId> childrenWithId = null;
+    final Boolean val = useFileIds.value;
     if (val == null || val) {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, hiddenFileFilter);
         if (val == null) {
           useFileIds.value = true;
         }
-      } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        if (val == null && t instanceof UnsupportedOperationException) {
+      } catch (UnsupportedOperationException uoe) {
+        LOG.info("Failed to get files with ID; using regular API: " + uoe.getMessage());
+        if (val == null) {
           useFileIds.value = false;
         }
+      } catch (IOException ioe) {
+        LOG.info("Failed to get files with ID; using regular API: " + ioe.getMessage());
+        LOG.debug("Failed to get files with ID", ioe);
       }
     }
     return childrenWithId;
@@ -2153,7 +2157,8 @@ public class AcidUtils {
    * Returns the logical end of file for an acid data file.
    *
    * This relies on the fact that if delta_x_y has no committed transactions it wil be filtered out
-   * by {@link #getAcidState(Path, Configuration, ValidWriteIdList)} and so won't be read at all.
+   * by {@link #getAcidState(FileSystem, Path, Configuration, ValidWriteIdList, Ref, boolean, Map, boolean)}
+   * and so won't be read at all.
    * @param file - data file to read/compute splits on
    */
   public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
@@ -2167,30 +2172,38 @@ public class AcidUtils {
     else {
       return file.getLen();
     }
-    Path lengths = OrcAcidUtils.getSideFile(file.getPath());
-    if(!fs.exists(lengths)) {
-      /**
-       * if here for delta_x_y that means txn y is resolved and all files in this delta are closed so
-       * they should all have a valid ORC footer and info from NameNode about length is good
-       */
-      return file.getLen();
+    return getLastFlushLength(fs, file);
+  }
+
+  /**
+   * Read the side file to get the last flush length, or file length if no side file found.
+   * @param fs the file system to use
+   * @param deltaFile the delta file
+   * @return length as stored in the side file, or file length if no side file found
+   * @throws IOException if problems reading the side file
+   */
+  private static long getLastFlushLength(FileSystem fs, FileStatus deltaFile) throws IOException {
+    Path sideFile = OrcAcidUtils.getSideFile(deltaFile.getPath());
+
+    try (FSDataInputStream stream = fs.open(sideFile)) {
+      long result = -1;
+      while (stream.available() > 0) {
+        result = stream.readLong();
+      }
+      if (result < 0) {
+        /* side file is there but we couldn't read it. We want to avoid a read where
+         * (file.getLen() < 'value from side file' which may happen if file is not closed)
+         * because this means some committed data from 'file' would be skipped. This should be very
+         * unusual.
+         */
+        throw new IOException(sideFile + " found but is not readable.  Consider waiting or "
+            + "orcfiledump --recover");
+      }
+      return result;
+
+    } catch (FileNotFoundException e) {
+      return deltaFile.getLen();
     }
-    long len = OrcAcidUtils.getLastFlushLength(fs, file.getPath());
-    if(len >= 0) {
-      /**
-       * if here something is still writing to delta_x_y so  read only as far as the last commit,
-       * i.e. where last footer was written.  The file may contain more data after 'len' position
-       * belonging to an open txn.
-       */
-      return len;
-    }
-    /**
-     * if here, side file is there but we couldn't read it.  We want to avoid a read where
-     * (file.getLen() < 'value from side file' which may happen if file is not closed) because this
-     * means some committed data from 'file' would be skipped.
-     * This should be very unusual.
-     */
-    throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
   }
 
 
@@ -2477,9 +2490,6 @@ public class AcidUtils {
       if (dirSnapshot != null && !dirSnapshot.contains(formatFile)) {
         return false;
       }
-      if(dirSnapshot == null && !fs.exists(formatFile)) {
-        return false;
-      }
       try (FSDataInputStream strm = fs.open(formatFile)) {
         Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
         if(!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION))) {
@@ -2494,8 +2504,9 @@ public class AcidUtils {
             throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
                 + ": " + dataFormat);
         }
-      }
-      catch(IOException e) {
+      } catch (FileNotFoundException e) {
+        return false;
+      } catch(IOException e) {
         String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE
             + ": " + e.getMessage();
         LOG.error(msg, e);
@@ -2606,12 +2617,15 @@ public class AcidUtils {
    * All data files produced by Acid write should have this (starting with Hive 3.0), including
    * those written by compactor.  This is more for sanity checking in case someone moved the files
    * around or something like that.
+   *
+   * Methods for getting/reading the version from files were moved to test class TestTxnCommands
+   * which is the only place they are used, in order to keep devs out of temptation, since they
+   * access the FileSystem which is expensive.
    */
   public static final class OrcAcidVersion {
-    private static final String ACID_VERSION_KEY = "hive.acid.version";
+    public static final String ACID_VERSION_KEY = "hive.acid.version";
     public static final String ACID_FORMAT = "_orc_acid_version";
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    public static final int ORC_ACID_VERSION_DEFAULT = 0;
     /**
      * 2 is the version of Acid released in Hive 3.0.
      */
@@ -2624,35 +2638,14 @@ public class AcidUtils {
       //so that we know which version wrote the file
       writer.addUserMetadata(ACID_VERSION_KEY, UTF8.encode(String.valueOf(ORC_ACID_VERSION)));
     }
-    /**
-     * This is smart enough to handle streaming ingest where there could be a
-     * {@link OrcAcidUtils#DELTA_SIDE_FILE_SUFFIX} side file.
-     * @param dataFile - ORC acid data file
-     * @return version property from file if there,
-     *          {@link #ORC_ACID_VERSION_DEFAULT} otherwise
-     */
-    @VisibleForTesting
-    public static int getAcidVersionFromDataFile(Path dataFile, FileSystem fs) throws IOException {
-      FileStatus fileStatus = fs.getFileStatus(dataFile);
-      Reader orcReader = OrcFile.createReader(dataFile,
-          OrcFile.readerOptions(fs.getConf())
-              .filesystem(fs)
-              //make sure to check for side file in case streaming ingest died
-              .maxLength(getLogicalLength(fs, fileStatus)));
-      if (orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
-        char[] versionChar = UTF8.decode(orcReader.getMetadataValue(ACID_VERSION_KEY)).array();
-        String version = new String(versionChar);
-        return Integer.valueOf(version);
-      }
-      return ORC_ACID_VERSION_DEFAULT;
-    }
+
     /**
      * This creates a version file in {@code deltaOrBaseDir}
      * @param deltaOrBaseDir - where to create the version file
      */
     public static void writeVersionFile(Path deltaOrBaseDir, FileSystem fs)  throws IOException {
       Path formatFile = getVersionFilePath(deltaOrBaseDir);
-      if(!fs.exists(formatFile)) {
+      if(!fs.isFile(formatFile)) {
         try (FSDataOutputStream strm = fs.create(formatFile, false)) {
           strm.write(UTF8.encode(String.valueOf(ORC_ACID_VERSION)).array());
         } catch (IOException ioe) {
@@ -2663,28 +2656,6 @@ public class AcidUtils {
     }
     public static Path getVersionFilePath(Path deltaOrBase) {
       return new Path(deltaOrBase, ACID_FORMAT);
-    }
-    @VisibleForTesting
-    public static int getAcidVersionFromMetaFile(Path deltaOrBaseDir, FileSystem fs)
-        throws IOException {
-      Path formatFile = getVersionFilePath(deltaOrBaseDir);
-      if(!fs.exists(formatFile)) {
-        LOG.debug(formatFile + " not found, returning default: " + ORC_ACID_VERSION_DEFAULT);
-        return ORC_ACID_VERSION_DEFAULT;
-      }
-      try (FSDataInputStream inputStream = fs.open(formatFile)) {
-        byte[] bytes = new byte[1];
-        int read = inputStream.read(bytes);
-        if (read != -1) {
-          String version = new String(bytes, UTF8);
-          return Integer.valueOf(version);
-        }
-        return ORC_ACID_VERSION_DEFAULT;
-      }
-      catch(IOException ex) {
-        LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
-        throw ex;
-      }
     }
   }
 
@@ -2802,8 +2773,14 @@ public class AcidUtils {
   public static class IdPathFilter implements PathFilter {
     private String baseDirName, deltaDirName;
     private final boolean isDeltaPrefix;
+    private final Set<String> dpSpecs;
+    private final int dpLevel;
 
     public IdPathFilter(long writeId, int stmtId) {
+      this(writeId, stmtId, null, 0);
+    }
+
+    public IdPathFilter(long writeId, int stmtId, Set<String> dpSpecs, int dpLevel) {
       String deltaDirName = null;
       deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
               String.format(DELTA_DIGITS, writeId);
@@ -2814,13 +2791,32 @@ public class AcidUtils {
 
       this.baseDirName = BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
       this.deltaDirName = deltaDirName;
+      this.dpSpecs = dpSpecs;
+      this.dpLevel = dpLevel;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
-          || (!isDeltaPrefix && name.equals(deltaDirName));
+      // Extending the path filter with optional dynamic partition specifications.
+      // This is needed for the use case when doing multi-statement insert overwrite with
+      // dynamic partitioning with direct insert or with insert-only tables.
+      // In this use-case, each FileSinkOperator should only clean-up the directories written
+      // by the same FileSinkOperator and do not clean-up the partition directories
+      // written by the other FileSinkOperators. (For further details please see HIVE-23114.)
+      if (dpLevel > 0 && dpSpecs != null && !dpSpecs.isEmpty()) {
+        Path parent = path.getParent();
+        String partitionSpec = parent.getName();
+        for (int i = 1; i < dpLevel; i++) {
+          parent = parent.getParent();
+          partitionSpec = parent.getName() + "/" + partitionSpec;
+        }
+        return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
+      }
+      else {
+        return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+            || (!isDeltaPrefix && name.equals(deltaDirName));
+      }
     }
   }
 
@@ -2893,12 +2889,15 @@ public class AcidUtils {
    * @return list with lock components
    */
   public static List<LockComponent> makeLockComponents(Set<WriteEntity> outputs, Set<ReadEntity> inputs,
-      HiveConf conf) {
+      Context.Operation operation, HiveConf conf) {
+
     List<LockComponent> lockComponents = new ArrayList<>();
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
+    boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+    boolean isMerge = operation == Context.Operation.MERGE;
 
-    // For each source to read, get a shared lock
+    // For each source to read, get a shared_read lock
     for (ReadEntity input : inputs) {
       if (input.isDummy()
           || !input.needsLock()
@@ -2910,7 +2909,7 @@ public class AcidUtils {
         continue;
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
-      compBuilder.setShared();
+      compBuilder.setSharedRead();
       compBuilder.setOperationType(DataOperationType.SELECT);
 
       Table t = null;
@@ -2952,7 +2951,7 @@ public class AcidUtils {
     // For each source to write to, get the appropriate lock type.  If it's
     // an OVERWRITE, we need to get an exclusive lock.  If it's an insert (no
     // overwrite) than we need a shared.  If it's update or delete then we
-    // need a SEMI-SHARED.
+    // need a SHARED_WRITE.
     for (WriteEntity output : outputs) {
       LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
@@ -2996,10 +2995,10 @@ public class AcidUtils {
       case INSERT_OVERWRITE:
         t = AcidUtils.getTable(output);
         if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite) {
             compBuilder.setExclusive();
           } else {
-            compBuilder.setSemiShared();
+            compBuilder.setExclWrite();
           }
           compBuilder.setOperationType(DataOperationType.UPDATE);
         } else {
@@ -3010,7 +3009,19 @@ public class AcidUtils {
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          compBuilder.setShared();
+          if (sharedWrite) {
+            if (!isMerge) {
+              compBuilder.setSharedWrite();
+            } else {
+              compBuilder.setExclWrite();
+            }
+          } else {
+            if (!isMerge) {
+              compBuilder.setSharedRead();
+            } else {
+              compBuilder.setExclusive();
+            }
+          }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
               "Thought all the non native tables have an instance of storage handler");
@@ -3025,13 +3036,13 @@ public class AcidUtils {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
             compBuilder.setExclusive();
           } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
-            compBuilder.setShared();
+            compBuilder.setSharedRead();
           }
         }
         compBuilder.setOperationType(DataOperationType.INSERT);
         break;
       case DDL_SHARED:
-        compBuilder.setShared();
+        compBuilder.setSharedRead();
         if (!output.isTxnAnalyze()) {
           // Analyze needs txn components to be present, otherwise an aborted analyze write ID
           // might be rolled under the watermark by compactor while stats written by it are
@@ -3041,12 +3052,15 @@ public class AcidUtils {
         break;
 
       case UPDATE:
-        compBuilder.setSemiShared();
-        compBuilder.setOperationType(DataOperationType.UPDATE);
-        break;
       case DELETE:
-        compBuilder.setSemiShared();
-        compBuilder.setOperationType(DataOperationType.DELETE);
+        assert t != null;
+        if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
+          compBuilder.setSharedWrite();
+        } else {
+          compBuilder.setExclWrite();
+        }
+        compBuilder.setOperationType(DataOperationType.valueOf(
+            output.getWriteType().name()));
         break;
 
       case DDL_NO_LOCK:
@@ -3116,14 +3130,22 @@ public class AcidUtils {
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
 
-    return (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
-      tree.getToken().getType() == HiveParser.TOK_QUERY &&
-      Stream.of(
-        new int[]{HiveParser.TOK_INSERT_INTO},
-        new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-        .noneMatch(pattern ->
-            astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) ?
-      TxnType.READ_ONLY : TxnType.DEFAULT;
+    // check if read-only txn
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
+        tree.getToken().getType() == HiveParser.TOK_QUERY &&
+        Stream.of(
+          new int[]{HiveParser.TOK_INSERT_INTO},
+          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+          .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
+      return TxnType.READ_ONLY;
+    }
+
+    // check if txn has a materialized view rebuild
+    if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
+      return TxnType.MATER_VIEW_REBUILD;
+    }
+
+    return TxnType.DEFAULT;
   }
 
   public static List<HdfsFileStatusWithId> findBaseFiles(
@@ -3137,11 +3159,14 @@ public class AcidUtils {
           useFileIds.value = true; // The call succeeded, so presumably the API is there.
         }
         return result;
-      } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        if (val == null && t instanceof UnsupportedOperationException) {
+      } catch (UnsupportedOperationException uoe) {
+        LOG.warn("Failed to get files with ID; using regular API: " + uoe.getMessage());
+        if (val == null) {
           useFileIds.value = false;
         }
+      } catch (IOException ioe) {
+        LOG.info("Failed to get files with ID; using regular API: " + ioe.getMessage());
+        LOG.debug("Failed to get files with ID", ioe);
       }
     }
 

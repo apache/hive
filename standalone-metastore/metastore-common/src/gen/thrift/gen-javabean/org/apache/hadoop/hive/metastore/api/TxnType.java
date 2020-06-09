@@ -15,7 +15,8 @@ public enum TxnType implements org.apache.thrift.TEnum {
   DEFAULT(0),
   REPL_CREATED(1),
   READ_ONLY(2),
-  COMPACTION(3);
+  COMPACTION(3),
+  MATER_VIEW_REBUILD(4);
 
   private final int value;
 
@@ -44,6 +45,8 @@ public enum TxnType implements org.apache.thrift.TEnum {
         return READ_ONLY;
       case 3:
         return COMPACTION;
+      case 4:
+        return MATER_VIEW_REBUILD;
       default:
         return null;
     }

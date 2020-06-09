@@ -43,10 +43,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +62,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -688,18 +697,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table2 partition(country='india') values(1)")
             .dump(primaryDbName, Collections.emptyList());
 
-    // Second incremental dump
-    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
-            .run("drop table table1")
-            .run("drop table table2")
-            .run("create table table2 (id int) partitioned by (country string)")
-            .run("alter table table2 add partition(country='india')")
-            .run("alter table table2 drop partition(country='india')")
-            .run("insert into table2 partition(country='us') values(2)")
-            .run("create table table1 (i int)")
-            .run("insert into table1 values (2)")
-            .dump(primaryDbName, Collections.emptyList());
-
     // First incremental load
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -711,6 +708,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] {"1"})
             .run("select id from table2 order by id")
             .verifyResults(new String[] {"1"});
+
+    // Second incremental dump
+    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("alter table table2 add partition(country='india')")
+            .run("alter table table2 drop partition(country='india')")
+            .run("insert into table2 partition(country='us') values(2)")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, Collections.emptyList());
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -745,6 +754,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table3 partition(country='india') values(3)")
         .dump(primaryDbName, Collections.emptyList());
 
+    // First incremental load
+    replica.load(replicatedDbName, primaryDbName)
+            .status(replicatedDbName)
+            .verifyResult(firstIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[] {"1"})
+            .run("select * from table2")
+            .verifyResults(new String[] {"2"})
+            .run("select id from table3")
+            .verifyResults(new String[] {"3"});
+
     // Second incremental dump
     WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
         .run("drop table table1")
@@ -757,18 +778,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("create table table3 (id int) partitioned by (name string, rank int)")
         .run("insert into table3 partition(name='adam', rank=100) values(30)")
         .dump(primaryDbName, Collections.emptyList());
-
-    // First incremental load
-    replica.load(replicatedDbName, primaryDbName)
-        .status(replicatedDbName)
-        .verifyResult(firstIncremental.lastReplicationId)
-        .run("use " + replicatedDbName)
-        .run("select id from table1")
-        .verifyResults(new String[] { "1" })
-        .run("select * from table2")
-        .verifyResults(new String[] { "2" })
-        .run("select id from table3")
-        .verifyResults(new String[] { "3" });
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -834,7 +843,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
     assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+    String hiveDumpDir = dumpDir + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(hiveDumpDir));
   }
 
   private void verifyIfCkptPropMissing(Map<String, String> props) {
@@ -878,16 +888,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     } catch (CommandProcessorException e) {
       assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
     }
-
-    // Bootstrap load from an empty dump directory should return empty load directory error. Since we have repl status
-    //check on target
-    tuple = primary.dump("someJunkDB");
-    try {
-      replica.runCommand("REPL LOAD someJunkDB into someJunkDB ");
-    } catch (CommandProcessorException e) {
-      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
-    }
-
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
 
@@ -928,10 +928,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table4 values (1,2)")
             .dump(primaryDbName, Collections.emptyList());
 
-    Path path = new Path(incremental.dumpLocation);
+    String hiveDumpDir = incremental.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 1; //one is metadata file
+    int numEvents = fileStatus.length - 3; //for _metadata, _finished_dump and _events_dump
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
@@ -1095,11 +1096,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(Collections.singletonList("10"))
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"));
-    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
+    String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, LOAD_ACKNOWLEDGEMENT.toString()), true);
     // Retry with same dump with which it was already loaded also fails.
     replica.loadFailure(replicatedDbName, primaryDbName);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, LOAD_ACKNOWLEDGEMENT.toString()), true);
     // Retry from same dump when the database is empty is also not allowed.
     replica.run("drop table t1")
             .run("drop table t2")
@@ -1327,7 +1335,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dump(primaryDbName);
 
     testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2",
-            "ADD_PARTITION");
+            "ADD_PARTITION", tuple);
   }
 
   @Test
@@ -1341,6 +1349,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1 (place string) partitioned by (country string)")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + LOAD_ACKNOWLEDGEMENT.toString()), true);
+
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
@@ -1349,7 +1362,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION",
+            tuple);
   }
 
   @Test
@@ -1357,11 +1371,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("ALTER TABLE t2 ADD PARTITION (country='india')")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(bootstrapDump.dumpLocation).getFileSystem(conf).delete(new Path(bootstrapDump.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + LOAD_ACKNOWLEDGEMENT.toString()), true);
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
@@ -1370,11 +1387,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT", tuple);
   }
 
   private void testMoveOptimization(String primaryDb, String replicaDb, String replicatedDbName_CM,
-                                    String tbl,  String eventType) throws Throwable {
+                                    String tbl,  String eventType, WarehouseInstance.Tuple tuple) throws Throwable {
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
 
@@ -1410,6 +1427,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("use " + primaryDb)
             .run("drop table " + tbl);
+
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + LOAD_ACKNOWLEDGEMENT.toString()), true);
+
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
@@ -1476,5 +1499,188 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResult(tuple.lastReplicationId)
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("china", "india"));
+  }
+
+  /*
+  Can't test complete replication as mini ranger is not supported
+  Testing just the configs and no impact on existing replication
+   */
+  @Test
+  public void testRangerReplication() throws Throwable {
+    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+        "'hive.in.test'='true'");
+    primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)")
+        .dump(primaryDbName, clause);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] {"acid_table", "table1"})
+        .run("select * from table1")
+        .verifyResults(new String[] {"1", "2"});
+  }
+
+  /*
+  Can't test complete replication as mini ranger is not supported
+  Testing just the configs and no impact on existing replication
+ */
+  @Test
+  public void testFailureUnsupportedAuthorizerReplication() throws Throwable {
+    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+        "'hive.in.test'='true'", "'hive.repl.authorization.provider.service'='sentry'");
+    primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)");
+    try {
+      primary.dump(primaryDbName, clause);
+    } catch (SemanticException e) {
+      assertEquals("Authorizer sentry not supported for replication ", e.getMessage());
+    }
+  }
+
+  //Testing just the configs and no impact on existing replication
+  @Test
+  public void testAtlasReplication() throws Throwable {
+    Map<String, String> confMap = defaultAtlasConfMap();
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, getAtlasClause(defaultAtlasConfMap()));
+    verifyAtlasMetadataPresent();
+
+    confMap.remove("hive.repl.atlas.replicatedto");
+    replica.load(replicatedDbName, primaryDbName, getAtlasClause(confMap))
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+  }
+
+  @Test
+  public void testAtlasMissingConfigs() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)");
+    Map<String, String> confMap = new HashMap<>();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
+    ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, replicatedDbName);
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    primary.dump(primaryDbName, getAtlasClause(confMap));
+    verifyAtlasMetadataPresent();
+
+    confMap.clear();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
+    ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    primary.load(replicatedDbName, primaryDbName, getAtlasClause(confMap));
+  }
+
+  private void ensureInvalidUrl(List<String> atlasClause, String endpoint, boolean dump) throws Throwable {
+    try {
+      if (dump) {
+        primary.dump(primaryDbName, atlasClause);
+      } else {
+        primary.load(replicatedDbName, primaryDbName, atlasClause);
+      }
+    } catch (MalformedURLException e) {
+      return;
+    }
+    Assert.fail("Atlas endpoint is invalid and but test didn't fail:" + endpoint);
+  }
+
+  private void verifyAtlasMetadataPresent() throws IOException {
+    Path dbReplDir = new Path(primary.repldDir,
+            Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = FileSystem.get(dbReplDir.toUri(), primary.getConf());
+    assertTrue(fs.exists(dbReplDir));
+    FileStatus[] dumpRoots = fs.listStatus(dbReplDir);
+    assert(dumpRoots.length == 1);
+    Path dumpRoot = dumpRoots[0].getPath();
+    assertTrue("Hive dump root doesn't exist", fs.exists(new Path(dumpRoot, ReplUtils.REPL_HIVE_BASE_DIR)));
+    Path atlasDumpRoot = new Path(dumpRoot, ReplUtils.REPL_ATLAS_BASE_DIR);
+    assertTrue("Atlas dump root doesn't exist", fs.exists(atlasDumpRoot));
+    assertTrue("Atlas export file doesn't exist",
+            fs.exists(new Path(atlasDumpRoot, ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME)));
+    assertTrue("Atlas dump metadata doesn't exist",
+            fs.exists(new Path(atlasDumpRoot, EximUtil.METADATA_NAME)));
+    BufferedReader br = null;
+    try {
+      br = new BufferedReader(new InputStreamReader(
+              fs.open(new Path(atlasDumpRoot, EximUtil.METADATA_NAME)), Charset.defaultCharset()));
+      String[] lineContents = br.readLine().split("\t", 5);
+      assertEquals(primary.hiveConf.get("fs.defaultFS"), lineContents[0]);
+      assertEquals(0, Long.parseLong(lineContents[1]));
+    } finally {
+      if (br != null) {
+        br.close();
+      }
+    }
+  }
+
+  private void ensureFailedReplOperation(List<String> clause, String conf, boolean dump) throws Throwable {
+    try {
+      if (dump) {
+        primary.dump(primaryDbName, clause);
+      } else {
+        primary.load(replicatedDbName, primaryDbName, clause);
+      }
+      Assert.fail(conf + " is mandatory config for Atlas metadata replication but it didn't fail.");
+    } catch (SemanticException e) {
+      assertEquals(e.getMessage(), (conf + " is mandatory config for Atlas metadata replication"));
+    }
+  }
+
+  private Map<String, String> defaultAtlasConfMap() {
+    Map<String, String> confMap = new HashMap<>();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, replicatedDbName);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    return confMap;
+  }
+
+  private List<String> getAtlasClause(Map<String, String> confMap) {
+    List confList = new ArrayList();
+    for (Map.Entry<String, String> entry:confMap.entrySet()) {
+      confList.add(quote(entry.getKey()) + "=" + quote(entry.getValue()));
+    }
+    return confList;
+  }
+
+  private String quote(String str) {
+    return "'" + str + "'";
   }
 }

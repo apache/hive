@@ -175,6 +175,7 @@ enum LockType {
     SHARED_READ = 1,
     SHARED_WRITE = 2,
     EXCLUSIVE = 3,
+    EXCL_WRITE = 4,
 }
 
 enum CompactionType {
@@ -386,6 +387,7 @@ struct Database {
   7: optional PrincipalType ownerType,
   8: optional string catalogName,
   9: optional i32 createTime               // creation time of database in seconds since epoch
+  10: optional string managedLocationUri // directory for managed tables
 }
 
 // This object holds the information needed by SerDes
@@ -757,13 +759,23 @@ struct PartitionsByExprResult {
   2: required bool hasUnknownPartitions
 }
 
+// Return type for get_partitions_spec_by_expr
+struct PartitionsSpecByExprResult {
+1: required list<PartitionSpec> partitionsSpec,
+// Whether the results has any (currently, all) partitions which may or may not match
+2: required bool hasUnknownPartitions
+}
+
 struct PartitionsByExprRequest {
   1: required string dbName,
   2: required string tblName,
   3: required binary expr,
   4: optional string defaultPartitionName,
-  5: optional i16 maxParts=-1
-  6: optional string catName
+  5: optional i16 maxParts=-1,
+  6: optional string catName,
+  7: optional string order
+  8: optional string validWriteIdList,
+  9: optional i64 id=-1 // table id
 }
 
 struct TableStatsResult {
@@ -782,7 +794,8 @@ struct TableStatsRequest {
  3: required list<string> colNames
  4: optional string catName,
  5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
- 6: required string engine //engine creating the current request
+ 6: required string engine, //engine creating the current request
+ 7: optional i64 id=-1 // table id
 }
 
 struct PartitionsStatsRequest {
@@ -850,7 +863,8 @@ struct PartitionValuesRequest {
   6: optional list<FieldSchema> partitionOrder;
   7: optional bool ascending = true;
   8: optional i64 maxParts = -1;
-  9: optional string catName
+  9: optional string catName,
+  10: optional string validWriteIdList
 }
 
 struct PartitionValuesRow {
@@ -868,7 +882,8 @@ struct GetPartitionsByNamesRequest {
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional string engine
+  7: optional string engine,
+  8: optional string validWriteIdList
 }
 
 struct GetPartitionsByNamesResult {
@@ -889,7 +904,8 @@ enum TxnType {
     DEFAULT      = 0,
     REPL_CREATED = 1,
     READ_ONLY    = 2,
-    COMPACTION   = 3
+    COMPACTION   = 3,
+    MATER_VIEW_REBUILD = 4
 }
 
 // specifies which info to return with GetTablesExtRequest
@@ -1071,11 +1087,13 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
+    6: optional bool zeroWaitReadEnabled = false
 }
 
 struct LockResponse {
     1: required i64 lockid,
     2: required LockState state,
+    3: optional string errorMessage
 }
 
 struct CheckLockRequest {
@@ -1156,6 +1174,7 @@ struct CompactionInfoStruct {
     11: optional i64 start
     12: optional i64 highestWriteId
     13: optional string errorMessage
+    14: optional bool hasoldabort
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1255,10 +1274,14 @@ struct InsertEventRequestData {
     3: optional list<string> filesAddedChecksum,
     // Used by acid operation to create the sub directory
     4: optional list<string> subDirectoryList,
+    // partition value which was inserted (used in case of bulk insert events)
+    5: optional list<string> partitionVal
 }
 
 union FireEventRequestData {
     1: InsertEventRequestData insertData
+    // used to fire insert events on multiple partitions
+    2: list<InsertEventRequestData> insertDatas
 }
 
 struct FireEventRequest {
@@ -1268,12 +1291,13 @@ struct FireEventRequest {
     // subevent as I assume they'll be used across most event types.
     3: optional string dbName,
     4: optional string tableName,
+    // ignored if event request data contains multiple insert event datas
     5: optional list<string> partitionVals,
     6: optional string catName,
 }
 
 struct FireEventResponse {
-    // NOP for now, this is just a place holder for future responses
+    1: list<i64> eventIds
 }
 
 struct WriteNotificationLogRequest {
@@ -1379,7 +1403,8 @@ struct GetTableRequest {
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
-  10: optional string engine
+  10: optional string engine,
+  11: optional i64 id=-1 // table id
 }
 
 struct GetTableResult {
@@ -1921,7 +1946,108 @@ struct GetPartitionsRequest {
    7: GetPartitionsProjectionSpec projectionSpec
    8: GetPartitionsFilterSpec filterSpec, // TODO not yet implemented. Must be present but ignored
    9: optional list<string> processorCapabilities,
-   10: optional string processorIdentifier
+   10: optional string processorIdentifier,
+   11: optional string validWriteIdList
+}
+
+struct GetFieldsRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional EnvironmentContext envContext,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetFieldsResponse {
+   1: required list<FieldSchema> fields
+}
+
+struct GetSchemaRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional EnvironmentContext envContext,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetSchemaResponse {
+   1: required list<FieldSchema> fields
+}
+
+struct GetPartitionRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: required list<string> partVals,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct GetPartitionResponse {
+   1: required Partition partition
+}
+
+struct PartitionsRequest { // Not using Get prefix as that name is already used for a different method
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional i16 maxParts=-1,
+   5: optional string validWriteIdList,
+   6: optional i64 id=-1 // table id
+}
+
+struct PartitionsResponse { // Not using Get prefix as that name is already used for a different method
+   1: required list<Partition> partitions
+}
+
+struct GetPartitionNamesPsRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional list<string> partValues,
+   5: optional i16 maxParts=-1,
+   6: optional string validWriteIdList,
+   7: optional i64 id=-1 // table id
+}
+
+struct GetPartitionNamesPsResponse {
+   1: required list<string> names
+}
+
+struct GetPartitionsPsWithAuthRequest {
+   1: optional string catName,
+   2: required string dbName,
+   3: required string tblName,
+   4: optional list<string> partVals,
+   5: optional i16 maxParts=-1,
+   6: optional string userName,
+   7: optional list<string> groupNames,
+   8: optional string validWriteIdList,
+   9: optional i64 id=-1 // table id
+}
+
+struct GetPartitionsPsWithAuthResponse {
+   1: required list<Partition> partitions
+}
+
+struct ReplicationMetrics{
+  1: required i64 scheduledExecutionId,
+  2: required string policy,
+  3: required i64 dumpExecutionId,
+  4: optional string metadata,
+  5: optional string progress,
+}
+
+struct ReplicationMetricList{
+  1: required list<ReplicationMetrics> replicationMetricList,
+}
+
+struct GetReplicationMetricsRequest {
+  1: optional i64 scheduledExecutionId,
+  2: optional string policy,
+  3: optional i64 dumpExecutionId
 }
 
 // Exceptions.
@@ -2017,12 +2143,18 @@ service ThriftHiveMetastore extends fb303.FacebookService
                                 throws(1:MetaException o2)
 
   // Gets a list of FieldSchemas describing the columns of a particular table
-  list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
-  list<FieldSchema> get_fields_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_fields(1:string db_name, 2:string table_name) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+  list<FieldSchema> get_fields_with_environment_context(1:string db_name, 2:string table_name, 3:EnvironmentContext environment_context) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+
+  GetFieldsResponse get_fields_req(1: GetFieldsRequest req)
+        throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
 
   // Gets a list of FieldSchemas describing both the columns and the partition keys of a particular table
-  list<FieldSchema> get_schema(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
-  list<FieldSchema> get_schema_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema(1:string db_name, 2:string table_name) throws(1:MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema_with_environment_context(1:string db_name, 2:string table_name, 3:EnvironmentContext environment_context) throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
+
+  GetSchemaResponse get_schema_req(1: GetSchemaRequest req)
+        throws(1:MetaException o1, 2:UnknownTableException o2, 3:UnknownDBException o3)
 
   // create a Hive table. Following fields must be set
   // tableName
@@ -2184,6 +2316,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionResponse get_partition_req(1: GetPartitionRequest req)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
   Partition exchange_partition(1:map<string, string> partitionSpecs, 2:string source_db,
       3:string source_table_name, 4:string dest_db, 5:string dest_table_name)
       throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3,
@@ -2203,6 +2337,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // returns all the partitions for this table in reverse chronological order.
   // If max parts is given then it will return only that many.
   list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+PartitionsResponse get_partitions_req(1:PartitionsRequest req)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1,
      4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
@@ -2225,12 +2361,20 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name
   	3:list<string> part_vals, 4:i16 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Partition> get_partitions_ps_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1,
+  list<Partition> get_partitions_ps_with_auth(1:string db_name,
+    2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1,
      5: string user_name, 6: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(1:GetPartitionsPsWithAuthRequest req)
+    throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   list<string> get_partition_names_ps(1:string db_name,
   	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
   	                   throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionNamesPsResponse get_partition_names_ps_req(1:GetPartitionNamesPsRequest req)
+    throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  list<string> get_partition_names_req(1:PartitionsByExprRequest req)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter
   list<Partition> get_partitions_by_filter(1:string db_name 2:string tbl_name
@@ -2249,6 +2393,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter
+  // unlike get_partitions_by_expr, this returns PartitionSpec which contains deduplicated
+  // storage descriptor
+  PartitionsSpecByExprResult get_partitions_spec_by_expr(1:PartitionsByExprRequest req)
+  throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+    // get the partitions matching the given partition filter
   i32 get_num_partitions_by_filter(1:string db_name 2:string tbl_name 3:string filter)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
@@ -2628,6 +2778,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:AlreadyExistsException o3, 4:InvalidInputException o4)
   void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1, 2: InvalidOperationException o2)
   ScheduledQuery get_scheduled_query(1: ScheduledQueryKey scheduleKey) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
+  ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

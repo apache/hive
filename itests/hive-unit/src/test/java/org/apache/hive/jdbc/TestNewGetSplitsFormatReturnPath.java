@@ -20,6 +20,8 @@ package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * TestNewGetSplitsFormatReturnPath.
@@ -32,5 +34,18 @@ public class TestNewGetSplitsFormatReturnPath extends TestNewGetSplitsFormat {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, true);
     BaseJdbcWithMiniLlap.beforeTest(conf);
+  }
+
+  @Override
+  @Ignore
+  @Test
+  public void testMultipleBatchesOfComplexTypes() {
+    // ToDo: FixMe
+  }
+
+  @Override
+  @Ignore("HIVE-23524 flaky")
+  @Test
+  public void testLlapInputFormatEndToEndWithMultipleBatches() {
   }
 }

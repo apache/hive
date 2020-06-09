@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -31,9 +30,6 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -108,24 +104,13 @@ class AddPartitionHandler extends AbstractEventHandler {
         Iterable<String> files = partitionFilesIter.next().getFiles();
         if (files != null) {
           // encoded filename/checksum of files, write into _files
-          try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
-            for (String file : files) {
-              fileListWriter.write(file);
-              fileListWriter.newLine();
-            }
+          for (String file : files) {
+            writeFileEntry(qlMdTable, qlPtn, file, withinContext);
           }
         }
       }
     }
     withinContext.createDmd(this).write();
-  }
-
-  private BufferedWriter writer(Context withinContext, Partition qlPtn)
-      throws IOException {
-    Path ptnDataPath = new Path(withinContext.eventRoot, qlPtn.getName());
-    FileSystem fs = ptnDataPath.getFileSystem(withinContext.hiveConf);
-    Path filesPath = new Path(ptnDataPath, EximUtil.FILES_NAME);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
   }
 
   @Override

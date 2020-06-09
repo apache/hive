@@ -233,7 +233,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -659,7 +659,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -843,7 +843,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -1264,7 +1264,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:

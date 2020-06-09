@@ -44,12 +44,12 @@ POSTHOOK: Lineage: t_test_grouping_sets.a SCRIPT []
 POSTHOOK: Lineage: t_test_grouping_sets.b SCRIPT []
 POSTHOOK: Lineage: t_test_grouping_sets.c SCRIPT []
 PREHOOK: query: EXPLAIN
-SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -109,17 +109,17 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 26 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: z
-                    sort order: +
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
+                    sort order: ++
                     Statistics: Num rows: 26 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
-                    value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+                    value expressions: _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint)
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 26 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
@@ -139,22 +139,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+PREHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1	0	0	0
 5	2	0	0	0
 5	NULL	0	1	1
-PREHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+PREHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
+POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -162,12 +162,12 @@ POSTHOOK: Input: default@t_test_grouping_sets
 5	2	0	0	0
 5	NULL	0	1	1
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -224,17 +224,16 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                 pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  null sort order: z
-                  sort order: +
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  null sort order: zz
+                  sort order: ++
                   Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
-                  value expressions: _col1 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 26 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
@@ -254,49 +253,49 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1
 5	2
 5	NULL
-6	NULL
 6	2
+6	NULL
 7	8
 7	NULL
 10	11
 10	NULL
-NULL	2
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+NULL	1
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1
 5	2
 5	NULL
-6	NULL
 6	2
-7	NULL
+6	NULL
 7	8
+7	NULL
 10	11
 10	NULL
 NULL	1
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -346,23 +345,22 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                 pruneGroupingSetId: true
                 Top N Key Operator
-                  sort order: +
-                  keys: _col1 (type: int)
-                  null sort order: z
+                  sort order: ++
+                  keys: _col1 (type: int), _col0 (type: int)
+                  null sort order: zz
                   Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 3
                   Reduce Output Operator
-                    key expressions: _col1 (type: int)
-                    null sort order: z
-                    sort order: +
+                    key expressions: _col1 (type: int), _col0 (type: int)
+                    null sort order: zz
+                    sort order: ++
                     Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 26 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
@@ -382,22 +380,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1
 NULL	1
 5	2
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -405,12 +403,12 @@ POSTHOOK: Input: default@t_test_grouping_sets
 NULL	1
 5	2
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -460,23 +458,22 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                 pruneGroupingSetId: true
                 Top N Key Operator
-                  sort order: +
-                  keys: _col1 (type: int)
-                  null sort order: z
+                  sort order: ++
+                  keys: _col1 (type: int), _col0 (type: int)
+                  null sort order: zz
                   Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 1
                   Reduce Output Operator
-                    key expressions: _col1 (type: int)
-                    null sort order: z
-                    sort order: +
+                    key expressions: _col1 (type: int), _col0 (type: int)
+                    null sort order: zz
+                    sort order: ++
                     Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 26 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
@@ -496,31 +493,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 5	1
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -570,23 +567,22 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 pruneGroupingSetId: true
                 Top N Key Operator
-                  sort order: +
-                  keys: _col1 (type: int)
-                  null sort order: z
+                  sort order: ++
+                  keys: _col1 (type: int), _col0 (type: int)
+                  null sort order: zz
                   Statistics: Num rows: 13 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 7
                   Reduce Output Operator
-                    key expressions: _col1 (type: int)
-                    null sort order: z
-                    sort order: +
+                    key expressions: _col1 (type: int), _col0 (type: int)
+                    null sort order: zz
+                    sort order: ++
                     Statistics: Num rows: 13 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 13 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
@@ -606,11 +602,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -618,14 +614,14 @@ NULL	1
 NULL	2
 NULL	8
 NULL	11
-10	NULL
-NULL	NULL
+5	NULL
 6	NULL
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+7	NULL
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -633,16 +629,16 @@ NULL	1
 NULL	2
 NULL	8
 NULL	11
-10	NULL
-NULL	NULL
+5	NULL
 6	NULL
+7	NULL
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -728,11 +724,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -743,11 +739,11 @@ POSTHOOK: Input: default@t_test_grouping_sets
 6	2
 6	NULL
 5	1
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -759,12 +755,12 @@ POSTHOOK: Input: default@t_test_grouping_sets
 6	NULL
 5	1
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -850,11 +846,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -865,11 +861,11 @@ POSTHOOK: Input: default@t_test_grouping_sets
 5	2
 NULL	1
 NULL	2
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -881,12 +877,12 @@ POSTHOOK: Input: default@t_test_grouping_sets
 NULL	1
 NULL	2
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -972,11 +968,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -987,11 +983,11 @@ POSTHOOK: Input: default@t_test_grouping_sets
 5	2
 NULL	NULL
 NULL	NULL
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -1003,12 +999,12 @@ POSTHOOK: Input: default@t_test_grouping_sets
 NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -1094,11 +1090,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
@@ -1109,11 +1105,11 @@ POSTHOOK: Input: default@t_test_grouping_sets
 5	2
 NULL	NULL
 NULL	NULL
-PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7
+POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####

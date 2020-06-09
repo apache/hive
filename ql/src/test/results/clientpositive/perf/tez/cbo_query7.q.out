@@ -52,7 +52,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject($f0=[$0], $f1=[/(CAST($1):DOUBLE, $2)], $f2=[/($3, $4)], $f3=[/($5, $6)], $f4=[/($7, $8)])
+  HiveProject($f0=[$0], $f1=[/(CAST($1):DOUBLE, $2)], $f2=[CAST(/($3, $4)):DECIMAL(11, 6)], $f3=[CAST(/($5, $6)):DECIMAL(11, 6)], $f4=[CAST(/($7, $8)):DECIMAL(11, 6)])
     HiveAggregate(group=[{1}], agg#0=[sum($6)], agg#1=[count($6)], agg#2=[sum($7)], agg#3=[count($7)], agg#4=[sum($9)], agg#5=[count($9)], agg#6=[sum($8)], agg#7=[count($8)])
       HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(i_item_sk=[$0], i_item_id=[$1])

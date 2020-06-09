@@ -25,6 +25,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -82,6 +85,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final SearchArgument sarg;
   private final VectorizedRowBatchCtx rbCtx;
   private final boolean isVectorized;
+  private final boolean probeDecodeEnabled;
   private VectorizedOrcAcidRowBatchReader acidReader;
   private final Object[] partitionValues;
 
@@ -169,6 +173,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             queueLimitBase,
             queueLimitMin,
             rbCtx.getRowColumnTypeInfos(),
+            rbCtx.getDataColumnNums(),
             decimal64Support);
     LOG.info("Queue limit for LlapRecordReader is " + limit);
     this.queue = new ArrayBlockingQueue<>(limit);
@@ -194,6 +199,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
+
+    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
+    if (this.probeDecodeEnabled) {
+      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
+      LOG.info("LlapRecordReader ProbeDecode is enabled");
+    }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
@@ -223,15 +234,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       int queueLimitMax,
       int queueLimitMin,
       TypeInfo[] typeInfos,
+      int[] projectedColumnNums,
       final boolean decimal64Support) {
     assert queueLimitMax >= queueLimitMin;
     // If the values are equal, the queue limit is fixed.
     if (queueLimitMax == queueLimitMin) return queueLimitMax;
     // If there are no columns (projection only join?) just assume no weight.
-    if (typeInfos == null || typeInfos.length == 0) return queueLimitMax;
+    if (projectedColumnNums == null || projectedColumnNums.length == 0) return queueLimitMax;
     // total weight as bytes
     double totalWeight = 0;
-    int numberOfProjectedColumns = typeInfos.length;
+    int numberOfProjectedColumns = projectedColumnNums.length;
     double scale = Math.max(Math.log(numberOfProjectedColumns), 1);
 
     // Assuming that an empty Column Vector is about 96 bytes the object
@@ -257,8 +269,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     //     88     8                                                    byte[] BytesColumnVector.smallBuffer
     long columnVectorBaseSize = (long) (96 * numberOfProjectedColumns * scale);
 
-    for (int i = 0; i < typeInfos.length; i++) {
-      TypeInfo ti = typeInfos[i];
+    for (int i = 0; i < projectedColumnNums.length; i++) {
+      TypeInfo ti = typeInfos[projectedColumnNums[i]];
       int colWeight;
       if (ti.getCategory() != Category.PRIMITIVE) {
         colWeight = COL_WEIGHT_COMPLEX;
@@ -627,6 +639,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
+    // ProbeDecode Context for row-level filtering
+    private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
+
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
         JobConf jobConf, boolean includeAcidColumns) {
@@ -708,6 +723,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
 
+    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext) {
+      this.probeDecodeContext = currProbeDecodeContext;
+    }
+
     @Override
     public List<Integer> getPhysicalColumnIds() {
       return filePhysicalColumnIds;
@@ -723,5 +742,39 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return OrcInputFormat.genIncludedTypes(
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
+
+    @Override
+    public String getQueryId() {
+      return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
+    }
+
+    @Override
+    public boolean isProbeDecodeEnabled() {
+      return this.probeDecodeContext != null;
+    }
+
+    @Override
+    public byte getProbeMjSmallTablePos() {
+      return this.probeDecodeContext.getMjSmallTablePos();
+    }
+
+    @Override
+    public int getProbeColIdx() {
+      // TODO: is this the best way to get the ColId?
+      Pattern pattern = Pattern.compile("_col([0-9]+)");
+      Matcher matcher = pattern.matcher(this.probeDecodeContext.getMjBigTableKeyColName());
+      return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+    }
+
+    @Override
+    public String getProbeColName() {
+      return this.probeDecodeContext.getMjBigTableKeyColName();
+    }
+
+    @Override
+    public String getProbeCacheKey() {
+      return this.probeDecodeContext.getMjSmallTableCacheKey();
+    }
+
   }
 } 

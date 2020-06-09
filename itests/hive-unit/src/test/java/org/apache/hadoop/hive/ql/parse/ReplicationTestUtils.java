@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Set;
@@ -516,10 +517,23 @@ public class ReplicationTestUtils {
     );
   }
 
-  public static void assertExternalFileInfo(WarehouseInstance primary,
-                                      List<String> expected,
-                                      Path externalTableInfoFile) throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
+  public static List<String> externalTableWithClause(List<String> externalTableBasePathWithClause, Boolean bootstrap,
+                                                     Boolean includeExtTbl) {
+    List<String> withClause = new ArrayList<>(externalTableBasePathWithClause);
+    if (bootstrap != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES + "'='" + Boolean.toString(bootstrap)
+              + "'");
+    }
+    if (includeExtTbl != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES + "'='" + Boolean.toString(includeExtTbl)
+              + "'");
+    }
+    return withClause;
+  }
+
+  public static void assertExternalFileInfo(WarehouseInstance warehouseInstance,
+                                      List<String> expected, Path externalTableInfoFile) throws IOException {
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
     Assert.assertTrue(fileSystem.exists(externalTableInfoFile));
     InputStream inputStream = fileSystem.open(externalTableInfoFile);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));

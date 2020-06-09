@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -437,12 +438,18 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.outputName = outputName;
   }
 
+  @Explain(displayName = "numBuckets", explainLevels = { Level.EXTENDED })
   public int getNumBuckets() {
     return numBuckets;
   }
 
   public void setNumBuckets(int numBuckets) {
     this.numBuckets = numBuckets;
+  }
+
+  @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })
+  public int getBucketingVersionForExplain() {
+    return getBucketingVersion();
   }
 
   public List<ExprNodeDesc> getBucketCols() {
@@ -569,7 +576,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       int[] keyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
       if (keyColumnMap == null) {
         // Always show an array.
-        return new ArrayList<String>();
+        return Collections.emptyList();
       }
       return outputColumnsAndTypesToStringList(
           vectorReduceSinkInfo.getReduceSinkKeyColumnMap(),
@@ -585,7 +592,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       int[] valueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
       if (valueColumnMap == null) {
         // Always show an array.
-        return new ArrayList<String>();
+        return Collections.emptyList();
       }
       return outputColumnsAndTypesToStringList(
           vectorReduceSinkInfo.getReduceSinkValueColumnMap(),

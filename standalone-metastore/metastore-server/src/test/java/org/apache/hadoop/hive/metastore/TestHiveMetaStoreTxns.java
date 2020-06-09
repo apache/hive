@@ -41,6 +41,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
@@ -68,8 +69,8 @@ import java.util.List;
 @Category(MetastoreUnitTest.class)
 public class TestHiveMetaStoreTxns {
 
-  private final Configuration conf = MetastoreConf.newMetastoreConf();
-  private IMetaStoreClient client;
+  private static Configuration conf = MetastoreConf.newMetastoreConf();
+  private static IMetaStoreClient client;
   private Connection conn;
 
   @Rule
@@ -222,13 +223,13 @@ public class TestHiveMetaStoreTxns {
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
         .setOperationType(DataOperationType.NO_TXN)
-        .setShared()
+        .setSharedRead()
         .build());
     rqstBuilder.setUser("fred");
 
@@ -255,18 +256,18 @@ public class TestHiveMetaStoreTxns {
         .setDbName("mydb")
         .setTableName("mytable")
         .setPartitionName("mypartition")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
-        .setShared()
+        .setSharedRead()
         .setOperationType(DataOperationType.SELECT)
         .build())
       .setUser("fred");
@@ -391,13 +392,18 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(writeIdList.getMinOpenWriteId().longValue(), 2);
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUpDB() throws Exception {
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
+  }
+
+  @Before
+  public void setUp() throws Exception {
+
     String connectionStr = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
 
     conn = DriverManager.getConnection(connectionStr);

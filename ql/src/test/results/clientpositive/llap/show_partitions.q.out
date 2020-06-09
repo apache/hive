@@ -1,0 +1,217 @@
+PREHOOK: query: SHOW PARTITIONS srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12
+PREHOOK: query: SHOW PARTITIONS default.srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(hr='11')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(hr='11')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-09/hr=11
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08', hr='12')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08', hr='12')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=12
+PREHOOK: query: SHOW PARTITIONS default.srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-09/hr=11
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=12
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: USE db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: USE db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: CREATE TABLE srcpart (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: CREATE TABLE srcpart (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@srcpart
+PREHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='3', hr='3')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='3', hr='3')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: db1@srcpart
+POSTHOOK: Output: db1@srcpart@ds=3/hr=3
+PREHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='4', hr='4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='4', hr='4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: db1@srcpart
+POSTHOOK: Output: db1@srcpart@ds=4/hr=4
+PREHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='4', hr='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='4', hr='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: db1@srcpart
+POSTHOOK: Output: db1@srcpart@ds=4/hr=5
+PREHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      limit: -1
+      partSpec:
+        hr 11
+      table: default.srcpart
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-09/hr=11
+PREHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      limit: -1
+      partSpec:
+        ds 2008-04-08
+        hr 12
+      table: default.srcpart
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=12
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='4')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: db1@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='4')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: db1@srcpart
+ds=4/hr=4
+ds=4/hr=5
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='3', hr='3')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: db1@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='3', hr='3')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: db1@srcpart
+ds=3/hr=3
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: db1@srcpart
+POSTHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: db1@srcpart
+ds=4/hr=4
+ds=4/hr=5
+PREHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='3', hr='3')
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: db1@srcpart
+POSTHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='3', hr='3')
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: db1@srcpart
+ds=3/hr=3

@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
@@ -25,16 +28,30 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.zookeeper.txn.TxnHeader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.*;
 
 /**
  * Utility methods for creating and destroying txn database/schema, plus methods for
@@ -43,8 +60,19 @@ import org.slf4j.LoggerFactory;
  */
 public final class TxnDbUtil {
 
-  static final private Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+
+  private static final EnumMap<DatabaseProduct, String> DB_EPOCH_FN =
+      new EnumMap<DatabaseProduct, String>(DatabaseProduct.class) {{
+        put(DERBY, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
+            "'), current_timestamp) } / 1000000");
+        put(MYSQL, "round(unix_timestamp(now(3)) * 1000)");
+        put(POSTGRES, "round(extract(epoch from current_timestamp) * 1000)");
+        put(ORACLE, "(cast(systimestamp at time zone 'UTC' as date) - date '1970-01-01')*24*60*60*1000 " +
+            "+ cast(mod( extract( second from systimestamp ), 1 ) * 1000 as int)");
+        put(SQLSERVER, "datediff_big(millisecond, '19700101', sysutcdatetime())");
+      }};
 
   private static int deadlockCnt = 0;
 
@@ -64,318 +92,43 @@ public final class TxnDbUtil {
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
+  /**
+   * Prepares the metastore database for unit tests.
+   * Runs the latest init schema against the database configured in the CONNECT_URL_KEY param.
+   * Ignores any duplication (table, index etc.) So it can be called multiple times for the same database.
+   * @param conf Metastore configuration
+   * @throws Exception Initialization failure
+   */
   public static synchronized void prepDb(Configuration conf) throws Exception {
-    // This is a bogus hack because it copies the contents of the SQL file
-    // intended for creating derby databases, and thus will inexorably get
-    // out of date with it.  I'm open to any suggestions on how to make this
-    // read the file in a build friendly way.
-
+    LOG.info("Creating transactional tables");
     Connection conn = null;
     Statement stmt = null;
     try {
       conn = getConnection(conf);
+      String s = conn.getMetaData().getDatabaseProductName();
+      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s);
       stmt = conn.createStatement();
-      stmt.execute("CREATE TABLE TXNS (" +
-          "  TXN_ID bigint PRIMARY KEY," +
-          "  TXN_STATE char(1) NOT NULL," +
-          "  TXN_STARTED bigint NOT NULL," +
-          "  TXN_LAST_HEARTBEAT bigint NOT NULL," +
-          "  TXN_USER varchar(128) NOT NULL," +
-          "  TXN_HOST varchar(128) NOT NULL," +
-          "  TXN_TYPE integer)");
-
-      stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
-          "  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID)," +
-          "  TC_DATABASE varchar(128) NOT NULL," +
-          "  TC_TABLE varchar(128)," +
-          "  TC_PARTITION varchar(767)," +
-          "  TC_OPERATION_TYPE char(1) NOT NULL," +
-          "  TC_WRITEID bigint)");
-      stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
-          "  CTC_TXNID bigint NOT NULL," +
-          "  CTC_DATABASE varchar(128) NOT NULL," +
-          "  CTC_TABLE varchar(128)," +
-          "  CTC_PARTITION varchar(767)," +
-          "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-          "  CTC_WRITEID bigint," +
-          "  CTC_UPDATE_DELETE char(1) NOT NULL)");
-      stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
-
-      stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
-          " T2W_TXNID bigint NOT NULL," +
-          " T2W_DATABASE varchar(128) NOT NULL," +
-          " T2W_TABLE varchar(256) NOT NULL," +
-          " T2W_WRITEID bigint NOT NULL)");
-      stmt.execute("CREATE TABLE NEXT_WRITE_ID (" +
-          " NWI_DATABASE varchar(128) NOT NULL," +
-          " NWI_TABLE varchar(256) NOT NULL," +
-          " NWI_NEXT bigint NOT NULL)");
-
-      stmt.execute("CREATE TABLE MIN_HISTORY_LEVEL (" +
-          " MHL_TXNID bigint NOT NULL," +
-          " MHL_MIN_OPEN_TXNID bigint NOT NULL," +
-          " PRIMARY KEY(MHL_TXNID))");
-
-      stmt.execute("CREATE TABLE HIVE_LOCKS (" +
-          " HL_LOCK_EXT_ID bigint NOT NULL," +
-          " HL_LOCK_INT_ID bigint NOT NULL," +
-          " HL_TXNID bigint NOT NULL," +
-          " HL_DB varchar(128) NOT NULL," +
-          " HL_TABLE varchar(128)," +
-          " HL_PARTITION varchar(767)," +
-          " HL_LOCK_STATE char(1) NOT NULL," +
-          " HL_LOCK_TYPE char(1) NOT NULL," +
-          " HL_LAST_HEARTBEAT bigint NOT NULL," +
-          " HL_ACQUIRED_AT bigint," +
-          " HL_USER varchar(128) NOT NULL," +
-          " HL_HOST varchar(128) NOT NULL," +
-          " HL_HEARTBEAT_COUNT integer," +
-          " HL_AGENT_INFO varchar(128)," +
-          " HL_BLOCKEDBY_EXT_ID bigint," +
-          " HL_BLOCKEDBY_INT_ID bigint," +
-        " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
-      stmt.execute("CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS (HL_TXNID)");
-
-      stmt.execute("CREATE TABLE NEXT_LOCK_ID (" + " NL_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_LOCK_ID VALUES(1)");
-
-      stmt.execute("CREATE TABLE COMPACTION_QUEUE (" +
-          " CQ_ID bigint PRIMARY KEY," +
-          " CQ_DATABASE varchar(128) NOT NULL," +
-          " CQ_TABLE varchar(128) NOT NULL," +
-          " CQ_PARTITION varchar(767)," +
-          " CQ_STATE char(1) NOT NULL," +
-          " CQ_TYPE char(1) NOT NULL," +
-          " CQ_TBLPROPERTIES varchar(2048)," +
-          " CQ_WORKER_ID varchar(128)," +
-          " CQ_START bigint," +
-          " CQ_RUN_AS varchar(128)," +
-          " CQ_HIGHEST_WRITE_ID bigint," +
-          " CQ_META_INFO varchar(2048) for bit data," +
-          " CQ_HADOOP_JOB_ID varchar(32)," +
-          " CQ_ERROR_MESSAGE clob)");
-
-      stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
-
-      stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
-          " CC_ID bigint PRIMARY KEY," +
-          " CC_DATABASE varchar(128) NOT NULL," +
-          " CC_TABLE varchar(128) NOT NULL," +
-          " CC_PARTITION varchar(767)," +
-          " CC_STATE char(1) NOT NULL," +
-          " CC_TYPE char(1) NOT NULL," +
-          " CC_TBLPROPERTIES varchar(2048)," +
-          " CC_WORKER_ID varchar(128)," +
-          " CC_START bigint," +
-          " CC_END bigint," +
-          " CC_RUN_AS varchar(128)," +
-          " CC_HIGHEST_WRITE_ID bigint," +
-          " CC_META_INFO varchar(2048) for bit data," +
-          " CC_HADOOP_JOB_ID varchar(32)," +
-          " CC_ERROR_MESSAGE clob)");
-
-      stmt.execute("CREATE INDEX COMPLETED_COMPACTIONS_RES ON COMPLETED_COMPACTIONS ("
-          + "CC_DATABASE,CC_TABLE,CC_PARTITION)");
-
-      stmt.execute("CREATE TABLE AUX_TABLE (" +
-        " MT_KEY1 varchar(128) NOT NULL," +
-        " MT_KEY2 bigint NOT NULL," +
-        " MT_COMMENT varchar(255)," +
-        " PRIMARY KEY(MT_KEY1, MT_KEY2))");
-
-      stmt.execute("CREATE TABLE WRITE_SET (" +
-        " WS_DATABASE varchar(128) NOT NULL," +
-        " WS_TABLE varchar(128) NOT NULL," +
-        " WS_PARTITION varchar(767)," +
-        " WS_TXNID bigint NOT NULL," +
-        " WS_COMMIT_ID bigint NOT NULL," +
-        " WS_OPERATION_TYPE char(1) NOT NULL)"
-      );
-
-      stmt.execute("CREATE TABLE REPL_TXN_MAP (" +
-          " RTM_REPL_POLICY varchar(256) NOT NULL, " +
-          " RTM_SRC_TXN_ID bigint NOT NULL, " +
-          " RTM_TARGET_TXN_ID bigint NOT NULL, " +
-          " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
-      );
-
-      stmt.execute("CREATE TABLE MATERIALIZATION_REBUILD_LOCKS (" +
-          "  MRL_TXN_ID BIGINT NOT NULL, " +
-          "  MRL_DB_NAME VARCHAR(128) NOT NULL, " +
-          "  MRL_TBL_NAME VARCHAR(256) NOT NULL, " +
-          "  MRL_LAST_HEARTBEAT BIGINT NOT NULL, " +
-          "  PRIMARY KEY(MRL_TXN_ID))"
-      );
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"TBLS\" (\"TBL_ID\" BIGINT NOT NULL, " +
-            " \"CREATE_TIME\" INTEGER NOT NULL, \"DB_ID\" BIGINT, \"LAST_ACCESS_TIME\" INTEGER NOT NULL, " +
-            " \"OWNER\" VARCHAR(767), \"OWNER_TYPE\" VARCHAR(10), \"RETENTION\" INTEGER NOT NULL, " +
-            " \"SD_ID\" BIGINT, \"TBL_NAME\" VARCHAR(256), \"TBL_TYPE\" VARCHAR(128), " +
-            " \"VIEW_EXPANDED_TEXT\" LONG VARCHAR, \"VIEW_ORIGINAL_TEXT\" LONG VARCHAR, " +
-            " \"IS_REWRITE_ENABLED\" CHAR(1) NOT NULL DEFAULT \'N\', " +
-            " \"WRITE_ID\" BIGINT DEFAULT 0, " +
-            " PRIMARY KEY (TBL_ID))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("TBLS table already exist, ignoring");
-        } else {
-          throw e;
-        }
+      if (checkDbPrepared(stmt)) {
+        return;
       }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"DBS\" (\"DB_ID\" BIGINT NOT NULL, \"DESC\" " +
-            "VARCHAR(4000), \"DB_LOCATION_URI\" VARCHAR(4000) NOT NULL, \"NAME\" VARCHAR(128), " +
-            "\"OWNER_NAME\" VARCHAR(128), \"OWNER_TYPE\" VARCHAR(10), " +
-            "\"CTLG_NAME\" VARCHAR(256) NOT NULL, PRIMARY KEY (DB_ID))");
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("TBLS table already exist, ignoring");
-        } else {
-          throw e;
-        }
+      String schemaRootPath = getSchemaRootPath();
+      IMetaStoreSchemaInfo metaStoreSchemaInfo =
+          MetaStoreSchemaInfoFactory.get(conf, schemaRootPath, DatabaseProduct.getHiveSchemaPostfix(dbProduct));
+      String initFile = metaStoreSchemaInfo.generateInitFileName(null);
+      try (InputStream is = new FileInputStream(
+          metaStoreSchemaInfo.getMetaStoreScriptDir() + File.separator + initFile)) {
+        LOG.info("Reinitializing the metastore db with {} on the database {}", initFile,
+            MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY));
+        importSQL(stmt, is);
       }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"PARTITIONS\" (" +
-            " \"PART_ID\" BIGINT NOT NULL, \"CREATE_TIME\" INTEGER NOT NULL, " +
-            " \"LAST_ACCESS_TIME\" INTEGER NOT NULL, \"PART_NAME\" VARCHAR(767), " +
-            " \"SD_ID\" BIGINT, \"TBL_ID\" BIGINT, " +
-            " \"WRITE_ID\" BIGINT DEFAULT 0, " +
-            " PRIMARY KEY (PART_ID))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("PARTITIONS table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"TABLE_PARAMS\" (" +
-            " \"TBL_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
-            " \"PARAM_VALUE\" CLOB, " +
-            " PRIMARY KEY (TBL_ID, PARAM_KEY))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("TABLE_PARAMS table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"PARTITION_PARAMS\" (" +
-            " \"PART_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
-            " \"PARAM_VALUE\" CLOB, " +
-            " PRIMARY KEY (PART_ID, PARAM_KEY))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("PARTITION_PARAMS table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\" VARCHAR(256) NOT " +
-
-                "NULL, \"NEXT_VAL\" BIGINT NOT NULL)"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("SEQUENCE_TABLE table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\" BIGINT NOT NULL, " +
-
-                "\"NEXT_EVENT_ID\" BIGINT NOT NULL)"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("NOTIFICATION_SEQUENCE table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      try {
-        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_LOG\" (\"NL_ID\" BIGINT NOT NULL, " +
-                "\"DB_NAME\" VARCHAR(128), \"EVENT_ID\" BIGINT NOT NULL, \"EVENT_TIME\" INTEGER NOT" +
-
-                " NULL, \"EVENT_TYPE\" VARCHAR(32) NOT NULL, \"MESSAGE\" CLOB, \"TBL_NAME\" " +
-                "VARCHAR" +
-                "(256), \"MESSAGE_FORMAT\" VARCHAR(16))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("NOTIFICATION_LOG table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
-              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', " +
-              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
-              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
-              ".model.MNotificationLog')");
-
-      stmt.execute("INSERT INTO \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\", \"NEXT_EVENT_ID\")" +
-              " SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT " +
-              "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
-
-      try {
-        stmt.execute("CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (" +
-                "WNL_ID bigint NOT NULL," +
-                "WNL_TXNID bigint NOT NULL," +
-                "WNL_WRITEID bigint NOT NULL," +
-                "WNL_DATABASE varchar(128) NOT NULL," +
-                "WNL_TABLE varchar(128) NOT NULL," +
-                "WNL_PARTITION varchar(1024) NOT NULL," +
-                "WNL_TABLE_OBJ clob NOT NULL," +
-                "WNL_PARTITION_OBJ clob," +
-                "WNL_FILES clob," +
-                "WNL_EVENT_TIME integer NOT NULL," +
-                "PRIMARY KEY (WNL_TXNID, WNL_DATABASE, WNL_TABLE, WNL_PARTITION))"
-        );
-      } catch (SQLException e) {
-        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("TXN_WRITE_NOTIFICATION_LOG table already exist, ignoring");
-        } else {
-          throw e;
-        }
-      }
-
-      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
-              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', " +
-              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
-              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
-              ".model.MTxnWriteNotificationLog')");
     } catch (SQLException e) {
       try {
-        conn.rollback();
+        if (conn != null) {
+          conn.rollback();
+        }
       } catch (SQLException re) {
         LOG.error("Error rolling back: " + re.getMessage());
       }
-
-      // Another thread might have already created these tables.
-      if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-        LOG.info("Txn tables already exist, returning");
-        return;
-      }
-
       // This might be a deadlock, if so, let's retry
       if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
@@ -389,82 +142,199 @@ public final class TxnDbUtil {
     }
   }
 
-  public static void cleanDb(Configuration conf) throws Exception {
-    int retryCount = 0;
-    while(++retryCount <= 3) {
-      boolean success = true;
-      Connection conn = null;
-      Statement stmt = null;
-      try {
-        conn = getConnection(conf);
-        stmt = conn.createStatement();
+  private static boolean checkDbPrepared(Statement stmt) {
+    /*
+     * If the transactional tables are already there we don't want to run everything again
+     */
+    try {
+      stmt.execute("SELECT * FROM \"TXNS\"");
+    } catch (SQLException e) {
+      return false;
+    }
+    return true;
+  }
 
-        // We want to try these, whether they succeed or fail.
+  private static void importSQL(Statement stmt, InputStream in) throws SQLException {
+    Set<String> knownErrors = getAlreadyExistsErrorCodes();
+    Scanner s = new Scanner(in, "UTF-8");
+    s.useDelimiter("(;(\r)?\n)|(--.*\n)");
+    while (s.hasNext()) {
+      String line = s.next();
+
+      if (line.trim().length() > 0) {
         try {
-          stmt.execute("DROP INDEX HL_TXNID_INDEX");
+          stmt.execute(line);
         } catch (SQLException e) {
-          if(!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
-            //42X65/3000 means index doesn't exist
-            LOG.error("Unable to drop index HL_TXNID_INDEX " + e.getMessage() +
-              "State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
-            success = false;
+          if (knownErrors.contains(e.getSQLState())) {
+            LOG.debug("Ignoring sql error {}", e.getMessage());
+          } else {
+            throw e;
           }
         }
-
-        success &= dropTable(stmt, "TXN_COMPONENTS", retryCount);
-        success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
-        success &= dropTable(stmt, "TXNS", retryCount);
-        success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
-        success &= dropTable(stmt, "TXN_TO_WRITE_ID", retryCount);
-        success &= dropTable(stmt, "NEXT_WRITE_ID", retryCount);
-        success &= dropTable(stmt, "MIN_HISTORY_LEVEL", retryCount);
-        success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
-        success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
-        success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);
-        success &= dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID", retryCount);
-        success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
-        success &= dropTable(stmt, "AUX_TABLE", retryCount);
-        success &= dropTable(stmt, "WRITE_SET", retryCount);
-        success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
-        success &= dropTable(stmt, "MATERIALIZATION_REBUILD_LOCKS", retryCount);
-        /*
-         * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
-         * table which are not txn related to generate primary key. So if these tables are dropped
-         *  and other tables are not dropped, then it will create key duplicate error while inserting
-         *  to other table.
-         */
-      } finally {
-        closeResources(conn, stmt, null);
       }
-      if(success) {
+    }
+  }
+
+  private static Set<String> getAlreadyExistsErrorCodes() {
+    // function already exists, table already exists, index already exists, duplicate key
+    Set<String> knownErrors = new HashSet<>();
+    // derby
+    knownErrors.addAll(Arrays.asList("X0Y68", "X0Y32", "X0Y44", "42Z93", "23505"));
+    // postgres
+    knownErrors.addAll(Arrays.asList("42P07", "42P16", "42710"));
+    // mssql
+    knownErrors.addAll(Arrays.asList("S0000", "S0001", "23000"));
+    // mysql
+    knownErrors.addAll(Arrays.asList("42S01", "HY000"));
+    // oracle
+    knownErrors.addAll(Arrays.asList("42000"));
+    return knownErrors;
+  }
+  private static Set<String> getTableNotExistsErrorCodes() {
+    Set<String> knownErrors = new HashSet<>();
+    knownErrors.addAll(Arrays.asList("42X05", "42P01", "42S02", "S0002", "42000"));
+    return knownErrors;
+  }
+
+  private static String getSchemaRootPath() {
+    String hiveRoot = System.getProperty("hive.root");
+    if (StringUtils.isNotEmpty(hiveRoot)) {
+      return ensurePathEndsInSlash(hiveRoot) + "standalone-metastore/metastore-server/target/tmp/";
+    } else {
+      return ensurePathEndsInSlash(System.getProperty("test.tmp.dir", "target/tmp"));
+    }
+  }
+
+  private static String ensurePathEndsInSlash(String path) {
+    if (path == null) {
+      throw new NullPointerException("Path cannot be null");
+    }
+    if (path.endsWith(File.separator)) {
+      return path;
+    } else {
+      return path + File.separator;
+    }
+  }
+
+  public static void cleanDb(Configuration conf) throws Exception {
+    LOG.info("Cleaning transactional tables");
+
+    boolean success = true;
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = getConnection(conf);
+      stmt = conn.createStatement();
+      if (!checkDbPrepared(stmt)){
+        // Nothing to clean
         return;
       }
+
+      // We want to try these, whether they succeed or fail.
+      success &= truncateTable(conn, stmt, "TXN_COMPONENTS");
+      success &= truncateTable(conn, stmt, "COMPLETED_TXN_COMPONENTS");
+      success &= truncateTable(conn, stmt, "TXNS");
+      success &= truncateTable(conn, stmt, "TXN_TO_WRITE_ID");
+      success &= truncateTable(conn, stmt, "NEXT_WRITE_ID");
+      success &= truncateTable(conn, stmt, "HIVE_LOCKS");
+      success &= truncateTable(conn, stmt, "NEXT_LOCK_ID");
+      success &= truncateTable(conn, stmt, "COMPACTION_QUEUE");
+      success &= truncateTable(conn, stmt, "NEXT_COMPACTION_QUEUE_ID");
+      success &= truncateTable(conn, stmt, "COMPLETED_COMPACTIONS");
+      success &= truncateTable(conn, stmt, "AUX_TABLE");
+      success &= truncateTable(conn, stmt, "WRITE_SET");
+      success &= truncateTable(conn, stmt, "REPL_TXN_MAP");
+      success &= truncateTable(conn, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      try {
+        resetTxnSequence(conn, stmt);
+        stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
+        stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
+      } catch (SQLException e) {
+        if (!getTableNotExistsErrorCodes().contains(e.getSQLState())) {
+          LOG.error("Error initializing sequence values", e);
+          success = false;
+        }
+      }
+      /*
+       * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
+       * table which are not txn related to generate primary key. So if these tables are dropped
+       *  and other tables are not dropped, then it will create key duplicate error while inserting
+       *  to other table.
+       */
+    } finally {
+      closeResources(conn, stmt, null);
+    }
+    if(success) {
+      return;
     }
     throw new RuntimeException("Failed to clean up txn tables");
   }
 
-  private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
-    for (int i = 0; i < 3; i++) {
-      try {
-        stmt.execute("DROP TABLE " + name);
-        LOG.debug("Successfully dropped table " + name);
-        return true;
-      } catch (SQLException e) {
-        if ("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
-          LOG.debug("Not dropping " + name + " because it doesn't exist");
-          //failed because object doesn't exist
-          return true;
-        }
-        if ("X0Y25".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
-          // Intermittent failure
-          LOG.warn("Intermittent drop failure, retrying, try number " + i);
-          continue;
-        }
-        LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
-            " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
-      }
+  private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
+    String dbProduct = conn.getMetaData().getDatabaseProductName();
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+    switch (databaseProduct) {
+
+    case DERBY:
+      stmt.execute("ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH 1");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case MYSQL:
+      stmt.execute("ALTER TABLE \"TXNS\" AUTO_INCREMENT=1");
+      stmt.execute("SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO,ANSI_QUOTES'");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case POSTGRES:
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      stmt.execute("ALTER SEQUENCE \"TXNS_TXN_ID_seq\" RESTART");
+      break;
+    case ORACLE:
+      stmt.execute("ALTER TABLE \"TXNS\" MODIFY \"TXN_ID\" GENERATED BY DEFAULT AS IDENTITY (START WITH 1)");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '_', '_')");
+      break;
+    case SQLSERVER:
+      stmt.execute("DBCC CHECKIDENT ('txns', RESEED, 0)");
+      stmt.execute("SET IDENTITY_INSERT TXNS ON");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case OTHER:
+    default:
+      break;
     }
-    LOG.error("Failed to drop table, don't know why");
+  }
+
+  private static boolean truncateTable(Connection conn, Statement stmt, String name) {
+    try {
+      // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
+      String dbProduct = conn.getMetaData().getDatabaseProductName();
+      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+      if (databaseProduct == POSTGRES || databaseProduct == MYSQL) {
+        stmt.execute("DELETE FROM \"" + name + "\"");
+      } else {
+        stmt.execute("DELETE FROM " + name);
+      }
+
+      LOG.debug("Successfully truncated table " + name);
+      return true;
+    } catch (SQLException e) {
+      if (getTableNotExistsErrorCodes().contains(e.getSQLState())) {
+        LOG.debug("Not truncating " + name + " because it doesn't exist");
+        //failed because object doesn't exist
+        return true;
+      }
+      LOG.error("Unable to truncate table " + name + ": " + e.getMessage() + " State=" + e.getSQLState() + " code=" + e
+          .getErrorCode());
+    }
     return false;
   }
 
@@ -489,35 +359,6 @@ public final class TxnDbUtil {
         return 0;
       }
       return rs.getInt(1);
-    } finally {
-      closeResources(conn, stmt, rs);
-    }
-  }
-
-  /**
-   * Return true if the transaction of the given txnId is open.
-   * @param conf    HiveConf
-   * @param txnId   transaction id to search for
-   * @return
-   * @throws Exception
-   */
-  public static boolean isOpenOrAbortedTransaction(Configuration conf, long txnId) throws Exception {
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet rs = null;
-    try {
-      conn = getConnection(conf);
-      conn.setAutoCommit(false);
-      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-
-      stmt = conn.prepareStatement("SELECT txn_id FROM TXNS WHERE txn_id = ?");
-      stmt.setLong(1, txnId);
-      rs = stmt.executeQuery();
-      if (!rs.next()) {
-        return false;
-      } else {
-        return true;
-      }
     } finally {
       closeResources(conn, stmt, rs);
     }
@@ -620,6 +461,114 @@ public final class TxnDbUtil {
       } catch (SQLException e) {
         System.err.println("Error closing Connection: " + e.getMessage());
       }
+    }
+  }
+
+  /**
+   * Get database specific function which returns the milliseconds value after the epoch.
+   * @param dbProduct The type of the db which is used
+   * @throws MetaException For unknown database type.
+   */
+  static String getEpochFn(DatabaseProduct dbProduct) throws MetaException {
+    String epochFn = DB_EPOCH_FN.get(dbProduct);
+    if (epochFn != null) {
+      return epochFn;
+    } else {
+      String msg = "Unknown database product: " + dbProduct.toString();
+      LOG.error(msg);
+      throw new MetaException(msg);
+    }
+  }
+
+  /**
+   * Calls queries in batch, but does not return affected row numbers. Same as executeQueriesInBatch,
+   * with the only difference when the db is Oracle. In this case it is called as an anonymous stored
+   * procedure instead of batching, since batching is not optimized. See:
+   * https://docs.oracle.com/cd/E11882_01/java.112/e16548/oraperf.htm#JJDBC28752
+   * @param dbProduct The type of the db which is used
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param batchSize maximum number of queries in a single batch
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  static void executeQueriesInBatchNoCount(DatabaseProduct dbProduct, Statement stmt, List<String> queries, int batchSize) throws SQLException {
+    if (dbProduct == ORACLE) {
+      int queryCounter = 0;
+      StringBuilder sb = new StringBuilder();
+      sb.append("begin ");
+      for (String query : queries) {
+        LOG.debug("Adding query to batch: <" + query + ">");
+        queryCounter++;
+        sb.append(query).append(";");
+        if (queryCounter % batchSize == 0) {
+          sb.append("end;");
+          String batch = sb.toString();
+          LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+          stmt.execute(batch);
+          sb.setLength(0);
+          sb.append("begin ");
+        }
+      }
+      if (queryCounter % batchSize != 0) {
+        sb.append("end;");
+        String batch = sb.toString();
+        LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+        stmt.execute(batch);
+      }
+    } else {
+      executeQueriesInBatch(stmt, queries, batchSize);
+    }
+  }
+
+  /**
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param batchSize maximum number of queries in a single batch
+   * @return A list with the number of rows affected by each query in queries.
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  static List<Integer> executeQueriesInBatch(Statement stmt, List<String> queries, int batchSize) throws SQLException {
+    List<Integer> affectedRowsByQuery = new ArrayList<>();
+    int queryCounter = 0;
+    for (String query : queries) {
+      LOG.debug("Adding query to batch: <" + query + ">");
+      queryCounter++;
+      stmt.addBatch(query);
+      if (queryCounter % batchSize == 0) {
+        LOG.debug("Going to execute queries in batch. Batch size: " + batchSize);
+        int[] affectedRecordsByQuery = stmt.executeBatch();
+        Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+      }
+    }
+    if (queryCounter % batchSize != 0) {
+      LOG.debug("Going to execute queries in batch. Batch size: " + queryCounter % batchSize);
+      int[] affectedRecordsByQuery = stmt.executeBatch();
+      Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+    }
+    return affectedRowsByQuery;
+  }
+
+  /**
+   +   * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
+   +   * @param dbProduct DBMS type
+   +   * @return true if supports
+   +   * @throws MetaException
+   +   */
+  public static boolean supportsGetGeneratedKeys(DatabaseProduct dbProduct) throws MetaException {
+    switch (dbProduct) {
+    case DERBY:
+    case SQLSERVER:
+      // The getGeneratedKeys is not supported for multi line insert
+      return false;
+    case ORACLE:
+    case MYSQL:
+    case POSTGRES:
+      return true;
+    case OTHER:
+    default:
+      String msg = "Unknown database product: " + dbProduct.toString();
+      LOG.error(msg);
+      throw new MetaException(msg);
     }
   }
 }

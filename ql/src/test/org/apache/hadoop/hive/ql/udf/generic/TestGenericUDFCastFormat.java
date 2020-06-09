@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -44,11 +44,11 @@ import static org.junit.Assert.fail;
 public class TestGenericUDFCastFormat {
 
   //type codes
-  public static final int CHAR = HiveParser_IdentifiersParser.TOK_CHAR;
-  public static final int VARCHAR = HiveParser_IdentifiersParser.TOK_VARCHAR;
-  public static final int STRING = HiveParser_IdentifiersParser.TOK_STRING;
-  public static final int DATE = HiveParser_IdentifiersParser.TOK_DATE;
-  public static final int TIMESTAMP = HiveParser_IdentifiersParser.TOK_TIMESTAMP;
+  public static final int CHAR = HiveParser.TOK_CHAR;
+  public static final int VARCHAR = HiveParser.TOK_VARCHAR;
+  public static final int STRING = HiveParser.TOK_STRING;
+  public static final int DATE = HiveParser.TOK_DATE;
+  public static final int TIMESTAMP = HiveParser.TOK_TIMESTAMP;
 
   @Test
   public void testDateToStringWithFormat() throws HiveException {

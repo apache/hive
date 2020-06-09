@@ -100,7 +100,12 @@ struct StageType {
     REPL_STATE_LOG = 14,
     REPL_TXN = 15,
     REPL_INCREMENTAL_LOAD = 16,
-    SCHEDULED_QUERY_MAINT = 17
+    SCHEDULED_QUERY_MAINT = 17,
+    ACK = 18,
+    RANGER_DUMP = 19,
+    RANGER_LOAD = 20,
+    ATLAS_DUMP = 21,
+    ATLAS_LOAD = 22
   };
 };
 

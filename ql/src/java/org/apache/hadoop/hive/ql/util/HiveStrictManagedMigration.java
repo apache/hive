@@ -34,6 +34,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -76,10 +77,13 @@ import com.google.common.collect.Lists;
 import static java.util.stream.Collectors.toList;
 import static org.apache.hadoop.hive.metastore.TableType.EXTERNAL_TABLE;
 import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 public class HiveStrictManagedMigration {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveStrictManagedMigration.class);
+  @VisibleForTesting
+  static int RC = 0;
 
   public enum TableMigrationOption {
     NONE,      // Do nothing
@@ -194,6 +198,7 @@ public class HiveStrictManagedMigration {
 
   public static void main(String[] args) throws Exception {
     RunOptions runOptions;
+    RC = 0;
 
     try {
       Options opts = createOptions();
@@ -210,7 +215,6 @@ public class HiveStrictManagedMigration {
       throw new Exception("Error processing options", err);
     }
 
-    int rc = 0;
     HiveStrictManagedMigration migration = null;
     try {
       HiveConf conf = hiveConf == null ? new HiveConf() : hiveConf;
@@ -227,7 +231,7 @@ public class HiveStrictManagedMigration {
       migration.run();
     } catch (Exception err) {
       LOG.error("Failed with error", err);
-      rc = -1;
+      RC = -1;
     } finally {
       if (migration != null) {
         migration.cleanup();
@@ -236,7 +240,7 @@ public class HiveStrictManagedMigration {
 
     // TODO: Something is preventing the process from terminating after main(), adding exit() as hacky solution.
     if (hiveConf == null) {
-      System.exit(rc);
+      System.exit(RC);
     }
   }
 
@@ -747,7 +751,13 @@ public class HiveStrictManagedMigration {
         return true;
       }
 
-      Path tablePath = new Path(tableObj.getSd().getLocation());
+      String tablePathString = tableObj.getSd().getLocation();
+      if (StringUtils.isEmpty(tablePathString)) {
+        // When using this tool in full automatic mode (no DB/table regexes and automatic migration option) we may
+        // encounter sysdb / information_schema databases. These should not be moved, they have null location.
+        return true;
+      }
+      Path tablePath = new Path(tablePathString);
 
       boolean shouldMoveTable = modifyLocation && (
           (MANAGED_TABLE.name().equals(tableObj.getTableType()) && runOptions.shouldModifyManagedTableLocation) ||
@@ -995,6 +1005,8 @@ public class HiveStrictManagedMigration {
   private static final Map<String, String> convertToExternalTableProps = new HashMap<>();
   private static final Map<String, String> convertToAcidTableProps = new HashMap<>();
   private static final Map<String, String> convertToMMTableProps = new HashMap<>();
+  private static final String KUDU_LEGACY_STORAGE_HANDLER = "com.cloudera.kudu.hive.KuduStorageHandler";
+  private static final String KUDU_STORAGE_HANDLER = "org.apache.hadoop.hive.kudu.KuduStorageHandler";
 
   static {
     convertToExternalTableProps.put("EXTERNAL", "TRUE");
@@ -1024,6 +1036,8 @@ public class HiveStrictManagedMigration {
       }
       return true;
     case EXTERNAL_TABLE:
+      // Might need to update storage_handler
+      hiveUpdater.updateTableProperties(tableObj, new HashMap<>());
       msg = createExternalConversionExcuse(tableObj,
           "Table is already an external table");
       LOG.debug(msg);
@@ -1360,7 +1374,9 @@ public class HiveStrictManagedMigration {
       alterPartitionInternal(table, modifiedPart);
     }
 
-    void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
+    void updateTableProperties(Table table, Map<String, String> propsToApply) throws HiveException {
+      Map<String, String> props = new HashMap<>(propsToApply);
+      migrateKuduStorageHandlerType(table, props);
       StringBuilder sb = new StringBuilder();
       boolean isTxn = TxnUtils.isTransactionalTable(table);
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable = doFileRename ?
@@ -1624,6 +1640,22 @@ public class HiveStrictManagedMigration {
         return true;
       }
       return false;
+    }
+  }
+
+  /**
+   * While upgrading from earlier versions we need to amend storage_handler value for Kudu tables that might
+   * have the legacy value set.
+   * @param table
+   * @param props
+   */
+  private static void migrateKuduStorageHandlerType(Table table, Map<String, String> props) {
+    Map<String, String> tableProperties = table.getParameters();
+    if (tableProperties != null) {
+      String storageHandler = tableProperties.get(META_TABLE_STORAGE);
+      if (KUDU_LEGACY_STORAGE_HANDLER.equals(storageHandler)) {
+        props.put(META_TABLE_STORAGE, KUDU_STORAGE_HANDLER);
+      }
     }
   }
 

@@ -388,6 +388,7 @@ STAGE PLANS:
                       expressions: key (type: bigint), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
@@ -647,6 +648,7 @@ STAGE PLANS:
                       expressions: key (type: bigint), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17

@@ -51,6 +51,7 @@ public class DumpMetaData {
   private boolean initialized = false;
   private final Path dumpFile;
   private final HiveConf hiveConf;
+  private Long dumpExecutionId;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -60,15 +61,16 @@ public class DumpMetaData {
   public DumpMetaData(Path dumpRoot, DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot,
       HiveConf hiveConf) {
     this(dumpRoot, hiveConf);
-    setDump(lvl, eventFrom, eventTo, cmRoot);
+    setDump(lvl, eventFrom, eventTo, cmRoot, 0L);
   }
 
-  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot) {
+  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot, Long dumpExecutionId) {
     this.dumpType = lvl;
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
     this.cmRoot = cmRoot;
     this.initialized = true;
+    this.dumpExecutionId = dumpExecutionId;
   }
 
   public void setPayload(String payload) {
@@ -115,11 +117,11 @@ public class DumpMetaData {
       br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
       String line;
       if ((line = br.readLine()) != null) {
-        String[] lineContents = line.split("\t", 5);
+        String[] lineContents = line.split("\t", 6);
         setDump(DumpType.valueOf(lineContents[0]), Long.valueOf(lineContents[1]),
             Long.valueOf(lineContents[2]),
-            new Path(lineContents[3]));
-        setPayload(lineContents[4].equals(Utilities.nullStringOutput) ? null : lineContents[4]);
+            new Path(lineContents[3]), Long.valueOf(lineContents[4]));
+        setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
             "Unable to read valid values from dumpFile:" + dumpFile.toUri().toString());
@@ -156,6 +158,11 @@ public class DumpMetaData {
   public Long getEventTo() throws SemanticException {
     initializeIfNot();
     return eventTo;
+  }
+
+  public Long getDumpExecutionId() throws SemanticException {
+    initializeIfNot();
+    return dumpExecutionId;
   }
 
   public ReplScope getReplScope() throws SemanticException {
@@ -196,6 +203,10 @@ public class DumpMetaData {
   }
 
   public void write() throws SemanticException {
+    write(false);
+  }
+
+  public void write(boolean replace) throws SemanticException {
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(
         Arrays.asList(
@@ -203,12 +214,12 @@ public class DumpMetaData {
             eventFrom.toString(),
             eventTo.toString(),
             cmRoot.toString(),
+            dumpExecutionId.toString(),
             payload)
     );
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());
     }
-    Utils.writeOutput(listValues, dumpFile, hiveConf
-    );
+    Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
   }
 }

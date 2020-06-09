@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
@@ -222,6 +223,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       speculativeTasks = new TreeMap<>();
 
   private final LlapPluginServerImpl pluginEndpoint;
+  private final boolean workloadManagementEnabled;
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
@@ -296,6 +298,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
+  private final boolean consistentSplits;
   /**
    * An internal version to make sure we don't race and overwrite a newer totalGuaranteed count in
    * ZK with an older one, without requiring us to make ZK updates under the main writeLock.
@@ -345,6 +348,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                                     LOCK_METRICS);
     readLock = lock.readLock();
     writeLock = lock.writeLock();
+    this.consistentSplits = HiveConf.getBoolVar(conf, ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
 
     if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
       JobTokenSecretManager sm = null;
@@ -444,9 +448,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     String hostsString = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     LOG.info("Running with configuration: hosts={}, numSchedulableTasksPerNode={}, "
-        + "nodeBlacklistConf={}, localityConf={}",
-        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf);
+        + "nodeBlacklistConf={}, localityConf={} consistentSplits={}",
+        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf, consistentSplits);
     this.amRegistry = TezAmRegistryImpl.create(conf, true);
+    this.workloadManagementEnabled =
+        !StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim());
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
       LlapTaskCommunicator peer = LlapTaskCommunicator.instance;
@@ -810,8 +816,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
 
       registry.start();
-      registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
+      registry.registerStateChangeListener(new NodeStateChangeListener());
       for (LlapServiceInstance inst : activeInstances.getAll()) {
         registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);
@@ -1086,7 +1092,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
-    updateGuaranteedInRegistry(tgVersionForZk, 0);
+    if (workloadManagementEnabled) {
+      updateGuaranteedInRegistry(tgVersionForZk, 0);
+    }
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
   }
 
@@ -1326,32 +1334,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     handleUpdateResult(info, true);
   }
 
-  /**
-   * A hacky way for communicator and scheduler to share per-task info. Scheduler should be able
-   * to include this with task allocation to be passed to the communicator, instead. TEZ-3866.
-   * @param attemptId Task attempt ID.
-   * @return The initial value of the guaranteed flag to send with the task.
-   */
-  boolean isInitialGuaranteed(TezTaskAttemptID attemptId) {
-    TaskInfo info = null;
-    readLock.lock();
-    try {
-      info = tasksById.get(attemptId);
-    } finally {
-      readLock.unlock();
-    }
-    if (info == null) {
-      WM_LOG.warn("Status requested for an unknown task " + attemptId);
-      return false;
-    }
-    synchronized (info) {
-      if (info.isGuaranteed == null) return false; // TODO: should never happen?
-      assert info.lastSetGuaranteed == null;
-      info.requestedValue = info.isGuaranteed;
-      return info.isGuaranteed;
-    }
-  }
-
   // Must be called under the epic lock.
   private TaskInfo distributeGuaranteedOnTaskCompletion() {
     List<TaskInfo> toUpdate = new ArrayList<>(1);
@@ -1476,7 +1458,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       /* fall through - miss in locality or no locality-requested */
-      Collection<LlapServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      Collection<LlapServiceInstance> instances;
+      if (consistentSplits) {
+        instances = activeInstances.getAllInstancesOrdered(true);
+      } else {
+        // if consistent splits are not used we don't need the ordering as there will be no cache benefit anyways
+        instances = activeInstances.getAll();
+      }
       List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
       for (LlapServiceInstance inst : instances) {
@@ -1988,12 +1976,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     if (selectHostResult.scheduleResult != ScheduleResult.SCHEDULED) {
       return selectHostResult.scheduleResult;
     }
+    boolean isGuaranteed = false;
     if (unusedGuaranteed > 0) {
       boolean wasGuaranteed = false;
       synchronized (taskInfo) {
         assert !taskInfo.isPendingUpdate; // No updates before it's running.
         wasGuaranteed = taskInfo.isGuaranteed;
         taskInfo.isGuaranteed = true;
+        isGuaranteed = true;
       }
       if (wasGuaranteed) {
         // This should never happen - we only schedule one attempt once.
@@ -2015,18 +2005,24 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         synchronized (taskInfo) {
           assert !taskInfo.isPendingUpdate; // No updates before it's running.
           taskInfo.isGuaranteed = true;
+          isGuaranteed = true;
         }
         // Note: after this, the caller MUST send the downgrade message to downgradedTask
         //       (outside of the writeLock, preferably), before exiting.
       }
     }
 
+    // in LLAP, the containers are used exactly once for exactly one attempt
+    // the container ids are entirely arbitrary and have 64 bit space per application
+    // this is why the isGuaranteed (& any other initial information) can be encoded into the 
+    // bits indicating container id
     NodeInfo nodeInfo = selectHostResult.nodeInfo;
     Container container =
         containerFactory.createContainer(nodeInfo.getResourcePerExecutor(), taskInfo.priority,
             nodeInfo.getHost(),
             nodeInfo.getRpcPort(),
-            nodeInfo.getServiceAddress());
+            nodeInfo.getServiceAddress(),
+            isGuaranteed);
     writeLock.lock(); // While updating local structures
     // Note: this is actually called under the epic writeLock in schedulePendingTasks
     try {

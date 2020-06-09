@@ -126,10 +126,12 @@ public class HiveHBaseTableOutputFormat extends
       m_connection = connection;
     }
 
+    @Override
     public void close(Reporter reporter) throws IOException {
       m_table.close();
     }
 
+    @Override
     public void write(ImmutableBytesWritable key,
         Object value) throws IOException {
       Put put;

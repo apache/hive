@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -61,9 +62,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,16 +72,151 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.*;
+import org.apache.hadoop.hive.common.DatabaseName;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.QueryState;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
+import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
+import org.apache.hadoop.hive.metastore.api.SchemaType;
+import org.apache.hadoop.hive.metastore.api.SchemaValidation;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SerdeType;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.model.*;
+import org.apache.hadoop.hive.metastore.model.FetchGroups;
+import org.apache.hadoop.hive.metastore.model.MCatalog;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
+import org.apache.hadoop.hive.metastore.model.MConstraint;
+import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
+import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MDatabase;
+import org.apache.hadoop.hive.metastore.model.MDelegationToken;
+import org.apache.hadoop.hive.metastore.model.MFieldSchema;
+import org.apache.hadoop.hive.metastore.model.MFunction;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MISchema;
+import org.apache.hadoop.hive.metastore.model.MMasterKey;
+import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
+import org.apache.hadoop.hive.metastore.model.MNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MOrder;
+import org.apache.hadoop.hive.metastore.model.MPartition;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MResourceUri;
+import org.apache.hadoop.hive.metastore.model.MRole;
+import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
+import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
+import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
+import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
+import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
+import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStringList;
+import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
 import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
+import org.apache.hadoop.hive.metastore.model.MWMTrigger;
+import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -106,7 +239,9 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -657,6 +792,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert mdb.getCatalogName() != null;
     mdb.setName(db.getName().toLowerCase());
     mdb.setLocationUri(db.getLocationUri());
+    mdb.setManagedLocationUri(db.getManagedLocationUri());
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
@@ -751,6 +887,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
+    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
@@ -785,6 +922,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getLocationUri())) {
         mdb.setLocationUri(db.getLocationUri());
+      }
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getManagedLocationUri())) {
+        mdb.setManagedLocationUri(db.getManagedLocationUri());
       }
       openTransaction();
       pm.makePersistent(mdb);
@@ -1159,6 +1299,44 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
+
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+
+    boolean committed = false;
+    Query query = null;
+    List<String> mViewList = new ArrayList<>();
+
+    try {
+      openTransaction();
+
+      query = pm.newQuery("select from org.apache.hadoop.hive.metastore.model.MCreationMetadata");
+
+      List<MCreationMetadata> creationMetadata = (List<MCreationMetadata>)query.execute();
+      Iterator<MCreationMetadata> iter = creationMetadata.iterator();
+
+      while (iter.hasNext())
+      {
+        MCreationMetadata p = iter.next();
+        Set<MTable> tables = p.getTables();
+        for (MTable table : tables) {
+          if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
+            LOG.info("Cannot drop table " + table.getTableName() +
+                    " as it is being used by MView " + p.getTblName());
+            mViewList.add(p.getDbName() + "." + p.getTblName());
+          }
+        }
+      }
+
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return mViewList;
+  }
+
+
+
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
       String catName, String dbName, String tableName, String constraintname) {
@@ -1765,10 +1943,12 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
+    Map<String, String> parameters = convertMap(mtbl.getParameters());
+    boolean isTxnTable = TxnUtils.isTransactionalTable(parameters);
     final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
-        .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
+        .getRetention(), convertToStorageDescriptor(mtbl.getSd(), false, isTxnTable),
+        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters,
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
 
     if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
@@ -1921,32 +2101,35 @@ public class ObjectStore implements RawStore, Configurable {
     return new MColumnDescriptor(cols);
   }
 
-  // MSD and SD should be same objects. Not sure how to make then same right now
-  // MSerdeInfo *& SerdeInfo should be same as well
   private StorageDescriptor convertToStorageDescriptor(
-      MStorageDescriptor msd,
-      boolean noFS) throws MetaException {
+      MStorageDescriptor msd, boolean noFS, boolean isTxnTable) throws MetaException {
     if (msd == null) {
       return null;
     }
     List<MFieldSchema> mFieldSchemas = msd.getCD() == null ? null : msd.getCD().getCols();
 
+    List<Order> orderList = (isTxnTable) ? Collections.emptyList() : convertToOrders(msd.getSortCols());
+    List<String> bucList = convertList(msd.getBucketCols());
+    SkewedInfo skewedInfo = null;
+
+    Map<String, String> sdParams = isTxnTable ? Collections.emptyMap() : convertMap(msd.getParameters());
     StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
-        .isCompressed(), msd.getNumBuckets(), convertToSerDeInfo(msd
-        .getSerDeInfo(), true), convertList(msd.getBucketCols()), convertToOrders(msd
-        .getSortCols()), convertMap(msd.getParameters()));
-    SkewedInfo skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
-        convertToSkewedValues(msd.getSkewedColValues()),
-        covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
+        .isCompressed(), msd.getNumBuckets(),
+        (!isTxnTable) ? convertToSerDeInfo(msd.getSerDeInfo(), true)
+            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(), Collections.emptyMap()),
+        bucList , orderList, sdParams);
+    if (!isTxnTable) {
+      skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
+          convertToSkewedValues(msd.getSkewedColValues()),
+          covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
+    } else {
+      skewedInfo = new SkewedInfo(Collections.emptyList(), Collections.emptyList(),
+          Collections.emptyMap());
+    }
     sd.setSkewedInfo(skewedInfo);
     sd.setStoredAsSubDirectories(msd.isStoredAsSubDirectories());
     return sd;
-  }
-
-  private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
-      throws MetaException {
-    return convertToStorageDescriptor(msd, false);
   }
 
   /**
@@ -2279,7 +2462,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MTable table = this.getMTable(catName, dbName, tableName);
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals);
-      part = convertToPart(mpart);
+      part = convertToPart(mpart, false);
       committed = commitTransaction();
       if (part == null) {
         throw new NoSuchObjectException("partition values="
@@ -2442,7 +2625,7 @@ public class ObjectStore implements RawStore, Configurable {
         msd, part.getParameters());
   }
 
-  private Partition convertToPart(MPartition mpart) throws MetaException {
+  private Partition convertToPart(MPartition mpart, boolean isTxnTable) throws MetaException {
     if (mpart == null) {
       return null;
     }
@@ -2453,22 +2636,25 @@ public class ObjectStore implements RawStore, Configurable {
     String tableName = table == null ? null : table.getTableName();
     String catName = table == null ? null :
         table.getDatabase() == null ? null : table.getDatabase().getCatalogName();
+    Map<String,String> params = convertMap(mpart.getParameters());
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tableName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd()),
-        convertMap(mpart.getParameters()));
+        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false, isTxnTable),
+        params);
     p.setCatName(catName);
     p.setWriteId(mpart.getWriteId());
     return p;
   }
 
-  private Partition convertToPart(String catName, String dbName, String tblName, MPartition mpart)
+  private Partition convertToPart(String catName, String dbName, String tblName,
+      MPartition mpart, boolean isTxnTable)
       throws MetaException {
     if (mpart == null) {
       return null;
     }
+    Map<String,String> params = convertMap(mpart.getParameters());
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
-        convertToStorageDescriptor(mpart.getSd(), false), convertMap(mpart.getParameters()));
+        convertToStorageDescriptor(mpart.getSd(), false, isTxnTable), params);
     p.setCatName(catName);
     p.setWriteId(mpart.getWriteId());
     return p;
@@ -2699,7 +2885,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (CollectionUtils.isNotEmpty(mparts)) {
         for (MPartition mpart : mparts) {
           MTable mtbl = mpart.getTable();
-          Partition part = convertToPart(mpart);
+          Partition part = convertToPart(mpart, false);
           parts.add(part);
 
           if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
@@ -2733,7 +2919,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Partition part = null;
       MTable mtbl = mpart.getTable();
-      part = convertToPart(mpart);
+      part = convertToPart(mpart, false);
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
             .getPartitionKeys()), partVals);
@@ -2764,17 +2950,18 @@ public class ObjectStore implements RawStore, Configurable {
       dest = new ArrayList<>(src.size());
     }
     for (MPartition mp : src) {
-      dest.add(convertToPart(mp));
+      dest.add(convertToPart(mp, false));
       Deadline.checkTimeout();
     }
     return dest;
   }
 
-  private List<Partition> convertToParts(String catName, String dbName, String tblName, List<MPartition> mparts)
+  private List<Partition> convertToParts(String catName, String dbName, String tblName,
+      List<MPartition> mparts, boolean isTxnTable)
       throws MetaException {
     List<Partition> parts = new ArrayList<>(mparts.size());
     for (MPartition mp : mparts) {
-      parts.add(convertToPart(catName, dbName, tblName, mp));
+      parts.add(convertToPart(catName, dbName, tblName, mp, isTxnTable));
       Deadline.checkTimeout();
     }
     return parts;
@@ -2797,6 +2984,115 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return pns;
+  }
+
+  @Override
+  public List<String> listPartitionNames(final String catName, final String dbName, final String tblName,
+      final String defaultPartName, final byte[] exprBytes,
+      final String order, final short maxParts) throws MetaException, NoSuchObjectException {
+    final String defaultPartitionName = getDefaultPartitionName(defaultPartName);
+    final boolean isEmptyFilter = exprBytes.length == 1 && exprBytes[0] == -1;
+    ExpressionTree tmp = null;
+    if (!isEmptyFilter) {
+      tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
+          getDefaultPartitionName(defaultPartName));
+    }
+    final ExpressionTree exprTree = tmp;
+    return new GetListHelper<String>(catName, dbName, tblName, true, true) {
+      private List<String> getPartNamesPrunedByExpr(Table table, boolean isJdoQuery) throws MetaException {
+        int max = isEmptyFilter ? maxParts : -1;
+        List<String> result;
+        if (isJdoQuery) {
+          result = getPartitionNamesViaOrm(table, ExpressionTree.EMPTY_TREE, order, max, true);
+        } else {
+          SqlFilterForPushdown filter = new SqlFilterForPushdown(table, false);
+          result = directSql.getPartitionNamesViaSql(filter, table.getPartitionKeys(),
+              defaultPartitionName, order, max);
+        }
+        if (!isEmptyFilter) {
+          expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), exprBytes, defaultPartitionName, result);
+          if (maxParts >= 0 && result.size() > maxParts) {
+            result = result.subList(0, maxParts);
+          }
+        }
+        return result;
+      }
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        SqlFilterForPushdown filter = new SqlFilterForPushdown(ctx.getTable(), false);
+        List<String> partNames = null;
+        Table table = ctx.getTable();
+        if (exprTree != null) {
+          if (directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
+              ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
+            partNames = directSql.getPartitionNamesViaSql(filter, table.getPartitionKeys(),
+                defaultPartitionName, order, (int)maxParts);
+          }
+        }
+        if (partNames == null) {
+          partNames = getPartNamesPrunedByExpr(table, false);
+        }
+        return partNames;
+      }
+      @Override
+      protected List<String> getJdoResult(
+          GetHelper<List<String>> ctx) throws MetaException, NoSuchObjectException {
+        List<String> result = null;
+        if (exprTree != null) {
+          try {
+            result = getPartitionNamesViaOrm(ctx.getTable(), exprTree, order, (int)maxParts, true);
+          } catch (MetaException e) {
+            result = null;
+          }
+        }
+        if (result == null) {
+          result = getPartNamesPrunedByExpr(ctx.getTable(), true);
+        }
+        return result;
+      }
+    }.run(true);
+  }
+
+  private List<String> getPartitionNamesViaOrm(Table table, ExpressionTree tree, String order,
+      Integer maxParts, boolean isValidatedFilter) throws MetaException {
+    Map<String, Object> params = new HashMap<String, Object>();
+    String jdoFilter = makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree,
+        params, isValidatedFilter);
+    if (jdoFilter == null) {
+      assert !isValidatedFilter;
+      return null;
+    }
+
+    Query query = pm.newQuery(
+        "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition"
+    );
+    query.setFilter(jdoFilter);
+    List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
+    StringBuilder builder = new StringBuilder();
+    for (Object[] spec : orderSpecs) {
+      // TODO: order by casted value if the type of partition key is not string
+      builder.append("values.get(").append(spec[0]).append(") ").append(spec[1]).append(",");
+    }
+    if (builder.length() > 0) {
+      builder.setLength(builder.length() - 1);
+      query.setOrdering(builder.toString());
+    } else {
+      query.setOrdering("partitionName ascending");
+    }
+
+    if (maxParts > -1) {
+      query.setRange(0, maxParts);
+    }
+
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    Collection jdoRes = (Collection)query.executeWithMap(params);
+    List<String> result = new LinkedList<String>();
+    for (Object partName : jdoRes) {
+      result.add((String)partName);
+    }
+    query.closeAll();
+    return result;
   }
 
   private String extractPartitionKey(FieldSchema key, List<FieldSchema> pkeys) {
@@ -3128,7 +3424,7 @@ public class ObjectStore implements RawStore, Configurable {
           part_vals, max_parts, null, queryWrapper);
       MTable mtbl = getMTable(catName, db_name, tbl_name);
       for (Object o : parts) {
-        Partition part = convertToPart((MPartition) o);
+        Partition part = convertToPart((MPartition) o, false);
         //set auth privileges
         if (null != userName && null != groupNames &&
             "TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
@@ -3269,7 +3565,7 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(catName, dbName, tblName, partNames);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, partNames, false);
       }
     }.run(false);
   }
@@ -3289,20 +3585,30 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr,
                                                     getDefaultPartitionName(defaultPartitionName));
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
+    boolean isTxnTbl = TxnUtils.isTransactionalTable(convertMap(mTable.getParameters()));
     result.addAll(new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         // If we have some sort of expression tree, try SQL filter pushdown.
         if (exprTree != null) {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
-          if (directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, defaultPartitionName, filter)) {
-            return directSql.getPartitionsViaSqlFilter(filter, null);
+          if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+              exprTree, defaultPartitionName, filter)) {
+            String catalogName = (catName != null) ? catName : DEFAULT_CATALOG_NAME;
+            return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter, null, isTxnTbl);
           }
         }
         // We couldn't do SQL filter pushdown. Get names via normal means.
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-            ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
+                catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
         return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
       }
 
@@ -3312,18 +3618,18 @@ public class ObjectStore implements RawStore, Configurable {
         // If we have some sort of expression tree, try JDOQL filter pushdown.
         List<Partition> result = null;
         if (exprTree != null) {
-          result = getPartitionsViaOrmFilter(ctx.getTable(), exprTree, maxParts, false);
+          result = getPartitionsViaOrmFilter(catName, dbName, tblName, exprTree, maxParts, false, partitionKeys);
         }
         if (result == null) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
           List<String> partNames = new ArrayList<>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-              ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
-          result = getPartitionsViaOrmFilter(catName, dbName, tblName, partNames);
+                  catName, dbName, tblName, partitionKeys, expr, defaultPartitionName, maxParts, partNames));
+          result = getPartitionsViaOrmFilter(catName, dbName, tblName, partNames, isTxnTbl);
         }
         return result;
       }
-    }.run(true));
+    }.run(false));
     return hasUnknownPartitions.get();
   }
 
@@ -3340,19 +3646,27 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Gets the partition names from a table, pruned using an expression.
-   * @param table Table.
+   * @param catName
+   * @param dbName
+   * @param tblName
    * @param expr Expression.
    * @param defaultPartName Default partition name from job config, if any.
    * @param maxParts Maximum number of partition names to return.
    * @param result The resulting names.
    * @return Whether the result contains any unknown partitions.
    */
-  private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
-      String defaultPartName, short maxParts, List<String> result) throws MetaException {
-    result.addAll(getPartitionNamesNoTxn(table.getCatName(),
-        table.getDbName(), table.getTableName(), maxParts));
-    return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr,
-            getDefaultPartitionName(defaultPartName), result);
+  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName, List<FieldSchema> partColumns, byte[] expr,
+                                                     String defaultPartName, short maxParts, List<String> result) throws MetaException {
+    result.addAll(getPartitionNamesNoTxn(
+            catName,
+            dbName,
+            tblName,
+            maxParts));
+    return expressionProxy.filterPartitionsByExpr(
+            partColumns,
+            expr,
+            getDefaultPartitionName(defaultPartName),
+            result);
   }
 
   /**
@@ -3365,11 +3679,11 @@ public class ObjectStore implements RawStore, Configurable {
    * @return Resulting partitions. Can be null if isValidatedFilter is false, and
    *         there was error deriving the JDO filter.
    */
-  private List<Partition> getPartitionsViaOrmFilter(Table table, ExpressionTree tree,
-      short maxParts, boolean isValidatedFilter) throws MetaException {
+  private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
+      short maxParts, boolean isValidatedFilter, List<FieldSchema> partitionKeys) throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter =
-        makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree, params, isValidatedFilter);
+        makeQueryFilterString(catName, dbName, tblName, tree, params, isValidatedFilter, partitionKeys);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
       return null;
@@ -3391,11 +3705,11 @@ public class ObjectStore implements RawStore, Configurable {
     return results;
   }
 
-  private Integer getNumPartitionsViaOrmFilter(Table table, ExpressionTree tree, boolean isValidatedFilter)
-    throws MetaException {
+  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree, boolean isValidatedFilter, List<FieldSchema> partitionKeys)
+          throws MetaException {
     Map<String, Object> params = new HashMap<>();
-    String jdoFilter = makeQueryFilterString(table.getCatName(), table.getDbName(), table, tree,
-        params, isValidatedFilter);
+    String jdoFilter = makeQueryFilterString(catName, dbName, tblName, tree,
+            params, isValidatedFilter, partitionKeys);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
       return null;
@@ -3420,7 +3734,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @return Resulting partitions.
    */
   private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName,
-      List<String> partNames) throws MetaException {
+      List<String> partNames, boolean isTxnTable) throws MetaException {
 
     if (partNames.isEmpty()) {
       return Collections.emptyList();
@@ -3437,7 +3751,7 @@ public class ObjectStore implements RawStore, Configurable {
         query.setOrdering("partitionName ascending");
 
         List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
-        List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts);
+        List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts, isTxnTable);
         query.closeAll();
 
         return partitions;
@@ -3783,6 +4097,12 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
+    Map<String, String> parameters = mTable.getParameters();
     return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
@@ -3793,7 +4113,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
       }
 
       @Override
@@ -3803,9 +4123,9 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected Integer getJdoResult(
           GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
-        return getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+        return getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
       }
-    }.run(true);
+    }.run(false);
   }
 
   @Override
@@ -3814,6 +4134,11 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null);
     final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
 
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
 
     return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
       private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
@@ -3825,7 +4150,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
       }
 
       @Override
@@ -3839,7 +4164,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         if (exprTree != null) {
           try {
-            numPartitions = getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+            numPartitions = getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
           } catch (MetaException e) {
             numPartitions = null;
           }
@@ -3848,19 +4173,27 @@ public class ObjectStore implements RawStore, Configurable {
         // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
         if (numPartitions == null) {
           List<String> filteredPartNames = new ArrayList<>();
-          getPartitionNamesPrunedByExprNoTxn(ctx.getTable(), tempExpr, "", (short) -1, filteredPartNames);
+          getPartitionNamesPrunedByExprNoTxn(catName, dbName, tblName, partitionKeys, tempExpr, "", (short) -1, filteredPartNames);
           numPartitions = filteredPartNames.size();
         }
 
         return numPartitions;
       }
-    }.run(true);
+    }.run(false);
   }
 
   protected List<Partition> getPartitionsByFilterInternal(
       String catName, String dbName, String tblName, String filter, final short maxParts,
       boolean allowSql, boolean allowJdo)
       throws MetaException, NoSuchObjectException {
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
+    boolean isTxnTable = TxnUtils.isTransactionalTable(convertMap(mTable.getParameters()));
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
@@ -3868,20 +4201,20 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
       }
 
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(filter, (maxParts < 0) ? null : (int)maxParts);
+        return directSql.getPartitionsViaSqlFilter(catName, dbName, tblName, filter, (maxParts < 0) ? null : (int)maxParts, isTxnTable);
       }
 
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(ctx.getTable(), tree, maxParts, true);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, maxParts, true, partitionKeys);
       }
-    }.run(true);
+    }.run(false);
   }
 
   @Override
@@ -3921,7 +4254,8 @@ public class ObjectStore implements RawStore, Configurable {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
-          return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+          return directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
+                  table.getPartitionKeys(), tree, null, filter);
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;
@@ -4065,10 +4399,30 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("catName", catName);
     }
 
-    tree.generateJDOFilterFragment(getConf(), table, params, queryBuilder);
+    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, table != null ? table.getPartitionKeys() : null);
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
-      LOG.info("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
+      LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
+      return null;
+    }
+    String jdoFilter = queryBuilder.getFilter();
+    LOG.debug("jdoFilter = {}", jdoFilter);
+    return jdoFilter;
+  }
+
+  private String makeQueryFilterString(String catName, String dbName, String tblName,
+                                       ExpressionTree tree, Map<String, Object> params,
+                                       boolean isValidatedFilter, List<FieldSchema> partitionKeys) throws MetaException {
+    assert tree != null;
+    FilterBuilder queryBuilder = new FilterBuilder(isValidatedFilter);
+    queryBuilder.append("table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
+    params.put("t1", tblName);
+    params.put("t2", dbName);
+    params.put("t3", catName);
+    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, partitionKeys);
+    if (queryBuilder.hasError()) {
+      assert !isValidatedFilter;
+      LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
       return null;
     }
     String jdoFilter = queryBuilder.getFilter();
@@ -4354,7 +4708,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     oldCd.t = oldCD;
-    return convertToPart(oldp);
+    return convertToPart(oldp, false);
   }
 
   @Override
@@ -4605,10 +4959,10 @@ public class ObjectStore implements RawStore, Configurable {
       constraintName = normalizeIdentifier(constraintName);
       constraintExistsQuery = pm.newQuery(MConstraint.class,
           "parentTable == parentTableP && constraintName == constraintNameP");
-      constraintExistsQuery.declareParameters("java.lang.Long parentTableP, java.lang.String constraintNameP");
+      constraintExistsQuery.declareParameters("MTable parentTableP, java.lang.String constraintNameP");
       constraintExistsQuery.setUnique(true);
       constraintExistsQuery.setResult("constraintName");
-      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table.getId(), constraintName);
+      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table, constraintName);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, constraintExistsQuery);
@@ -5713,7 +6067,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
 
@@ -5948,7 +6302,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   private List<PrivilegeGrantInfo> getColumnPrivilege(String catName, String dbName,
@@ -5991,7 +6345,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   @Override
@@ -8589,7 +8943,7 @@ public class ObjectStore implements RawStore, Configurable {
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       Table table = ensureGetTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
       Partition partition = convertToPart(getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals));
+          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals), false);
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
@@ -12750,6 +13104,97 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      List<MReplicationMetrics> mReplicationMetricsList = new ArrayList<>();
+      for (ReplicationMetrics replicationMetric : replicationMetricList.getReplicationMetricList()) {
+        MReplicationMetrics mReplicationMetrics;
+        try {
+          mReplicationMetrics = pm.getObjectById(MReplicationMetrics.class,
+            replicationMetric.getScheduledExecutionId());
+        } catch (JDOObjectNotFoundException e) {
+          mReplicationMetrics = new MReplicationMetrics();
+          mReplicationMetrics.setDumpExecutionId(replicationMetric.getDumpExecutionId());
+          mReplicationMetrics.setScheduledExecutionId(replicationMetric.getScheduledExecutionId());
+          mReplicationMetrics.setPolicy(replicationMetric.getPolicy());
+        }
+        if (!StringUtils.isEmpty(replicationMetric.getMetadata())) {
+          mReplicationMetrics.setMetadata(replicationMetric.getMetadata());
+        }
+        if (!StringUtils.isEmpty(replicationMetric.getProgress())) {
+          mReplicationMetrics.setProgress(replicationMetric.getProgress());
+        }
+        mReplicationMetricsList.add(mReplicationMetrics);
+      }
+      pm.makePersistentAll(mReplicationMetricsList);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    boolean committed = false;
+    try {
+      openTransaction();
+      ReplicationMetricList replicationMetrics = null;
+      if (replicationMetricsRequest.isSetPolicy()) {
+        replicationMetrics = getMReplicationMetrics(replicationMetricsRequest.getPolicy());
+      } else if (replicationMetricsRequest.isSetScheduledExecutionId()) {
+        replicationMetrics = getMReplicationMetrics(replicationMetricsRequest.getScheduledExecutionId());
+      }
+      committed = commitTransaction();
+      return replicationMetrics;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private ReplicationMetricList getMReplicationMetrics(String policy) {
+    ReplicationMetricList ret = new ReplicationMetricList();
+    if (StringUtils.isEmpty(policy)) {
+      return ret;
+    }
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class, "policy == policyParam");
+    query.declareParameters("java.lang.String policyParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    }
+    ret.setReplicationMetricList(returnList);
+    return ret;
+  }
+
+  private ReplicationMetricList getMReplicationMetrics(long scheduledExecutionId) {
+    ReplicationMetricList ret = new ReplicationMetricList();
+    if (scheduledExecutionId < 0) {
+      return ret;
+    }
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class,
+        "scheduledExecutionId == scheduledExecutionIdParam");
+    query.declareParameters("java.lang.Long scheduledExecutionIdParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    }
+    ret.setReplicationMetricList(returnList);
+    return ret;
+  }
+
   private void ensureScheduledQueriesEnabled() throws MetaException {
     if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
       throw new MetaException(
@@ -12824,9 +13269,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       openTransaction();
       Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-      if (nextExecutionTime == null) {
-        throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-      }
       schq.setNextExecution(nextExecutionTime);
       pm.makePersistent(schq);
       commited = commitTransaction();
@@ -12872,9 +13314,6 @@ public class ObjectStore implements RawStore, Configurable {
       persisted.doUpdate(schq);
       if (!scheduledQuery.isSetNextExecution()) {
         Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-        if (nextExecutionTime == null) {
-          throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-        }
         persisted.setNextExecution(nextExecutionTime);
       } else {
         persisted.setNextExecution(schq.getNextExecution());

@@ -138,6 +138,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+  private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
    * Counters.
@@ -678,7 +679,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
   }
@@ -791,13 +791,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         filesIdx++;
       }
       assert filesIdx == numFiles;
-
-      // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      if (isNativeTable() && fs != null && fsp != null && !conf.isMmTable() && !conf.isDirectInsert()) {
-        autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
-      }
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
 
@@ -968,7 +962,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       } else {
         if (conf.isCompactionTable()) {
-          int bucketProperty = ((IntWritable)((Object[])row)[2]).get();
+          int bucketProperty = getBucketProperty(row);
           bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
         }
         createBucketFiles(fsp);
@@ -1013,6 +1007,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
         }
         fpaths = getDynOutPaths(dpVals, lbDirName);
+        dynamicPartitionSpecs.add(fpaths.dpDirForCounters);
 
         // use SubStructObjectInspector to serialize the non-partitioning columns in the input row
         recordValue = serializer.serialize(row, subSetOI);
@@ -1411,7 +1406,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
         Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(), conf
-            .getStatementId(), unionPath, conf.getInsertOverwrite());
+            .getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1422,7 +1417,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hadoop always call close() even if an Exception was thrown in map() or
       // reduce().
       for (FSPaths fsp : valToPaths.values()) {
-        fsp.abortWritersAndUpdaters(fs, abort, !autoDelete && isNativeTable() && !conf.isMmTable());
+        fsp.abortWritersAndUpdaters(fs, abort,
+            !autoDelete && isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert());
       }
     }
     fsp = prevFsp = null;
@@ -1686,6 +1682,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void configureJobConf(JobConf job) {
     if (conf.getInsertOverwrite()) {
       job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
+
+  /**
+   * Get the bucket property as an int from the row. This is necessary because
+   * VectorFileSinkOperator wraps row values in Writable objects.
+   * @param row as Object
+   * @return bucket property as int
+   */
+  private int getBucketProperty(Object row) {
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty instanceof Writable) {
+      return ((IntWritable) bucketProperty).get();
+    } else {
+      return (int) bucketProperty;
     }
   }
 }

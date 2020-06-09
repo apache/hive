@@ -1,5 +1,6 @@
 --! qt:authorizer
 --! qt:scheduledqueryservice
+--! qt:transactional
 --! qt:sysdb
 
 set user.name=hive_admin_user;
@@ -9,10 +10,6 @@ drop materialized view if exists mv1;
 drop table if exists emps;
 drop table if exists depts;
 
-set hive.support.concurrency=true;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.strict.checks.cartesian.product=false;
-set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
 
 -- create some tables
@@ -62,8 +59,8 @@ SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01';
 
--- create a schedule to rebuild mv
-create scheduled query d cron '0 0 * * * ? *' defined as 
+-- create a schedule to rebuild mv (in the far future)
+create scheduled query d cron '0 0 0 1 * ? 2030' defined as 
   alter materialized view mv1 rebuild;
 
 set hive.support.quoted.identifiers=none;
@@ -71,7 +68,7 @@ select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries;
 
 alter scheduled query d execute;
 
-!sleep 10;
+!sleep 30;
 
 -- the scheduled execution will fail - because of missing TXN; but overall it works..
 select state,error_message from sys.scheduled_executions;

@@ -50,7 +50,6 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
       this.outputObjInspector = serde.getObjectInspector();
     } catch (Exception e) {
       LOG.error("Generating output obj inspector from dummy object error", e);
-      e.printStackTrace();
     }
   }
 

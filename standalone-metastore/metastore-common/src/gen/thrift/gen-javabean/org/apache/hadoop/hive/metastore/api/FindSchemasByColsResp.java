@@ -350,14 +350,14 @@ import org.slf4j.LoggerFactory;
           case 1: // SCHEMA_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1048 = iprot.readListBegin();
-                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list1048.size);
-                SchemaVersionDescriptor _elem1049;
-                for (int _i1050 = 0; _i1050 < _list1048.size; ++_i1050)
+                org.apache.thrift.protocol.TList _list1080 = iprot.readListBegin();
+                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list1080.size);
+                SchemaVersionDescriptor _elem1081;
+                for (int _i1082 = 0; _i1082 < _list1080.size; ++_i1082)
                 {
-                  _elem1049 = new SchemaVersionDescriptor();
-                  _elem1049.read(iprot);
-                  struct.schemaVersions.add(_elem1049);
+                  _elem1081 = new SchemaVersionDescriptor();
+                  _elem1081.read(iprot);
+                  struct.schemaVersions.add(_elem1081);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
-          for (SchemaVersionDescriptor _iter1051 : struct.schemaVersions)
+          for (SchemaVersionDescriptor _iter1083 : struct.schemaVersions)
           {
-            _iter1051.write(oprot);
+            _iter1083.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -416,9 +416,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
-          for (SchemaVersionDescriptor _iter1052 : struct.schemaVersions)
+          for (SchemaVersionDescriptor _iter1084 : struct.schemaVersions)
           {
-            _iter1052.write(oprot);
+            _iter1084.write(oprot);
           }
         }
       }
@@ -430,14 +430,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1053 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list1053.size);
-          SchemaVersionDescriptor _elem1054;
-          for (int _i1055 = 0; _i1055 < _list1053.size; ++_i1055)
+          org.apache.thrift.protocol.TList _list1085 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list1085.size);
+          SchemaVersionDescriptor _elem1086;
+          for (int _i1087 = 0; _i1087 < _list1085.size; ++_i1087)
           {
-            _elem1054 = new SchemaVersionDescriptor();
-            _elem1054.read(iprot);
-            struct.schemaVersions.add(_elem1054);
+            _elem1086 = new SchemaVersionDescriptor();
+            _elem1086.read(iprot);
+            struct.schemaVersions.add(_elem1086);
           }
         }
         struct.setSchemaVersionsIsSet(true);

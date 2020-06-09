@@ -623,10 +623,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       try {
         AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
       } catch (Exception e) {
-        e.printStackTrace();
-        // Ignore; might have been created by another concurrent writer, writing to a different bucket
-        // within this delta/base directory
-        LOG.trace(e.fillInStackTrace().toString());
+        LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
+            + " different bucket within this delta/base directory", e);
       }
     }
   }

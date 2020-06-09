@@ -1,4 +1,5 @@
 --! qt:dataset:src
+set hive.strict.checks.type.safety=false;
 set hive.stats.column.autogather=false;
 set hive.compute.query.using.stats=false;
 drop table if exists partcoltypenum;

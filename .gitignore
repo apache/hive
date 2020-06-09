@@ -37,3 +37,4 @@ standalone-metastore/metastore-common/src/gen/version
 standalone-metastore/metastore-server/src/gen/version
 launch.json
 settings.json
+kafka-handler/src/test/gen

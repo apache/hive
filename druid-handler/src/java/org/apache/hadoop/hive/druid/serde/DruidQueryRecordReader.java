@@ -128,7 +128,8 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
           // We got exception while querying results from this host.
           CloseQuietly.close(iterator);
         }
-        LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]", query, address, e.getMessage());
+        LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]",
+            query, address, e.getMessage());
         if (ex == null) {
           ex = e;
         } else {

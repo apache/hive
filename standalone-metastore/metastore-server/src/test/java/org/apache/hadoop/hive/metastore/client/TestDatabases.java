@@ -150,7 +150,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database createdDatabase = client.getDatabase(database.getName());
 
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
-    Assert.assertEquals("Comparing location", metaStore.getWarehouseRoot() + "/" +
+    Assert.assertEquals("Comparing location", metaStore.getExternalWarehouseRoot() + "/" +
                                                   createdDatabase.getName() + ".db", createdDatabase.getLocationUri());
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
@@ -187,7 +187,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database database = testDatabases[0];
 
     // Invalid character in new database name
-    database.setName("test_database_1;");
+    database.setName("test_database§1;");
     client.createDatabase(database);
   }
 
@@ -215,7 +215,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Default database name", "default", database.getName());
     Assert.assertEquals("Default database description", "Default Hive database",
         database.getDescription());
-    Assert.assertEquals("Default database location", metaStore.getWarehouseRoot(),
+    Assert.assertEquals("Default database location", metaStore.getExternalWarehouseRoot(),
         new Path(database.getLocationUri()));
     Assert.assertEquals("Default database parameters", new HashMap<String, String>(),
         database.getParameters());

@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -76,9 +77,11 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -182,6 +185,8 @@ public class QTestUtil {
         testArgs.isWithLlapIo(),
         testArgs.getFsType());
 
+    logClassPath();
+
     Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
 
     this.fsType = testArgs.getFsType();
@@ -200,6 +205,9 @@ public class QTestUtil {
       System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     }
 
+    // For testing configurations set by System.setProperties
+    System.setProperty("hive.query.max.length", "100Mb");
+
     conf = new HiveConf(IDriver.class);
     setMetaStoreProperties();
 
@@ -214,9 +222,11 @@ public class QTestUtil {
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("sysdb", new QTestSysDbHandler());
+    dispatcher.register("transactional", new QTestTransactional());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
+    dispatcher.register("disabled", new QTestDisabledHandler());
 
     String scriptsDir = getScriptsDir();
 
@@ -227,16 +237,27 @@ public class QTestUtil {
 
   }
 
+  private void logClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    LOG.info("QTestUtil classpath: " + String.join("\n", Arrays.asList(classpathEntries)));
+  }
+
   private void setMetaStoreProperties() {
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY);
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.CONNECTION_DRIVER);
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.CONNECTION_USER_NAME);
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.PWD);
+    setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.AUTO_CREATE_ALL);
   }
 
   private void setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars var) {
     if (System.getProperty(var.getVarname()) != null) {
-      MetastoreConf.setVar(conf, var, System.getProperty(var.getVarname()));
+      if (var.getDefaultVal().getClass() == Boolean.class) {
+        MetastoreConf.setBoolVar(conf, var, Boolean.getBoolean(System.getProperty(var.getVarname())));
+      } else {
+        MetastoreConf.setVar(conf, var, System.getProperty(var.getVarname()));
+      }
     }
   }
 
@@ -932,16 +953,14 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-
     qOutProcessor.maskPatterns(f.getPath(), tname);
-    QTestProcessExecResult exitVal = qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
+    } else {
+      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
     }
-
-    return exitVal;
   }
 
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs) throws Exception {
@@ -961,7 +980,7 @@ public class QTestUtil {
   }
 
   public ASTNode parseQuery(String tname) throws Exception {
-    return pd.parse(qMap.get(tname));
+    return pd.parse(qMap.get(tname)).getTree();
   }
 
   public List<Task<?>> analyzeAST(ASTNode ast) throws Exception {

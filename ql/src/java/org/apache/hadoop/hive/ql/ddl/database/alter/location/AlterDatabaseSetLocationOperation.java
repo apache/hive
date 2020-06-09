@@ -23,10 +23,12 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseOperation;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -40,7 +42,12 @@ public class AlterDatabaseSetLocationOperation extends AbstractAlterDatabaseOper
   @Override
   protected void doAlteration(Database database, Map<String, String> params) throws HiveException {
     try {
-      String newLocation = desc.getLocation();
+      String newLocation = Utilities.getQualifiedPath(context.getConf(), new Path(desc.getLocation()));
+
+      if (newLocation.equalsIgnoreCase(database.getManagedLocationUri())) {
+        throw new HiveException("Managed and external locations for database cannot be the same");
+      }
+
       URI locationURI = new URI(newLocation);
       if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
         throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
@@ -51,6 +58,7 @@ public class AlterDatabaseSetLocationOperation extends AbstractAlterDatabaseOper
       } else {
         database.setLocationUri(newLocation);
       }
+      return;
     } catch (URISyntaxException e) {
       throw new HiveException(e);
     }

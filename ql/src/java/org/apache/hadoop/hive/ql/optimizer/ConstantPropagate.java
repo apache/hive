@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * some constants of its parameters.
  *
  * 3. Propagate expression: if the expression is an assignment like column=constant, the expression
- * will be propagate to parents to see if further folding operation is possible.
+ * will be propagate to children to see if further folding operation is possible.
  */
 public class ConstantPropagate extends Transform {
 
@@ -147,7 +147,7 @@ public class ConstantPropagate extends Transform {
           || getDispatchedList().containsAll(parents)) {
         opStack.push(nd);
 
-        // all children are done or no need to walk the children
+        // all parents are done or no need to walk the parents
         dispatch(nd, opStack);
         opStack.pop();
       } else {
@@ -157,7 +157,7 @@ public class ConstantPropagate extends Transform {
         return;
       }
 
-      // move all the children to the front of queue
+      // move all the children to the end of queue
       List<? extends Node> children = nd.getChildren();
       if (children != null) {
         toWalk.removeAll(children);

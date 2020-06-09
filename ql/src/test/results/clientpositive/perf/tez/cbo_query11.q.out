@@ -3,7 +3,7 @@ with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -18,17 +18,16 @@ with year_total as (
  group by c_customer_id
          ,c_first_name
          ,c_last_name
-         ,d_year
          ,c_preferred_cust_flag
          ,c_birth_country
          ,c_login
          ,c_email_address
-         ,d_year 
+         ,d_year
  union all
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -49,7 +48,11 @@ with year_total as (
          ,c_email_address
          ,d_year
          )
-  select  t_s_secyear.c_preferred_cust_flag
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
  from year_total t_s_firstyear
      ,year_total t_s_secyear
      ,year_total t_w_firstyear
@@ -61,15 +64,18 @@ with year_total as (
          and t_w_firstyear.sale_type = 'w'
          and t_s_secyear.sale_type = 's'
          and t_w_secyear.sale_type = 'w'
-         and t_s_firstyear.dyear = 2001
-         and t_s_secyear.dyear = 2001+1
-         and t_w_firstyear.dyear = 2001
-         and t_w_secyear.dyear = 2001+1
+         and t_s_firstyear.dyear = 1999
+         and t_s_secyear.dyear = 1999+1
+         and t_w_firstyear.dyear = 1999
+         and t_w_secyear.dyear = 1999+1
          and t_s_firstyear.year_total > 0
          and t_w_firstyear.year_total > 0
-         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
-             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
- order by t_s_secyear.c_preferred_cust_flag
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else 0.0 end
+             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else 0.0 end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer
@@ -82,7 +88,7 @@ with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -97,17 +103,16 @@ with year_total as (
  group by c_customer_id
          ,c_first_name
          ,c_last_name
-         ,d_year
          ,c_preferred_cust_flag
          ,c_birth_country
          ,c_login
          ,c_email_address
-         ,d_year 
+         ,d_year
  union all
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
-       ,c_preferred_cust_flag
+       ,c_preferred_cust_flag customer_preferred_cust_flag
        ,c_birth_country customer_birth_country
        ,c_login customer_login
        ,c_email_address customer_email_address
@@ -128,7 +133,11 @@ with year_total as (
          ,c_email_address
          ,d_year
          )
-  select  t_s_secyear.c_preferred_cust_flag
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
  from year_total t_s_firstyear
      ,year_total t_s_secyear
      ,year_total t_w_firstyear
@@ -140,15 +149,18 @@ with year_total as (
          and t_w_firstyear.sale_type = 'w'
          and t_s_secyear.sale_type = 's'
          and t_w_secyear.sale_type = 'w'
-         and t_s_firstyear.dyear = 2001
-         and t_s_secyear.dyear = 2001+1
-         and t_w_firstyear.dyear = 2001
-         and t_w_secyear.dyear = 2001+1
+         and t_s_firstyear.dyear = 1999
+         and t_s_secyear.dyear = 1999+1
+         and t_w_firstyear.dyear = 1999
+         and t_w_secyear.dyear = 1999+1
          and t_s_firstyear.year_total > 0
          and t_w_firstyear.year_total > 0
-         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
-             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
- order by t_s_secyear.c_preferred_cust_flag
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else 0.0 end
+             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else 0.0 end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer
@@ -157,10 +169,10 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(c_preferred_cust_flag=[$1])
-    HiveJoin(condition=[AND(=($0, $5), CASE(IS NOT NULL($6), CASE($9, >(/($4, $8), /($2, $6)), false), false))], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject($f0=[$0], $f4=[$3], $f9=[$7])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+  HiveProject(customer_id=[$0], customer_first_name=[$1], customer_last_name=[$2], customer_birth_country=[$3])
+    HiveJoin(condition=[AND(=($0, $7), CASE(IS NOT NULL($8), CASE($11, >(/($6, $10), /($4, $8)), >(0:DECIMAL(1, 0), /($4, $8))), CASE($11, >(/($6, $10), 0:DECIMAL(1, 0)), false)))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f4=[$4], $f8=[$7])
         HiveAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
           HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
@@ -171,7 +183,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
                 HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
               HiveProject(d_date_sk=[$0])
-                HiveFilter(condition=[AND(=($6, 2002), IS NOT NULL($0))])
+                HiveFilter(condition=[AND(=($6, 2000), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
       HiveJoin(condition=[=($2, $4)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -186,10 +198,10 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
                     HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                   HiveProject(d_date_sk=[$0])
-                    HiveFilter(condition=[AND(=($6, 2002), IS NOT NULL($0))])
+                    HiveFilter(condition=[AND(=($6, 2000), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-          HiveProject($f0=[$0], $f9=[$7])
-            HiveFilter(condition=[>($7, 0:DECIMAL(1, 0))])
+          HiveProject($f0=[$0], $f8=[$7])
+            HiveFilter(condition=[>($7, 0)])
               HiveAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
                 HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
@@ -200,10 +212,10 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
                       HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
                         HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                     HiveProject(d_date_sk=[$0])
-                      HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($0))])
+                      HiveFilter(condition=[AND(=($6, 1999), IS NOT NULL($0))])
                         HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
         HiveProject(customer_id=[$0], year_total=[$7], CAST=[CAST(IS NOT NULL($7)):BOOLEAN])
-          HiveFilter(condition=[>($7, 0:DECIMAL(1, 0))])
+          HiveFilter(condition=[>($7, 0)])
             HiveAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
               HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
@@ -214,6 +226,6 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
                     HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                   HiveProject(d_date_sk=[$0])
-                    HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($0))])
+                    HiveFilter(condition=[AND(=($6, 1999), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 

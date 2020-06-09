@@ -912,16 +912,27 @@ public interface IMetaStoreClient {
 
   /**
    * Get a partition.
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tblName table name
-   * @param partVals partition values for this partition, must be in the same order as the
-   *                 partition keys of the table.
-   * @return the partition object
+   * @param req
+   * @return GetPartitionResponse
    * @throws NoSuchObjectException no such partition
    * @throws MetaException error access the RDBMS.
    * @throws TException thrift transport error
    */
+  GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
+          throws NoSuchObjectException, MetaException, TException;
+
+    /**
+     * Get a partition.
+     * @param catName catalog name
+     * @param dbName database name
+     * @param tblName table name
+     * @param partVals partition values for this partition, must be in the same order as the
+     *                 partition keys of the table.
+     * @return the partition object
+     * @throws NoSuchObjectException no such partition
+     * @throws MetaException error access the RDBMS.
+     * @throws TException thrift transport error
+     */
   Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -1163,6 +1174,17 @@ public interface IMetaStoreClient {
 
   /**
    * List Names of partitions in a table.
+   * @param req
+   * @return GetPartitionNamesPsResponse
+   * @throws NoSuchObjectException No such table.
+   * @throws MetaException Error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+          throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * List Names of partitions in a table.
    * @param catName catalog name.
    * @param db_name database name.
    * @param tbl_name table name.
@@ -1210,6 +1232,24 @@ public interface IMetaStoreClient {
    */
   List<String> listPartitionNames(String catName, String db_name, String tbl_name,
                                   List<String> part_vals, int max_parts)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param defaultPartName default partition name.
+   * @param exprBytes expression, serialized from ExprNodeDesc.
+   * @param order ordered the resulting list.
+   * @param maxParts maximum number of partition names to return, or -1 to return all that are
+   *                  found.
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException no such table.
+   */
+  List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order, short maxParts)
       throws MetaException, TException, NoSuchObjectException;
 
   /**
@@ -1325,6 +1365,41 @@ public interface IMetaStoreClient {
       throws MetaException, NoSuchObjectException, TException;
 
   /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param dbName the database name
+   * @param tblName the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param maxParts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param defaultPartName Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String dbName, String tblName,
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+          throws TException;
+
+  /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param catName the catalog name
+   * @param dbName the database name
+   * @param tblName the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param maxParts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param defaultPartitionName Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      throws TException;
+
+  /**
    * Get list of partitions matching specified serialized expression
    * @param db_name the database name
    * @param tbl_name the table name
@@ -1339,7 +1414,7 @@ public interface IMetaStoreClient {
    */
   boolean listPartitionsByExpr(String db_name, String tbl_name,
       byte[] expr, String default_partition_name, short max_parts, List<Partition> result)
-          throws TException;
+      throws TException;
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -1377,6 +1452,17 @@ public interface IMetaStoreClient {
 
   /**
    * List partitions, fetching the authorization information along with the partitions.
+   * @param req
+   * @return GetPartitionsPsWithAuthResponse
+   * @throws NoSuchObjectException no partitions matching the criteria were found
+   * @throws MetaException error accessing the RDBMS
+   * @throws TException thrift transport error
+   */
+  GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
+          throws MetaException, TException, NoSuchObjectException;
+
+  /**
+   * List partitions, fetching the authorization information along with the partitions.
    * @param catName catalog name
    * @param dbName database name
    * @param tableName table name
@@ -1407,13 +1493,24 @@ public interface IMetaStoreClient {
 
   /**
    * Get partitions by a list of partition names.
+   * @param req
+   * @return PartitionsResponse
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  PartitionsResponse getPartitionsRequest(PartitionsRequest req)
+          throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
    * @param db_name database name
    * @param tbl_name table name
    * @param part_names list of partition names
    * @param getColStats if true include statistics in the Partition object
    * @param engine engine sending the request
    * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitions
+   * @throws NoSuchObjectException No such partitionscatName
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
@@ -2293,6 +2390,19 @@ public interface IMetaStoreClient {
       UnknownDBException;
 
   /**
+   * Get schema for a table, excluding the partition columns.
+   * @param req
+   * @return GetFieldsResponse
+   * @throws UnknownTableException no such table
+   * @throws UnknownDBException no such database
+   * @throws MetaException error accessing the RDBMS
+   * @throws TException thrift transport error
+   */
+  GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
+          throws MetaException, TException, UnknownTableException,
+          UnknownDBException;
+
+  /**
    * Get schema for a table, including the partition columns.
    * @param db database name
    * @param tableName table name
@@ -2320,6 +2430,19 @@ public interface IMetaStoreClient {
   List<FieldSchema> getSchema(String catName, String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException;
+
+  /**
+   * Get schema for a table, including the partition columns.
+   * @param req
+   * @return GetSchemaResponse
+   * @throws UnknownTableException no such table
+   * @throws UnknownDBException no such database
+   * @throws MetaException error accessing the RDBMS
+   * @throws TException thrift transport error
+   */
+  GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
+          throws MetaException, TException, UnknownTableException,
+          UnknownDBException;
 
   /**
    * @param name
@@ -3930,4 +4053,13 @@ public interface IMetaStoreClient {
    */
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
 
+  /**
+   * Adds replication metrics for the replication policies.
+   * @param replicationMetricList
+   * @throws MetaException
+   */
+  void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException;
+
+  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                replicationMetricsRequest) throws MetaException, TException;
 }

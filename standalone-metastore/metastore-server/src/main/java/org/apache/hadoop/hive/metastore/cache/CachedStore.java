@@ -1518,6 +1518,12 @@ public class CachedStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
+      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override public PartitionValuesResponse listPartitionValues(String catName, String dbName, String tblName,
       List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending, List<FieldSchema> order,
       long maxParts) throws MetaException {
@@ -2862,6 +2868,10 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
   }
 
+  @Override public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+     return rawStore.isPartOfMaterializedView(catName, dbName, tblName);
+   }
+
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     return rawStore.scheduledQueryPoll(request);
@@ -2877,6 +2887,16 @@ public class CachedStore implements RawStore, Configurable {
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info)
       throws MetaException, NoSuchObjectException, InvalidOperationException {
     rawStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    rawStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return rawStore.getReplicationMetrics(replicationMetricsRequest);
   }
 
   @Override

@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -1179,6 +1180,22 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
+  public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+    }
+    assert result != null;
+
+    result.addAll(
+        MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table,
+            getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
+                generateJDOFilter(table, expr, defaultPartitionName)), maxParts)));
+    return result.isEmpty();
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
                                               List<String> partNames, boolean getColStats, String engine) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
@@ -1205,7 +1222,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
               (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-              " for table " + tableName + " in database " + dbName + "and for user " +
+              " for table " + tableName + " in database " + dbName + " and for user " +
               userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
               " is not found.");
     }
@@ -1526,9 +1543,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private String generateJDOFilter(org.apache.hadoop.hive.metastore.api.Table table, ExpressionTree exprTree)
       throws MetaException {
 
+    assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, table, params, filterBuilder);
+    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
     // replace leading &&
     stringBuilder.replace(0, 4, "");

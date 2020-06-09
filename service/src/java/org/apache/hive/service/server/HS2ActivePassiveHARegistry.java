@@ -346,7 +346,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname));
     // Transport specific confs
-    if (HiveServer2.isHTTPTransportMode(conf)) {
+    if (HiveServer2.isHttpTransportMode(new HiveConf(conf, Configuration.class))) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname));
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname,

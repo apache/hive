@@ -701,14 +701,14 @@ import org.slf4j.LoggerFactory;
           case 3: // WRITE_EVENT_INFOS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list658 = iprot.readListBegin();
-                struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list658.size);
-                WriteEventInfo _elem659;
-                for (int _i660 = 0; _i660 < _list658.size; ++_i660)
+                org.apache.thrift.protocol.TList _list666 = iprot.readListBegin();
+                struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list666.size);
+                WriteEventInfo _elem667;
+                for (int _i668 = 0; _i668 < _list666.size; ++_i668)
                 {
-                  _elem659 = new WriteEventInfo();
-                  _elem659.read(iprot);
-                  struct.writeEventInfos.add(_elem659);
+                  _elem667 = new WriteEventInfo();
+                  _elem667.read(iprot);
+                  struct.writeEventInfos.add(_elem667);
                 }
                 iprot.readListEnd();
               }
@@ -763,9 +763,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(WRITE_EVENT_INFOS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.writeEventInfos.size()));
-            for (WriteEventInfo _iter661 : struct.writeEventInfos)
+            for (WriteEventInfo _iter669 : struct.writeEventInfos)
             {
-              _iter661.write(oprot);
+              _iter669.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -824,9 +824,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetWriteEventInfos()) {
         {
           oprot.writeI32(struct.writeEventInfos.size());
-          for (WriteEventInfo _iter662 : struct.writeEventInfos)
+          for (WriteEventInfo _iter670 : struct.writeEventInfos)
           {
-            _iter662.write(oprot);
+            _iter670.write(oprot);
           }
         }
       }
@@ -850,14 +850,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list663 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list663.size);
-          WriteEventInfo _elem664;
-          for (int _i665 = 0; _i665 < _list663.size; ++_i665)
+          org.apache.thrift.protocol.TList _list671 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list671.size);
+          WriteEventInfo _elem672;
+          for (int _i673 = 0; _i673 < _list671.size; ++_i673)
           {
-            _elem664 = new WriteEventInfo();
-            _elem664.read(iprot);
-            struct.writeEventInfos.add(_elem664);
+            _elem672 = new WriteEventInfo();
+            _elem672.read(iprot);
+            struct.writeEventInfos.add(_elem672);
           }
         }
         struct.setWriteEventInfosIsSet(true);

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,16 +77,11 @@ class ValidTxnManager {
       return true; // Not a transactional op, nothing more to do
     }
 
-    String currentTxnString = driverContext.getTxnManager().getValidTxns().toString();
-    if (currentTxnString.equals(txnString)) {
-      return true; // Still valid, nothing more to do
-    }
-
     // 2) Get locks that are relevant:
-    // - Exclusive for INSERT OVERWRITE.
-    // - Semi-shared for UPDATE/DELETE.
+    // - Exclusive for INSERT OVERWRITE, when shared write is disabled (HiveConf.TXN_WRITE_X_LOCK=false).
+    // - Excl-write for UPDATE/DELETE, when shared write is disabled, INSERT OVERWRITE - when enabled.
     Set<String> nonSharedLockedTables = getNonSharedLockedTables();
-    if (nonSharedLockedTables == null) {
+    if (nonSharedLockedTables.isEmpty()) {
       return true; // Nothing to check
     }
 
@@ -95,12 +91,17 @@ class ValidTxnManager {
       return true; // Nothing to check
     }
 
+    String currentTxnString = driverContext.getTxnManager().getValidTxns().toString();
+    if (currentTxnString.equals(txnString)) {
+      return true; // Still valid, nothing more to do
+    }
+
     return checkWriteIds(currentTxnString, nonSharedLockedTables, txnWriteIdListString);
   }
 
   private Set<String> getNonSharedLockedTables() {
     if (CollectionUtils.isEmpty(driver.getContext().getHiveLocks())) {
-      return null; // Nothing to check
+      return Collections.emptySet(); // Nothing to check
     }
 
     Set<String> nonSharedLockedTables = new HashSet<>();
@@ -108,9 +109,9 @@ class ValidTxnManager {
       if (lock.mayContainComponents()) {
         // The lock may have multiple components, e.g., DbHiveLock, hence we need to check for each of them
         for (LockComponent lockComponent : lock.getHiveLockComponents()) {
-          // We only consider tables for which we hold either an exclusive or a shared write lock
-          if ((lockComponent.getType() == LockType.EXCLUSIVE || lockComponent.getType() == LockType.SHARED_WRITE) &&
-              lockComponent.getTablename() != null && lockComponent.getDbname() != DbTxnManager.GLOBAL_LOCKS) {
+          // We only consider tables for which we hold either an exclusive or a excl-write lock
+          if ((lockComponent.getType() == LockType.EXCLUSIVE || lockComponent.getType() == LockType.EXCL_WRITE) &&
+              lockComponent.getTablename() != null && !DbTxnManager.GLOBAL_LOCKS.equals(lockComponent.getDbname())) {
             nonSharedLockedTables.add(TableName.getDbTable(lockComponent.getDbname(), lockComponent.getTablename()));
           }
         }

@@ -83,6 +83,7 @@ public class BaseReplicationScenariosAcidTables {
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.in.repl.test", "true");
+      put("metastore.warehouse.tenant.colocation", "true");
     }};
 
     acidEnableConf.putAll(overrides);
