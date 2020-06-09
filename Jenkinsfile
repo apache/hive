@@ -71,7 +71,7 @@ export -n HIVE_CONF_DIR
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 OPTS+=" $M_OPTS "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
@@ -113,6 +113,7 @@ spec:
 }
 
 def jobWrappers(closure) {
+  def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
@@ -121,8 +122,9 @@ def jobWrappers(closure) {
         closure()
       }
     }
+    finalLabel=currentBuild.currentResult
   } finally {
-    setPrLabel(currentBuild.currentResult)
+    setPrLabel(finalLabel)
   }
 }
 
@@ -149,13 +151,13 @@ jobWrappers {
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
+      }
+      stage('Upload') {
+        saveWS()
         sh '''#!/bin/bash -e
             # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
             find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
         '''
-      }
-      stage('Upload') {
-        saveWS()
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
       }
     }

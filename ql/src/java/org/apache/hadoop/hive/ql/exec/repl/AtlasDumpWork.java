@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,13 +35,16 @@ public class AtlasDumpWork implements Serializable {
   private final Path stagingDir;
   private final boolean bootstrap;
   private final Path prevAtlasDumpDir;
+  private final transient ReplicationMetricCollector metricCollector;
 
 
-  public AtlasDumpWork(String srcDB, Path stagingDir, boolean bootstrap, Path prevAtlasDumpDir) {
+  public AtlasDumpWork(String srcDB, Path stagingDir, boolean bootstrap, Path prevAtlasDumpDir,
+                       ReplicationMetricCollector metricCollector) {
     this.srcDB = srcDB;
     this.stagingDir = stagingDir;
     this.bootstrap = bootstrap;
     this.prevAtlasDumpDir = prevAtlasDumpDir;
+    this.metricCollector = metricCollector;
   }
 
   public boolean isBootstrap() {
@@ -57,5 +61,9 @@ public class AtlasDumpWork implements Serializable {
 
   public Path getStagingDir() {
     return stagingDir;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
   }
 }

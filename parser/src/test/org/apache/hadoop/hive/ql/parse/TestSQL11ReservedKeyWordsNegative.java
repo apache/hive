@@ -17,15 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,24 +33,16 @@ import org.junit.experimental.runners.Enclosed;
  */
 @RunWith(Enclosed.class)
 public class TestSQL11ReservedKeyWordsNegative {
-  private static HiveConf conf = new HiveConf(SemanticAnalyzer.class);
+  private static Configuration conf = new Configuration();
   private static ParseDriver pd = new ParseDriver();
 
   private static ASTNode parse(String query) throws ParseException {
     ASTNode nd = null;
-    try {
-      nd = pd.parse(query, new Context(conf));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    nd = pd.parse(query, conf).getTree();
     return (ASTNode) nd.getChild(0);
   }
 
   public static class TestSQL11ReservedKeyWordsNegativeMisc {
-    @BeforeClass
-    public static void initialize() {
-      SessionState.start(conf);
-    }
 
     @Test
     public void testSQL11ReservedKeyWords_KILL() {
@@ -71,10 +59,6 @@ public class TestSQL11ReservedKeyWordsNegative {
 
   @RunWith(Parameterized.class)
   public static class TestSQL11ReservedKeyWordsNegativeParametrized {
-    @BeforeClass
-    public static void initialize() {
-      SessionState.start(conf);
-    }
 
     @Parameters(name = "{0}")
     public static Collection<String[]> data() {

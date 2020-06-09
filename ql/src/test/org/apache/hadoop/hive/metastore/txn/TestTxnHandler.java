@@ -1756,6 +1756,7 @@ public class TestTxnHandler {
   }
 
   @Test
+  @Ignore("unstable HIVE-23630")
   public void allocateNextWriteIdRetriesAfterDetectingConflictingConcurrentInsert() throws Exception {
     String dbName = "abc";
     String tableName = "def";

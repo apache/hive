@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,13 +29,12 @@ import org.junit.Test;
  * various Parser tests for INSERT/UPDATE/DELETE
  */
 public class TestIUD {
-  private static HiveConf conf;
+  private static Configuration conf;
   private ParseDriver pd;
 
   @BeforeClass
   public static void initialize() {
-    conf = new HiveConf(SemanticAnalyzer.class);
-    SessionState.start(conf);
+    conf = new Configuration();
   }
 
   @Before
@@ -48,13 +45,9 @@ public class TestIUD {
   ASTNode parse(String query) throws ParseException {
     return parse(query, pd, conf);
   }
-  static ASTNode parse(String query, ParseDriver pd, HiveConf conf) throws ParseException {
+  static ASTNode parse(String query, ParseDriver pd, Configuration conf) throws ParseException {
     ASTNode nd = null;
-    try {
-      nd = pd.parse(query, new Context(conf));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    nd = pd.parse(query, conf).getTree();
     return (ASTNode) nd.getChild(0);
   }
 

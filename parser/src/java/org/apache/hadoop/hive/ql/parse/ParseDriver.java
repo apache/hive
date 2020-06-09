@@ -32,8 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.hive.ql.Context;
-
 /**
  * ParseDriver.
  *
@@ -93,13 +91,8 @@ public class ParseDriver {
     }
   };
 
-  public ASTNode parse(String command) throws ParseException {
+  public ParseResult parse(String command) throws ParseException {
     return parse(command, null);
-  }
-  
-  public ASTNode parse(String command, Context ctx) 
-      throws ParseException {
-    return parse(command, ctx, null);
   }
 
   /**
@@ -109,31 +102,19 @@ public class ParseDriver {
    * @param command
    *          command to parse
    *
-   * @param ctx
-   *          context with which to associate this parser's token stream, or
-   *          null if either no context is available or the context already has
-   *          an existing stream
+   * @param configuration
+   *          hive configuration
    *
    * @return parsed AST
    */
-  public ASTNode parse(String command, Context ctx, String viewFullyQualifiedName)
+  public ParseResult parse(String command, Configuration configuration)
       throws ParseException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Parsing command: " + command);
     }
 
-    Configuration configuration = ctx == null ? null : ctx.getConf();
     GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    if (ctx != null) {
-      if (viewFullyQualifiedName == null) {
-        // Top level query
-        ctx.setTokenRewriteStream(tokens);
-      } else {
-        // It is a view
-        ctx.addViewTokenRewriteStream(viewFullyQualifiedName, tokens);
-      }
-    }
     HiveParser parser = new HiveParser(tokens);
     parser.setTreeAdaptor(adaptor);
     parser.setHiveConf(configuration);
@@ -154,7 +135,7 @@ public class ParseDriver {
 
     ASTNode tree = (ASTNode) r.getTree();
     tree.setUnknownTokenBoundaries();
-    return tree;
+    return new ParseResult(tree, tokens);
   }
 
   /*
@@ -195,15 +176,14 @@ public class ParseDriver {
    * the input schema and hence the Result Expression cannot be analyzed by the regular Hive
    * translation process.
    */
-  public ASTNode parseSelect(String command, Context ctx) throws ParseException {
+  public ParseResult parseSelect(String command, Configuration configuration) throws ParseException {
     LOG.debug("Parsing command: {}", command);
 
-    Configuration configuration = ctx == null ? null : ctx.getConf();
     GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    if (ctx != null) {
-      ctx.setTokenRewriteStream(tokens);
-    }
+//    if (ctx != null) {
+//      ctx.setTokenRewriteStream(tokens);
+//    }
     HiveParser parser = new HiveParser(tokens);
     parser.setTreeAdaptor(adaptor);
     parser.setHiveConf(configuration);
@@ -222,7 +202,7 @@ public class ParseDriver {
       throw new ParseException(parser.errors);
     }
 
-    return (ASTNode) r.getTree();
+    return new ParseResult((ASTNode) r.getTree(), tokens);
   }
   public ASTNode parseExpression(String command) throws ParseException {
     LOG.debug("Parsing expression: {}", command);
