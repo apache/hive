@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -53,6 +55,7 @@ import org.apache.orc.OrcConf;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +66,8 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+
 /**
  * A fast vectorized batch reader class for ACID. Insert events are read directly
  * from the base files/insert_only deltas in vectorized row batches. The deleted
@@ -1538,6 +1543,12 @@ public class VectorizedOrcAcidRowBatchReader
     private final OrcSplit orcSplit;
     private final boolean testMode;
 
+    // Basic cache to hold orc tail for delete deltas.
+    // 5 mts is fine, as it is needed mainly for repeated scans in the same task.
+    private static Cache<Path, OrcTail> deleteDeltaOrcTailCache = CacheBuilder.newBuilder()
+        .expireAfterWrite(5, TimeUnit.MINUTES)
+        .maximumSize(1000)
+        .build();
 
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
@@ -1561,24 +1572,22 @@ public class VectorizedOrcAcidRowBatchReader
       try {
         final Path[] deleteDeltaDirs = getDeleteDeltaDirsFromSplit(orcSplit);
         if (deleteDeltaDirs.length > 0) {
+          FileSystem fs = orcSplit.getPath().getFileSystem(conf);
+          AcidOutputFormat.Options orcSplitMinMaxWriteIds =
+              AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf);
           int totalDeleteEventCount = 0;
           for (Path deleteDeltaDir : deleteDeltaDirs) {
-            FileSystem fs = deleteDeltaDir.getFileSystem(conf);
+            if (!isQualifiedDeleteDeltaForSplit(orcSplitMinMaxWriteIds, deleteDeltaDir)) {
+              continue;
+            }
             Path[] deleteDeltaFiles = OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket,
                 new OrcRawRecordMerger.Options().isCompacting(false), null);
             for (Path deleteDeltaFile : deleteDeltaFiles) {
-              // NOTE: Calling last flush length below is more for future-proofing when we have
-              // streaming deletes. But currently we don't support streaming deletes, and this can
-              // be removed if this becomes a performance issue.
-              long length = OrcAcidUtils.getLastFlushLength(fs, deleteDeltaFile);
+              // NOTE: When streaming deletes are supported, consider using OrcAcidUtils.getLastFlushLength(fs, deleteDeltaFile)
               // NOTE: A check for existence of deleteDeltaFile is required because we may not have
               // deletes for the bucket being taken into consideration for this split processing.
-              if (length != -1 && fs.exists(deleteDeltaFile)) {
-                /**
-                 * todo: we have OrcSplit.orcTail so we should be able to get stats from there
-                 */
-                Reader deleteDeltaReader = OrcFile.createReader(deleteDeltaFile,
-                    OrcFile.readerOptions(conf).maxLength(length));
+              if (fs.exists(deleteDeltaFile)) {
+                Reader deleteDeltaReader = getDeleteDeltaReader(deleteDeltaFile, conf);
                 if (deleteDeltaReader.getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
                 }
@@ -1605,6 +1614,43 @@ public class VectorizedOrcAcidRowBatchReader
         throw e; // rethrow the exception so that the caller can handle.
       }
     }
+
+    /**
+     * Create delete delta reader. Caching orc tail to avoid FS lookup/reads for repeated scans.
+     *
+     * @param deleteDeltaFile
+     * @param conf
+     * @return delete file reader
+     * @throws IOException
+     */
+    private Reader getDeleteDeltaReader(Path deleteDeltaFile, JobConf conf) throws IOException {
+      OrcTail deleteDeltaTail = deleteDeltaOrcTailCache.getIfPresent(deleteDeltaFile);
+      OrcFile.ReaderOptions deleteReaderOpts = OrcFile.readerOptions(conf).orcTail(deleteDeltaTail);
+      Reader deleteDeltaReader = OrcFile.createReader(deleteDeltaFile, deleteReaderOpts);
+      if (deleteDeltaTail == null) {
+        deleteDeltaOrcTailCache.put(deleteDeltaFile, new OrcTail(deleteDeltaReader.getFileTail(), null));
+      }
+      return deleteDeltaReader;
+    }
+
+    /**
+     * Check if the delete delta folder needs to be scanned for a given split's min/max write ids.
+     *
+     * @param orcSplitMinMaxWriteIds
+     * @param deleteDeltaDir
+     * @return true when  delete delta dir has to be scanned.
+     */
+    private boolean isQualifiedDeleteDeltaForSplit(AcidOutputFormat.Options orcSplitMinMaxWriteIds,
+        Path deleteDeltaDir)  {
+      long minWriteId = orcSplitMinMaxWriteIds.getMinimumWriteId();
+      long maxWriteId = orcSplitMinMaxWriteIds.getMaximumWriteId();
+      AcidUtils.ParsedDelta deleteDelta = AcidUtils.parsedDelta(deleteDeltaDir, false);
+      // For delta_0000012_0000012_0000, no need to read delete delta folders < 12.
+      return deleteDelta.getMinWriteId() <= 0 || deleteDelta.getMaxWriteId() <= 0
+          || (minWriteId <= deleteDelta.getMinWriteId() ||
+          maxWriteId <= deleteDelta.getMaxWriteId());
+    }
+
     private void checkSize(int index) throws DeleteEventsOverflowMemoryException {
       if(index > maxEventsInMemory) {
         //check to prevent OOM errors
