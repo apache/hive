@@ -32,8 +32,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -553,9 +555,9 @@ public class CachedStore implements RawStore, Configurable {
               Deadline.startTimer("getPrimaryKeys");
               rawStore.getPrimaryKeys(catName, dbName, tblName);
               Deadline.stopTimer();
-              //Deadline.startTimer("getForeignKeys");
-              //rawStore.getForeignKeys(catName, dbName, tblName);
-              //Deadline.stopTimer();
+              Deadline.startTimer("getForeignKeys");
+              rawStore.getForeignKeys(catName, null, null, dbName, tblName);
+              Deadline.stopTimer();
               Deadline.startTimer("getUniqueConstraints");
               rawStore.getUniqueConstraints(catName, dbName, tblName);
               Deadline.stopTimer();
@@ -899,11 +901,10 @@ public class CachedStore implements RawStore, Configurable {
               dbName, tblName);
       try {
         Deadline.startTimer("getForeignKeys");
-        // List<SQLForeignKey> fks = rawStore.getForeignKeys(catName, dbName, tblName);
+        List<SQLForeignKey> fks = rawStore.getForeignKeys(catName, null, null, dbName, tblName);
         Deadline.stopTimer();
-        //sharedCache
-        //        .refreshPrimaryKeysInCache(StringUtils.normalizeIdentifier(catName),
-        //                StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), fks);
+        sharedCache.refreshForeignKeysInCache(StringUtils.normalizeIdentifier(catName),
+                StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), fks);
         LOG.debug("CachedStore: updated cached primary keys objects for catalog: {}, database: {}, table: {}", catName,
                 dbName, tblName);
       } catch (MetaException e) {
@@ -2606,8 +2607,38 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public List<SQLForeignKey> getForeignKeys(String catName, String parentDbName, String parentTblName,
       String foreignDbName, String foreignTblName) throws MetaException {
-    // TODO constraintCache
-    return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
+     // Get correct ForeignDBName and TableName
+    catName = normalizeIdentifier(catName);
+    foreignDbName = (foreignDbName == null) ? "" : normalizeIdentifier(foreignDbName);
+    foreignTblName = (foreignTblName == null) ? "" : StringUtils.normalizeIdentifier(foreignTblName);
+
+    if (!shouldCacheTable(catName, foreignDbName, foreignTblName) || (canUseEvents && rawStore.isActiveTransaction())) {
+      return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
+    }
+
+    Table tbl = sharedCache.getTableFromCache(catName, foreignDbName, foreignTblName);
+    if (tbl == null) {
+      // The table containing the foreign keys is not yet loaded in cache
+      return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
+    }
+    List<SQLForeignKey> keys = sharedCache.listCachedForeignKeys(catName, foreignDbName, foreignTblName);
+
+    // filter out required foreign keys based on parent db/tbl name
+    if (parentTblName != null) {
+      parentDbName = StringUtils.normalizeIdentifier(parentDbName);
+      parentTblName = StringUtils.normalizeIdentifier(parentTblName);
+      List<SQLForeignKey> filteredKeys = new ArrayList<>();
+      for (SQLForeignKey key : keys) {
+        if (parentTblName.equalsIgnoreCase(key.getPktable_name())
+                && (parentDbName == null
+                        || parentDbName.equalsIgnoreCase(key.getPktable_db()))) {
+          filteredKeys.add(key);
+        }
+      }
+      keys = filteredKeys;
+    }
+
+    return keys;
   }
 
   @Override public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String dbName, String tblName)
@@ -2680,7 +2711,7 @@ public class CachedStore implements RawStore, Configurable {
     sharedCache.addTableToCache(StringUtils.normalizeIdentifier(tbl.getCatName()),
         StringUtils.normalizeIdentifier(tbl.getDbName()), StringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
     // ToDo: Add default/check constraints
-    // sharedCache.addForeignKeysToCache(catName, dbName, tblName, foreignKeys);
+    sharedCache.addForeignKeysToCache(catName, dbName, tblName, foreignKeys);
     sharedCache.addPrimaryKeysToCache(catName, dbName, tblName, primaryKeys);
     sharedCache.addNotNullConstraintsToCache(catName, dbName, tblName, notNullConstraints);
     sharedCache.addUniqueConstraintsToCache(catName, dbName, tblName, uniqueConstraints);
@@ -2717,8 +2748,17 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addForeignKeys(fks);
+    List<String> names = rawStore.addForeignKeys(fks);
+    if (!canUseEvents && fks != null && !fks.isEmpty()) {
+      String catName = normalizeIdentifier(fks.get(0).getCatName());
+      String dbName = normalizeIdentifier(fks.get(0).getFktable_db());
+      String tblName = normalizeIdentifier(fks.get(0).getFktable_db());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return names;
+      }
+      sharedCache.addForeignKeysToCache(catName, dbName, tblName, fks);
+    }
+    return names;
   }
 
   @Override public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)

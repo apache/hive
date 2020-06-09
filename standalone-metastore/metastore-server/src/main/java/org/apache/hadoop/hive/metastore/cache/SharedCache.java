@@ -2246,6 +2246,20 @@ public class SharedCache {
     return keys;
   }
 
+  public List<SQLForeignKey> listCachedForeignKeys(String catName, String dbName, String tblName) {
+    List<SQLForeignKey> keys = new ArrayList<>();
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        keys = tblWrapper.getForeignKeys();
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return keys;
+  }
+
   public List<SQLUniqueConstraint> listCachedUniqueConstraint(String catName, String dbName, String tblName) {
     List<SQLUniqueConstraint> keys = new ArrayList<>();
     try {
