@@ -181,7 +181,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("org.apache.maven.plugins:maven-surefire-plugin:test -q")
+              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
             stage('Archive') {
