@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasObjectId;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +49,12 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * Atlas Metadata Replication Dump Task.
@@ -62,6 +65,17 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private transient AtlasRestClient atlasRestClient;
 
+  public AtlasDumpTask() {
+    super();
+  }
+
+  @VisibleForTesting
+  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work) {
+    this.conf = conf;
+    this.work = work;
+    this.atlasRestClient = atlasRestClient;
+  }
+
   @Override
   public int execute() {
     try {
@@ -71,6 +85,9 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
               atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
       atlasRestClient = new AtlasRestClientBuilder(atlasReplInfo.getAtlasEndpoint())
               .getClient(atlasReplInfo.getConf());
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
@@ -81,15 +98,21 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
       replLogger.endLog(0L);
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 
-  public AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
+  private AtlasReplInfo createAtlasReplInfo() throws SemanticException, MalformedURLException {
     String errorFormat = "%s is mandatory config for Atlas metadata replication";
     //Also validates URL for endpoint.
     String endpoint = new URL(ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, conf, errorFormat))
@@ -105,7 +128,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return atlasReplInfo;
   }
 
-  public long lastStoredTimeStamp() throws SemanticException {
+  private long lastStoredTimeStamp() throws SemanticException {
     Path prevMetadataPath = new Path(work.getPrevAtlasDumpDir(), EximUtil.METADATA_NAME);
     BufferedReader br = null;
     try {
@@ -138,7 +161,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return ret;
   }
 
-  public long dumpAtlasMetaData(AtlasRequestBuilder atlasRequestBuilder, AtlasReplInfo atlasReplInfo)
+  long dumpAtlasMetaData(AtlasRequestBuilder atlasRequestBuilder, AtlasReplInfo atlasReplInfo)
           throws SemanticException {
     InputStream inputStream = null;
     long numBytesWritten = 0L;
@@ -146,7 +169,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
               atlasReplInfo.getSrcCluster());
       inputStream = atlasRestClient.exportData(exportRequest);
-      FileSystem fs = FileSystem.get(atlasReplInfo.getStagingDir().toUri(), atlasReplInfo.getConf());
+      FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
       Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
       numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream);
     } catch (SemanticException ex) {
@@ -181,7 +204,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     return guid;
   }
 
-  public void createDumpMetadata(AtlasReplInfo atlasReplInfo, long lastModifiedTime) throws SemanticException {
+  void createDumpMetadata(AtlasReplInfo atlasReplInfo, long lastModifiedTime) throws SemanticException {
     Path dumpFile = new Path(atlasReplInfo.getStagingDir(), EximUtil.METADATA_NAME);
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(

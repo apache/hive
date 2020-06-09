@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +41,14 @@ public class RangerLoadWork implements Serializable {
   private Path currentDumpPath;
   private String targetDbName;
   private String sourceDbName;
+  private final transient ReplicationMetricCollector metricCollector;
 
-  public RangerLoadWork(Path currentDumpPath, String sourceDbName, String targetDbName) {
+  public RangerLoadWork(Path currentDumpPath, String sourceDbName, String targetDbName,
+                        ReplicationMetricCollector metricCollector) {
     this.currentDumpPath = currentDumpPath;
     this.targetDbName = targetDbName;
     this.sourceDbName = sourceDbName;
+    this.metricCollector = metricCollector;
   }
 
   public Path getCurrentDumpPath() {
@@ -61,5 +65,9 @@ public class RangerLoadWork implements Serializable {
 
   URL getRangerConfigResource() {
     return getClass().getClassLoader().getResource(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+  }
+
+  ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
   }
 }
