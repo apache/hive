@@ -97,7 +97,7 @@ def hdbPodTemplate(closure) {
     ),
     containerTemplate(name: 'dind', image: 'docker:18.05-dind',
         alwaysPullImage: true,
-        privileged: false,
+        privileged: true,
     ),
 /*  ],
   volumes: [
