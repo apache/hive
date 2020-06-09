@@ -1128,6 +1128,10 @@
                   <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
                 </relocation>
                 <relocation>
+                  <pattern>org.apache.calcite</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.calcite</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>io.netty</pattern>
                   <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
