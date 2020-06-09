@@ -99,9 +99,9 @@ def hdbPodTemplate(closure) {
         alwaysPullImage: true,
         privileged: false,
     ),
-  ],
+/*  ],
   volumes: [
-    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),*/
   ], yaml:'''
 spec:
   securityContext:
