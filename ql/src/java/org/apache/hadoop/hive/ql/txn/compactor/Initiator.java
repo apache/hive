@@ -282,6 +282,7 @@ public class Initiator extends MetaStoreCompactorThread {
     }
 
     if (runJobAsSelf(runAs)) {
+      ci.runAs = runAs;
       return determineCompactionType(ci, writeIds, sd, tblproperties);
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
@@ -353,6 +354,16 @@ public class Initiator extends MetaStoreCompactorThread {
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD) :
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
+      boolean multiBase = dir.getObsolete().stream()
+              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).count() >= 1;
+      if ((deltaSize == 0  && dir.getObsolete().size() > 0) && multiBase) {
+        try {
+          txnHandler.requestCleanup(ci);
+          return null;
+        } catch (MetaException e) {
+          LOG.error("Unable to request Clean up for "+ci.getFullTableName());
+        }
+      }
       if (LOG.isDebugEnabled()) {
         StringBuilder msg = new StringBuilder("delta size: ");
         msg.append(deltaSize);
