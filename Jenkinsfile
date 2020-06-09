@@ -90,8 +90,18 @@ def hdbPodTemplate(closure) {
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '3000m',
         resourceRequestMemory: '6400Mi',
-        resourceLimitMemory: '12000Mi'
+        resourceLimitMemory: '12000Mi',
+        envVars: [
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+        ]
     ),
+    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+        alwaysPullImage: true,
+        privileged: false,
+    ),
+  ],
+  volumes: [
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
   ], yaml:'''
 spec:
   securityContext:
@@ -116,11 +126,11 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
+//    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
         closure()
-      }
+  //    }
     }
     finalLabel=currentBuild.currentResult
   } finally {
@@ -151,6 +161,8 @@ jobWrappers {
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
+        sh '''sleep 86400'''
+        sh '''exit 1'''
       }
       stage('Upload') {
         saveWS()
@@ -163,6 +175,7 @@ jobWrappers {
     }
   }
 
+  if(false)
   stage('Testing') {
 
     def branches = [:]
