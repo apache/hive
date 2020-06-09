@@ -77,6 +77,7 @@ if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.t
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
+df -h
 '''
     }
   }
