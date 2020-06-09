@@ -468,6 +468,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
+    system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
+    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);

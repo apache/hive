@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -82,6 +84,19 @@ public class ReplUtils {
   // Root base directory name for ranger.
   public static final String REPL_RANGER_BASE_DIR = "ranger";
 
+  // Root base directory name for atlas.
+  public static final String REPL_ATLAS_BASE_DIR = "atlas";
+
+  // Atlas meta data export file.
+  public static final String REPL_ATLAS_EXPORT_FILE_NAME = "atlas_export.zip";
+
+  // Config for hadoop default file system.
+  public static final String DEFAULT_FS_CONFIG = "fs.defaultFS";
+
+  // Cluster name separator, used when the cluster name contains data center name as well, e.g. dc$mycluster1.
+  public static final String CLUSTER_NAME_SEPARATOR = "$";
+
+
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
   public static final String REPL_TABLE_LIST_DIR_NAME = "_tables";
@@ -120,6 +135,13 @@ public class ReplUtils {
     LOAD_NEW, LOAD_SKIP, LOAD_REPLACE
   }
 
+  /**
+   * Replication Metrics.
+   */
+  public enum MetricName {
+    TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
+  }
+
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
           Table table, List<Map<String, String>> partitions) throws SemanticException {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs = new HashMap<>();
@@ -153,10 +175,12 @@ public class ReplUtils {
     return partSpecs;
   }
 
-  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf)
+  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
+                                            ReplicationMetricCollector metricCollector)
           throws SemanticException {
     TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, tableDesc.getTableName(), tableType);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
+        tableDesc.getTableName(), tableType);
     return TaskFactory.get(replLogWork, conf);
   }
 
@@ -182,6 +206,15 @@ public class ReplUtils {
               props.get(REPL_CHECKPOINT_KEY)));
     }
     return false;
+  }
+
+  public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
+          throws SemanticException {
+    String val = hiveConf.get(configParam);
+    if (StringUtils.isEmpty(val)) {
+      throw new SemanticException(String.format(errorMsgFormat, configParam));
+    }
+    return val;
   }
 
   public static boolean isTableMigratingToTransactional(HiveConf conf,

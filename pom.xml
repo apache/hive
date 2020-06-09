@@ -112,6 +112,7 @@
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.10.0</arrow.version>
+    <atlas.client.version>2.0.0</atlas.client.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
@@ -123,6 +124,7 @@
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.19</commons-compress.version>
+    <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
@@ -1434,8 +1436,17 @@
       <plugin>
 	<groupId>org.apache.rat</groupId>
 	<artifactId>apache-rat-plugin</artifactId>
-	<configuration>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
 	  <excludes>
+	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>

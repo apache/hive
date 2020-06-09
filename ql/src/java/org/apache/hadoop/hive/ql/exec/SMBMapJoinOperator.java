@@ -288,6 +288,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
+    addToAliasFilterTags(alias, value, nextKeyGroup);
     if (nextKeyGroup) {
       //assert this.nextGroupStorage[alias].size() == 0;
       this.nextGroupStorage[alias].addRow(value);

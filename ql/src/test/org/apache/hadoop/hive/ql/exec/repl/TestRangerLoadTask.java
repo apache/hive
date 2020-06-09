@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SER
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
 
 /**
- * Unit test class for testing Ranger Dump.
+ * Unit test class for testing Ranger Load.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TestRangerLoadTask {
@@ -61,6 +62,9 @@ public class TestRangerLoadTask {
   @Mock
   private RangerLoadWork work;
 
+  @Mock
+  private ReplicationMetricCollector metricCollector;
+
   @Before
   public void setup() throws Exception {
     task = new RangerLoadTask(mockClient, conf, work);
@@ -69,6 +73,7 @@ public class TestRangerLoadTask {
     Mockito.when(mockClient.addDenyPolicies(Mockito.anyList(), Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
     Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test

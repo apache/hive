@@ -531,10 +531,9 @@ public class ReplicationTestUtils {
     return withClause;
   }
 
-  public static void assertExternalFileInfo(WarehouseInstance primary,
-                                      List<String> expected,
-                                      Path externalTableInfoFile) throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
+  public static void assertExternalFileInfo(WarehouseInstance warehouseInstance,
+                                      List<String> expected, Path externalTableInfoFile) throws IOException {
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
     Assert.assertTrue(fileSystem.exists(externalTableInfoFile));
     InputStream inputStream = fileSystem.open(externalTableInfoFile);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));

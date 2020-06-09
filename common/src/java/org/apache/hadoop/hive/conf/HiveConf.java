@@ -539,6 +539,16 @@ public class HiveConf extends Configuration {
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
         + " to avoid any update to the target database"),
+    REPL_INCLUDE_ATLAS_METADATA("hive.repl.include.atlas.metadata", false,
+            "Indicates if Atlas metadata should be replicated along with Hive data and metadata or not."),
+    REPL_ATLAS_ENDPOINT("hive.repl.atlas.endpoint", null,
+            "Atlas endpoint of the current cluster hive database is getting replicated from/to."),
+    REPL_ATLAS_REPLICATED_TO_DB("hive.repl.atlas.replicatedto", null,
+            "Target hive database name Atlas metadata of source hive database is being replicated to."),
+    REPL_SOURCE_CLUSTER_NAME("hive.repl.source.cluster.name", null,
+            "Name of the source cluster for the replication."),
+    REPL_TARGET_CLUSTER_NAME("hive.repl.target.cluster.name", null,
+            "Name of the target cluster for the replication."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -4694,6 +4704,10 @@ public class HiveConf extends Configuration {
         "instead of using the locations provided by the split itself. If there is no llap daemon " +
         "running, fall back to locations provided by the split. This is effective only if " +
         "hive.execution.mode is llap"),
+    LLAP_SPLIT_LOCATION_PROVIDER_CLASS("hive.llap.split.location.provider.class",
+      "org.apache.hadoop.hive.ql.exec.tez.HostAffinitySplitLocationProvider",
+      "Split location provider class to use during split generation for LLAP. This class should implement\n" +
+        "org.apache.hadoop.mapred.split.SplitLocationProvider interface"),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),

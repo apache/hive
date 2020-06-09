@@ -81,7 +81,7 @@ CREATE TABLE "DBS" (
     "NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
-    "CTLG_NAME" varchar(256) DEFAULT 'hive',
+    "CTLG_NAME" varchar(256) DEFAULT 'hive' NOT NULL,
     "CREATE_TIME" bigint
 );
 

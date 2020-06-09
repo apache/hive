@@ -341,6 +341,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     forwardCache = new Object[totalSz];
     aliasFilterTags = new short[numAliases];
     Arrays.fill(aliasFilterTags, (byte)0xff);
+    aliasFilterTagsNext = new short[numAliases];
+    Arrays.fill(aliasFilterTagsNext, (byte) 0xff);
 
     filterTags = new short[numAliases];
     skipVectors = new boolean[numAliases][];
@@ -478,6 +480,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    *   100, 30 :   N,  N
    */
   protected transient short[] aliasFilterTags;
+  protected transient short[] aliasFilterTagsNext;
 
   // all evaluation should be processed here for valid aliasFilterTags
   //
@@ -491,9 +494,19 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       short filterTag = JoinUtil.isFiltered(row, joinFilters[alias],
           joinFilterObjectInspectors[alias], filterMaps[alias]);
       nr.add(new ShortWritable(filterTag));
-      aliasFilterTags[alias] &= filterTag;
     }
     return nr;
+  }
+
+  protected void addToAliasFilterTags(byte alias, List<Object> object, boolean isNextGroup) {
+    boolean hasFilter = hasFilter(alias);
+    if (hasFilter) {
+      if (isNextGroup) {
+        aliasFilterTagsNext[alias] &= ((ShortWritable) (object.get(object.size() - 1))).get();
+      } else {
+        aliasFilterTags[alias] &= ((ShortWritable) (object.get(object.size() - 1))).get();
+      }
+    }
   }
 
   // fill forwardCache with skipvector
@@ -961,7 +974,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         genJoinObject();
       }
     }
-    Arrays.fill(aliasFilterTags, (byte)0xff);
+    System.arraycopy(aliasFilterTagsNext, 0, aliasFilterTags, 0, aliasFilterTagsNext.length);
+    Arrays.fill(aliasFilterTagsNext, (byte) 0xff);
   }
 
   protected void reportProgress() {

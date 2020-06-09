@@ -223,6 +223,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       speculativeTasks = new TreeMap<>();
 
   private final LlapPluginServerImpl pluginEndpoint;
+  private final boolean workloadManagementEnabled;
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
@@ -450,6 +451,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         + "nodeBlacklistConf={}, localityConf={} consistentSplits={}",
         hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf, consistentSplits);
     this.amRegistry = TezAmRegistryImpl.create(conf, true);
+    this.workloadManagementEnabled =
+        !StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim());
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
       LlapTaskCommunicator peer = LlapTaskCommunicator.instance;
@@ -1089,7 +1092,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
-    if (!StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim())) {
+    if (workloadManagementEnabled) {
       updateGuaranteedInRegistry(tgVersionForZk, 0);
     }
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
@@ -1329,32 +1332,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       writeLock.unlock();
     }
     handleUpdateResult(info, true);
-  }
-
-  /**
-   * A hacky way for communicator and scheduler to share per-task info. Scheduler should be able
-   * to include this with task allocation to be passed to the communicator, instead. TEZ-3866.
-   * @param attemptId Task attempt ID.
-   * @return The initial value of the guaranteed flag to send with the task.
-   */
-  boolean isInitialGuaranteed(TezTaskAttemptID attemptId) {
-    TaskInfo info = null;
-    readLock.lock();
-    try {
-      info = tasksById.get(attemptId);
-    } finally {
-      readLock.unlock();
-    }
-    if (info == null) {
-      WM_LOG.warn("Status requested for an unknown task " + attemptId);
-      return false;
-    }
-    synchronized (info) {
-      if (info.isGuaranteed == null) return false; // TODO: should never happen?
-      assert info.lastSetGuaranteed == null;
-      info.requestedValue = info.isGuaranteed;
-      return info.isGuaranteed;
-    }
   }
 
   // Must be called under the epic lock.
@@ -1999,12 +1976,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     if (selectHostResult.scheduleResult != ScheduleResult.SCHEDULED) {
       return selectHostResult.scheduleResult;
     }
+    boolean isGuaranteed = false;
     if (unusedGuaranteed > 0) {
       boolean wasGuaranteed = false;
       synchronized (taskInfo) {
         assert !taskInfo.isPendingUpdate; // No updates before it's running.
         wasGuaranteed = taskInfo.isGuaranteed;
         taskInfo.isGuaranteed = true;
+        isGuaranteed = true;
       }
       if (wasGuaranteed) {
         // This should never happen - we only schedule one attempt once.
@@ -2026,18 +2005,24 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         synchronized (taskInfo) {
           assert !taskInfo.isPendingUpdate; // No updates before it's running.
           taskInfo.isGuaranteed = true;
+          isGuaranteed = true;
         }
         // Note: after this, the caller MUST send the downgrade message to downgradedTask
         //       (outside of the writeLock, preferably), before exiting.
       }
     }
 
+    // in LLAP, the containers are used exactly once for exactly one attempt
+    // the container ids are entirely arbitrary and have 64 bit space per application
+    // this is why the isGuaranteed (& any other initial information) can be encoded into the 
+    // bits indicating container id
     NodeInfo nodeInfo = selectHostResult.nodeInfo;
     Container container =
         containerFactory.createContainer(nodeInfo.getResourcePerExecutor(), taskInfo.priority,
             nodeInfo.getHost(),
             nodeInfo.getRpcPort(),
-            nodeInfo.getServiceAddress());
+            nodeInfo.getServiceAddress(),
+            isGuaranteed);
     writeLock.lock(); // While updating local structures
     // Note: this is actually called under the epic writeLock in schedulePendingTasks
     try {

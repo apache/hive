@@ -125,6 +125,9 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -213,6 +216,7 @@ import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
+import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -13100,6 +13104,97 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      List<MReplicationMetrics> mReplicationMetricsList = new ArrayList<>();
+      for (ReplicationMetrics replicationMetric : replicationMetricList.getReplicationMetricList()) {
+        MReplicationMetrics mReplicationMetrics;
+        try {
+          mReplicationMetrics = pm.getObjectById(MReplicationMetrics.class,
+            replicationMetric.getScheduledExecutionId());
+        } catch (JDOObjectNotFoundException e) {
+          mReplicationMetrics = new MReplicationMetrics();
+          mReplicationMetrics.setDumpExecutionId(replicationMetric.getDumpExecutionId());
+          mReplicationMetrics.setScheduledExecutionId(replicationMetric.getScheduledExecutionId());
+          mReplicationMetrics.setPolicy(replicationMetric.getPolicy());
+        }
+        if (!StringUtils.isEmpty(replicationMetric.getMetadata())) {
+          mReplicationMetrics.setMetadata(replicationMetric.getMetadata());
+        }
+        if (!StringUtils.isEmpty(replicationMetric.getProgress())) {
+          mReplicationMetrics.setProgress(replicationMetric.getProgress());
+        }
+        mReplicationMetricsList.add(mReplicationMetrics);
+      }
+      pm.makePersistentAll(mReplicationMetricsList);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    boolean committed = false;
+    try {
+      openTransaction();
+      ReplicationMetricList replicationMetrics = null;
+      if (replicationMetricsRequest.isSetPolicy()) {
+        replicationMetrics = getMReplicationMetrics(replicationMetricsRequest.getPolicy());
+      } else if (replicationMetricsRequest.isSetScheduledExecutionId()) {
+        replicationMetrics = getMReplicationMetrics(replicationMetricsRequest.getScheduledExecutionId());
+      }
+      committed = commitTransaction();
+      return replicationMetrics;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private ReplicationMetricList getMReplicationMetrics(String policy) {
+    ReplicationMetricList ret = new ReplicationMetricList();
+    if (StringUtils.isEmpty(policy)) {
+      return ret;
+    }
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class, "policy == policyParam");
+    query.declareParameters("java.lang.String policyParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    }
+    ret.setReplicationMetricList(returnList);
+    return ret;
+  }
+
+  private ReplicationMetricList getMReplicationMetrics(long scheduledExecutionId) {
+    ReplicationMetricList ret = new ReplicationMetricList();
+    if (scheduledExecutionId < 0) {
+      return ret;
+    }
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class,
+        "scheduledExecutionId == scheduledExecutionIdParam");
+    query.declareParameters("java.lang.Long scheduledExecutionIdParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    }
+    ret.setReplicationMetricList(returnList);
+    return ret;
+  }
+
   private void ensureScheduledQueriesEnabled() throws MetaException {
     if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
       throw new MetaException(
@@ -13174,9 +13269,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       openTransaction();
       Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-      if (nextExecutionTime == null) {
-        throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-      }
       schq.setNextExecution(nextExecutionTime);
       pm.makePersistent(schq);
       commited = commitTransaction();
@@ -13222,9 +13314,6 @@ public class ObjectStore implements RawStore, Configurable {
       persisted.doUpdate(schq);
       if (!scheduledQuery.isSetNextExecution()) {
         Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
-        if (nextExecutionTime == null) {
-          throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
-        }
         persisted.setNextExecution(nextExecutionTime);
       } else {
         persisted.setNextExecution(schq.getNextExecution());

@@ -114,6 +114,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.junit.Ignore;
 
 /**
  * Tests DbNotificationListener when used as a transactional event listener
@@ -1410,6 +1411,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-23401")
   public void sqlInsertTable() throws Exception {
     String defaultDbName = "default";
     String tblName = "sqlins";

@@ -93,7 +93,7 @@ public class TestGenericUDFNextDay {
     runAndVerify("2015-02-30 10:30:00", "WE", "2015-03-04", udf);
     runAndVerify("2015-02-32 10:30:00", "WE", "2015-03-11", udf);
     runAndVerify("2015/01/14 14:04:34", "SAT", null, udf);
-    runAndVerify("2015-01-14T14:04:34", "SAT", null, udf);
+    runAndVerify("2015-01-14T14:04:34", "SAT", "2015-01-17", udf);
   }
 
   @Test
