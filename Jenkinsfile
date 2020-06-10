@@ -77,6 +77,7 @@ if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.t
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
+df -h
 '''
     }
   }
@@ -180,7 +181,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("install -q")
+              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
             stage('Archive') {
