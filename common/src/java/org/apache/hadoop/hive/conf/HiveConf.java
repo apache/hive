@@ -2495,19 +2495,22 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.bi.rewrite.countdistinct.enabled",
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
-    HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
-        "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
+    HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH("hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
         new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
             + "Distinct counting can be done with: hll"),
     HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED("hive.optimize.bi.rewrite.percentile_disc.enabled",
         true,
         "Enables to rewrite PERCENTILE_DISC(X) queries to be rewritten to use sketch functions."),
-    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH(
-        "hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH("hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
         new StringSet("kll"),
         "Defines which sketch type to use when rewriting PERCENTILE_DISC expressions. Options: kll"),
-
+    HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED("hive.optimize.bi.rewrite.cume_dist.enabled",
+        true,
+        "Enables to rewrite CUME_DIST(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH("hive.optimize.bi.rewrite.cume_dist.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting CUME_DIST expressions. Options: kll"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
