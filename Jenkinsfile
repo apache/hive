@@ -18,6 +18,7 @@
 
 
 // 2.9G w/o dist
+// 4.9G w/ dist
 
 properties([
     // max 5 build/branch/day
@@ -92,7 +93,7 @@ def hdbPodTemplate(closure) {
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '180m',
-        resourceLimitCpu: '300m',
+        resourceLimitCpu: '4000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
         envVars: [
