@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   private static MiniHS2 miniHS2 = null;
