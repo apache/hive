@@ -104,7 +104,7 @@
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-
+    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
     <ant.version>1.9.1</ant.version>
@@ -167,7 +167,9 @@
     <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13</junit.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    <junit.vintage.version>5.6.2</junit.vintage.version>
     <kryo.version>4.0.2</kryo.version>
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
@@ -379,6 +381,16 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.vintage.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1144,6 +1156,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.datanucleus</groupId>
