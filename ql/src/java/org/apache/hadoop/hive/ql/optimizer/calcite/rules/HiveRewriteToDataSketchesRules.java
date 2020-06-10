@@ -20,29 +20,43 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelFieldCollation.NullDirection;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexFieldCollation;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.tools.RelBuilder.AggCall;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,30 +70,13 @@ import com.google.common.collect.Lists;
  * <br/>
  * Currently it can rewrite:
  * <ul>
- *  <li>{@code count(distinct(x))} to distinct counting sketches
- *    <pre>
- *     SELECT COUNT(DISTINCT id) FROM sketch_input;
- *       ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
- *    </pre>
+ *  <li>{@code count(distinct(x))} using {@code CountDistinctRewrite}
  *  </li>
- *  <li>{@code percentile_disc(0.2) within group (order by id)}
- *    <pre>
- *     SELECT PERCENTILE_DISC(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
- *       ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
- *    </pre>
+ *  <li>{@code percentile_disc(0.2) within group (order by id)} using {@code PercentileDiscRewrite}
+ *  </li>
+ *  <li>{@code cume_dist() over (order by id)} using {@code CumeDistRewrite}
  *  </li>
  *  </ul>
- *
- * <p>
- *   The transformation here works on Aggregate nodes; the operations done are the following:
- * </p>
- * <ol>
- * <li>Identify candidate aggregate calls</li>
- * <li>A new Project is inserted below the Aggregate; to help with data pre-processing</li>
- * <li>A new Aggregate is created in which the aggregation is done by the sketch function</li>
- * <li>A new Project is inserted on top of the Aggregate; which unwraps the resulting
- *    count-distinct estimation from the sketch representation</li>
- * </ol>
  */
 public final class HiveRewriteToDataSketchesRules {
 
@@ -87,6 +84,15 @@ public final class HiveRewriteToDataSketchesRules {
 
   /**
    * Generic support for rewriting an Aggregate into a chain of Project->Aggregate->Project.
+   * <p>
+   *   The transformation here works on Aggregate nodes; the operations done are the following:
+   * </p>
+   * <ol>
+   * <li>Identify candidate aggregate calls</li>
+   * <li>A new Project is inserted below the Aggregate; to help with data pre-processing</li>
+   * <li>A new Aggregate is created in which the aggregation is done by the sketch function</li>
+   * <li>A new Project is inserted on top of the Aggregate; which unwraps the resulting estimation from the sketch representation</li>
+   * </ol>
    */
   private static abstract class AggregateToProjectAggregateProject extends RelOptRule {
 
@@ -204,14 +210,21 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-      abstract void rewrite(AggregateCall aggCall);
-
       abstract boolean isApplicable(AggregateCall aggCall);
 
-    }
+      abstract void rewrite(AggregateCall aggCall);
 
+    }
   };
 
+  /**
+   * Rewrites {@code count(distinct(x))} to distinct counting sketches.
+   *
+   * <pre>
+   *   SELECT COUNT(DISTINCT id) FROM sketch_input;
+   *   ⇒ SELECT ROUND(ds_hll_estimate(ds_hll_sketch(id))) FROM sketch_input;
+   * </pre>
+   */
   public static class CountDistinctRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
@@ -256,7 +269,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = true;
+        boolean approximate = false;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -279,6 +292,14 @@ public final class HiveRewriteToDataSketchesRules {
     }
   }
 
+  /**
+   * Rewrites {@code percentile_disc(0.2) within group (order by id)}.
+   *
+   * <pre>
+   *   SELECT PERCENTILE_DISC(0.2) WITHIN GROUP(ORDER BY ID) FROM sketch_input;
+   *   ⇒ SELECT ds_kll_quantile(ds_kll_sketch(CAST(id AS FLOAT)), 0.2) FROM sketch_input;
+   * </pre>
+   */
   public static class PercentileDiscRewrite extends AggregateToProjectAggregateProject {
 
     private final String sketchType;
@@ -343,7 +364,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
         boolean distinct = false;
-        boolean approximate = true;
+        boolean approximate = false;
         boolean ignoreNulls = true;
         List<Integer> argList = Lists.newArrayList(newProjectsBelow.size() - 1);
         int filterArg = aggCall.filterArg;
@@ -365,6 +386,223 @@ public final class HiveRewriteToDataSketchesRules {
 
         newAggCalls.add(newAgg);
         newProjectsAbove.add(projRex);
+      }
+    }
+  }
+
+  /**
+   * Generic support for rewriting Windowing expression into a different form usually using joins.
+   */
+  private static abstract class WindowingToProjectAggregateJoinProject extends RelOptRule {
+
+    protected final String sketchType;
+
+    public WindowingToProjectAggregateJoinProject(String sketchType) {
+      super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER, null);
+      this.sketchType = sketchType;
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final Project project = call.rel(0);
+
+      VbuilderPAP vb = buildProcessor(call);
+      RelNode newProject = vb.processProject(project);
+
+      if (newProject == project) {
+        return;
+      } else {
+        call.transformTo(newProject);
+      }
+    }
+
+    protected abstract VbuilderPAP buildProcessor(RelOptRuleCall call);
+
+    protected static abstract class VbuilderPAP {
+      private final String sketchClass;
+      protected final RelBuilder relBuilder;
+      protected final RexBuilder rexBuilder;
+
+      protected VbuilderPAP(String sketchClass, RelBuilder relBuilder) {
+        this.sketchClass = sketchClass;
+        this.relBuilder = relBuilder;
+        rexBuilder = relBuilder.getRexBuilder();
+      }
+
+      final class ProcessShuttle extends RexShuttle {
+        public RexNode visitOver(RexOver over) {
+          return processCall(over);
+        }
+      };
+
+      protected final RelNode processProject(Project project) {
+        RelNode origInput = project.getInput();
+        relBuilder.push(origInput);
+        RexShuttle shuttle = new ProcessShuttle();
+        List<RexNode> newProjects = new ArrayList<RexNode>();
+        for (RexNode expr : project.getChildExps()) {
+          newProjects.add(expr.accept(shuttle));
+        }
+        if (relBuilder.peek() == origInput) {
+          relBuilder.clear();
+          return project;
+        }
+        relBuilder.project(newProjects);
+        return relBuilder.build();
+      }
+
+      private final RexNode processCall(RexNode expr) {
+        if (expr instanceof RexOver) {
+          RexOver over = (RexOver) expr;
+          if (isApplicable(over)) {
+            return rewrite(over);
+          }
+        }
+        return expr;
+      }
+
+      protected final SqlOperator getSqlOperator(String fnName) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        return fn.getCalciteFunction().get();
+      }
+
+      /**
+       * Do the rewrite for the given expression.
+       *
+       * When this method is invoked the {@link #relBuilder} will only contain the current input.
+       * Expectation is to leave the new input there after the method finishes.
+       */
+      abstract RexNode rewrite(RexOver expr);
+
+      abstract boolean isApplicable(RexOver expr);
+
+    }
+  }
+
+  /**
+   * Rewrites {@code cume_dist() over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
+
+    public CumeDistRewrite(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+      return new VB(sketchType, call.builder());
+    }
+
+    private static class VB extends VbuilderPAP {
+
+      protected VB(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
+
+      @Override
+      boolean isApplicable(RexOver over) {
+        SqlAggFunction aggOp = over.getAggOperator();
+        RexWindow window = over.getWindow();
+        if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
+          return true;
+        }
+        return false;
+      }
+
+      @Override
+      RexNode rewrite(RexOver over) {
+        RexWindow w = over.getWindow();
+        RexFieldCollation orderKey = w.orderKeys.get(0);
+        // we don't really support nulls in aggregate/etc...they are actually ignored
+        // so some hack will be needed for NULLs anyway..
+        ImmutableList<RexNode> partitionKeys = w.partitionKeys;
+
+        relBuilder.push(relBuilder.peek());
+        // the CDF function utilizes the '<' operator;
+        // negating the input will mirror the values on the x axis
+        // by using 1-CDF(-x) we could get a <= operator
+        RexNode key = orderKey.getKey();
+        key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
+        key = rexBuilder.makeCast(getFloatType(), key);
+
+        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
+            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
+            /* distinct */ false,
+            /* approximate */ false,
+            /* ignoreNulls */ true,
+            null,
+            ImmutableList.of(),
+            null,
+            ImmutableList.of(key));
+
+        relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
+
+        List<RexNode> joinConditions;
+        joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
+          RexNode f = relBuilder.field(2, 1, o.i);
+          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, o.e, f);
+        }).collect(Collectors.toList());
+        relBuilder.join(JoinRelType.INNER, joinConditions);
+
+        int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
+        RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
+
+        // NULLs will be replaced by this value - to be before / after the other values
+        // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
+        final RexNode nullReplacement =
+            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+
+        // long story short: CAST(1.0f-CDF(CAST(COALESCE(-X, nullReplacement) AS FLOAT))[0] AS targetType)
+        RexNode projRex = key;
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
+        projRex = rexBuilder.makeCast(getFloatType(), projRex);
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
+        projRex = makeItemCall(projRex, relBuilder.literal(0));
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
+        projRex = rexBuilder.makeCast(over.getType(), projRex);
+
+        return projRex;
+      }
+
+      private RexNode makeItemCall(RexNode arr, RexNode offset) {
+        if(getClass().desiredAssertionStatus()) {
+          try {
+            SqlKind.class.getField("ITEM");
+            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
+           } catch(NoSuchFieldException e) {
+             // ignore
+          }
+        }
+
+        try {
+        SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
+            ImmutableList.of(arr.getType(),offset.getType()),
+            arr.getType().getComponentType(), true, false);
+          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
+          return call;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      private RelDataType getFloatType() {
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+        return floatType;
       }
     }
   }

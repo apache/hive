@@ -469,7 +469,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
     if (FunctionRegistry.isRankingFunction(aggregateName)) {
       // Rank functions type is 'int'/'double'
-      if (aggregateName.equalsIgnoreCase("percent_rank")) {
+      if (aggregateName.equalsIgnoreCase("percent_rank") || aggregateName.equalsIgnoreCase("cume_dist")) {
         returnType = TypeInfoFactory.doubleTypeInfo;
       } else {
         returnType = TypeInfoFactory.intTypeInfo;
