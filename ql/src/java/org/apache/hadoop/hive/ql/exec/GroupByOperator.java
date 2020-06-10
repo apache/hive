@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +94,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   // Map from integer tag to non-distinct aggrs with key parameters.
   private transient Map<Integer, Set<Integer>> nonDistinctKeyAggrs = new HashMap<>();
   // List of non-distinct aggrs.
-  private transient Set<Integer> nonDistinctAggrs = new LinkedHashSet<>();
+  private transient Set<Integer> nonDistinctAggrs = new HashSet<>();
   // Union expr for distinct keys
   private transient ExprNodeEvaluator unionExprEval;
 
