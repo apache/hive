@@ -40,9 +40,9 @@ import java.util.List;
  */
 public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  TimeIntervalOpFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-      RelDataType returnType) {
-    super(helper, op, reorderArgs(inputNodes), returnType);
+  TimeIntervalOpFunctionResolver(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
+    super(helper, op, reorderArgs(inputNodes));
     Preconditions.checkState(argTypes.size() == 2);
   }
 

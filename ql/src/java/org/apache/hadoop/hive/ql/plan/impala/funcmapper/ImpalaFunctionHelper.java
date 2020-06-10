@@ -80,70 +80,83 @@ public class ImpalaFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public FunctionInfo getFunctionInfo(String functionText) {
-    // return null here as all the processing is done in getExpression.  This shouldn't
-    // break any existing contract with the caller.
-    return null;
+  public FunctionInfo getFunctionInfo(String functionText) throws SemanticException {
+    return new ImpalaFunctionInfo(functionText);
   }
 
   /**
    * {@inheritDoc}
+   *
+   * The FunctionInfo passed in will only contain the "displayName" as created in
+   * the "getFunctionInfo" method.
    */
   @Override
-  public RelDataType getReturnType(FunctionInfo functionInfo, List<RexNode> inputs) {
-    // return null here as all the processing is done in getExpression.  This shouldn't
-    // break any existing contract with the caller.
-    return null;
+  public RelDataType getReturnType(FunctionInfo functionInfo, List<RexNode> inputs
+      ) throws SemanticException {
+    try {
+      ImpalaFunctionResolver funcResolver = ImpalaFunctionResolverImpl.create(this,
+          functionInfo.getDisplayName(), inputs);
+     
+      ImpalaFunctionInfo impalaFunctionInfo = (ImpalaFunctionInfo) functionInfo;
+      impalaFunctionInfo.setFunctionResolver(funcResolver);
+     
+      ImpalaFunctionSignature ifs =
+          funcResolver.getFunction(ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE);
+      impalaFunctionInfo.setImpalaFunctionSignature(ifs);
+      return funcResolver.getRetType(ifs, inputs);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
   }
 
   /**
    * {@inheritDoc}
+   *
+   * The FunctionInfo passed in will contain the "displayName" as created in
+   * the "getFunctionInfo". In the case where the "FunctionHelper.getReturnType"
+   * method is called, it will also contain the FunctionResolver and
+   * ImpalaFunctionSignature. If the getReturnType method was not called, it
+   * will create the FunctionResolver class and set it into the FunctionInfo.
    */
   @Override
-  public List<RexNode> convertInputs(FunctionInfo functionInfo, List<RexNode> inputs, RelDataType returnType) {
-    return inputs;
+  public List<RexNode> convertInputs(FunctionInfo functionInfo, List<RexNode> inputs,
+      RelDataType returnType) throws SemanticException {
+    try {
+      ImpalaFunctionInfo impalaFunctionInfo = (ImpalaFunctionInfo) functionInfo;
+      ImpalaFunctionResolver funcResolver = impalaFunctionInfo.getFunctionResolver();
+      if (funcResolver == null) {
+        funcResolver =
+            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs);
+        impalaFunctionInfo.setFunctionResolver(funcResolver);
+      }
+      return funcResolver.getConvertedInputs(impalaFunctionInfo.getImpalaFunctionSignature());
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
   }
 
   /**
    * {@inheritDoc}
+   *
+   * The FunctionInfo passed in will contain the "displayName" as created in
+   * the "getFunctionInfo". In the case where the "FunctionHelper.getReturnType"
+   * method is called, it will also contain the FunctionResolver and
+   * ImpalaFunctionSignature. If the getReturnType method was not called, it
+   * will create the FunctionResolver class and set it into the FunctionInfo.
    */
   @Override
   public RexNode getExpression(String functionText, FunctionInfo functionInfo, List<RexNode> inputs,
       RelDataType returnType) throws SemanticException {
-    // special case. Internal_interval is the only functionText passed in that isn't a RexCall and
-    // doesn't fit the rest of the algorithm flow.
-    if (functionText.equals("internal_interval")) {
-      return getRexNodeForInternalInterval(inputs);
-    }
-
-    // For the grouping() function, skip calling the Impala function resolver because
-    // (a) Impala currently does not support this function and (b) we convert it to
-    // an equivalent form later in ImpalaRexCall. However, we still have to create
-    // the RexNode, so we use the supplied RexNodeExprFactory to create one.
-    // Note that the grouping() function as implemented in Hive takes a first argument
-    // of grouping__id and behaves more like a scalar function than an
-    // aggregate function but we use the GROUPING operator here for creation because it
-    // is consistent with how Calcite treats it.
-    if (functionText.equals("grouping")) {
-      return factory.getRexBuilder().makeCall(returnType == null ?
-              factory.getRexBuilder().getTypeFactory().createSqlType(SqlTypeName.BIGINT) : returnType,
-          SqlStdOperatorTable.GROUPING, inputs);
-    }
-
     try {
-      ImpalaFunctionResolver funcResolver =
-          ImpalaFunctionResolverImpl.create(this, functionText, inputs, returnType);
-
-      ImpalaFunctionSignature function =
-          funcResolver.getFunction(ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE);
-
-      // get the converted inputs which usually just means casting the inputs so
-      // it matches the Impala function signature, In the case of time addition,
-      // it will also flip the arguments so the time is the first argument.
-      List<RexNode> convertedInputs = funcResolver.getConvertedInputs(function);
-
-      RelDataType retType = funcResolver.getRetType(function, convertedInputs);
-      return funcResolver.createRexNode(function, convertedInputs, retType);
+      ImpalaFunctionInfo impalaFunctionInfo = (ImpalaFunctionInfo) functionInfo;
+      ImpalaFunctionResolver funcResolver = impalaFunctionInfo.getFunctionResolver();
+      if (funcResolver == null) {
+        funcResolver =
+            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs);
+        impalaFunctionInfo.setFunctionResolver(funcResolver);
+      }
+      return funcResolver.createRexNode(impalaFunctionInfo.getImpalaFunctionSignature(),
+          inputs, returnType);
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -190,7 +203,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       List<RexNode> aggregateParameters) throws SemanticException {
     try {
       ImpalaFunctionResolver funcResolver =
-          ImpalaFunctionResolverImpl.create(this, aggregateName, aggregateParameters, null);
+          ImpalaFunctionResolverImpl.create(this, aggregateName, aggregateParameters);
       ImpalaFunctionSignature function =
           funcResolver.getFunction(AggFunctionDetails.AGG_BUILTINS_INSTANCE);
 
@@ -201,27 +214,6 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       return new AggregateInfo(convertedInputs, typeInfo, aggregateName, isDistinct);
     } catch (HiveException e) {
       throw new SemanticException(e);
-    }
-  }
-
-  private RexNode getRexNodeForInternalInterval(List<RexNode> inputs) {
-    Preconditions.checkState(inputs.size() == 2);
-    int intervalType = RexLiteral.intValue(inputs.get(0));
-    switch (intervalType) {
-      case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
-        return factory.createIntervalYearConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
-        return factory.createIntervalMonthConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      case HiveParser.TOK_INTERVAL_DAY_LITERAL:
-        return factory.createIntervalDayConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
-        return factory.createIntervalHourConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
-        return factory.createIntervalMinuteConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
-        return factory.createIntervalSecondConstantExpr(Integer.toString(RexLiteral.intValue(inputs.get(1))));
-      default:
-        throw new RuntimeException("Unknown interval type: " + intervalType);
     }
   }
 }

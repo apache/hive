@@ -23,6 +23,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
@@ -51,8 +52,9 @@ import java.util.Map;
  */
 public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  CaseFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes, RelDataType returnType) {
-    super(helper, op, inputNodes, returnType);
+  public CaseFunctionResolver(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
+    super(helper, op, inputNodes);
   }
 
   @Override
@@ -128,12 +130,11 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
   private List<RexNode> convertCaseToWhenFormat(List<RexNode> inputs) throws HiveException {
     List<RexNode> whenFormatInputs = Lists.newArrayList();
     RexNode firstPred = inputs.get(0);
-    RelDataType booleanType = rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
     for (int i = 0; i < (this.argTypes.size()-1) / 2; ++i) {
       int currentArg = 2 * i + 1;
       List<RexNode> equalsArgs = Lists.newArrayList(firstPred, inputs.get(currentArg));
       try {
-        whenFormatInputs.add(helper.getExpression("=", null, equalsArgs, booleanType));
+        whenFormatInputs.add(createWhenExpression(equalsArgs));
       } catch (SemanticException e) {
         throw new HiveException("Could not convert 'case' statement to 'when' statement, " +
             "could not set equivalent args: " + equalsArgs.get(0) + ", " + equalsArgs.get(1));
@@ -146,5 +147,12 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
       whenFormatInputs.add(inputs.get(inputs.size() - 1));
     }
     return whenFormatInputs;
+  }
+
+  private RexNode createWhenExpression(List<RexNode> equalsInputs) throws SemanticException {
+    FunctionInfo functionInfo = helper.getFunctionInfo("=");
+    RelDataType retType = helper.getReturnType(functionInfo, equalsInputs);
+    List<RexNode> convertedInputs = helper.convertInputs(functionInfo, equalsInputs, retType);
+    return helper.getExpression("=", functionInfo, convertedInputs, retType);
   }
 }

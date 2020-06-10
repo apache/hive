@@ -50,8 +50,9 @@ import java.util.Map;
  */
 public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  CaseWhenFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes, RelDataType returnType) {
-    super(helper, op, inputNodes, returnType);
+  public CaseWhenFunctionResolver(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
+    super(helper, op, inputNodes);
   }
 
   @Override

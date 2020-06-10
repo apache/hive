@@ -34,9 +34,9 @@ import java.util.List;
  */
 public class AdjustScaleFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  AdjustScaleFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-                                RelDataType returnType) {
-    super(helper, op, inputNodes, returnType);
+  public AdjustScaleFunctionResolver(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
+    super(helper, op, inputNodes);
   }
 
   /**

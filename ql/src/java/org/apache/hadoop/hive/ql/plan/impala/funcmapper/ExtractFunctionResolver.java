@@ -40,9 +40,9 @@ import java.util.List;
  */
 public class ExtractFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  ExtractFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-      RelDataType returnType) throws HiveException {
-    super(helper, op, inputNodes, returnType);
+  ExtractFunctionResolver(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes
+      ) throws HiveException {
+    super(helper, op, inputNodes);
     if (argTypes.size() != 1) {
       throw new HiveException("Function " + func + " should have exactly 1 argument");
     }

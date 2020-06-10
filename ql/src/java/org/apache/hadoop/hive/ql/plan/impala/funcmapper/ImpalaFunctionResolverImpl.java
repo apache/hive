@@ -51,8 +51,6 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   protected final List<RelDataType> argTypes;
 
-  protected final RelDataType retType;
-
   protected final FunctionHelper helper;
 
   protected final RexBuilder rexBuilder;
@@ -62,14 +60,16 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   protected final SqlOperator op;
 
 
-  public ImpalaFunctionResolverImpl(FunctionHelper helper, SqlOperator op, List<RexNode> inputNodes,
-      RelDataType returnType) {
+  public ImpalaFunctionResolverImpl(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
     this.helper = helper;
     this.rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
     this.inputNodes = inputNodes;
-    this.func = op.getName().toLowerCase();
+    // op can be null for FunctionResolvers that are special and don't map to
+    // anything in Calcite.  One example is the InternalIntervalFunctionResolver
+    // where it maps the function "internal_interval" into a RexLiteral.
+    this.func = (op != null) ? op.getName().toLowerCase() : "";
     this.argTypes = RexUtil.types(inputNodes);
-    this.retType = returnType;
     this.op = op;
   }
 
@@ -78,10 +78,11 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       throws SemanticException {
 
     // First try to retrieve a signature that directly matches the input with no casting,
-    // if possible.
-    RelDataType returnType = getReturnType();
+    // if possible. The "derived" return type is null in most cases, but can have a
+    // value if it is important for the function to pick the right signature. This happens
+    // with arithmetic operators.
     ImpalaFunctionSignature candidate =
-        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, returnType);
+        ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, null);
     if (candidate != null) {
       return candidate;
     }
@@ -102,11 +103,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    * Derive the return type from the given signature and operands.
    */
   public RelDataType getRetType(ImpalaFunctionSignature funcSig, List<RexNode> operands) {
-    // If the return type was passed in, we just return it.
-    if (retType != null) {
-      return retType;
-    }
-
+    Preconditions.checkNotNull(op);
     RelDataType relDataType = funcSig.getRetType();
     // handle the return types with precision and scale separately.
     switch (relDataType.getSqlTypeName()) {
@@ -139,6 +136,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   public RexNode createRexNode(ImpalaFunctionSignature candidate, List<RexNode> inputs,
       RelDataType returnDataType) {
+    Preconditions.checkNotNull(op);
     return rexBuilder.makeCall(returnDataType, op, inputs);
   }
 
@@ -150,7 +148,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   protected ImpalaFunctionSignature getCastFunction() throws SemanticException {
     // castCandidates contains a list of potential functions that matches the name.
     // These candidates will have the same function name, but different operand/return types.
-    List<ImpalaFunctionSignature> castCandidates =
+    List<ImpalaFunctionSignature> castCandidates = getCastCandidates(func);
         ImpalaFunctionSignature.CAST_CHECK_BUILTINS_INSTANCE.get(func);
     if (castCandidates == null) {
       throw new SemanticException("Could not find function name " + func +
@@ -169,20 +167,23 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     throw new SemanticException("Could not cast for function name " + func);
   }
 
+  protected List<ImpalaFunctionSignature> getCastCandidates(String func) throws SemanticException {
+    // castCandidates contains a list of potential functions that matches the name.
+    // These candidates will have the same function name, but different operand/return types.
+    List<ImpalaFunctionSignature> castCandidates =
+        ImpalaFunctionSignature.CAST_CHECK_BUILTINS_INSTANCE.get(func);
+    if (castCandidates == null) {
+      throw new SemanticException("Could not find function name " + func +
+          " in resource file");
+    }
+    return castCandidates;
+  }
+
   /**
    * Returns true if all of the given operands can be cast to the given function
    * signature.
    **/
   protected boolean canCast(ImpalaFunctionSignature candidate) {
-    RelDataType retType = getReturnType();
-    // If the return type is not given (set to null), it is ignored. If it is
-    // given, we can only match if the given return type matches exactly (no
-    // casting allowed on the return type).
-    if (retType != null &&
-          !ImpalaFunctionSignature.areCompatibleDataTypes(retType, candidate.getRetType())) {
-      return false;
-    }
-
     // If the number of arguments is different and the signature doesn't
     // allow a variable number of arguments, we cannot cast to this
     // signature.
@@ -250,13 +251,6 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return newOperands;
   }
 
-  protected RelDataType getReturnType() {
-    if (retType != null) {
-      return retType;
-    }
-    return null;
-  }
-
   /**
    * Return the casted RelDatatype of the provided postCastSqlTypeName
    */
@@ -299,43 +293,49 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return result;
   }
 
+  private static ImpalaFunctionResolver createSpecialFuncResolver(FunctionHelper helper,
+      String func, List<RexNode> inputs) {
+    if (func.equals("internal_interval")) {
+      return new InternalIntervalFunctionResolver(helper, inputs);
+    }
+    throw new RuntimeException("Could not find function resolver for " + func);
+  }
+
   public static ImpalaFunctionResolver create(FunctionHelper helper, String func,
-      List<RexNode> inputs, RelDataType returnType) throws HiveException {
+      List<RexNode> inputs) throws HiveException {
 
     SqlOperator op = ImpalaOperatorTable.IMPALA_OPERATOR_MAP.get(func.toUpperCase());
 
     if (op == null) {
-      throw new RuntimeException("Could not find op for " + func);
+      // handle the special case where there is no mapped operator
+      return createSpecialFuncResolver(helper, func, inputs);
     }
 
     switch(op.getKind()) {
       case CAST:
-        // The return type is passed in when the cast has precision, e.g. DECIMAL(15,2)
-        if (returnType != null) {
-          return new CastFunctionResolver(helper, op, inputs, returnType);
-        }
         // When there is no return type, the cast is passed in via the function name.
         String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
         SqlTypeName retSqlType = SqlTypeName.valueOf(adjustedFunc);
         RexBuilder rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
         RelDataType newReturnType = rexBuilder.getTypeFactory().createSqlType(retSqlType);
-
         return new CastFunctionResolver(helper, op, inputs, newReturnType);
       case CASE:
         // case statements can come in as "when" or "case", see cthe Case*Resolver comment
         // for more information.
         if (func.equals("when")) {
-          return new CaseWhenFunctionResolver(helper, op, inputs, returnType);
+          return new CaseWhenFunctionResolver(helper, op, inputs);
         }
-        return new CaseFunctionResolver(helper, op, inputs, returnType);
+        return new CaseFunctionResolver(helper, op, inputs);
       case EXTRACT:
-        return new ExtractFunctionResolver(helper, op, inputs, returnType);
+        return new ExtractFunctionResolver(helper, op, inputs);
+      case GROUPING:
+        return new GroupingFunctionResolver(helper, op, inputs);
       case PLUS:
       case MINUS:
         if (inputs.size() == 2 &&
             (SqlTypeName.INTERVAL_TYPES.contains(inputs.get(0).getType().getSqlTypeName()) ||
             SqlTypeName.INTERVAL_TYPES.contains(inputs.get(1).getType().getSqlTypeName()))) {
-          return new TimeIntervalOpFunctionResolver(helper, op, inputs, returnType);
+          return new TimeIntervalOpFunctionResolver(helper, op, inputs);
         }
         return new ArithmeticFunctionResolver(helper, op, inputs);
       case TIMES:
@@ -345,11 +345,11 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       case OTHER_FUNCTION:
         // Functions like "round" come in as an "OTHER" operator kind.
         if (AdjustScaleFunctionResolver.isAdjustScaleFunction(op.getName().toLowerCase())) {
-          return new AdjustScaleFunctionResolver(helper, op, inputs, returnType);
+          return new AdjustScaleFunctionResolver(helper, op, inputs);
         }
-        return new ImpalaFunctionResolverImpl(helper, op, inputs, returnType);
+        return new ImpalaFunctionResolverImpl(helper, op, inputs);
       default:
-        return new ImpalaFunctionResolverImpl(helper, op, inputs, returnType);
+        return new ImpalaFunctionResolverImpl(helper, op, inputs);
     }
   }
 }
