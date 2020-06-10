@@ -71,8 +71,8 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
-cp $SETTINGS .git/m2/settings.xml
-OPTS=" -s $PWD/.git/m2/settings.xml -B -Dmaven.test.failure.ignore -Dtest.groups= "
+cp $SETTINGS .git/settings.xml
+OPTS=" -s $PWD/.git/settings.xml -B -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
