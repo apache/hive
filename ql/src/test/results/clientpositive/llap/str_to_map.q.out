@@ -2,13 +2,13 @@ PREHOOK: query: desc function str_to_map
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: desc function str_to_map
 POSTHOOK: type: DESCFUNCTION
-str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
+str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text
 PREHOOK: query: desc function extended str_to_map
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: desc function extended str_to_map
 POSTHOOK: type: DESCFUNCTION
-str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
-Split text into key-value pairs using two delimiters. The first delimiter separates pairs, and the second delimiter sperates key and value. If only one parameter is given, default delimiters are used: ',' as delimiter1 and ':' as delimiter2.
+str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text
+Split text into key-value pairs using two delimiters. The first delimiter separates pairs, and the second delimiter sperates key and value. If only one or two parameters are given, default delimiters are used: ',' as delimiter1 and ':' as delimiter2. Note also that both delimiter1 and delimiter2 are treated as regular expressions.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap
 Function type:BUILTIN
 PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -140,7 +140,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 1
             Map Operator Tree:
                 TableScan
                   alias: src
