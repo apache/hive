@@ -73,8 +73,10 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
     for (RelFieldCollation fieldCollation : sortLimit.getCollation().getFieldCollations()) {
       int index = fieldCollation.getFieldIndex();
-      isAscOrder.add(fieldCollation.getDirection() == RelFieldCollation.Direction.ASCENDING);
-      nullsFirstParams.add(fieldCollation.nullDirection == RelFieldCollation.NullDirection.FIRST);
+      boolean ascOrder = fieldCollation.direction == RelFieldCollation.Direction.ASCENDING;
+      boolean nullsFirst = fieldCollation.nullDirection == RelFieldCollation.NullDirection.FIRST;
+      isAscOrder.add(ascOrder);
+      nullsFirstParams.add(nullsFirst);
       sortExprs.add(childOutputExprsMap.get(index));
     }
 
