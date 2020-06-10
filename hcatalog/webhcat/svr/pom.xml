@@ -164,6 +164,7 @@
               <verbose>true</verbose>
               <show>public</show>
               <doclet>com.sun.jersey.wadl.resourcedoc.ResourceDoclet</doclet>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
               <docletArtifacts>
                 <docletArtifact>
                   <groupId>com.sun.jersey.contribs</groupId>
@@ -186,7 +187,6 @@
                 </docletArtifact>
               </docletArtifacts>
               <additionalparam>-output ${project.build.outputDirectory}/resourcedoc.xml</additionalparam>
-              <useStandardDocletOptions>false</useStandardDocletOptions>
             </configuration>
           </execution>
         </executions>
