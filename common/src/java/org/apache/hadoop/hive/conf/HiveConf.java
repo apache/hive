@@ -2089,7 +2089,7 @@ public class HiveConf extends Configuration {
         "Spark UI."),
     HIVETEZJOBNAME("tez.job.name", "HIVE-%s",
         "This named is used by Tez to set the job name. This name in turn will appear on \n" +
-        "the Yarn UI representing the Yarn Application Name And The job name may be a \n" +
+        "the Yarn UI representing the Yarn Application Name. And The job name may be a \n" +
         "Java String.format() string, to which the session ID will be supplied as the single parameter."),
 
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
