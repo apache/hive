@@ -160,7 +160,7 @@ public class OrcEncodedDataConsumer
         if (includes.getProbeStaticRowFilter() != null) {
           for (int idx = 0; idx < columnReaders.length; ++idx) {
             TreeReader reader = columnReaders[idx];
-            if (includes.getProbeStaticColIdx()[reader.getColumnId()]) {
+            if (includes.getProbeStaticColIndex()[reader.getColumnId()]) {
               LlapIoImpl.LOG.debug("ProbeDecode RowFilter early idx {} id {} reader {} ", idx, reader.getColumnId(), reader);
               ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
               reader.nextVector(cv, null, batchSize, NULL_FILTERCONTEXT);
@@ -175,7 +175,7 @@ public class OrcEncodedDataConsumer
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           TreeReader reader = columnReaders[idx];
           if (includes.getProbeStaticRowFilter() != null) {
-            if (includes.getProbeStaticColIdx()[reader.getColumnId()])
+            if (includes.getProbeStaticColIndex()[reader.getColumnId()])
               continue;
           }
           /*

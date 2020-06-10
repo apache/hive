@@ -513,7 +513,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         LOG.info("RowFilter ProbeDecode schema: {}", schema.getFieldNames());
         ExprNodeGenericFuncDesc exprObj = SerializationUtilities.
                 deserializeExpression(conf.get(TableScanDesc.FILTER_EXPR_CONF_STR));
-        ORCRowFilter orcRF = new ORCRowFilter(exprObj, schema.getFieldNames());
+        ORCRowFilter orcRF = ORCRowFilter.getRowFilter(exprObj, schema.getFieldNames());
+        LOG.info("RowFilter ProbeDecode FilterCols: {}", exprObj.getCols().stream().toArray(size -> new String[size]));
         options.setRowFilter(exprObj.getCols().stream().toArray(size -> new String[size]), orcRF::rowFilterCallback);
       }
     }

@@ -422,14 +422,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         throw new AssertionError("Unsupported mode");
       }
     } else {
-      if (includes.getPhysicalColumnIds().size() != cvb.cols.length) {
-        throw new RuntimeException("Unexpected number of columns, VRB has "
-            + includes.getPhysicalColumnIds().size() + " included, but the reader returned "
-            + cvb.cols.length);
-      }
+//      if (includes.getPhysicalColumnIds().size() != cvb.cols.length) {
+//        throw new RuntimeException("Unexpected number of columns, VRB has "
+//            + includes.getPhysicalColumnIds().size() + " included, but the reader returned "
+//            + cvb.cols.length);
+//      }
       // VRB was created from VrbCtx, so we already have pre-allocated column vectors.
       // Return old CVs (if any) to caller. We assume these things all have the same schema.
-      for (int ixInReadSet = 0; ixInReadSet < cvb.cols.length; ++ixInReadSet) {
+      for (int ixInReadSet = 0; ixInReadSet < includes.getPhysicalColumnIds().size(); ++ixInReadSet) {
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
@@ -760,19 +760,57 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             allIncludedColNames.add(schemaEvolution.getFileSchema().getFieldNames().get(i));
           }
         }
-        // FilterExpression is using only includedCols to avoid extra colIndex wrangling
-        probeStaticRowFilter = new ORCRowFilter(exprObj, allIncludedColNames);
 
-        // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
-        int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
-        probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
-        for (int i : filterColumnIds) {
-          if (i > 0) {
-            probeStaticColidIndex[colIdAcidAddition + i] = true;
+        probeStaticRowFilter = ORCRowFilter.getRowFilter(exprObj, allIncludedColNames);
+        List<String> filterColNames = exprObj.getCols();
+
+//        TableScanOperator tsOp  = (TableScanOperator) mapWork.getAllRootOperators().stream().iterator().next();
+//        Operator<?> root = tsOp;
+//        VectorFilterOperator filterOperator = null;
+//        while (root.getChildOperators().size() > 0) {
+//          if (root.getChildOperators().get(0) instanceof VectorFilterOperator) {
+//              filterOperator = (VectorFilterOperator) root.getChildOperators().get(0);
+//              break;
+//          }
+//          root = root.getChildOperators().get(0);
+//        }
+//        LOG.info("ProbeDecode FilterOp {}", filterOperator);
+//
+//        if (filterOperator != null && filterOperator.getPredicateExpression() != null) {
+//          // FilterExpression is using only includedCols to avoid extra colIndex wrangling
+//          probeStaticRowFilter = new ORCRowFilter(filterOperator.getPredicateExpression(), filterOperator.getInputVectorizationContext());
+//          List<String> filterColNames = filterOperator.getConf().getPredicate().getCols();
+//
+//          probeStaticColidIndex = probeStaticRowFilter.getFilterColIndex(filterColNames);
+//          outColTypeMap = probeStaticRowFilter.getFilterExprScratchColTypeMap();
+
+//          // Get max cols size (including scratch cols)
+//          maxColdId = filterOperator.getInputVectorizationContext().getInitialColumnNames().size() -1;
+//          outColTypeMap = new HashMap<>();
+//          for (VectorExpression expr: filterOperator.getPredicateExpression().getChildExpressions()) {
+//            outColTypeMap.put(expr.getOutputColumnNum(), expr.getOutputTypeInfo());
+//            if (expr.getOutputColumnNum() > maxColdId) maxColdId = expr.getOutputColumnNum();
+//          }
+
+//          probeStaticColidIndex = new boolean[maxColdId + 1];
+//          for (String filColName : filterColNames) {
+//            try {
+//              probeStaticColidIndex[filterOperator.getInputVectorizationContext().getInputColumnIndex(filColName)] = true;
+//            } catch (HiveException e) {
+//              e.printStackTrace();
+//            }
+//          }
+
+          // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
+          int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
+          probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
+          for (int i : filterColumnIds) {
+            if (i > 0) {
+              probeStaticColidIndex[colIdAcidAddition + i] = true;
+            }
           }
-        }
-        LOG.info("ProbeDecode RowFilter colIds: {}, all includedColNames {} AcidAddition {} Filter {}", filterColumnIds,
-            allIncludedColNames, colIdAcidAddition, DebugUtils.toString(probeStaticColidIndex));
+          LOG.info("ProbeDecode RowFilter IncludedCols: {}, filterColNames {} FilterColidIndex {}",
+                  allIncludedColNames, filterColNames, DebugUtils.toString(probeStaticColidIndex));
       }
     }
 
@@ -829,7 +867,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return probeStaticRowFilter;
     }
     @Override
-    public boolean[] getProbeStaticColIdx() {
+    public boolean[] getProbeStaticColIndex() {
       return probeStaticColidIndex;
     }
 

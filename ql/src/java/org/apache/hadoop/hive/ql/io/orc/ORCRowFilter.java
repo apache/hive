@@ -19,16 +19,25 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
+import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
 
 /**
  * Class enables row-level filtering for ORC readers.
@@ -39,35 +48,109 @@ public class ORCRowFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ORCRowFilter.class);
 
-    private VectorExpression predicateExpression = null;
+    private final VectorExpression filterExpression;
+    private final VectorizationContext filterVc;
+    private final int filterExprScratchCols;
+    private int filterExprMaxColdId;
 
-    public ORCRowFilter(VectorExpression expression) {
-        this.predicateExpression = expression;
+    private final Map<Integer, TypeInfo> filterExprScratchColTypeMap;
+    private boolean useDecimal64ColumnVectors = true;
+
+    public ORCRowFilter(VectorExpression expression, VectorizationContext vc) {
+        this.filterExprScratchColTypeMap = new HashMap<>();
+        this.filterExpression = expression;
+        this.filterVc = vc;
+
+        filterExprMaxColdId = vc.getInitialColumnNames().size() -1;
+        Stack<VectorExpression> exprStack = new Stack<>();
+        if (filterExpression.getChildExpressions() != null && filterExpression.getChildExpressions().length > 0) {
+            exprStack.addAll(Arrays.asList(filterExpression.getChildExpressions()));
+        }
+        while (!exprStack.isEmpty()) {
+            VectorExpression currExpr = exprStack.pop();
+            if (currExpr.getOutputColumnNum() != -1)
+                filterExprScratchColTypeMap.put(currExpr.getOutputColumnNum(), currExpr.getOutputTypeInfo());
+            if (currExpr.getOutputColumnNum() > filterExprMaxColdId) filterExprMaxColdId = currExpr.getOutputColumnNum();
+            if (currExpr.getChildExpressions() != null && currExpr.getChildExpressions().length > 0) {
+                exprStack.addAll(Arrays.asList(currExpr.getChildExpressions()));
+            }
+        }
+        filterExprScratchCols = filterExprMaxColdId - (vc.getInitialColumnNames().size() -1);
+        LOG.info("ProbeDecode RowFilerExpression {} with extraScratchCols {}", filterExpression, filterExprScratchCols);
     }
-
 
     /**
-     * Need to properly handle conversion from ExprNodeDesc to VectorExpression
+     * Properly handle conversion from ExprNodeDesc to VectorExpression
      */
     @VisibleForTesting
-    public ORCRowFilter(ExprNodeDesc filterExpr, List<String> columns) {
-        VectorizationContext vc = new VectorizationContext("row-filter", columns);
+    public static ORCRowFilter getRowFilter(ExprNodeDesc filterExpr, List<String> columns) {
+        ORCRowFilter createdFilter = null;
         try {
-            predicateExpression = vc.getVectorExpression(filterExpr, VectorExpressionDescriptor.Mode.FILTER);
+            VectorizationContext vc = new VectorizationContext("row_filter", columns);
+            VectorExpression currFilterExpr = vc.getVectorExpression(filterExpr, VectorExpressionDescriptor.Mode.FILTER);
+            LOG.info("ProbeDecode converted {} filter to {} VectorExpression", filterExpr, currFilterExpr);
+            createdFilter = new ORCRowFilter(currFilterExpr, vc);
         } catch (HiveException e) {
-            e.printStackTrace();
+            LOG.error("ProbeDecode could not covert filter {}, {}",filterExpr, e.getMessage());
         }
-        LOG.info("ProbeDecode converted {} filter to {} VectorExpression", filterExpr, predicateExpression);
+        return createdFilter;
     }
 
-    public void rowFilterCallback(VectorizedRowBatch batch) {
+    /**
+     *
+     * Applies the filter-callback to a VectorizedRowBatch given as a parameter.
+     * It also handles the case where the additional scratch columns needed
+     * by the filter are not either allocated OR initialized!
+     * This means that the resulting VRB might end up with more columns! (needed for filtering)
+     * @param cvb VectorizedRowBatch
+     */
+    public void rowFilterCallback(VectorizedRowBatch cvb) {
         try {
-            predicateExpression.evaluate(batch);
+            // Column expansion -- should happen only once per Reader
+            if (cvb.cols.length -1 < filterExprMaxColdId) {
+                ColumnVector[] expandedColVec = new ColumnVector[filterExprMaxColdId + 1];
+                System.arraycopy(cvb.cols, 0, expandedColVec, 0, cvb.numCols);
+                cvb.cols = expandedColVec;
+                // Initialize any missing scratch columns
+                for (Map.Entry<Integer, TypeInfo>  entry: filterExprScratchColTypeMap.entrySet()) {
+                    if (cvb.cols[entry.getKey()] == null) {
+                        cvb.cols[entry.getKey()] = createColumnVector(entry.getValue(), useDecimal64ColumnVectors ?
+                                DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
+                    }
+                }
+            }
+            filterExpression.evaluate(cvb);
             // VectorExpressions just set size to 0 when there is NO match (or repeating No Match)
             // In that case, make sure selected is set to True as it will be used for row-filtering!
-            if (batch.size == 0) batch.selectedInUse = true;
+            if (cvb.size == 0) cvb.selectedInUse = true;
         } catch (HiveException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Return the Scratch Columnid-Type mapping needed for this row-filter.
+     * @return a Columnid-Type Map
+     */
+    public Map<Integer, TypeInfo> getFilterExprScratchColTypeMap() {
+        return filterExprScratchColTypeMap;
+    }
+
+    /**
+     * Return an BitSet of colIds that are used in this row-filter.
+     * Every index that is set to true represents a colId that is needed by this filter.
+     * @param allIncludedColNames
+     * @return
+     */
+    public boolean[] getFilterColIndex(List<String> allIncludedColNames) {
+        boolean[] probeStaticColidIndex = new boolean[this.filterExprMaxColdId + 1];
+        for (String filColName : allIncludedColNames) {
+            try {
+                probeStaticColidIndex[this.filterVc.getInputColumnIndex(filColName)] = true;
+            } catch (HiveException e) {
+                LOG.error("ProbeDecode could not create filterColIndex for {}, {}", filterExpression, e.getMessage());
+            }
+        }
+        return probeStaticColidIndex;
     }
 }

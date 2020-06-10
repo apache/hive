@@ -57,7 +57,7 @@ public interface ColumnVectorProducer {
     String getProbeDynMjColName();
     int getProbeDynMjColIdx();
     ORCRowFilter getProbeStaticRowFilter();
-    boolean[] getProbeStaticColIdx();
+    boolean[] getProbeStaticColIndex();
   }
 
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
