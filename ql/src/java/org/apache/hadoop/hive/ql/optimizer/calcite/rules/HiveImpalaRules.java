@@ -291,4 +291,29 @@ public class HiveImpalaRules {
     }
   }
 
+  public static class ImpalaProjectProjectRule extends RelOptRule {
+    public ImpalaProjectProjectRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveProject.class, operand(HiveProject.class, any())),
+          relBuilderFactory, null);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveProject topProject = call.rel(0);
+      final HiveProject bottomProject = call.rel(1);
+
+      if (!topProject.containsOver()) {
+        // Bail out
+        return;
+      }
+
+      ImpalaProjectRel newBottomProject = new ImpalaProjectRel(bottomProject);
+      RelNode newTopProject = topProject.copy(
+          topProject.getTraitSet(), newBottomProject,
+          topProject.getChildExps(), topProject.getRowType());
+
+      call.transformTo(newTopProject);
+    }
+  }
+
 }

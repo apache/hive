@@ -58,7 +58,7 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(total_sum=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   ImpalaSortRel(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
     ImpalaProjectRel(total_sum=[$2], i_category=[$0], i_class=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[$0])
-      ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0)])
+      ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0)])
         ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           ImpalaProjectPassthroughRel($f0=[$6], $f1=[$5], $f2=[$2])
             ImpalaJoinRel(condition=[=($4, $1)], joinType=[inner])
@@ -134,67 +134,71 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=72.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: total_sum, i_category, i_class, lochierarchy, rank_within_parent
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
-  16:MERGING-EXCHANGE [UNPARTITIONED]
+  17:MERGING-EXCHANGE [UNPARTITIONED]
      order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
      limit: 100
      mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=18 row-size=68B cardinality=0
-     in pipelines: 10(GETNEXT)
+     tuple-ids=19 row-size=68B cardinality=0
+     in pipelines: 11(GETNEXT)
 
-F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=16.05MB mem-reservation=16.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, UNPARTITIONED]
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  10:TOP-N [LIMIT=100]
+  11:TOP-N [LIMIT=100]
   |  order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=18 row-size=68B cardinality=0
-  |  in pipelines: 10(GETNEXT), 08(OPEN)
+  |  tuple-ids=19 row-size=68B cardinality=0
+  |  in pipelines: 11(GETNEXT), 09(OPEN)
   |
   00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=12 row-size=68B cardinality=0
+  |  in pipelines: 09(GETNEXT)
+  |
+  10:ANALYTIC
+  |  functions: _impala_builtins.rank()
+  |  partition by: $func_0, $func_1
+  |  order by: $f2 DESC
+  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=17,16 row-size=76B cardinality=0
+  |  in pipelines: 09(GETNEXT)
+  |
+  09:SORT
+  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $f2 DESC NULLS FIRST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=17 row-size=68B cardinality=0
+  |  in pipelines: 09(GETNEXT), 08(OPEN)
+  |
+  16:EXCHANGE [HASH($func_0,$func_1)]
+     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=11 row-size=68B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, HASH($func_0,$func_1)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=11 row-size=68B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
-  09:ANALYTIC
-  |  functions: _impala_builtins.rank()
-  |  partition by: _impala_builtins.add(_impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 1), 1), _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1)), CASE WHEN _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1) = 0 THEN CASE valid_tid(6,7,8) WHEN 6 THEN default.impala_tpcds_item.i_category WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN NULL END END
-  |  order by: CASE valid_tid(6,7,8) WHEN 6 THEN 6 WHEN 7 THEN 7 WHEN 8 THEN 8 END DESC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=16,15 row-size=80B cardinality=0
-  |  in pipelines: 08(GETNEXT)
-  |
-  08:SORT
-  |  order by: _impala_builtins.add(_impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 1), 1), _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1)) ASC NULLS FIRST, CASE WHEN _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1) = 0 THEN CASE valid_tid(6,7,8) WHEN 6 THEN default.impala_tpcds_item.i_category WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN NULL END END ASC NULLS FIRST, CASE valid_tid(6,7,8) WHEN 6 THEN 6 WHEN 7 THEN 7 WHEN 8 THEN 8 END DESC NULLS FIRST
-  |  materialized: _impala_builtins.add(_impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 1), 1), _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1)), CASE WHEN _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1) = 0 THEN CASE valid_tid(6,7,8) WHEN 6 THEN default.impala_tpcds_item.i_category WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN NULL END END
-  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=16 row-size=72B cardinality=0
-  |  in pipelines: 08(GETNEXT), 07(OPEN)
-  |
-  15:EXCHANGE [HASH(_impala_builtins.add(_impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 1), 1), _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1)),CASE WHEN _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1) = 0 THEN CASE valid_tid(6,7,8) WHEN 6 THEN default.impala_tpcds_item.i_category WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN NULL END END)]
-     mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=10 row-size=52B cardinality=0
-     in pipelines: 07(GETNEXT)
-
-F03:PLAN FRAGMENT [HASH(CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(NULL) END,CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 7 THEN murmur_hash(NULL) WHEN 8 THEN murmur_hash(NULL) END)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=15, HASH(_impala_builtins.add(_impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 1), 1), _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1)),CASE WHEN _impala_builtins.bitand(_impala_builtins.shiftright(aggif(valid_tid(6,7,8) IN (6, 7, 8), CASE valid_tid(6,7,8) WHEN 6 THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 7 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN 8 THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), 0), 1) = 0 THEN CASE valid_tid(6,7,8) WHEN 6 THEN default.impala_tpcds_item.i_category WHEN 7 THEN default.impala_tpcds_item.i_category WHEN 8 THEN NULL END END)]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  07:AGGREGATE [FINALIZE]
+  08:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(6,7,8) IN (CAST(6 AS INT), CAST(7 AS INT), CAST(8 AS INT)), CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN CAST(7 AS INT) THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN CAST(8 AS INT) THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), aggif(valid_tid(6,7,8) IN (CAST(6 AS INT), CAST(7 AS INT), CAST(8 AS INT)), CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(7 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(8 AS INT) THEN CAST(3 AS BIGINT) END)
   |  group by: CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(8 AS INT) THEN NULL END, CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(7 AS INT) THEN NULL WHEN CAST(8 AS INT) THEN NULL END, CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN CAST(6 AS INT) WHEN CAST(7 AS INT) THEN CAST(7 AS INT) WHEN CAST(8 AS INT) THEN CAST(8 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=52B cardinality=0
-  |  in pipelines: 07(GETNEXT), 14(OPEN)
+  |  in pipelines: 08(GETNEXT), 15(OPEN)
   |
-  14:AGGREGATE [FINALIZE]
+  15:AGGREGATE [FINALIZE]
   |  Class 0
   |    output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_net_paid)
   |    group by: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_class
@@ -206,18 +210,18 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |    group by: NULL, NULL
   |  mem-estimate=266.00MB mem-reservation=69.94MB thread-reservation=0
   |  tuple-ids=6N,7N,8N row-size=120B cardinality=0
-  |  in pipelines: 14(GETNEXT), 01(OPEN)
+  |  in pipelines: 15(GETNEXT), 02(OPEN)
   |
-  13:EXCHANGE [HASH(CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(NULL) END,CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 7 THEN murmur_hash(NULL) WHEN 8 THEN murmur_hash(NULL) END)]
+  14:EXCHANGE [HASH(CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(NULL) END,CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 7 THEN murmur_hash(NULL) WHEN 8 THEN murmur_hash(NULL) END)]
      mem-estimate=132.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=6N,7N,8N row-size=120B cardinality=0
-     in pipelines: 01(GETNEXT)
+     in pipelines: 02(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=269.93MB mem-reservation=73.88MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=13, HASH(CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(NULL) END,CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 7 THEN murmur_hash(NULL) WHEN 8 THEN murmur_hash(NULL) END)]
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=14, HASH(CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 7 THEN murmur_hash(default.impala_tpcds_item.i_category) WHEN 8 THEN murmur_hash(NULL) END,CASE valid_tid(6,7,8) WHEN 6 THEN murmur_hash(default.impala_tpcds_item.i_class) WHEN 7 THEN murmur_hash(NULL) WHEN 8 THEN murmur_hash(NULL) END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  06:AGGREGATE [STREAMING]
+  07:AGGREGATE [STREAMING]
   |  Class 0
   |    output: sum(default.impala_tpcds_web_sales.ws_net_paid)
   |    group by: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_class
@@ -229,33 +233,33 @@ Per-Host Resources: mem-estimate=269.93MB mem-reservation=73.88MB thread-reserva
   |    group by: NULL, NULL
   |  mem-estimate=266.00MB mem-reservation=70.00MB thread-reservation=0
   |  tuple-ids=6N,7N,8N row-size=120B cardinality=0
-  |  in pipelines: 01(GETNEXT)
+  |  in pipelines: 02(GETNEXT)
   |
-  05:HASH JOIN [INNER JOIN, BROADCAST]
+  06:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_web_sales.ws_item_sk = default.impala_tpcds_item.i_item_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4 row-size=56B cardinality=0
-  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |  in pipelines: 02(GETNEXT), 05(OPEN)
   |
-  |--12:EXCHANGE [BROADCAST]
+  |--13:EXCHANGE [BROADCAST]
   |     mem-estimate=36.00KB mem-reservation=0B thread-reservation=0
   |     tuple-ids=4 row-size=32B cardinality=0
-  |     in pipelines: 04(GETNEXT)
+  |     in pipelines: 05(GETNEXT)
   |
-  03:HASH JOIN [INNER JOIN, BROADCAST]
+  04:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_web_sales.ws_sold_date_sk = d1.d_date_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2 row-size=24B cardinality=0
-  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |  in pipelines: 02(GETNEXT), 03(OPEN)
   |
-  |--11:EXCHANGE [BROADCAST]
+  |--12:EXCHANGE [BROADCAST]
   |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
   |     tuple-ids=2 row-size=8B cardinality=0
-  |     in pipelines: 02(GETNEXT)
+  |     in pipelines: 03(GETNEXT)
   |
-  01:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
+  02:SCAN HDFS [default.impala_tpcds_web_sales, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
      stored statistics:
@@ -264,13 +268,13 @@ Per-Host Resources: mem-estimate=269.93MB mem-reservation=73.88MB thread-reserva
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=16B cardinality=0
-     in pipelines: 01(GETNEXT)
+     in pipelines: 02(GETNEXT)
 
 F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  02:SCAN HDFS [default.impala_tpcds_date_dim d1, RANDOM]
+  03:SCAN HDFS [default.impala_tpcds_date_dim d1, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: d1.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(d1.d_month_seq) >= CAST(1215 AS BIGINT) AND _impala_builtins.casttobigint(d1.d_month_seq) <= _impala_builtins.add(CAST(1215 AS BIGINT), CAST(11 AS BIGINT))
      stored statistics:
@@ -279,13 +283,13 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=8B cardinality=0
-     in pipelines: 02(GETNEXT)
+     in pipelines: 03(GETNEXT)
 
 F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=13, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  04:SCAN HDFS [default.impala_tpcds_item, RANDOM]
+  05:SCAN HDFS [default.impala_tpcds_item, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL
      stored statistics:
@@ -294,7 +298,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=32B cardinality=0
-     in pipelines: 04(GETNEXT)
+     in pipelines: 05(GETNEXT)
 
 
   Stage: Stage-0
