@@ -2611,7 +2611,8 @@ public class CachedStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     foreignDbName = (foreignDbName == null) ? "" : normalizeIdentifier(foreignDbName);
     foreignTblName = (foreignTblName == null) ? "" : StringUtils.normalizeIdentifier(foreignTblName);
-
+    parentDbName = (parentDbName == null) ? "" : normalizeIdentifier(parentDbName);
+    parentTblName = (parentTblName == null) ? "" : StringUtils.normalizeIdentifier(parentTblName);
     if (!shouldCacheTable(catName, foreignDbName, foreignTblName) || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
     }
@@ -2621,22 +2622,8 @@ public class CachedStore implements RawStore, Configurable {
       // The table containing the foreign keys is not yet loaded in cache
       return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
     }
-    List<SQLForeignKey> keys = sharedCache.listCachedForeignKeys(catName, foreignDbName, foreignTblName);
-
-    // filter out required foreign keys based on parent db/tbl name
-    if (parentTblName != null) {
-      parentDbName = StringUtils.normalizeIdentifier(parentDbName);
-      parentTblName = StringUtils.normalizeIdentifier(parentTblName);
-      List<SQLForeignKey> filteredKeys = new ArrayList<>();
-      for (SQLForeignKey key : keys) {
-        if (parentTblName.equalsIgnoreCase(key.getPktable_name())
-                && (parentDbName == null
-                        || parentDbName.equalsIgnoreCase(key.getPktable_db()))) {
-          filteredKeys.add(key);
-        }
-      }
-      keys = filteredKeys;
-    }
+    List<SQLForeignKey> keys = sharedCache.listCachedForeignKeys(
+            catName, foreignDbName, foreignTblName, parentDbName, parentTblName);
 
     return keys;
   }

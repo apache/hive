@@ -2246,16 +2246,29 @@ public class SharedCache {
     return keys;
   }
 
-  public List<SQLForeignKey> listCachedForeignKeys(String catName, String dbName, String tblName) {
+  public List<SQLForeignKey> listCachedForeignKeys(String catName, String foreignDbName, String foreignTblName,
+                                                   String parentDbName, String parentTblName) {
     List<SQLForeignKey> keys = new ArrayList<>();
     try {
       cacheLock.readLock().lock();
-      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, foreignDbName, foreignTblName));
       if (tblWrapper != null) {
         keys = tblWrapper.getForeignKeys();
       }
     } finally {
       cacheLock.readLock().unlock();
+    }
+
+    // filter out required foreign keys based on parent db/tbl name
+    if (parentTblName != null || parentDbName != null) {
+      List<SQLForeignKey> filteredKeys = new ArrayList<>();
+      for (SQLForeignKey key : keys) {
+        if ((parentTblName == null || parentTblName.equalsIgnoreCase(key.getPktable_name()))
+                && (parentDbName == null || parentDbName.equalsIgnoreCase(key.getPktable_db()))) {
+          filteredKeys.add(key);
+        }
+      }
+      keys = filteredKeys;
     }
     return keys;
   }
