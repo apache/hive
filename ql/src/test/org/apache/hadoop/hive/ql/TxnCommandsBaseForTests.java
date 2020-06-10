@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,8 +59,8 @@ public abstract class TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   protected HiveConf hiveConf;
-  Driver d;
-  private TxnStore txnHandler;
+  protected Driver d;
+  protected TxnStore txnHandler;
 
   public enum Table {
     ACIDTBL("acidTbl"),
@@ -162,9 +163,23 @@ public abstract class TxnCommandsBaseForTests {
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */
-  List<String> stringifyValues(int[][] rowsIn) {
-    return TestTxnCommands2.stringifyValues(rowsIn);
+  public static List<String> stringifyValues(int[][] rowsIn) {
+    assert rowsIn.length > 0;
+    int[][] rows = rowsIn.clone();
+    Arrays.sort(rows, new TestTxnCommands2.RowComp());
+    List<String> rs = new ArrayList<String>();
+    for(int[] row : rows) {
+      assert row.length > 0;
+      StringBuilder sb = new StringBuilder();
+      for(int value : row) {
+        sb.append(value).append("\t");
+      }
+      sb.setLength(sb.length() - 1);
+      rs.add(sb.toString());
+    }
+    return rs;
   }
+
   protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
@@ -213,7 +228,7 @@ public abstract class TxnCommandsBaseForTests {
     return rs;
   }
 
-  CommandProcessorException runStatementOnDriverNegative(String stmt) throws Exception {
+  protected CommandProcessorException runStatementOnDriverNegative(String stmt) throws Exception {
     try {
       d.run(stmt);
     } catch (CommandProcessorException e) {

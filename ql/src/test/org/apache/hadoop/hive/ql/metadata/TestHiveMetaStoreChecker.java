@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.CheckResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -39,7 +38,10 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.TException;
@@ -74,21 +76,21 @@ public class TestHiveMetaStoreChecker {
   @Before
   public void setUp() throws Exception {
     hive = Hive.get();
-    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 15);
-    hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "throw");
+    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
+    hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
     msc = new HiveMetaStoreClient(hive.getConf());
     checker = new HiveMetaStoreChecker(msc, hive.getConf());
 
-    partCols = new ArrayList<FieldSchema>();
+    partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));
     partCols.add(new FieldSchema(partCityName, serdeConstants.STRING_TYPE_NAME, ""));
 
-    parts = new ArrayList<Map<String, String>>();
-    Map<String, String> part1 = new HashMap<String, String>();
+    parts = new ArrayList<>();
+    Map<String, String> part1 = new HashMap<>();
     part1.put(partDateName, "2008-01-01");
     part1.put(partCityName, "london");
     parts.add(part1);
-    Map<String, String> part2 = new HashMap<String, String>();
+    Map<String, String> part2 = new HashMap<>();
     part2.put(partDateName, "2008-01-02");
     part2.put(partCityName, "stockholm");
     parts.add(part2);
@@ -115,8 +117,7 @@ public class TestHiveMetaStoreChecker {
 
   @Test
   public void testTableCheck() throws HiveException, IOException, TException, MetastoreException {
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, null, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, null, null, null);
     // we haven't added anything so should return an all ok
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -124,8 +125,7 @@ public class TestHiveMetaStoreChecker {
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
 
     // check table only, should not exist in ms
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(1, result.getTablesNotInMs().size());
     assertEquals(tableName, result.getTablesNotInMs().iterator().next());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -147,16 +147,14 @@ public class TestHiveMetaStoreChecker {
     table.getTTable().unsetId();
     // now we've got a table, check that it works
     // first check all (1) tables
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, null, null, null, result);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
 
     // then let's check the one we know about
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -167,8 +165,7 @@ public class TestHiveMetaStoreChecker {
     fs.delete(table.getPath(), true);
 
     // now this shouldn't find the path on the fs
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(1, result.getTablesNotOnFs().size());
     assertEquals(tableName, result.getTablesNotOnFs().iterator().next());
@@ -183,8 +180,7 @@ public class TestHiveMetaStoreChecker {
     fs.deleteOnExit(fakeTable);
 
     // find the extra table
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, null, null, null, result);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(1, result.getTablesNotInMs().size());
     assertEquals(fakeTable.getName(), Lists.newArrayList(result.getTablesNotInMs()).get(0));
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -197,8 +193,7 @@ public class TestHiveMetaStoreChecker {
     hive.createTable(table);
 
     // should return all ok
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, null, null, null, result);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -212,17 +207,14 @@ public class TestHiveMetaStoreChecker {
   @Test
   public void testAdditionalPartitionDirs()
     throws HiveException, AlreadyExistsException, IOException, MetastoreException {
-    Table table = createTestTable();
+    Table table = createTestTable(false);
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
     // add a fake partition dir on fs
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
-    Path fakePart = new Path(table.getDataLocation().toString(),
+    addFolderToPath(fs, table.getDataLocation().toString(),
         partDateName + "=2017-01-01/" + partCityName + "=paloalto/fakePartCol=fakepartValue");
-    fs.mkdirs(fakePart);
-    fs.deleteOnExit(fakePart);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -233,16 +225,13 @@ public class TestHiveMetaStoreChecker {
   @Test(expected = MetastoreException.class)
   public void testInvalidPartitionKeyName()
     throws HiveException, AlreadyExistsException, IOException, MetastoreException {
-    Table table = createTestTable();
+    Table table = createTestTable(false);
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
     // add a fake partition dir on fs
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
-    Path fakePart = new Path(table.getDataLocation().toString(),
-        "fakedate=2009-01-01/fakecity=sanjose");
-    fs.mkdirs(fakePart);
-    fs.deleteOnExit(fakePart);
-    checker.checkMetastore(catName, dbName, tableName, null, null, new CheckResult());
+    addFolderToPath(fs, table.getDataLocation().toString(),"fakedate=2009-01-01/fakecity=sanjose");
+    checker.checkMetastore(catName, dbName, tableName, null, null);
   }
 
   /*
@@ -252,20 +241,16 @@ public class TestHiveMetaStoreChecker {
   @Test
   public void testSkipInvalidPartitionKeyName()
     throws HiveException, AlreadyExistsException, IOException, MetastoreException {
-    hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "skip");
+    hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "skip");
     checker = new HiveMetaStoreChecker(msc, hive.getConf());
-    Table table = createTestTable();
+    Table table = createTestTable(false);
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
     // add a fake partition dir on fs
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
-    Path fakePart =
-        new Path(table.getDataLocation().toString(), "fakedate=2009-01-01/fakecity=sanjose");
-    fs.mkdirs(fakePart);
-    fs.deleteOnExit(fakePart);
+    addFolderToPath(fs, table.getDataLocation().toString(),"fakedate=2009-01-01/fakecity=sanjose");
     createPartitionsDirectoriesOnFS(table, 2);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -273,16 +258,148 @@ public class TestHiveMetaStoreChecker {
     assertEquals(2, result.getPartitionsNotInMs().size());
   }
 
-  private Table createTestTable() throws HiveException, AlreadyExistsException {
+  /*
+   * Tests the case when we have normal delta_dirs in the partition folder
+   * does not throw HiveException
+   */
+  @Test
+  public void testAddPartitionNormalDeltas() throws Exception {
+    Table table = createTestTable(true);
+    List<Partition> partitions = hive.getPartitions(table);
+    assertEquals(2, partitions.size());
+    // add a partition dir on fs
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path newPart = addFolderToPath(fs, table.getDataLocation().toString(),
+        partDateName + "=2017-01-01/" + partCityName + "=paloalto");
+
+    // Add a few deltas
+    addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000010_0000010_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000101_0000101_0000");
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(1, result.getPartitionsNotInMs().size());
+    // Found the highest writeId
+    assertEquals(101, result.getPartitionsNotInMs().iterator().next().getMaxWriteId());
+    assertEquals(0, result.getPartitionsNotInMs().iterator().next().getMaxTxnId());
+  }
+  /*
+   * Tests the case when we have normal delta_dirs in the partition folder
+   * does not throw HiveException
+   */
+  @Test
+  public void testAddPartitionCompactedDeltas() throws Exception {
+    Table table = createTestTable(true);
+    List<Partition> partitions = hive.getPartitions(table);
+    assertEquals(2, partitions.size());
+    // add a partition dir on fs
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path newPart = addFolderToPath(fs, table.getDataLocation().toString(),
+        partDateName + "=2017-01-01/" + partCityName + "=paloalto");
+
+    // Add a few deltas
+    addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000010_0000015_v0000067");
+    addFolderToPath(fs, newPart.toString(), "delta_0000101_0000120_v0000087");
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(1, result.getPartitionsNotInMs().size());
+    // Found the highest writeId
+    assertEquals(120, result.getPartitionsNotInMs().iterator().next().getMaxWriteId());
+    assertEquals(87, result.getPartitionsNotInMs().iterator().next().getMaxTxnId());
+  }
+  @Test
+  public void testAddPartitionCompactedBase() throws Exception {
+    Table table = createTestTable(true);
+    List<Partition> partitions = hive.getPartitions(table);
+    assertEquals(2, partitions.size());
+    // add a partition dir on fs
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path newPart = addFolderToPath(fs, table.getDataLocation().toString(),
+        partDateName + "=2017-01-01/" + partCityName + "=paloalto");
+
+    // Add a few deltas
+    addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000002_0000002_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000003_0000003_0000");
+    addFolderToPath(fs, newPart.toString(), "base_0000003_v0000200");
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(1, result.getPartitionsNotInMs().size());
+    // Found the highest writeId
+    assertEquals(3, result.getPartitionsNotInMs().iterator().next().getMaxWriteId());
+    assertEquals(200, result.getPartitionsNotInMs().iterator().next().getMaxTxnId());
+  }
+
+  @Test
+  public void testAddPartitionMMBase() throws Exception {
+    Table table = createTestTable(true);
+    List<Partition> partitions = hive.getPartitions(table);
+    assertEquals(2, partitions.size());
+    // add a partition dir on fs
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path newPart = addFolderToPath(fs, table.getDataLocation().toString(),
+        partDateName + "=2017-01-01/" + partCityName + "=paloalto");
+
+    // Add a few deltas
+    addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000002_0000002_0000");
+    addFolderToPath(fs, newPart.toString(), "delta_0000003_0000003_0000");
+    addFolderToPath(fs, newPart.toString(), "base_0000004");
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(1, result.getPartitionsNotInMs().size());
+    // Found the highest writeId
+    assertEquals(4, result.getPartitionsNotInMs().iterator().next().getMaxWriteId());
+    assertEquals(0, result.getPartitionsNotInMs().iterator().next().getMaxTxnId());
+  }
+
+  @Test
+  public void testNoNPartitionedTable() throws Exception {
+    Table table = createNonPartitionedTable();
+    // add a partition dir on fs
+    fs = table.getDataLocation().getFileSystem(hive.getConf());
+
+    Path tablePath = table.getDataLocation();
+
+    // Add a few deltas
+    addFolderToPath(fs, tablePath.toString(), "delta_0000001_0000001_0000");
+    addFolderToPath(fs, tablePath.toString(), "delta_0000002_0000002_0000");
+    addFolderToPath(fs, tablePath.toString(), "delta_0000003_0000003_0000");
+    addFolderToPath(fs, tablePath.toString(), "base_0000003_v0000200");
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotInMs());
+    // Found the highest writeId
+    assertEquals(3, result.getMaxWriteId());
+    assertEquals(200, result.getMaxTxnId());
+  }
+
+  private Path addFolderToPath(FileSystem fs, String rootPath, String folder) throws IOException{
+    Path folderParth = new Path(rootPath, folder);
+    fs.mkdirs(folderParth);
+    fs.deleteOnExit(folderParth);
+    return folderParth;
+  }
+
+  private Table createTestTable(boolean transactional) throws HiveException, AlreadyExistsException {
     Database db = new Database();
     db.setName(dbName);
     hive.createDatabase(db, true);
 
     Table table = new Table(dbName, tableName);
     table.setDbName(dbName);
-    table.setInputFormatClass(TextInputFormat.class);
-    table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    if (transactional) {
+      table.setInputFormatClass(OrcInputFormat.class);
+      table.setOutputFormatClass(OrcOutputFormat.class);
+    } else {
+      table.setInputFormatClass(TextInputFormat.class);
+      table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    }
     table.setPartCols(partCols);
+    if (transactional) {
+      table.setProperty("transactional", "true");
+    }
 
     hive.createTable(table);
     table = hive.getTable(dbName, tableName);
@@ -294,14 +411,30 @@ public class TestHiveMetaStoreChecker {
     }
     return table;
   }
+  private Table createNonPartitionedTable() throws Exception {
+    Database db = new Database();
+    db.setName(dbName);
+    hive.createDatabase(db, true);
+
+    Table table = new Table(dbName, tableName);
+    table.setDbName(dbName);
+    table.setInputFormatClass(OrcInputFormat.class);
+    table.setOutputFormatClass(OrcOutputFormat.class);
+    table.setProperty("transactional", "true");
+
+    hive.createTable(table);
+    table = hive.getTable(dbName, tableName);
+    Assert.assertTrue(table.getTTable().isSetId());
+    table.getTTable().unsetId();
+    return table;
+  }
 
   @Test
   public void testPartitionsCheck() throws HiveException,
     IOException, TException, MetastoreException {
-    Table table = createTestTable();
+    Table table = createTestTable(false);
 
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     // all is well
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -319,8 +452,7 @@ public class TestHiveMetaStoreChecker {
     fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     // missing one partition on fs
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -331,11 +463,10 @@ public class TestHiveMetaStoreChecker {
         result.getPartitionsNotOnFs().iterator().next().getTableName());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
 
-    List<Map<String, String>> partsCopy = new ArrayList<Map<String, String>>();
+    List<Map<String, String>> partsCopy = new ArrayList<>();
     partsCopy.add(partitions.get(1).getSpec());
     // check only the partition that exists, all should be well
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, partsCopy, null, result);
+    result = checker.checkMetastore(catName, dbName, tableName, partsCopy, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -346,8 +477,7 @@ public class TestHiveMetaStoreChecker {
     // cleanup
     hive.dropTable(dbName, tableName, true, true);
     hive.createTable(table);
-    result = new CheckResult();
-    checker.checkMetastore(catName, dbName, null, null, null, result);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -389,35 +519,34 @@ public class TestHiveMetaStoreChecker {
     assertFalse(fs.exists(fakeTable));
   }
 
-  /*
-   * Test multi-threaded implementation of checker to find out missing partitions
+  /**
+   * Test multi-threaded implementation of checker to find out missing partitions.
+   * @throws Exception ex
    */
   @Test
-  public void testPartitionsNotInMs() throws HiveException, AlreadyExistsException, IOException, MetastoreException {
+  public void testPartitionsNotInMs() throws Exception {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
     assertEquals(10, result.getPartitionsNotInMs().size());
   }
 
-  /*
-   * Tests single threaded implementation of checkMetastore
+  /**
+   * Tests single threaded implementation of checkMetastore.
+   * @throws Exception ex
    */
   @Test
-  public void testSingleThreadedCheckMetastore()
-    throws HiveException, AlreadyExistsException, IOException, MetastoreException {
+  public void testSingleThreadedCheckMetastore() throws Exception {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
+    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "0");
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null,  result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -427,22 +556,18 @@ public class TestHiveMetaStoreChecker {
   /**
    * Tests single threaded implementation for deeply nested partitioned tables
    *
-   * @throws HiveException
-   * @throws AlreadyExistsException
-   * @throws IOException
+   * @throws Exception ex
    */
   @Test
-  public void testSingleThreadedDeeplyNestedTables()
-    throws HiveException, AlreadyExistsException, IOException, MetastoreException {
+  public void testSingleThreadedDeeplyNestedTables() throws Exception {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
+    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "0");
     int poolSize = 2;
     // create a deeply nested table which has more partition keys than the pool size
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -452,21 +577,17 @@ public class TestHiveMetaStoreChecker {
   /**
    * Tests the case when the number of partition keys are more than the threadpool size.
    *
-   * @throws HiveException
-   * @throws AlreadyExistsException
-   * @throws IOException
+   * @throws Exception ex
    */
   @Test
-  public void testDeeplyNestedPartitionedTables()
-    throws HiveException, AlreadyExistsException, IOException, MetastoreException {
-    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 2);
+  public void testDeeplyNestedPartitionedTables() throws Exception {
+    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "2");
     int poolSize = 2;
     // create a deeply nested table which has more partition keys than the pool size
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -476,12 +597,10 @@ public class TestHiveMetaStoreChecker {
   /**
    * Test if checker throws HiveException when the there is a dummy directory present in the nested level
    * of sub-directories
-   * @throws AlreadyExistsException
-   * @throws IOException
-   * @throws HiveException
+   * @throws Exception ex
    */
   @Test
-  public void testErrorForMissingPartitionColumn() throws AlreadyExistsException, IOException, HiveException {
+  public void testErrorForMissingPartitionColumn() throws Exception {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
@@ -491,59 +610,51 @@ public class TestHiveMetaStoreChecker {
     sb.append("dummyPart=error");
     createDirectory(sb.toString());
     //check result now
-    CheckResult result = new CheckResult();
     Exception exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null, result);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
-    assertTrue("Expected MetastoreException", exception!=null && exception instanceof MetastoreException);
+    assertTrue("Expected MetastoreException", exception instanceof MetastoreException);
     createFile(sb.toString(), "dummyFile");
-    result = new CheckResult();
     exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null, result);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
-    assertTrue("Expected MetastoreException", exception!=null && exception instanceof MetastoreException);
+    assertTrue("Expected MetastoreException", exception instanceof MetastoreException);
   }
 
   /**
    * Tests if there exists a unknown partition directory on the FS with in-valid order of partition
    * keys than what is specified in table specification.
    *
-   * @throws AlreadyExistsException
-   * @throws HiveException
-   * @throws IOException
+   * @throws Exception ex
    */
   @Test(expected = MetastoreException.class)
-  public void testInvalidOrderForPartitionKeysOnFS()
-    throws AlreadyExistsException, HiveException, IOException, MetastoreException {
+  public void testInvalidOrderForPartitionKeysOnFS() throws Exception {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createInvalidPartitionDirsOnFS(testTable, 10);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    checker.checkMetastore(catName, dbName, tableName, null, null);
   }
 
-  /*
-   * In skip mode msck should ignore invalid partitions instead of
-   * throwing exception
+  /**
+   * In skip mode msck should ignore invalid partitions instead of throwing exception.
+   * @throws Exception ex
    */
   @Test
-  public void testSkipInvalidOrderForPartitionKeysOnFS()
-    throws AlreadyExistsException, HiveException, IOException, MetastoreException {
-    hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "skip");
+  public void testSkipInvalidOrderForPartitionKeysOnFS() throws Exception{
+    hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "skip");
     checker = new HiveMetaStoreChecker(msc, hive.getConf());
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createInvalidPartitionDirsOnFS(testTable, 2);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 2);
-    CheckResult result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -551,15 +662,15 @@ public class TestHiveMetaStoreChecker {
     assertEquals(2, result.getPartitionsNotInMs().size());
   }
 
-  /*
+  /**
    * Test if single-threaded implementation checker throws HiveException when the there is a dummy
-   * directory present in the nested level
+   * directory present in the nested level.
+   * @throws Exception ex
    */
   @Test
-  public void testErrorForMissingPartitionsSingleThreaded()
-      throws AlreadyExistsException, HiveException, IOException {
+  public void testErrorForMissingPartitionsSingleThreaded() throws Exception {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
+    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "0");
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
@@ -569,23 +680,21 @@ public class TestHiveMetaStoreChecker {
     sb.append("dummyPart=error");
     createDirectory(sb.toString());
     // check result now
-    CheckResult result = new CheckResult();
     Exception exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null, result);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
-    assertTrue("Expected MetastoreException", exception!=null && exception instanceof MetastoreException);
+    assertTrue("Expected MetastoreException", exception instanceof MetastoreException);
     createFile(sb.toString(), "dummyFile");
-    result = new CheckResult();
     exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null, result);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
-    assertTrue("Expected MetastoreException", exception!=null && exception instanceof MetastoreException);
+    assertTrue("Expected MetastoreException", exception instanceof MetastoreException);
   }
   /**
    * Creates a test partitioned table with the required level of nested partitions and number of
@@ -596,12 +705,11 @@ public class TestHiveMetaStoreChecker {
    * @param numOfPartKeys - Number of partition keys (nested levels of sub-directories in base table
    *          path)
    * @param valuesPerPartition - If greater than 0 creates valuesPerPartition dummy partitions
-   * @return
-   * @throws AlreadyExistsException
-   * @throws HiveException
+   * @return The new table
+   * @throws Exception ex
    */
-  private Table createPartitionedTestTable(String dbName, String tableName, int numOfPartKeys,
-      int valuesPerPartition) throws AlreadyExistsException, HiveException {
+  private Table createPartitionedTestTable(String dbName, String tableName, int numOfPartKeys, int valuesPerPartition)
+      throws Exception {
     Database db = new Database();
     db.setName(dbName);
     hive.createDatabase(db, true);
@@ -611,9 +719,9 @@ public class TestHiveMetaStoreChecker {
     table.setInputFormatClass(TextInputFormat.class);
     table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
     // create partition key schema
-    ArrayList<FieldSchema> partKeys = new ArrayList<FieldSchema>();
+    ArrayList<FieldSchema> partKeys = new ArrayList<>();
     for (int i = 1; i <= numOfPartKeys; i++) {
-      String partName = "part" + String.valueOf(i);
+      String partName = "part" + i;
       partKeys.add(new FieldSchema(partName, serdeConstants.STRING_TYPE_NAME, ""));
     }
     table.setPartCols(partKeys);
@@ -624,7 +732,7 @@ public class TestHiveMetaStoreChecker {
       return table;
     }
     // create partition specs
-    ArrayList<Map<String, String>> partitionSpecs = new ArrayList<Map<String, String>>();
+    ArrayList<Map<String, String>> partitionSpecs = new ArrayList<>();
     for (int partKeyIndex = 0; partKeyIndex < numOfPartKeys; partKeyIndex++) {
       String partName = partKeys.get(partKeyIndex).getName();
       Map<String, String> partMap = new HashMap<>();
@@ -653,7 +761,7 @@ public class TestHiveMetaStoreChecker {
    * @param numPartitions - Number of partitions to be created
    * @param reverseOrder - If set to true creates the partition sub-directories in the reverse order
    *          of specified by partition keys defined for the table
-   * @throws IOException
+   * @throws IOException ex
    */
   private void createPartitionsDirectoriesOnFS(Table table, int numPartitions, boolean reverseOrder) throws IOException {
     String path = table.getDataLocation().toString();
@@ -697,7 +805,8 @@ public class TestHiveMetaStoreChecker {
    * of sub-directories compared to the partition keys defined in the table. Eg. if the
    * partition keys defined in table are (a int, b int, c int) this method will create
    * an invalid directory c=val_1/b=val_1/a=val_1
-   * @param table
+   * @param table table
+   * @param numPartitions Number of partitions to create
    * @throws IOException
    */
   private void createInvalidPartitionDirsOnFS(Table table, int numPartitions) throws IOException {

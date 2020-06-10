@@ -8323,6 +8323,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return response;
     }
 
+    @Override
+    public MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(MaxAllocatedTableWriteIdRequest rqst)
+        throws MetaException {
+      return getTxnHandler().getMaxAllocatedTableWrited(rqst);
+    }
+
+    @Override
+    public void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException {
+      getTxnHandler().seedWriteId(rqst);
+    }
+
+    @Override
+    public void seedTxnId(SeedTxnIdRequest rqst) throws MetaException {
+      getTxnHandler().seedTxnId(rqst);
+    }
+
     private void addTxnWriteNotificationLog(Table tableObj, Partition ptnObj, WriteNotificationLogRequest rqst)
             throws MetaException {
       String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.

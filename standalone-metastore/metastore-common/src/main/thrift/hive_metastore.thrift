@@ -1070,6 +1070,22 @@ struct AllocateTableWriteIdsResponse {
     1: required list<TxnToWriteId> txnToWriteIds,
 }
 
+struct MaxAllocatedTableWriteIdRequest {
+    1: required string dbName,
+    2: required string tableName,
+}
+struct MaxAllocatedTableWriteIdResponse {
+    1: required i64 maxWriteId,
+}
+struct SeedTableWriteIdsRequest {
+    1: required string dbName,
+    2: required string tableName,
+    3: required i64 seedWriteId,
+}
+struct SeedTxnIdRequest {
+    1: required i64 seedTxnId,
+}
+
 struct LockComponent {
     1: required LockType type,
     2: required LockLevel level,
@@ -2643,6 +2659,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
+  MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(1:MaxAllocatedTableWriteIdRequest rqst)
+    throws (1:MetaException o1)
+  void seedWriteId(1:SeedTableWriteIdsRequest rqst)
+    throws (1:MetaException o1)
+  void seedTxnId(1:SeedTxnIdRequest rqst) throws (1:MetaException o1)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)

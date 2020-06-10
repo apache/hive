@@ -2846,6 +2846,52 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'allocate_table_write_ids failed: unknown result')
     end
 
+    def get_max_allocated_table_write_id(rqst)
+      send_get_max_allocated_table_write_id(rqst)
+      return recv_get_max_allocated_table_write_id()
+    end
+
+    def send_get_max_allocated_table_write_id(rqst)
+      send_message('get_max_allocated_table_write_id', Get_max_allocated_table_write_id_args, :rqst => rqst)
+    end
+
+    def recv_get_max_allocated_table_write_id()
+      result = receive_message(Get_max_allocated_table_write_id_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_max_allocated_table_write_id failed: unknown result')
+    end
+
+    def seedWriteId(rqst)
+      send_seedWriteId(rqst)
+      recv_seedWriteId()
+    end
+
+    def send_seedWriteId(rqst)
+      send_message('seedWriteId', SeedWriteId_args, :rqst => rqst)
+    end
+
+    def recv_seedWriteId()
+      result = receive_message(SeedWriteId_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def seedTxnId(rqst)
+      send_seedTxnId(rqst)
+      recv_seedTxnId()
+    end
+
+    def send_seedTxnId(rqst)
+      send_message('seedTxnId', SeedTxnId_args, :rqst => rqst)
+    end
+
+    def recv_seedTxnId()
+      result = receive_message(SeedTxnId_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def lock(rqst)
       send_lock(rqst)
       return recv_lock()
@@ -6196,6 +6242,39 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'allocate_table_write_ids', seqid)
+    end
+
+    def process_get_max_allocated_table_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_max_allocated_table_write_id_args)
+      result = Get_max_allocated_table_write_id_result.new()
+      begin
+        result.success = @handler.get_max_allocated_table_write_id(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_max_allocated_table_write_id', seqid)
+    end
+
+    def process_seedWriteId(seqid, iprot, oprot)
+      args = read_args(iprot, SeedWriteId_args)
+      result = SeedWriteId_result.new()
+      begin
+        @handler.seedWriteId(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'seedWriteId', seqid)
+    end
+
+    def process_seedTxnId(seqid, iprot, oprot)
+      args = read_args(iprot, SeedTxnId_args)
+      result = SeedTxnId_result.new()
+      begin
+        @handler.seedTxnId(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'seedTxnId', seqid)
     end
 
     def process_lock(seqid, iprot, oprot)
@@ -13387,6 +13466,104 @@ module ThriftHiveMetastore
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_max_allocated_table_write_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::MaxAllocatedTableWriteIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_max_allocated_table_write_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::MaxAllocatedTableWriteIdResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SeedWriteId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::SeedTableWriteIdsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SeedWriteId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SeedTxnId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::SeedTxnIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SeedTxnId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

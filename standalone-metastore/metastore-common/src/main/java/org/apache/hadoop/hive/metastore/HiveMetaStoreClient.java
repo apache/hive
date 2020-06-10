@@ -3402,6 +3402,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
+    return client.get_max_allocated_table_write_id(new MaxAllocatedTableWriteIdRequest(dbName, tableName)).getMaxWriteId();
+  }
+
+  @Override
+  public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
+    client.seedWriteId(new SeedTableWriteIdsRequest(dbName, tableName, seedWriteId));
+  }
+
+  @Override
+  public void seedTxnId(long seedTxnId) throws TException {
+    client.seedTxnId(new SeedTxnIdRequest(seedTxnId));
+  }
+
+  @Override
   public LockResponse lock(LockRequest request)
       throws NoSuchTxnException, TxnAbortedException, TException {
     return client.lock(request);
