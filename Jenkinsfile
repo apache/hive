@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+
+// 2.9G w/o dist
+
 properties([
     // max 5 build/branch/day
 //    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
@@ -70,7 +73,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/m2/settings.xml
 OPTS=" -s $PWD/.git/m2/settings.xml -B -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -Pitests,qsplits"
+OPTS+=" -Pitests,qsplits,dist"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 OPTS+=" $M_OPTS "
