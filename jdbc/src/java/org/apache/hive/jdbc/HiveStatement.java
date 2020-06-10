@@ -39,6 +39,7 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,6 +197,14 @@ public class HiveStatement implements java.sql.Statement {
       }
     } catch (SQLException e) {
       throw e;
+    } catch (TApplicationException tae) {
+      String errorMsg = "Failed to close statement";
+      if (tae.getType() == TApplicationException.BAD_SEQUENCE_ID) {
+        errorMsg = "Failed to close statement. Mismatch thrift sequence id. A previous call to the Thrift library"
+            + " failed and now position within the input stream is lost. Please enable verbose error logging and"
+            + " check the status of previous calls.";
+      }
+      throw new SQLException(errorMsg, "08S01", tae);
     } catch (Exception e) {
       throw new SQLException("Failed to close statement", "08S01", e);
     }
