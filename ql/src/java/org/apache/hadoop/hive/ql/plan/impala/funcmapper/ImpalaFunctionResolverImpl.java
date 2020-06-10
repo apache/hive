@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
@@ -251,6 +252,50 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return newOperands;
   }
 
+  public RexNode castToType(RexNode node, RelDataType toType) {
+    if (node.getType().getStructKind() != toType.getStructKind()) {
+      throw new RuntimeException(
+          "Cannot convert " + node.getType().getFullTypeString() +
+          " to " + toType.getFullTypeString());
+    }
+    if (node.getType().equals(toType)) {
+      return node;
+    }
+    if (toType.isStruct()) {
+      RexCall call = (RexCall)node;
+      List<RexNode> operands = call.getOperands();
+      List<RexNode> newOperands = Lists.newArrayList();
+      List<RelDataTypeField> dtFields = toType.getFieldList();
+      for (int i = 0; i < dtFields.size() && i < operands.size(); ++i) {
+        RexNode newOp = castToType(operands.get(i), dtFields.get(i).getType());
+        newOperands.add(newOp);
+      }
+      while (newOperands.size() < dtFields.size()) {
+        RelDataType fieldType = dtFields.get(newOperands.size()).getType();
+        newOperands.add(rexBuilder.makeNullLiteral(fieldType));
+      }
+      return rexBuilder.makeCall(toType, call.getOperator(), newOperands);
+    } else {
+      RelDataType castedRelDataType = getCastedDataType(
+          rexBuilder.getTypeFactory(), toType, node.getType());
+      return rexBuilder.makeCast(toType, node, true);
+    }
+  }
+
+  protected List<RexNode> castToCompatibleType(List<RexNode> inputs) {
+    List<RexNode> newOperands = Lists.newArrayList();
+    RelDataType widestType = null;
+    RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+    for (RexNode node : inputs) {
+      widestType = (widestType == null) ? node.getType() :
+          ImpalaFunctionSignature.getCastType(widestType, node.getType(), typeFactory);
+    }
+    for (RexNode node : inputs) {
+      newOperands.add(castToType(node, widestType));
+    }
+    return newOperands;
+  }
+
   /**
    * Return the casted RelDatatype of the provided postCastSqlTypeName
    */
@@ -298,6 +343,9 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     if (func.equals("internal_interval")) {
       return new InternalIntervalFunctionResolver(helper, inputs);
     }
+    if (func.equals("inline")) {
+      return new InlineFunctionResolver(helper, inputs);
+    }
     throw new RuntimeException("Could not find function resolver for " + func);
   }
 
@@ -330,6 +378,10 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         return new ExtractFunctionResolver(helper, op, inputs);
       case GROUPING:
         return new GroupingFunctionResolver(helper, op, inputs);
+      case ARRAY_VALUE_CONSTRUCTOR:
+        return new ArrayFunctionResolver(helper, op, inputs);
+      case ROW:
+        return new StructFunctionResolver(helper, op, inputs);
       case PLUS:
       case MINUS:
         if (inputs.size() == 2 &&

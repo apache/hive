@@ -312,6 +312,8 @@ public class ImpalaTypeConverter {
         return Type.TIMESTAMP;
       case DATE:
         return Type.DATE;
+      case NULL:
+        return Type.NULL;
       default:
         throw new RuntimeException("Type " + calciteTypeName + "  not supported yet.");
     }

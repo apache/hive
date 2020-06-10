@@ -64,6 +64,7 @@ public class ImpalaOperatorTable {
     // Unary minus comes in as "negative"
     map.put("NEGATIVE", SqlStdOperatorTable.UNARY_MINUS);
     // substr works instead of substring
+    map.put("STRUCT", SqlStdOperatorTable.ROW);
     map.put("SUBSTR", SqlStdOperatorTable.SUBSTRING);
     map.put("UNIX_TIMESTAMP", HiveUnixTimestampSqlOperator.INSTANCE);
     // there is a "when" version of case we need to handle.

@@ -27,7 +27,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
+import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -37,6 +39,7 @@ import org.apache.impala.catalog.Type;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -339,6 +342,23 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
       return true;
     }
 
+    if (dt1.getStructKind() != dt2.getStructKind()) {
+      return false;
+    }
+
+    if (dt1.isStruct()) {
+      List<RelDataTypeField> dt1Fields = dt1.getFieldList();
+      List<RelDataTypeField> dt2Fields = dt2.getFieldList();
+      if (dt1Fields.size() != dt2Fields.size()) {
+        return false;
+      }
+      for (int i = 0; i < dt1Fields.size() && i < dt2Fields.size(); ++i) {
+        if (!areCompatibleDataTypes(dt1Fields.get(i).getType(),
+                                    dt2Fields.get(i).getType())) {
+          return false;
+        }
+      }
+    }
     return dt1.getSqlTypeName() == dt2.getSqlTypeName();
   }
 
@@ -395,6 +415,56 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
       boolean hasVarArgs) {
     return new ImpalaFunctionSignature(func, argTypes, retType, hasVarArgs);
   }
+
+  public static RelDataType getCastType(RelDataType dt1, RelDataType dt2, RelDataTypeFactory typeFactory) {
+    if (dt1.getSqlTypeName() == SqlTypeName.NULL) {
+      return dt2;
+    }
+    if (dt2.getSqlTypeName() == SqlTypeName.NULL) {
+      return dt1;
+    }
+
+    if (dt1.getStructKind() == dt2.getStructKind()) {
+      if (dt1.isStruct()) {
+        List<RelDataTypeField> outputFields = Lists.newArrayList();
+        List<RelDataTypeField> dt1Fields = dt1.getFieldList();
+        List<RelDataTypeField> dt2Fields = dt2.getFieldList();
+        for (int i = 0; i < dt1Fields.size() && i < dt2Fields.size(); ++i) {
+          RelDataType fieldType =
+            getCastType(dt1Fields.get(i).getType(), dt2Fields.get(i).getType(), typeFactory);
+          outputFields.add(new RelDataTypeFieldImpl(
+              dt1Fields.get(i).getName(), i, fieldType));
+        }
+        for (List<RelDataTypeField> dtFields:
+            Arrays.asList(dt1.getFieldList(), dt2.getFieldList())) {
+          while (outputFields.size() < dtFields.size()) {
+            int fieldNum = outputFields.size();
+            RelDataType fieldType = dtFields.get(fieldNum).getType();
+            outputFields.add(new RelDataTypeFieldImpl(
+                  dtFields.get(fieldNum).getName(), fieldNum, fieldType));
+          }
+        }
+        return new RelRecordType(outputFields);
+      } else if (canCastUp(dt1, dt2)) {
+        return adjustCastType(dt1, dt2, typeFactory);
+      } else if (canCastUp(dt2, dt1)) {
+        return adjustCastType(dt2, dt1, typeFactory);
+      }
+    }
+
+
+    throw new RuntimeException("Cannot derive common cast type for " + dt1.getFullTypeString() + " and " + dt2.getFullTypeString());
+  }
+
+    // Handle cases where the return type must be different than the from and to type
+    // i.e. integer->decimal(1,0)
+    static RelDataType adjustCastType(RelDataType fromType, RelDataType toType, RelDataTypeFactory typeFactory) {
+      if (toType.getSqlTypeName() != SqlTypeName.DECIMAL) {
+        return toType;
+      }
+      RelDataType castType = Calcite2302.decimalOf(typeFactory, fromType);
+      return castType.getPrecision() > toType.getPrecision() ? castType : toType;
+    }
 
   public static boolean canCastUp(RelDataType castFrom, RelDataType castTo) {
     if (castFrom.getSqlTypeName() == SqlTypeName.NULL) {
