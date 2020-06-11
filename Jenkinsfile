@@ -90,7 +90,7 @@ du -h --max-depth=1
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini',
+    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '180m',
         resourceLimitCpu: '4000m',
