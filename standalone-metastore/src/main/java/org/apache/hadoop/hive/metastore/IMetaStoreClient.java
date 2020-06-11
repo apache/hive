@@ -1197,7 +1197,7 @@ public interface IMetaStoreClient {
    * @param tbl_name table name.
    * @param part_vals partial list of partition values.  These must be given in the order of the
    *                  partition keys.  If you wish to accept any value for a particular key you
-   *                  can pass ".*" for that value in this list.
+   *                  can pass empty string "" for that value in this list.
    * @param max_parts maximum number of partition names to return, or -1 to return all that are
    *                  found.
    * @return list of matching partition names.

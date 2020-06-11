@@ -1038,6 +1038,31 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   }
 
+  @Test
+  public void testListPartitionNamesByEmptyStringPartVal() throws Exception {
+    Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"), false);
+    List<List<String>> testValuesWithRepeatedDayNumber = Lists.newArrayList(
+            Lists.newArrayList("1999", "01", "02"),
+            Lists.newArrayList("1999", "02", "02"),
+            Lists.newArrayList("1999", "03", "02"),
+            Lists.newArrayList("2009", "02", "10"),
+            Lists.newArrayList("2017", "10", "26"),
+            Lists.newArrayList("2017", "11", "27"));
+
+    for(List<String> vals : testValuesWithRepeatedDayNumber) {
+      addPartition(client, t, vals);
+    }
+
+    List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
+            Lists.newArrayList("", "", "02"), (short) -1);
+    assertEquals(3, partitionNames.size());
+    assertCorrectPartitionNames(partitionNames, testValuesWithRepeatedDayNumber.subList(0, 3),
+            Lists.newArrayList("yyyy", "mm", "dd"));
+    partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
+            Lists.newArrayList(".*", ".*", "02"), (short) -1);
+    assertEquals(0, partitionNames.size());
+  }
+
   @Test(expected = NoSuchObjectException.class)
   public void testListPartitionNamesNoDbName() throws Exception {
     createTable4PartColsParts(client);
