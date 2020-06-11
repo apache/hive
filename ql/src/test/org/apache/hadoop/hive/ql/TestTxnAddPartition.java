@@ -102,14 +102,14 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     String testQuery = isVectorized ? "select ROW__ID, p, a, b from T order by p, ROW__ID" :
         "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID";
     String[][] expected = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t0\t2",
-            "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
-            "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t0\t2",
+            "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
+            "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
@@ -126,18 +126,18 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         + "PARTITION (p=3) location '" + getWarehouseDir() + "/3/data'";//p=3 doesn't exist
     runStatementOnDriver(stmt);
     String[][] expected2 = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t0\t2",
-            "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
-            "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t3\t0\t2",
-            "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t3\t0\t4",
-            "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t0\t2",
+            "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
+            "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t3\t0\t2",
+            "warehouse/t/p=3/delta_0000004_0000004_0000/000000_0"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t3\t0\t4",
+            "warehouse/t/p=3/delta_0000004_0000004_0000/000000_0"}};
     checkResult(expected2, testQuery, isVectorized, "add 2 existing parts and 1 empty", LOG);
   }
 
@@ -180,10 +180,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     String testQuery = isVectorized ? "select p, a, b from T order by p, a, b" :
         "select p, a, b, INPUT__FILE__NAME from T order by p, a, b";
     String[][] expected = new String[][]{
-        {"0\t0\t2", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"0\t0\t4", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"1\t0\t2", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
+        {"0\t0\t2", "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"0\t0\t4", "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"1\t0\t2", "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"1\t0\t4", "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
@@ -199,12 +199,12 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         + "PARTITION (p=2) location '" + getWarehouseDir() + "/3/data'"//p=2 exists and is empty
         + "PARTITION (p=3) location '" + getWarehouseDir() + "/3/data'");//p=3 doesn't exist
     String[][] expected2 = new String[][]{
-        {"0\t0\t2", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"0\t0\t4", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
-        {"1\t0\t2", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
-        {"3\t0\t2", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
-        {"3\t0\t4", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
+        {"0\t0\t2", "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"0\t0\t4", "warehouse/t/p=0/delta_0000002_0000002_0000/000000_0"},
+        {"1\t0\t2", "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"1\t0\t4", "warehouse/t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"3\t0\t2", "warehouse/t/p=3/delta_0000004_0000004_0000/000000_0"},
+        {"3\t0\t4", "warehouse/t/p=3/delta_0000004_0000004_0000/000000_0"}};
     checkResult(expected2, testQuery, isVectorized, "add 2 existing parts and 1 empty", LOG);
   }
 
@@ -226,10 +226,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver(
         "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID");
     String[][] expected = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t0\t0\t2",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t0\t1\t4",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"}};
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t0\t0\t2",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000001_0"},
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t0\t1\t4",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000001_0"}};
     checkExpected(rs, expected, "add partition (p=0)");
   }
 
@@ -263,10 +263,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver(
         "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID");
     String[][] expected = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t0\t0\t2",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t0\t1\t4",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"}};
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t0\t0\t2",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000001_0"},
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t0\t1\t4",
+            "warehouse/t/p=0/delta_0000002_0000002_0000/000001_0"}};
     checkExpected(rs, expected, "add partition (p=0)");
   }
 
@@ -294,6 +294,6 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into Tstage partition(p=1) values(0,2),(1,4)");
 
     runStatementOnDriver("ALTER TABLE T ADD PARTITION (p=0) location '"
-        + getWarehouseDir() + "/tstage/p=1/delta_0000001_0000001_0000/bucket_00001_0'");
+        + getWarehouseDir() + "/tstage/p=1/delta_0000002_0000002_0000/bucket_00001_0'");
   }
 }

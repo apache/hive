@@ -118,4 +118,19 @@ public interface ValidWriteIdList {
    * @return smallest Open write Id in this set, {@code null} if there is none.
    */
   Long getMinOpenWriteId();
+
+  /**
+   * Mark the writeId as locally committed within the Hive Metastore client.
+   * This will not mark a given writeId as committed on the server.
+   * This is required for transactional managed tables, especially for cases in which a
+   * given statement results in a write followed by a read.
+   * Although right now the transactional boundary is a statement, there can be single statements
+   * that can result in a write followed by a write.
+   * For example: Create Table As Select (CTAS) and Dynamic-Partition Insert
+   * Marking the writeId of the previous write within the same session as committed would
+   * ensure that the subsequent read will invalidate the cache entry. This behavior is essential when
+   * we want to provide cache consistency with HMS HA.
+   * @param writeId
+   */
+  void locallyCommitWriteId(long writeId);
 }

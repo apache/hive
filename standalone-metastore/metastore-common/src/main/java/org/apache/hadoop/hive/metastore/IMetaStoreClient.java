@@ -4064,4 +4064,8 @@ public interface IMetaStoreClient {
 
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
+  void setValidWriteIdList(String txnWriteIdList);
+
+  void clearValidWriteIdList();
+
 }

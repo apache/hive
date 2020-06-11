@@ -2787,7 +2787,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // Open a base txn which allocates write ID and then committed.
     long baseTxnId = txnMgr.openTxn(ctx, "u0");
     long baseWriteId = txnMgr.getTableWriteId("temp", "T7");
-    Assert.assertEquals(1, baseWriteId);
+    Assert.assertEquals(2, baseWriteId);
     txnMgr.commitTxn(); // committed baseTxnId
 
     // Open a txn with no writes.
@@ -2812,11 +2812,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     long aboveHwmOpenTxnId = txnMgr3.openTxn(ctx, "u3");
     Assert.assertTrue("Invalid txn ID", aboveHwmOpenTxnId > testTxnId);
     long aboveHwmOpenWriteId = txnMgr3.getTableWriteId("temp", "T7");
-    Assert.assertEquals(2, aboveHwmOpenWriteId);
+    Assert.assertEquals(3, aboveHwmOpenWriteId);
 
     // Allocate writeId to txn under HWM. This will get Id greater than a txn > HWM.
     long underHwmOpenWriteId = txnMgr1.getTableWriteId("temp", "T7");
-    Assert.assertEquals(3, underHwmOpenWriteId);
+    Assert.assertEquals(4, underHwmOpenWriteId);
 
     // Verify the ValidWriteIdList with one open txn on this table. Write ID of open txn should be invalid.
     testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
@@ -2840,7 +2840,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // Write Ids of committed and self test txn should be valid but writeId of open txn should be invalid.
     // WriteId of recently committed txn which was open when get ValidTxnList snapshot should be invalid as well.
     long testWriteId = txnMgr2.getTableWriteId("temp", "T7");
-    Assert.assertEquals(4, testWriteId);
+    Assert.assertEquals(5, testWriteId);
 
     testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
         .getTableValidWriteIdList("temp.t7");

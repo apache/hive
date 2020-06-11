@@ -409,7 +409,14 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
      * is this the right way to compare?  Should it just compare paths?
      * equals() impl looks heavy weight
      */
-    return targetTable.equals(entity.getTable());
+    long targetWriteId = targetTable.getTTable().getWriteId();
+    long entityWriteId = entity.getTable().getTTable().getWriteId();
+    targetTable.getTTable().setWriteId(0L);
+    entity.getTable().getTTable().setWriteId(0L);
+    boolean result = targetTable.equals(entity.getTable());
+    targetTable.getTTable().setWriteId(targetWriteId);
+    entity.getTable().getTTable().setWriteId(entityWriteId);
+    return result;
   }
 
   /**

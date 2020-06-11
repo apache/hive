@@ -2369,6 +2369,42 @@ public class AcidUtils {
   }
 
   /**
+   * This is called by Hive.java for all write operations (DDL). Advance write id
+   * for the table via transaction manager, and store it in config. The write id
+   * will be marked as committed instantly in config, as all DDL are auto
+   * committed, there's no chance to rollback.
+   */
+  public static ValidWriteIdList advanceWriteId(HiveConf conf, Table tbl) throws LockException {
+    if (!isTransactionalTable(tbl)) {
+      return null;
+    }
+    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+    long writeId = SessionState.get().getTxnMgr().getTableWriteId(tbl.getDbName(), tbl.getTableName());
+    List<String> txnTables = new ArrayList<>();
+    String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
+    txnTables.add(fullTableName);
+    ValidTxnWriteIdList txnWriteIds;
+    if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
+      txnWriteIds = new ValidTxnWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+    } else {
+      String txnString;
+      if (conf.get(ValidTxnList.VALID_TXNS_KEY) != null) {
+        txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      } else {
+        ValidTxnList txnIds = txnMgr.getValidTxns();
+        txnString = txnIds.toString();
+      }
+      txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
+    }
+    ValidWriteIdList writeIds = txnWriteIds.getTableValidWriteIdList(fullTableName);
+    if (writeIds != null) {
+      writeIds.locallyCommitWriteId(writeId);
+      conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
+    }
+    return writeIds;
+  }
+
+  /**
    * Returns ValidWriteIdList for the table with the given "dbName" and "tableName".
    * This is called when HiveConf has no list for the table.
    * Otherwise use getTableSnapshot().

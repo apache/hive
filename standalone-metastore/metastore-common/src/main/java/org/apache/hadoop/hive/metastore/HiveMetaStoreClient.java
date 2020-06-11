@@ -144,6 +144,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private static String[] processorCapabilities;
   private static String processorIdentifier;
 
+  private ValidTxnWriteIdList txnWriteIdList;
+
   //copied from ErrorMsg.java
   private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
 
@@ -4262,6 +4264,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
     client.scheduled_query_progress(info);
+  }
+
+  @Override
+  public void setValidWriteIdList(String txnWriteIdListStr) {
+    this.txnWriteIdList = (txnWriteIdListStr == null ? null : new ValidTxnWriteIdList(txnWriteIdListStr));
+  }
+
+  @Override public void clearValidWriteIdList() {
+    this.txnWriteIdList = null;
   }
 
   @Override

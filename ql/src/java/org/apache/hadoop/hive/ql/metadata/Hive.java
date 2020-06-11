@@ -178,12 +178,14 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -193,6 +195,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
@@ -392,7 +395,12 @@ public class Hive {
       }
       db = create(c, doRegisterAllFns);
     }
-    if (c != null) {
+    if (c != null && db.conf != null && db.conf != c) {
+      if (db.conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
+        c.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, db.conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+      } else {
+        c.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+      }
       db.conf = c;
     }
     return db;
@@ -776,6 +784,7 @@ public class Hive {
       EnvironmentContext environmentContext, boolean transactional, long replWriteId)
       throws HiveException {
 
+    boolean txnOpened = false;
     if (catName == null) {
       catName = getDefaultCatalog(conf);
     }
@@ -795,7 +804,13 @@ public class Hive {
       // Take a table snapshot and set it to newTbl.
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-        if (replWriteId > 0) {
+        if (AcidUtils.isTransactionalTable(newTbl) && !inReplication(newTbl) && replWriteId > 0) {
+          txnOpened = openTxnIfNeeded();
+          // Advance writeId for ddl on transactional table
+          AcidUtils.advanceWriteId(conf, newTbl);
+        }
+
+        if (inReplication(newTbl) && replWriteId > 0) {
           // We need a valid writeId list for a transactional table modification. During
           // replication we do not have a valid writeId list which was used to modify the table
           // on the source. But we know for sure that the writeId associated with it was valid
@@ -824,6 +839,12 @@ public class Hive {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -875,6 +896,7 @@ public class Hive {
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
+    boolean txnOpened = false;
     try {
       if (catName == null) {
         catName = getDefaultCatalog(conf);
@@ -888,8 +910,14 @@ public class Hive {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
+
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
+        if (AcidUtils.isTransactionalTable(newPart.getTable()) && !inReplication(newPart.getTable())) {
+          txnOpened = openTxnIfNeeded();
+          // Advance writeId for ddl on transactional table
+          AcidUtils.advanceWriteId(conf, newPart.getTable());
+        }
         tableSnapshot = AcidUtils.getTableSnapshot(conf, newPart.getTable(), true);
         if (tableSnapshot != null) {
           newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
@@ -905,6 +933,12 @@ public class Hive {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -932,12 +966,18 @@ public class Hive {
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
+    boolean txnOpened = false;
     String[] names = Utilities.getDbTableName(tblName);
     List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
       new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
+        if (AcidUtils.isTransactionalTable(newParts.get(0).getTable()) && !inReplication(newParts.get(0).getTable())) {
+          // Advance writeId for ddl on transactional table
+          txnOpened = openTxnIfNeeded();
+          AcidUtils.advanceWriteId(conf, newParts.get(0).getTable());
+        }
         tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable(), true);
       }
       // Remove the DDL time so that it gets refreshed
@@ -959,6 +999,12 @@ public class Hive {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
   /**
@@ -975,6 +1021,7 @@ public class Hive {
   public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart,
                               long replWriteId)
       throws HiveException {
+    boolean txnOpened = false;
     try {
       Map<String, String> newPartSpec = newPart.getSpec();
       if (oldPartSpec.keySet().size() != tbl.getPartCols().size()
@@ -997,8 +1044,13 @@ public class Hive {
       }
       String validWriteIds = null;
       if (AcidUtils.isTransactionalTable(tbl)) {
+        if (!inReplication(tbl)) {
+          // Advance writeId for ddl on transactional table
+          txnOpened = openTxnIfNeeded();
+          AcidUtils.advanceWriteId(conf, tbl);
+        }
         TableSnapshot tableSnapshot;
-        if (replWriteId > 0) {
+        if (inReplication(tbl)) {
           // We need a valid writeId list for a transactional table modification. During
           // replication we do not have a valid writeId list which was used to modify the table
           // on the source. But we know for sure that the writeId associated with it was valid
@@ -1028,6 +1080,12 @@ public class Hive {
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -1087,6 +1145,7 @@ public class Hive {
     List<SQLDefaultConstraint> defaultConstraints,
     List<SQLCheckConstraint> checkConstraints)
             throws HiveException {
+    boolean txnOpened = false;
     try {
       if (org.apache.commons.lang3.StringUtils.isBlank(tbl.getDbName())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
@@ -1110,6 +1169,11 @@ public class Hive {
           principalPrivs.setRolePrivileges(grants.getRoleGrants());
           tTbl.setPrivileges(principalPrivs);
         }
+      }
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
       }
       // Set table snapshot to api.Table to make it persistent. A transactional table being
       // replicated may have a valid write Id copied from the source. Use that instead of
@@ -1136,6 +1200,12 @@ public class Hive {
       }
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -1230,7 +1300,18 @@ public class Hive {
    */
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
+    boolean txnOpened = false;
     try {
+      Table tbl = null;
+      try {
+        tbl = getTable(dbName, tableName);
+      } catch (InvalidTableException e) {
+      }
+      if (tbl != null && AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
@@ -1238,6 +1319,12 @@ public class Hive {
       }
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -1251,10 +1338,19 @@ public class Hive {
    * @throws HiveException
    */
   public void truncateTable(String dbDotTableName, Map<String, String> partSpec, Long writeId) throws HiveException {
+    boolean txnOpened = false;
     try {
       Table table = getTable(dbDotTableName, true);
+
       AcidUtils.TableSnapshot snapshot = null;
       if (AcidUtils.isTransactionalTable(table)) {
+
+        if (!inReplication(table)) {
+          txnOpened = openTxnIfNeeded();
+          // Advance writeId for ddl on transactional table
+          AcidUtils.advanceWriteId(conf, table);
+        }
+
         if (writeId <= 0) {
           snapshot = AcidUtils.getTableSnapshot(conf, table, true);
         } else {
@@ -1355,7 +1451,7 @@ public class Hive {
    */
   public Table getTable(final String dbName, final String tableName,
                         boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, throwException, false);
+    return this.getTable(dbName, tableName, throwException, true);
   }
 
   /**
@@ -3538,8 +3634,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tableName,
       List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
+    boolean txnOpened = false;
     try {
       Table table = getTable(dbName, tableName);
+      if (AcidUtils.isTransactionalTable(table) && !inReplication(table)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, table);
+      }
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
           partitionExpressions, dropOptions);
       return convertFromMetastore(table, partitions);
@@ -3547,6 +3649,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().commitTxn();
+        }
+      }
     }
   }
 
@@ -5083,7 +5191,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> exchangeTablePartitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws HiveException {
+    boolean txnOpened = false;
     try {
+      Table srcTbl = getTable(sourceDb, sourceTable);
+      if (AcidUtils.isTransactionalTable(srcTbl) && !inReplication(srcTbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, srcTbl);
+      }
+      Table descTbl = getTable(destDb, destinationTableName);
+      if (AcidUtils.isTransactionalTable(descTbl) && !inReplication(descTbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, descTbl);
+      }
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions =
         getMSC().exchange_partitions(partitionSpecs, sourceDb, sourceTable, destDb,
         destinationTableName);
@@ -5092,6 +5213,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception ex) {
       LOG.error(StringUtils.stringifyException(ex));
       throw new HiveException(ex);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
@@ -5209,6 +5336,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
       }
     }
+    //metaStoreClient.setValidWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     return metaStoreClient;
   }
 
@@ -5586,12 +5714,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropConstraint(String dbName, String tableName, String constraintName)
     throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(dbName, tableName);
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().dropConstraint(dbName, tableName, constraintName);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
@@ -5917,55 +6058,133 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
     throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(primaryKeyCols.get(0).getTable_db(), primaryKeyCols.get(0).getTable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addPrimaryKey(primaryKeyCols);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
   public void addForeignKey(List<SQLForeignKey> foreignKeyCols)
     throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(foreignKeyCols.get(0).getFktable_db(), foreignKeyCols.get(0).getFktable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addForeignKey(foreignKeyCols);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
   public void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols)
     throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(uniqueConstraintCols.get(0).getTable_db(), uniqueConstraintCols.get(0).getTable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addUniqueConstraint(uniqueConstraintCols);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
   public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols)
     throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(notNullConstraintCols.get(0).getTable_db(), notNullConstraintCols.get(0).getTable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addNotNullConstraint(notNullConstraintCols);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
   public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints)
       throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(defaultConstraints.get(0).getTable_db(), defaultConstraints.get(0).getTable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addDefaultConstraint(defaultConstraints);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
   public void addCheckConstraint(List<SQLCheckConstraint> checkConstraints)
       throws HiveException, NoSuchObjectException {
+    boolean txnOpened = false;
     try {
+      Table tbl = getTable(checkConstraints.get(0).getTable_db(), checkConstraints.get(0).getTable_name());
+      if (AcidUtils.isTransactionalTable(tbl) && !inReplication(tbl)) {
+        txnOpened = openTxnIfNeeded();
+        // Advance writeId for ddl on transactional table
+        AcidUtils.advanceWriteId(conf, tbl);
+      }
       getMSC().addCheckConstraint(checkConstraints);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      if (txnOpened) {
+        if (SessionState.get().getTxnMgr().isTxnOpen()) {
+          SessionState.get().getTxnMgr().rollbackTxn();
+        }
+      }
     }
   }
 
@@ -6177,4 +6396,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+
+  private boolean openTxnIfNeeded() throws HiveException {
+    try {
+      if (SessionState.get().getTxnMgr() == null) {
+        SessionState.get().initTxnMgr(conf);
+      }
+      HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+      if (!txnMgr.isTxnOpen()) {
+        Context ctx = new Context(conf);
+        txnMgr.openTxn(ctx, SessionState.getUserFromAuthenticator());
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void clearValidWriteIdList() {
+    if (metaStoreClient != null) {
+      metaStoreClient.clearValidWriteIdList();
+    }
+  }
+
+  boolean inReplication(Table tbl) {
+    if (tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
+

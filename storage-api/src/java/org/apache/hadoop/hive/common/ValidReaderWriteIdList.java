@@ -265,5 +265,25 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   public ValidReaderWriteIdList updateHighWatermark(long value) {
     return new ValidReaderWriteIdList(tableName, exceptions, abortedBits, value, minOpenWriteId);
   }
+
+  public void locallyCommitWriteId(long writeId) {
+    if (writeId > highWatermark) {
+      highWatermark = writeId;
+      long[] newExceptions = new long[exceptions.length + (int) (writeId - highWatermark)];
+      System.arraycopy(exceptions, 0, newExceptions, 0, exceptions.length);
+      for (long i = highWatermark; i < writeId; i++) {
+        exceptions[exceptions.length + (int) (i - highWatermark)] = i;
+      }
+      exceptions = newExceptions;
+    } else {
+      int pos = Arrays.binarySearch(exceptions, writeId);
+      if (pos >= 0) {
+        long[] newExceptions = new long[exceptions.length - 1];
+        System.arraycopy(exceptions, 0, newExceptions, 0, pos);
+        System.arraycopy(exceptions, pos + 1, newExceptions, pos, exceptions.length - pos - 1);
+        exceptions = newExceptions;
+      }
+    }
+  }
 }
 
