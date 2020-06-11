@@ -1586,8 +1586,8 @@ public class VectorizedOrcAcidRowBatchReader
               // NOTE: When streaming deletes are supported, consider using OrcAcidUtils.getLastFlushLength(fs, deleteDeltaFile)
               // NOTE: A check for existence of deleteDeltaFile is required because we may not have
               // deletes for the bucket being taken into consideration for this split processing.
-              if (fs.exists(deleteDeltaFile)) {
-                Reader deleteDeltaReader = getDeleteDeltaReader(deleteDeltaFile, conf);
+              try {
+                Reader deleteDeltaReader = getDeleteDeltaReader(deleteDeltaFile, conf, fs);
                 if (deleteDeltaReader.getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
                 }
@@ -1601,6 +1601,9 @@ public class VectorizedOrcAcidRowBatchReader
                 } else {
                   deleteReaderValue.close();
                 }
+              } catch (FileNotFoundException fnfe) {
+                LOG.error(deleteDeltaFile + " is not present", fnfe);
+                //safe to ignore (used this instead of fs.exists(deleteDeltaFile))
               }
             }
           }
@@ -1620,12 +1623,15 @@ public class VectorizedOrcAcidRowBatchReader
      *
      * @param deleteDeltaFile
      * @param conf
+     * @param fs FileSystem
      * @return delete file reader
      * @throws IOException
      */
-    private Reader getDeleteDeltaReader(Path deleteDeltaFile, JobConf conf) throws IOException {
+    private Reader getDeleteDeltaReader(Path deleteDeltaFile, JobConf conf, FileSystem fs) throws IOException {
       OrcTail deleteDeltaTail = deleteDeltaOrcTailCache.getIfPresent(deleteDeltaFile);
-      OrcFile.ReaderOptions deleteReaderOpts = OrcFile.readerOptions(conf).orcTail(deleteDeltaTail);
+      OrcFile.ReaderOptions deleteReaderOpts = OrcFile.readerOptions(conf)
+          .orcTail(deleteDeltaTail)
+          .filesystem(fs);
       Reader deleteDeltaReader = OrcFile.createReader(deleteDeltaFile, deleteReaderOpts);
       if (deleteDeltaTail == null) {
         deleteDeltaOrcTailCache.put(deleteDeltaFile, new OrcTail(deleteDeltaReader.getFileTail(), null));
