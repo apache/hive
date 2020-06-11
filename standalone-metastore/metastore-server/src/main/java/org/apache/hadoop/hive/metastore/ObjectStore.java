@@ -1315,7 +1315,6 @@ public class ObjectStore implements RawStore, Configurable {
 
 
 
-
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
       String catName, String dbName, String tableName, String constraintname) {
     catName = normalizeIdentifier(catName);
