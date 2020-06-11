@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 
 /**
  * Tests for retriable interface.
  */
+@Ignore("unstable HIVE-23677")
 public class RetryTest {
   @Test
   public void testRetrySuccess() {
