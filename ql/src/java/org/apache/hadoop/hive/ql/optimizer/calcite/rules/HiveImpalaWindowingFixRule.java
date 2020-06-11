@@ -36,7 +36,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexVisitorImpl;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 /**
@@ -138,19 +137,19 @@ public class HiveImpalaWindowingFixRule extends RelOptRule {
     public Void visitOver(RexOver over) {
       // Operands
       for (RexNode operand : over.getOperands()) {
-        if (!operand.isA(SqlKind.INPUT_REF)) {
+        if (operand instanceof RexCall) {
           functionExprs.add(operand);
         }
       }
       // Partition keys
       for (RexNode partitionKey : over.getWindow().partitionKeys) {
-        if (!partitionKey.isA(SqlKind.INPUT_REF)) {
+        if (partitionKey instanceof RexCall) {
           functionExprs.add(partitionKey);
         }
       }
       // Order keys
       for (RexFieldCollation orderKey : over.getWindow().orderKeys) {
-        if (!orderKey.left.isA(SqlKind.INPUT_REF)) {
+        if (orderKey.left instanceof RexCall) {
           functionExprs.add(orderKey.left);
         }
       }
