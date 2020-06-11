@@ -12881,9 +12881,9 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
+      int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
       Query q = pm.newQuery(MRuntimeStat.class);
       wrapper.query = q;
-      int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
       q.setFilter("createTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
