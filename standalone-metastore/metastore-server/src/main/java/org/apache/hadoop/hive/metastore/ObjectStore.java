@@ -7122,14 +7122,15 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(String principalName, PrincipalType principalType) {
     List<HiveObjectPrivilege> results = Collections.emptyList();
+    boolean success = false;
     try {
       openTransaction();
       results = convertDB(listPrincipalAllDBGrant(principalName, principalType));
-      commitTransaction();
+      success = commitTransaction();
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      rollbackAndCleanup(true, null);
+      rollbackAndCleanup(success, null);
     }
     return results;
   }
@@ -7137,14 +7138,15 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
     List<HiveObjectPrivilege> results = Collections.emptyList();
+    boolean success = false;
     try {
       openTransaction();
       results = listDBGrantsAll(catName, dbName, null);
-      commitTransaction();
+      success = commitTransaction();
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      rollbackAndCleanup(true, null);
+      rollbackAndCleanup(success, null);
     }
     return results;
   }
