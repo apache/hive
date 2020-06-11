@@ -27,6 +27,23 @@ properties([
     ])
 ])
 
+this.prHead = null;
+def checkPrHead() {
+  if(env.CHANGE_ID) {
+    println("checkPrHead - prHead:" + prHead)
+    println("checkPrHead - prHead2:" + pullRequest.head)
+    if (prHead == null) {
+      prHead = pullRequest.head;
+    } else {
+      if(prHead != pullRequest.head) {
+        currentBuild.result = 'ABORTED'
+        error('Found new changes on PR; aborting current build')
+      }
+    }
+  }
+}
+checkPrHead()
+
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
    def mapping=[
@@ -89,7 +106,7 @@ def hdbPodTemplate(closure) {
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
-        resourceLimitCpu: '3000m',
+        resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi'
     ),
@@ -120,6 +137,7 @@ def jobWrappers(closure) {
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
+        checkPrHead()
         closure()
       }
     }
@@ -153,6 +171,7 @@ jobWrappers {
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
       }
+      checkPrHead()
       stage('Upload') {
         saveWS()
         sh '''#!/bin/bash -e
