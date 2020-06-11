@@ -64,6 +64,29 @@ public class KafkaUtilsTest {
     KafkaUtils.consumerProperties(configuration);
   }
 
+  @Test public void testSetupKafkaSslPropertiesNoSslIsUnchanged() {
+    Configuration config = new Configuration();
+    Properties props = new Properties();
+    KafkaUtils.setupKafkaSslProperties(config, props);
+    Assert.assertEquals(new Properties(), props);
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void testSetupKafkaSslPropertiesSslNotInHdfs() {
+    Configuration config = new Configuration();
+    config.set(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName(), "nonexistentfile");
+    config.set(KafkaTableProperties.HIVE_SSL_TRUSTSTORE_LOCATION_CONFIG.getName(), "madeup");
+    Properties props = new Properties();
+    KafkaUtils.setupKafkaSslProperties(config, props);
+  }
+
+  @Test(expected = IllegalStateException.class) public void testSetupKafkaSslPropertiesCantRetrieveStore() {
+    Configuration config = new Configuration();
+    config.set(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName(), "nonexistentfile");
+    config.set(KafkaTableProperties.HIVE_SSL_TRUSTSTORE_LOCATION_CONFIG.getName(), "hdfs://localhost/tmp/madeup");
+    Properties props = new Properties();
+    KafkaUtils.setupKafkaSslProperties(config, props);
+  }
+
   @Test public void testMetadataEnumLookupMapper() {
     int partition = 1;
     long offset = 5L;
