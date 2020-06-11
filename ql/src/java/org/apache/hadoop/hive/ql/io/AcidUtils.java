@@ -2989,6 +2989,14 @@ public class AcidUtils {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       Table t = null;
+      /**
+       * For any insert/updates set dir cache to read-only mode, where it wouldn't
+       * add any new entry to cache.
+       * When updates are executed, delta folders are created only at the end of the statement
+       * and at the time of acquiring locks, there would not be any delta folders. This can cause wrong data to be reported
+       * when "insert" followed by "update" statements are executed. In such cases, use the cache as read only mode.
+       */
+      HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, 0);
       switch (output.getType()) {
         case DATABASE:
           compBuilder.setDbName(output.getDatabase().getName());
@@ -3186,6 +3194,12 @@ public class AcidUtils {
     dirCacheInited.set(true);
   }
 
+  private static void printDirCacheEntries() {
+    if (dirCache != null) {
+      LOG.debug("Cache entries: {}", Arrays.toString(dirCache.asMap().keySet().toArray()));
+    }
+  }
+
   /**
    * Tries to get directory details from cache. For now, cache is valid only
    * when base directory is available and no deltas are present. This should
@@ -3210,7 +3224,7 @@ public class AcidUtils {
     int dirCacheDuration = HiveConf.getIntVar(conf,
         ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION);
 
-    if (dirCacheDuration <= 0) {
+    if (dirCacheDuration < 0) {
       LOG.debug("dirCache is not enabled");
       return getAcidState(fileSystem.get(), candidateDirectory, conf, writeIdList,
           useFileIds, ignoreEmptyFiles, tblproperties, generateDirSnapshots);
@@ -3241,9 +3255,8 @@ public class AcidUtils {
       // double check writeIds
       if (!value.getTxnString().equalsIgnoreCase(writeIdList.writeToString())) {
         if (LOG.isDebugEnabled()) {
-          LOG.info("writeIdList: {} from cache: {} is not matching "
-              + "for key: {}", writeIdList.writeToString(),
-              value.getTxnString(), key);
+          LOG.debug("writeIdList: {} from cache: {} is not matching for key: {}",
+              writeIdList.writeToString(), value.getTxnString(), key);
         }
         recompute = true;
       }
@@ -3258,11 +3271,18 @@ public class AcidUtils {
 
       if (value.dirInfo != null && value.dirInfo.getBaseDirectory() != null
           && value.dirInfo.getCurrentDirectories().isEmpty()) {
-        populateBaseFiles(dirInfo, useFileIds, fileSystem);
-        dirCache.put(key, value);
+        if (dirCacheDuration > 0) {
+          populateBaseFiles(dirInfo, useFileIds, fileSystem);
+          dirCache.put(key, value);
+        } else {
+          LOG.info("Not populating cache for {}, as duration is set to 0", key);
+        }
       }
     } else {
       LOG.info("Got {} from cache, cache size: {}", key, dirCache.size());
+    }
+    if (LOG.isDebugEnabled()) {
+      printDirCacheEntries();
     }
     return value.getDirInfo();
   }
