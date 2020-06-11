@@ -71,6 +71,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -309,7 +310,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     // Populate the driver context with the scratch dir info from the repl context, so that the
     // temp dirs will be cleaned up later
     context.getFsScratchDirs().putAll(loadContext.pathInfo.getFsScratchDirs());
-    createReplLoadCompleteAckTask();
+    if (!HiveConf.getBoolVar(conf, REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      createReplLoadCompleteAckTask();
+    }
     LOG.info("completed load task run : {}", work.executedLoadTask());
     return 0;
   }
