@@ -817,6 +817,34 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(10, compacts.size());
   }
 
+  @Test
+  public void compactTableWithMultipleBase() throws Exception {
+    Table t = newTable("default", "nctdpnhe", false);
+
+    addBaseFile(t, null, 50L, 50);
+    addBaseFile(t, null, 100L, 50);
+
+    burnThroughTransactions("default", "nctdpnhe", 102);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+    comp.setTablename("nctdpnhe");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    long writeid = allocateWriteId("default", "nctdpnhe", txnid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(rsp.getCompacts().get(0).getState().equals("ready for cleaning"));
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;
