@@ -12879,16 +12879,16 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try (Query q = pm.newQuery(MRuntimeStat.class)) {
+    try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
+      Query q = pm.newQuery(MRuntimeStat.class);
+      wrapper.query = q;
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
       q.setFilter("createTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
-    } catch (Exception e) {
-      throw new MetaException(e.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -13023,12 +13023,14 @@ public class ObjectStore implements RawStore, Configurable {
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
-    try (Query q = pm.newQuery(MScheduledQuery.class,
-        "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null")) {
+    try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
+      Query q = pm.newQuery(MScheduledQuery.class,
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
+      wrapper.query = q;
       int now = (int) (System.currentTimeMillis() / 1000);
       List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute(now, request.getClusterNamespace());
       if (results == null || results.isEmpty()) {
@@ -13280,16 +13282,16 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try (Query q = pm.newQuery(MScheduledExecution.class)) {
+    try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
+      Query q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("startTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
+      wrapper.query = q;
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -13304,11 +13306,13 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
-    try (Query q = pm.newQuery(MScheduledExecution.class)) {
+    try (QueryWrapper wrapper = new QueryWrapper()) {
       openTransaction();
       int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
+      Query q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("lastUpdateTime <= maxLastUpdateTime && (state == 'INITED' || state == 'EXECUTING')");
       q.declareParameters("int maxLastUpdateTime");
+      wrapper.query = q;
 
       List<MScheduledExecution> results = (List<MScheduledExecution>) q.execute(maxLastUpdateTime);
       for (MScheduledExecution e : results) {
@@ -13325,10 +13329,6 @@ public class ObjectStore implements RawStore, Configurable {
       recoverInvalidScheduledQueryState(timeoutSecs);
       committed = commitTransaction();
       return results.size();
-    } catch (InvalidOperationException | MetaException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new MetaException(e.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
