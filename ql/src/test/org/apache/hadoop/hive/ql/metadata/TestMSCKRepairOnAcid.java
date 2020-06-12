@@ -333,7 +333,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy the data back
     FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + "mybackup" + "/p=p1"), fs,
-        new Path(getWarehouseDir(), Table.ACIDTBLPART.toString()), true, hiveConf);
+        new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()), true, hiveConf);
 
     // call msk repair to add the partition back
     runStatementOnDriver("msck repair table " + Table.ACIDTBLPART);
