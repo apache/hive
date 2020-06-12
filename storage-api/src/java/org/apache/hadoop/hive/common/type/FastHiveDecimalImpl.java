@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.io.EOFException;
 import java.io.IOException;
@@ -229,7 +230,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     final int end = offset + length;
     throw new RuntimeException(
         "Invalid fast decimal \"" +
-            new String(bytes, offset, end) + "\"" +
+            new String(bytes, offset, end, StandardCharsets.UTF_8) + "\"" +
         " fastSignum " + fastResult.fastSignum + " fast0 " + fastResult.fast0 + " fast1 " + fastResult.fast1 + " fast2 " + fastResult.fast2 +
             " fastIntegerDigitCount " + fastResult.fastIntegerDigitCount +" fastScale " + fastResult.fastScale +
         " stack trace: " + getStackTraceAsSingleLine(Thread.currentThread().getStackTrace()));
@@ -903,7 +904,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    */
   public static boolean fastSetFromString(
       String string, boolean trimBlanks, FastHiveDecimal result) {
-    byte[] bytes = string.getBytes();
+    byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     return fastSetFromBytes(bytes, 0, bytes.length, trimBlanks, result);
   }
 
@@ -5140,7 +5141,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       fastResult.fastIntegerDigitCount = 0;
       fastResult.fastScale = 0;
     } else {
-      fastResult.fastSignum = 0;
       fastResult.fastSignum = fastSignum;
       fastResult.fastIntegerDigitCount = fastRawPrecision(fastResult);
       fastResult.fastScale = 0;
@@ -8287,7 +8287,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       long left0, long left1, long left2,
       long right0, long right1, long right2,
       long[] result) {
-    assert (result.length == 5);
     if (result.length != 5) {
       throw new IllegalArgumentException("Expecting result array length = 5");
     }
@@ -8982,7 +8981,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
           formatScale,
           scratchBuffer);
     return
-        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   //************************************************************************************************
@@ -8998,7 +8997,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastSignum, fast0, fast1, fast2,
             fastIntegerDigitCount, fastScale, formatScale,
             scratchBuffer);
-    return new String(scratchBuffer, index, scratchBuffer.length - index);
+    return new String(scratchBuffer, index, scratchBuffer.length - index, StandardCharsets.UTF_8);
   }
 
   public static int fastToFormatBytes(
@@ -9073,7 +9072,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastIntegerDigitCount,
             scratchBuffer);
     return
-        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   public static int fastToBytes(
@@ -9097,7 +9096,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             scratchBuffer);
     return
         new String(
-            scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+            scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   private static String doFastToString(
@@ -9109,7 +9108,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastSignum, fast0, fast1, fast2,
             fastIntegerDigitCount, fastScale, fastTrailingZeroesScale,
             scratchBuffer);
-    return new String(scratchBuffer, index, scratchBuffer.length - index);
+    return new String(scratchBuffer, index, scratchBuffer.length - index, StandardCharsets.UTF_8);
   }
 
   private static int doFastToBytes(

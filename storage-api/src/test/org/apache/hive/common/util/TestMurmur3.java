@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -41,13 +42,13 @@ public class TestMurmur3 {
     String key = "test";
     int seed = 123;
     HashFunction hf = Hashing.murmur3_32(seed);
-    int hc1 = hf.hashBytes(key.getBytes()).asInt();
-    int hc2 = Murmur3.hash32(key.getBytes(), key.getBytes().length, seed);
+    int hc1 = hf.hashBytes(key.getBytes(StandardCharsets.UTF_8)).asInt();
+    int hc2 = Murmur3.hash32(key.getBytes(StandardCharsets.UTF_8), key.getBytes().length, seed);
     assertEquals(hc1, hc2);
 
     key = "testkey";
-    hc1 = hf.hashBytes(key.getBytes()).asInt();
-    hc2 = Murmur3.hash32(key.getBytes(), key.getBytes().length, seed);
+    hc1 = hf.hashBytes(key.getBytes(StandardCharsets.UTF_8)).asInt();
+    hc2 = Murmur3.hash32(key.getBytes(StandardCharsets.UTF_8), key.getBytes().length, seed);
     assertEquals(hc1, hc2);
   }
 
@@ -100,11 +101,11 @@ public class TestMurmur3 {
     HashFunction hf = Hashing.murmur3_128(seed);
     // guava stores the hashcodes in little endian order
     ByteBuffer buf = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
-    buf.put(hf.hashBytes(key.getBytes()).asBytes());
+    buf.put(hf.hashBytes(key.getBytes(StandardCharsets.UTF_8)).asBytes());
     buf.flip();
     long gl1 = buf.getLong();
     long gl2 = buf.getLong(8);
-    long[] hc = Murmur3.hash128(key.getBytes(), 0, key.getBytes().length, seed);
+    long[] hc = Murmur3.hash128(key.getBytes(StandardCharsets.UTF_8), 0, key.getBytes(StandardCharsets.UTF_8).length, seed);
     long m1 = hc[0];
     long m2 = hc[1];
     assertEquals(gl1, m1);
@@ -112,11 +113,11 @@ public class TestMurmur3 {
 
     key = "testkey128_testkey128";
     buf = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
-    buf.put(hf.hashBytes(key.getBytes()).asBytes());
+    buf.put(hf.hashBytes(key.getBytes(StandardCharsets.UTF_8)).asBytes());
     buf.flip();
     gl1 = buf.getLong();
     gl2 = buf.getLong(8);
-    byte[] keyBytes = key.getBytes();
+    byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
     hc = Murmur3.hash128(keyBytes, 0, keyBytes.length, seed);
     m1 = hc[0];
     m2 = hc[1];
@@ -140,7 +141,7 @@ public class TestMurmur3 {
         " it was the spring of hope, it was the winter of despair," +
         " we had everything before us, we had nothing before us," +
         " we were all going direct to Heaven," +
-        " we were all going direct the other way.").getBytes();
+        " we were all going direct the other way.").getBytes(StandardCharsets.UTF_8);
     long hash = Murmur3.hash64(origin, 0, origin.length);
     assertEquals(305830725663368540L, hash);
 
