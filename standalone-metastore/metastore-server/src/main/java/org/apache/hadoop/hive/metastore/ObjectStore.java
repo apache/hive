@@ -2745,7 +2745,6 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean dropPartitionCommon(MPartition part) throws MetaException,
     InvalidObjectException, InvalidInputException {
     boolean success = false;
-    QueryWrapper wrapper = new QueryWrapper();
     try {
       openTransaction();
       if (part != null) {
@@ -2760,19 +2759,17 @@ public class ObjectStore implements RawStore, Configurable {
             part.getTable().getDatabase().getCatalogName(),
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            Lists.newArrayList(partName), wrapper);
+            Lists.newArrayList(partName));
 
         if (CollectionUtils.isNotEmpty(partGrants)) {
           pm.deletePersistentAll(partGrants);
         }
-        wrapper.close();
 
         List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
             part.getTable().getDatabase().getCatalogName(),
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            Lists.newArrayList(partName), wrapper);
-
+            Lists.newArrayList(partName));
         if (CollectionUtils.isNotEmpty(partColumnGrants)) {
           pm.deletePersistentAll(partColumnGrants);
         }
@@ -2793,7 +2790,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      rollbackAndCleanup(success, wrapper);
+      if (!success) {
+        rollbackTransaction();
+      }
     }
     return success;
   }
@@ -7317,7 +7316,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(
-      String catName, String dbName, String tableName, List<String> partNames, QueryWrapper wrapper) {
+      String catName, String dbName, String tableName, List<String> partNames) {
     boolean success = false;
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
@@ -7330,7 +7329,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityColList = queryByPartitionNames(catName,
           dbName, tableName, partNames, MPartitionColumnPrivilege.class,
           "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName", wrapper);
+          "partition.table.database.catalogName");
       LOG.debug("Done executing query for listPartitionAllColumnGrants");
       pm.retrieveAll(mSecurityColList);
       success = commitTransaction();
@@ -7386,7 +7385,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<MPartitionPrivilege> listPartitionGrants(String catName, String dbName, String tableName,
-      List<String> partNames, QueryWrapper wrapper) {
+      List<String> partNames) {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
 
@@ -7398,7 +7397,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityTabPartList = queryByPartitionNames(catName,
           dbName, tableName, partNames, MPartitionPrivilege.class, "partition.table.tableName",
           "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName", wrapper);
+          "partition.table.database.catalogName");
       LOG.debug("Done executing query for listPartitionGrants");
       pm.retrieveAll(mSecurityTabPartList);
       success = commitTransaction();
@@ -7423,11 +7422,13 @@ public class ObjectStore implements RawStore, Configurable {
 
   private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
       List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol,
-      String catCol, QueryWrapper wrapper) {
+      String catCol) {
     Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
         dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
-    wrapper.query = queryAndParams.getLeft();
-    return (List<T>)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight());
+    List<T> results = new ArrayList<T>(
+        (List)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight()));
+    queryAndParams.getLeft().closeAll();
+    return results;
   }
 
   private Pair<Query, Object[]> makeQueryByPartitionNames(
