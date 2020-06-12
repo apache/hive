@@ -267,6 +267,10 @@ public class SetProcessor implements CommandProcessor {
         ss.closeSparkSession();
       }
     }
+    if (HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL.varname.equals(key)) {
+      result = HiveConf.generateDeprecationWarning();
+      LOG.warn(result);
+    }
     if (register) {
       ss.getOverriddenConfigurations().put(key, value);
     }

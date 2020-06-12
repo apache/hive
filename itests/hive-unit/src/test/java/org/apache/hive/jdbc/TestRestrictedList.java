@@ -16,6 +16,7 @@
 
 package org.apache.hive.jdbc;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -114,6 +115,8 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.password");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
+
+    checkRestrictedListMatch();
   }
 
   @AfterClass
@@ -129,8 +132,6 @@ public class TestRestrictedList {
   public void testRestrictedList() throws Exception {
     assertTrue("Test setup failed. MiniHS2 is not initialized",
         miniHS2 != null && miniHS2.isStarted());
-
-    checkRestrictedListMatch();
 
     try (Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), "hive", "hive");
          Statement stmt = hs2Conn.createStatement();) {
@@ -151,8 +152,18 @@ public class TestRestrictedList {
     }
   }
 
+  @Test
+  public void testNotInRestrictedList() throws Exception {
+    assertFalse("Config hive.create.as.acid should not in RestrictedList",
+        expectedRestrictedMap.containsKey("hive.create.as.acid"));
+    assertFalse("Config hive.create.as.insert.only should not in RestrictedList",
+        expectedRestrictedMap.containsKey("hive.create.as.insert.only"));
+    assertFalse("Config hive.create.as.external.legacy should not in RestrictedList",
+        expectedRestrictedMap.containsKey("hive.create.as.external.legacy"));
+  }
+
   // This test will make sure that every entry in hive.conf.restricted.list, has a test here
-  private void checkRestrictedListMatch(){
+  private static void checkRestrictedListMatch(){
     HiveConf.ConfVars restrictedConfVar = HiveConf.getConfVars("hive.conf.restricted.list");
     String definedRestrictedListString = HiveConf.getVar(hiveConf, restrictedConfVar);
     Set<String> definedRestrictedSet = new HashSet<String>();

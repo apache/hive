@@ -24,7 +24,7 @@ ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
-import SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser;
+import SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser;
 
 tokens {
 TOK_INSERT;
@@ -648,6 +648,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_PATH", "PATH");
     xlateMap.put("KW_AST", "AST");
     xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
+    xlateMap.put("KW_MANAGED", "MANAGED");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1139,41 +1140,6 @@ databaseComment
 @after { popMsg(state); }
     : KW_COMMENT comment=StringLiteral
     -> ^(TOK_DATABASECOMMENT $comment)
-    ;
-
-createTableStatement
-@init { pushMsg("create table statement", state); }
-@after { popMsg(state); }
-    : KW_CREATE (temp=KW_TEMPORARY)? (trans=KW_TRANSACTIONAL)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
-      (  like=KW_LIKE likeName=tableName
-         tableRowFormat?
-         tableFileFormat?
-         tableLocation?
-         tablePropertiesPrefixed?
-       | (LPAREN columnNameTypeOrConstraintList RPAREN)?
-         tableComment?
-         createTablePartitionSpec?
-         tableBuckets?
-         tableSkewed?
-         tableRowFormat?
-         tableFileFormat?
-         tableLocation?
-         tablePropertiesPrefixed?
-         (KW_AS selectStatementWithCTE)?
-      )
-    -> ^(TOK_CREATETABLE $name $temp? $trans? $ext? ifNotExists?
-         ^(TOK_LIKETABLE $likeName?)
-         columnNameTypeOrConstraintList?
-         tableComment?
-         createTablePartitionSpec?
-         tableBuckets?
-         tableSkewed?
-         tableRowFormat?
-         tableFileFormat?
-         tableLocation?
-         tablePropertiesPrefixed?
-         selectStatementWithCTE?
-        )
     ;
 
 truncateTableStatement
