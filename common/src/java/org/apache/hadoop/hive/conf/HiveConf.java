@@ -4219,6 +4219,17 @@ public class HiveConf extends Configuration {
         + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
         + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
         + " quoted table names.\nThe default value is true."),
+    // This config is temporary and will be deprecated later
+    CREATE_TABLE_AS_EXTERNAL("hive.create.as.external.legacy", false,
+        "When this flag set to true. it will ignore hive.create.as.acid and hive.create.as.insert.only,"
+        + "create external purge table by default."),
+    /**
+     * Expose MetastoreConf.CREATE_TABLES_AS_ACID in HiveConf
+     * so user can set hive.create.as.acid in session level
+     */
+    CREATE_TABLES_AS_ACID("hive.create.as.acid", false,
+        "Whether the eligible tables should be created as full ACID by default. Does \n" +
+        "not apply to external tables, the ones using storage handlers, etc."),
     HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
         "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
         "not apply to external tables, the ones using storage handlers, etc."),
@@ -6089,6 +6100,8 @@ public class HiveConf extends Configuration {
       ConfVars.AGGR_JOIN_TRANSPOSE.varname,
       ConfVars.BYTESPERREDUCER.varname,
       ConfVars.CLIENT_STATS_COUNTERS.varname,
+      ConfVars.CREATE_TABLES_AS_ACID.varname,
+      ConfVars.CREATE_TABLE_AS_EXTERNAL.varname,
       ConfVars.DEFAULTPARTITIONNAME.varname,
       ConfVars.DROP_IGNORES_NON_EXISTENT.varname,
       ConfVars.HIVECOUNTERGROUP.varname,
@@ -6112,6 +6125,7 @@ public class HiveConf extends Configuration {
       ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
       ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
       ConfVars.HIVE_COMPAT.varname,
+      ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY.varname,
       ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
       ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
       ConfVars.HIVE_EXECUTION_ENGINE.varname,
@@ -6575,6 +6589,11 @@ public class HiveConf extends Configuration {
     return "Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. "
         + "Consider using a different execution engine (i.e. " + HiveConf.getNonMrEngines()
         + ") or using Hive 1.X releases.";
+  }
+
+  public static String generateDeprecationWarning() {
+    return "This config will be deprecated and may not be available in the future "
+        + "versions. Please adjust DDL towards the new semantics.";
   }
 
   private static final Object reverseMapLock = new Object();
