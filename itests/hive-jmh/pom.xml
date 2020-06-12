@@ -106,7 +106,7 @@
                   </transformers>
                   <filters>
                     <filter>
-                      <!-- 
+                      <!--
                       Shading signed JARs will fail without this.
                       http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar
                       -->
