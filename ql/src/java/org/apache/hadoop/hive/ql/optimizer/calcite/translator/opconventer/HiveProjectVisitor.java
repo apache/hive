@@ -107,7 +107,7 @@ class HiveProjectVisitor extends HiveRelNodeVisitor<HiveProject> {
   private OpAttr genPTF(OpAttr inputOpAf, WindowingSpec wSpec) throws SemanticException {
     Operator<?> input = inputOpAf.inputs.get(0);
 
-    wSpec.validateAndMakeEffective();
+    wSpec.validateAndMakeEffective(hiveOpConverter.getHiveConf());
     WindowingComponentizer groups = new WindowingComponentizer(wSpec);
     RowResolver rr = new RowResolver();
     for (ColumnInfo ci : input.getSchema().getSignature()) {

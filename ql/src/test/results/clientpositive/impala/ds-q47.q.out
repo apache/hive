@@ -112,7 +112,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_mont
     ImpalaProjectRel(s_store_name=[$2], d_year=[$4], d_moy=[$5], avg_monthly_sales=[$7], sum_sales=[$6], psum=[$13], nsum=[$19], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($6, $7)])
       ImpalaJoinRel(condition=[AND(=($0, $15), =($1, $16), =($2, $17), =($3, $18), =($8, $20))], joinType=[inner])
         ImpalaJoinRel(condition=[AND(=($0, $9), =($1, $10), =($2, $11), =($3, $12), =($8, $14))], joinType=[inner])
-          ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ORDER BY $1 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $5 NULLS FIRST, $2 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+          ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ORDER BY $1 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $5 NULLS FIRST, $2 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
             ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
               ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
@@ -126,7 +126,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_mont
                 ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_name=[$17])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($17))])
           ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$4], +=[+($5, 1)])
-            ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+            ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
               ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
                 ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
                   ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
@@ -140,7 +140,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_mont
                   ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_name=[$17])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($17))])
         ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$4], -=[-($5, 1)])
-          ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+          ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
             ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
               ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
@@ -361,7 +361,7 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  functions: _impala_builtins.rank()
   |  partition by: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_brand, default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_company_name
   |  order by: default.impala_tpcds_date_dim.d_year ASC, default.impala_tpcds_date_dim.d_moy ASC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15,14 row-size=80B cardinality=0
   |  in pipelines: 10(GETNEXT)
@@ -517,7 +517,7 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  functions: _impala_builtins.rank()
   |  partition by: default.impala_tpcds_item_0.i_category, default.impala_tpcds_item_0.i_brand, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_company_name
   |  order by: default.impala_tpcds_date_dim_0.d_year ASC, default.impala_tpcds_date_dim_0.d_moy ASC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=32,31 row-size=80B cardinality=0
   |  in pipelines: 24(GETNEXT)
@@ -673,7 +673,7 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  functions: _impala_builtins.rank()
   |  partition by: default.impala_tpcds_item_1.i_category, default.impala_tpcds_item_1.i_brand, default.impala_tpcds_store_1.s_store_name, default.impala_tpcds_store_1.s_company_name
   |  order by: default.impala_tpcds_date_dim_1.d_year ASC, default.impala_tpcds_date_dim_1.d_moy ASC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=47,46 row-size=80B cardinality=0
   |  in pipelines: 37(GETNEXT)

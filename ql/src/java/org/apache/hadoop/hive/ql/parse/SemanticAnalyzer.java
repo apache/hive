@@ -15130,7 +15130,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
 
   private Operator genWindowingPlan(QB qb, WindowingSpec wSpec, Operator input) throws SemanticException {
-    wSpec.validateAndMakeEffective();
+    wSpec.validateAndMakeEffective(conf);
 
     if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
       // If CBO did not optimize the query, we might need to replace grouping function

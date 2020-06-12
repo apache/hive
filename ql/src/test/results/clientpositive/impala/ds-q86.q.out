@@ -57,7 +57,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(total_sum=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   ImpalaSortRel(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    ImpalaProjectRel(total_sum=[$2], i_category=[$0], i_class=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[$0])
+    ImpalaProjectRel(total_sum=[$2], i_category=[$0], i_class=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[$0])
       ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0)])
         ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           ImpalaProjectPassthroughRel($f0=[$6], $f1=[$5], $f2=[$2])
@@ -166,7 +166,7 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  functions: _impala_builtins.rank()
   |  partition by: $func_0, $func_1
   |  order by: $f2 DESC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17,16 row-size=76B cardinality=0
   |  in pipelines: 09(GETNEXT)

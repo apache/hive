@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.antlr.runtime.CommonToken;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
@@ -116,7 +118,7 @@ public class WindowingSpec {
    * - Validate the effective Window Frames with the rules in {@link validateWindowFrame}
    * - If there is no Order, then add the Partition expressions as the Order.
    */
-  public void validateAndMakeEffective() throws SemanticException {
+  public void validateAndMakeEffective(HiveConf conf) throws SemanticException {
     for(WindowExpressionSpec expr : getWindowExpressions()) {
       WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
       WindowSpec wdwSpec = wFn.getWindowSpec();
@@ -137,7 +139,7 @@ public class WindowingSpec {
 
       // 3. For missing Wdw Frames or for Frames with only a Start Boundary, completely
       //    specify them by the rules in {@link effectiveWindowFrame}
-      effectiveWindowFrame(wFn);
+      effectiveWindowFrame(conf, wFn);
 
       // 4. Validate the effective Window Frames with the rules in {@link validateWindowFrame}
       validateWindowFrame(wdwSpec);
@@ -203,15 +205,17 @@ public class WindowingSpec {
    * - A Window Specification with no Order and no Window Frame is interpreted as:
    *     ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
    */
-  private void effectiveWindowFrame(WindowFunctionSpec wFn)
+  private void effectiveWindowFrame(HiveConf conf, WindowFunctionSpec wFn)
       throws SemanticException {
     WindowSpec wdwSpec = wFn.getWindowSpec();
     WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn.getName());
-    boolean supportsWindowing = wFnInfo == null ? true : wFnInfo.isSupportsWindow();
+    boolean supportsWindowing = wFnInfo == null || wFnInfo.isSupportsWindow();
     WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
     OrderSpec orderSpec = wdwSpec.getOrder();
     if ( wFrame == null ) {
-      if (!supportsWindowing ) {
+      if (conf.getEngine() == Engine.HIVE && !supportsWindowing) {
+        // Note: Hive has a special implementation of some UDAFs for which a
+        // different frame needs to be created
         if ( wFn.getName().toLowerCase().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
             && orderSpec != null ) {
           /*

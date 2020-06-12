@@ -81,7 +81,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(total_sum=[$0], s_state=[$1], s_county=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   ImpalaSortRel(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    ImpalaProjectRel(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[$0])
+    ImpalaProjectRel(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[$0])
       ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0)])
         ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           ImpalaProjectPassthroughRel($f0=[$7], $f1=[$6], $f2=[$1])
@@ -95,7 +95,7 @@ ImpalaProjectPassthroughRel(total_sum=[$0], s_state=[$1], s_county=[$2], lochier
                 ImpalaProjectPassthroughRel(s_store_sk=[$0], s_county=[$23], s_state=[$24])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($24), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(s_state=[$0])
-                ImpalaProjectRel((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+                ImpalaProjectRel((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
                   ImpalaAggregateRel(group=[{5}], agg#0=[sum($1)])
                     ImpalaJoinRel(condition=[=($4, $0)], joinType=[inner])
                       ImpalaJoinRel(condition=[=($3, $2)], joinType=[inner])
@@ -226,7 +226,7 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  functions: _impala_builtins.rank()
   |  partition by: $func_0, $func_1
   |  order by: $f2 DESC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=29,28 row-size=76B cardinality=0
   |  in pipelines: 20(GETNEXT)
@@ -393,7 +393,7 @@ Per-Host Resources: mem-estimate=144.00MB mem-reservation=50.00MB thread-reserva
   |  functions: _impala_builtins.rank()
   |  partition by: default.impala_tpcds_store_0.s_state
   |  order by: _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit) DESC
-  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16,15 row-size=36B cardinality=0
   |  in pipelines: 14(GETNEXT)
