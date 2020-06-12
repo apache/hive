@@ -405,18 +405,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    */
   private boolean isTargetTable(Entity entity, Table targetTable) {
     //todo: https://issues.apache.org/jira/browse/HIVE-15048
-    /**
-     * is this the right way to compare?  Should it just compare paths?
-     * equals() impl looks heavy weight
-     */
-    long targetWriteId = targetTable.getTTable().getWriteId();
-    long entityWriteId = entity.getTable().getTTable().getWriteId();
-    targetTable.getTTable().setWriteId(0L);
-    entity.getTable().getTTable().setWriteId(0L);
-    boolean result = targetTable.equals(entity.getTable());
-    targetTable.getTTable().setWriteId(targetWriteId);
-    entity.getTable().getTTable().setWriteId(entityWriteId);
-    return result;
+    return targetTable.equalsWithIgnoreWriteId(entity);
   }
 
   /**

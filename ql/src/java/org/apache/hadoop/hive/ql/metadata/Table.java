@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.*;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -1315,6 +1316,17 @@ public class Table implements Serializable {
 
     this.cc = tbl.cc;
     this.isCheckFetched = tbl.isCheckFetched;
+  }
+
+  public boolean equalsWithIgnoreWriteId( Entity entity ) {
+    long targetWriteId = getTTable().getWriteId();
+    long entityWriteId = entity.getTable().getTTable().getWriteId();
+    getTTable().setWriteId(0L);
+    entity.getTable().getTTable().setWriteId(0L);
+    boolean result = equals(entity.getTable());
+    getTTable().setWriteId(targetWriteId);
+    entity.getTable().getTTable().setWriteId(entityWriteId);
+    return result;
   }
 
 };

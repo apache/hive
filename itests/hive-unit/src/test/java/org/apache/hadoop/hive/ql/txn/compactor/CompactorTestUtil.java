@@ -264,7 +264,7 @@ class CompactorTestUtil {
       }
 
       @Override
-      void locallyCommitWriteId(long writeId) {}
+      public void locallyCommitWriteId(long writeId) {}
     };
 
     OrcInputFormat aif = new OrcInputFormat();

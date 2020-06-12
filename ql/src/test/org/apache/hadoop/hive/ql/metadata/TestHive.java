@@ -182,7 +182,6 @@ public class TestHive {
       tbl.setSerdeParam(serdeConstants.FIELD_DELIM, "1");
       tbl.setSerializationLib(LazySimpleSerDe.class.getName());
       tbl.setStoredAsSubDirectories(false);
-      tbl.setTemporary(false);
 
       tbl.setRewriteEnabled(false);
 

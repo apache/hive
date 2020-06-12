@@ -1451,7 +1451,7 @@ public class Hive {
    */
   public Table getTable(final String dbName, final String tableName,
                         boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, throwException, true);
+    return this.getTable(dbName, tableName, throwException, false);
   }
 
   /**
@@ -5336,7 +5336,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
       }
     }
-    //metaStoreClient.setValidWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+    metaStoreClient.setValidWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     return metaStoreClient;
   }
 
