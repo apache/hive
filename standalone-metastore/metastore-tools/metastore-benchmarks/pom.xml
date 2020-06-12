@@ -138,7 +138,7 @@
       The dist profile generates two full jars with dependencies - obe for HMSBenchmarks and
       another for HMSTool.
       -->
-      <id>dist</id>
+      <id>perf</id>
       <build>
         <plugins>
           <plugin>
