@@ -1489,4 +1489,72 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("china", "india"));
   }
+
+  /*
+  Can't test complete replication as mini ranger is not supported
+  Testing just the configs and no impact on existing replication
+   */
+  @Test
+  public void testRangerReplication() throws Throwable {
+    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+        "'hive.in.test'='true'",
+        "'hive.repl.authorization.provider.service.endpoint'='http://localhost:6080/ranger'");
+    primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)")
+        .dump(primaryDbName, clause);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] {"acid_table", "table1"})
+        .run("select * from table1")
+        .verifyResults(new String[] {"1", "2"});
+  }
+
+  /*
+  Can't test complete replication as mini ranger is not supported
+  Testing just the configs and no impact on existing replication
+   */
+  @Test
+  public void testFailureRangerReplication() throws Throwable {
+    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+        "'hive.in.test'='true'");
+    primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)");
+    try {
+      primary.dump(primaryDbName, clause);
+    } catch (Exception e) {
+      assertEquals("Ranger endpoint is not valid. Please pass a valid config "
+          + "hive.repl.authorization.provider.service.endpoint", e.getMessage());
+    }
+  }
+
+  /*
+Can't test complete replication as mini ranger is not supported
+Testing just the configs and no impact on existing replication
+ */
+  @Test
+  public void testFailureUnsupportedAuthorizerReplication() throws Throwable {
+    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+        "'hive.in.test'='true'", "'hive.repl.authorization.provider.service'='sentry'");
+    primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)");
+    try {
+      primary.dump(primaryDbName, clause);
+    } catch (SemanticException e) {
+      assertEquals("Authorizer sentry not supported for replication ", e.getMessage());
+    }
+  }
 }

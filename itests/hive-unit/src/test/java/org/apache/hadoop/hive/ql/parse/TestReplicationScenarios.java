@@ -427,11 +427,12 @@ public class TestReplicationScenarios {
     return validator.hasTask(rootTask);
   }
 
-  private Task getReplLoadRootTask(String replicadb, boolean isIncrementalDump, Tuple tuple) throws Throwable {
+  private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
+                                   Tuple tuple) throws Throwable {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), replicadb,
+    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId));
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new TaskQueue(driver.getContext()), driver.getContext());
@@ -451,7 +452,7 @@ public class TestReplicationScenarios {
     Tuple dump = replDumpDb(dbName);
 
     //bootstrap load should not have move task
-    Task task = getReplLoadRootTask(dbNameReplica, false, dump);
+    Task task = getReplLoadRootTask(dbName, dbNameReplica, false, dump);
     assertEquals(false, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
@@ -465,7 +466,7 @@ public class TestReplicationScenarios {
 
     // Partition level statistics gets updated as part of the INSERT above. So we see a partition
     // task corresponding to an ALTER_PARTITION event.
-    task = getReplLoadRootTask(dbNameReplica, true, dump);
+    task = getReplLoadRootTask(dbName, dbNameReplica, true, dump);
     assertEquals(true, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
@@ -478,7 +479,7 @@ public class TestReplicationScenarios {
     dump = replDumpDb(dbName);
 
     //no move task should be added as the operation is adding a dynamic partition
-    task = getReplLoadRootTask(dbNameReplica, true, dump);
+    task = getReplLoadRootTask(dbName, dbNameReplica, true, dump);
     assertEquals(false, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
   }

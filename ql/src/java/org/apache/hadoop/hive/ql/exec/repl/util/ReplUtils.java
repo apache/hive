@@ -80,9 +80,16 @@ public class ReplUtils {
   // Root base directory name for hive.
   public static final String REPL_HIVE_BASE_DIR = "hive";
 
+  // Root base directory name for ranger.
+  public static final String REPL_RANGER_BASE_DIR = "ranger";
+
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
   public static final String REPL_TABLE_LIST_DIR_NAME = "_tables";
+
+  public static final String RANGER_AUTHORIZER = "ranger";
+
+  public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies.json";
 
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.

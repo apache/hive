@@ -44,6 +44,7 @@ public class ReplLoadWork implements Serializable {
   final ReplScope currentReplScope;
   final String dumpDirectory;
   private boolean lastReplIDUpdated;
+  private String sourceDbName;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -60,12 +61,13 @@ public class ReplLoadWork implements Serializable {
   final LineageState sessionStateLineageState;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
-                      String dbNameToLoadIn, ReplScope currentReplScope,
+                      String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
                       LineageState lineageState, boolean isIncrementalDump, Long eventTo) throws IOException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.currentReplScope = currentReplScope;
+    this.sourceDbName = sourceDbName;
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
     if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
@@ -151,5 +153,9 @@ public class ReplLoadWork implements Serializable {
 
   public void setLastReplIDUpdated(boolean lastReplIDUpdated) {
     this.lastReplIDUpdated = lastReplIDUpdated;
+  }
+
+  public String getSourceDbName() {
+    return sourceDbName;
   }
 }

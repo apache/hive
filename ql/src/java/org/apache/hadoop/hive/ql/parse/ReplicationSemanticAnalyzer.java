@@ -397,7 +397,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           LOG.debug("{} contains an bootstrap dump", loadPath);
         }
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+                replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
