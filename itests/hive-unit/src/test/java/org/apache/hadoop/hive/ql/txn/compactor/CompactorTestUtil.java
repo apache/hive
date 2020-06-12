@@ -262,6 +262,9 @@ class CompactorTestUtil {
       public RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId) {
         return RangeResponse.ALL;
       }
+
+      @Override
+      void locallyCommitWriteId(long writeId) {}
     };
 
     OrcInputFormat aif = new OrcInputFormat();
