@@ -58,7 +58,7 @@ import java.util.ArrayList;
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
-  private static final long DEFAULT_PROBE_TIMEOUT = 2 * 60 * 1000L; // 2 minutes
+  private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 2 minutes
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -114,7 +114,6 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   }
 
   @Test
-  @Ignore("HIVE-23395")
   public void testAcidTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     primary.run("use " + primaryDbName)
