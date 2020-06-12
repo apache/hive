@@ -171,7 +171,8 @@ jobWrappers {
       stage('Prechecks') {
         def findbugsProjects = [
             ":hive-shims-aggregator",
-            ":hive-shims-common"
+            ":hive-shims-common",
+            ":hive-storage-api"
         ]
         buildHive("-Pfindbugs -pl " + findbugsProjects.join(",") + " -am compile findbugs:check")
       }
