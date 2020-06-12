@@ -296,6 +296,21 @@ public class TestJdbcDriver2 {
 
   @Test
   /**
+   * Test setting create external purge table by default in jdbc config
+   * @throws SQLException
+   */
+  public void testCreateTableAsExternal() throws SQLException {
+    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true");
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
+    assertTrue("ResultSet is empty", res.next());
+    assertEquals("hive.create.as.external.legacy=true", res.getObject(1));
+    stmt.close();
+    con.close();
+  }
+
+  @Test
+  /**
    * Test running parallel queries (with parallel queries disabled).
    * Should be serialized in the order of execution.
    * @throws Exception
