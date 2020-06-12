@@ -41,6 +41,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
       System.getProperty("java.io.tmpdir") + File.separator + TestMSCKRepairOnAcid.class.getCanonicalName()
           + "-" + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
 
+  private final String acidTblPartMsck = "acidtblpartmsck";
+
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;
@@ -53,6 +55,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionDeltas() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,2,'p1'),(2,3,'p1'),(3,4,'p1')");
@@ -61,14 +65,14 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
+
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -89,6 +93,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddMultiPartitionDeltas() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(4,4,'p1')");
@@ -98,16 +104,15 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 }, { 4, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     // call msk repair
@@ -127,6 +132,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionHighWriteIdException() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,2,'p2'),(2,3,'p2'),(3,4,'p2')");
@@ -135,7 +142,6 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -145,7 +151,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, false, hiveConf);
 
     // One partition written, one copied
@@ -167,6 +173,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionLowerWriteId() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,2,'p2'),(2,3,'p2'),(3,4,'p2')");
@@ -175,7 +183,6 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -186,7 +193,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, false, hiveConf);
 
     // One partition written, one copied
@@ -210,6 +217,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionMinorCompacted() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(4,4,'p1')");
@@ -223,16 +232,15 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 }, { 4, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -254,6 +262,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionMajorCompacted() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(4,4,'p1')");
@@ -267,16 +277,15 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 }, { 4, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -312,7 +321,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
     fs.mkdirs(new Path(getWarehouseDir(), "mybackup"));
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), "mybackup"), true, hiveConf);
 
     // call msk repair to remove partition p1
@@ -342,6 +351,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
   @Test
   public void testAddPartitionHighVisibilityId() throws Exception {
 
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1')");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(4,4,'p1')");
@@ -356,16 +367,15 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 1, 2 }, { 2, 2 }, { 2, 3 }, { 3, 3 }, { 3, 4 }, { 4, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p1"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p1"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
-    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString() + "/p=p2"), fs,
+    FileUtil.copy(fs, new Path(getWarehouseDir() + "/" + Table.ACIDTBLPART.toString().toLowerCase() + "/p=p2"), fs,
         new Path(getWarehouseDir(), acidTblPartMsck), false, hiveConf);
 
     FileStatus[] fileStatuses = fs.listStatus(new Path(getWarehouseDir(), acidTblPartMsck + "/p=p1"));
@@ -399,8 +409,11 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
    */
   @Test
   public void testAddPartitionMMInsertOverwrite() throws Exception{
-    final String mmTable = "mmTblPart";
-    final String sourceTable = "nonAcidPart";
+    final String mmTable = "mmtblpartmsck";
+    final String sourceTable = "nonacidpartmsck";
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+    runStatementOnDriver("drop table if exists " + mmTable);
+    runStatementOnDriver("drop table if exists " + sourceTable);
     runStatementOnDriver("create table " + mmTable + "(a int, b int) partitioned by (p string) stored as orc"
         + " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')");
     runStatementOnDriver("create table " + sourceTable + "(a int, b int) partitioned by (p string) stored as orc"
@@ -423,7 +436,6 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 2 }, { 2, 3 }, { 3, 4 },{ 10, 10 }, { 20, 20 }, { 30, 30 }, {40, 40} };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblPartMsck = "acidTblPartMsck";
     runStatementOnDriver("create table " + acidTblPartMsck
         + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')");
@@ -455,6 +467,8 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
    */
   @Test
   public void testNonPartitionedTable() throws Exception {
+    String acidTblMsck = "acidtblmsck";
+    runStatementOnDriver("drop table if exists " + acidTblMsck);
 
     // Insert few rows
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1),(2,2),(3,3)");
@@ -468,14 +482,14 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     int[][] expected = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 } };
     Assert.assertEquals(stringifyValues(expected), r);
     // Create target table
-    String acidTblMsck = "acidTblMsck";
+
     runStatementOnDriver("create table " + acidTblMsck
         + " (a int, b int) clustered by (a) into 2 buckets"
         + " stored as orc TBLPROPERTIES ('transactional'='true')");
 
     // copy files on fs
     FileSystem fs = FileSystem.get(hiveConf);
-    for (FileStatus status : fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString()))) {
+    for (FileStatus status : fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()))) {
       FileUtil.copy(fs, status.getPath(), fs,
           new Path(getWarehouseDir(), acidTblMsck), false, hiveConf);
     }
