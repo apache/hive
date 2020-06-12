@@ -1465,6 +1465,7 @@
 	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
 	    <exclude>**/gen/**</exclude>
+	    <exclude>**/target/**</exclude>
 	    <exclude>**/scripts/**</exclude>
 	    <exclude>**/resources/**</exclude>
 	    <exclude>**/*.rc</exclude>
