@@ -208,7 +208,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
-      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext(), sarg);
+      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
       LOG.info("LlapRecordReader ProbeDecode is enabled");
     }
 
@@ -740,17 +740,21 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
 
-    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext, SearchArgument sarg) {
+    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext) {
       this.probeDynHTContext = currProbeDecodeContext;
-      String filterExpr = jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR, "");
-      if (!filterExpr.isEmpty() && sarg != null) {
-        ExprNodeGenericFuncDesc exprObj = SerializationUtilities.
-            deserializeExpression(jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR));
+
+      if (probeDynHTContext.getStaticFilterExpr() != null) {
+        if (readerLogicalColumnIds.size() < probeDynHTContext.getStaticFilterExpr().getCols().size()) {
+          LOG.info("ProbeDecode RowFilter logicalCols {} missmatch Expr {}", readerLogicalColumnIds,
+                  probeDynHTContext.getStaticFilterExpr().getCols());
+          return;
+        }
 
         SchemaEvolution schemaEvolution = this.createSchemaEvolution(readerSchema);
         // Get the colIds use for static filter (and thus rowFiltering)
         int[] filterColumnIds = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
-            sarg.getLeaves(), schemaEvolution);
+                ConvertAstToSearchArg.create(jobConf, (ExprNodeGenericFuncDesc) probeDynHTContext.getStaticFilterExpr()).getLeaves(),
+                schemaEvolution);
 
         // Get all included ColIds -> ColNames (needed by the generated filterExpression below)
         List<String> allIncludedColNames = new ArrayList<>(filterColumnIds.length);
@@ -761,8 +765,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           }
         }
 
-        probeStaticRowFilter = ORCRowFilter.getRowFilter(exprObj, allIncludedColNames);
-        List<String> filterColNames = exprObj.getCols();
+        probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDynHTContext.getStaticFilterExpr(), allIncludedColNames);
+        List<String> filterColNames =  probeDynHTContext.getStaticFilterExpr().getCols();
 
 //        TableScanOperator tsOp  = (TableScanOperator) mapWork.getAllRootOperators().stream().iterator().next();
 //        Operator<?> root = tsOp;

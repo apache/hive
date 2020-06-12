@@ -92,6 +92,7 @@ public class ORCRowFilter {
             createdFilter = new ORCRowFilter(currFilterExpr, vc);
         } catch (HiveException e) {
             LOG.error("ProbeDecode could not covert filter {}, {}",filterExpr, e.getMessage());
+            throw new RuntimeException("ProbeDecode could not covert filter " + e);
         }
         return createdFilter;
     }

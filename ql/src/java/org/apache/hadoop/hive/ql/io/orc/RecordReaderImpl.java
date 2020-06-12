@@ -88,7 +88,13 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       // ensure selected is false
       // row-filtering should set it in nextBatch() call
       batch.selectedInUse = false;
-      return super.nextBatch(batch);
+      // make sure we skip zero size VRBs (after row-filter)
+      while (super.nextBatch(batch)) {
+        if (batch.size > 0) {
+          return true;
+        }
+      }
+      return false;
     }
     return true;
   }
@@ -141,11 +147,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       // we have to convert rowsIds using selected Array
       if (batch.isSelectedInUse()) {
         LOG.info("New rowId: "+ batch.selected[rowInBatch] + " for rowId: " + rowInBatch);
-        rowInBatch = batch.selected[rowInBatch];
       }
 
       for (int i=0; i < numberOfChildren; ++i) {
-        result.setFieldValue(i, nextValue(batch.cols[i], rowInBatch,
+        result.setFieldValue(i, nextValue(batch.cols[i], batch.isSelectedInUse() ? batch.selected[rowInBatch] : rowInBatch,
             children.get(i), result.getFieldValue(i)));
       }
     } else {
