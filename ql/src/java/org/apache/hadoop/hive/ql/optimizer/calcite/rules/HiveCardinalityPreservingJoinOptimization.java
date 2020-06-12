@@ -149,13 +149,17 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       // 3. Trim out non-key fields of joined back tables
       Set<RelDataTypeField> extraFields = Collections.emptySet();
       TrimResult trimResult = dispatchTrimFields(rootInput, fieldsUsed, extraFields);
+      RelNode newInput = trimResult.left;
+      if (newInput.getRowType().equals(rootInput.getRowType())) {
+        LOG.debug("Nothing was trimmed out.");
+        return root;
+      }
 
       // 4. Collect fields for new Project on the top of Join backs
-      RelNode newInput = trimResult.left;
       Mapping newInputMapping = trimResult.right;
       RexNode[] newProjects = new RexNode[rootFieldList.size()];
       String[] newColumnNames = new String[rootFieldList.size()];
-      projectsFromOriginalPlan(rexBuilder, fieldsUsed.cardinality(), newInput, newInputMapping,
+      projectsFromOriginalPlan(rexBuilder, newInput.getRowType().getFieldCount(), newInput, newInputMapping,
           newProjects, newColumnNames);
 
       // 5. Join back tables to the top of original plan
@@ -199,9 +203,6 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         newInput = relBuilder.join(JoinRelType.INNER, joinCondition).build();
       }
 
-      RexShuttle shuttle = new RexShuttle();
-      shuttle.mutate(rootFieldList);
-
       // 6 Create Project on top of all Join backs
       relBuilder.push(newInput);
       relBuilder.project(asList(newProjects), asList(newColumnNames));
@@ -217,6 +218,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       List<RexInputRef> projectExpressions, RelNode projectInput) {
     RelMetadataQuery relMetadataQuery = RelMetadataQuery.instance();
     Map<RelOptHiveTable, ProjectedFieldsBuilder> fieldMappingBuilders = new HashMap<>();
+    List<RelOptHiveTable> tablesOrdered = new ArrayList<>(); // use this list to keep the order of tables
     for (RexInputRef expr : projectExpressions) {
       Set<RexNode> expressionLineage = relMetadataQuery.getExpressionLineage(projectInput, expr);
       if (expressionLineage == null || expressionLineage.size() != 1) {
@@ -233,12 +235,17 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
 
       RelOptHiveTable relOptHiveTable = (RelOptHiveTable) rexTableInputRef.getTableRef().getTable();
       ProjectedFieldsBuilder projectedFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
-          relOptHiveTable, k -> new ProjectedFieldsBuilder(relOptHiveTable));
+          relOptHiveTable, k -> {
+            tablesOrdered.add(relOptHiveTable);
+            return new ProjectedFieldsBuilder(relOptHiveTable);
+          });
       projectedFieldsBuilder.add(expr.getIndex(), rexTableInputRef.getIndex(),
           new ProjectMapping(expr.getIndex(), rexTableInputRef.getIndex()));
     }
 
-    return fieldMappingBuilders.values().stream().map(ProjectedFieldsBuilder::build).collect(Collectors.toList());
+    return tablesOrdered.stream()
+        .map(relOptHiveTable -> fieldMappingBuilders.get(relOptHiveTable).build())
+        .collect(Collectors.toList());
   }
 
   public RexTableInputRef rexTableInputRef(RexNode rexNode) {
