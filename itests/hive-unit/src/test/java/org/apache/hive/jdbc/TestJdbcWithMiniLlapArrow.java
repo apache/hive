@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestJdbcWithMiniLlapArrow.class);

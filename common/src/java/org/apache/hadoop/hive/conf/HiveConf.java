@@ -478,6 +478,9 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
+        "Indicates whether replication dump can skip copyTask and refer to  \n"
+            + " original path instead. This would retain all table and partition meta"),
     REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
             false,
             "Indicates whether external table replication dump only metadata information or data + metadata"),
@@ -1660,7 +1663,7 @@ public class HiveConf extends Configuration {
         "Note that this check currently does not consider data size, only the query pattern."),
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
-        "  Comparing bigints and strings.\n" +
+        "  Comparing bigints and strings/(var)chars.\n" +
         "  Comparing bigints and doubles."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
@@ -2787,7 +2790,8 @@ public class HiveConf extends Configuration {
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
         120, "Enable dir cache for ACID tables specified in minutes."
-        + "0 indicates cache is disabled. "),
+        + "0 indicates cache is used as read-only and no additional info would be "
+        + "populated. -1 means cache is disabled"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
