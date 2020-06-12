@@ -152,7 +152,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven.javadoc.plugin.version}</version>
         <executions>
           <execution>
             <id>resourcesdoc.xml</id>
@@ -165,6 +164,7 @@
               <verbose>true</verbose>
               <show>public</show>
               <doclet>com.sun.jersey.wadl.resourcedoc.ResourceDoclet</doclet>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
               <docletArtifacts>
                 <docletArtifact>
                   <groupId>com.sun.jersey.contribs</groupId>
