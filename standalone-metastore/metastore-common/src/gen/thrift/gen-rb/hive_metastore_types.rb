@@ -3508,6 +3508,7 @@ class CompactionInfoStruct
   HIGHESTWRITEID = 12
   ERRORMESSAGE = 13
   HASOLDABORT = 14
+  QUEUETIME = 15
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3523,7 +3524,8 @@ class CompactionInfoStruct
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
     HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
-    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true}
+    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
+    QUEUETIME => {:type => ::Thrift::Types::I64, :name => 'queueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3611,6 +3613,7 @@ class ShowCompactResponseElement
   HADOOPJOBID = 12
   ID = 13
   ERRORMESSAGE = 14
+  QUEUETIME = 15
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3626,7 +3629,8 @@ class ShowCompactResponseElement
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
-    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
+    QUEUETIME => {:type => ::Thrift::Types::I64, :name => 'queueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end

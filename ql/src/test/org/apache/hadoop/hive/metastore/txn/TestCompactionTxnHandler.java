@@ -590,6 +590,65 @@ public class TestCompactionTxnHandler {
     }
   }
 
+  @Test
+  public void testQueueTimeEvenAfterFailed() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetQueueTime());
+    long queueTime = element.getQueueTime();
+    assertTrue(queueTime <= after);
+    assertTrue(queueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markFailed(ci);
+
+    checkQueueTime(queueTime);
+  }
+
+  @Test
+  public void testQueueTimeThroughLifeCycle() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetQueueTime());
+    long queueTime = element.getQueueTime();
+    assertTrue(queueTime <= after);
+    assertTrue(queueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
+    checkQueueTime(queueTime);
+
+    txnHandler.markCompacted(ci);
+    checkQueueTime(queueTime);
+
+    txnHandler.markCleaned(ci);
+    checkQueueTime(queueTime);
+  }
+
+  private void checkQueueTime(long queueTime) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetQueueTime());
+    assertEquals(queueTime, element.getQueueTime());
+  }
+
   @Before
   public void setUp() throws Exception {
     txnHandler = TxnUtils.getTxnStore(conf);
