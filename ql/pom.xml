@@ -857,9 +857,10 @@
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <version>3.0.1</version>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>4.0.3</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   <profiles>
