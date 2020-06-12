@@ -42,7 +42,6 @@ public class ProxyFileSystem extends FilterFileSystem {
 
   protected String realScheme;
   protected String realAuthority;
-  protected URI realUri;
 
 
 
@@ -103,8 +102,7 @@ public class ProxyFileSystem extends FilterFileSystem {
 
     URI realUri = fs.getUri();
     this.realScheme = realUri.getScheme();
-    this.realAuthority=realUri.getAuthority();
-    this.realUri = realUri;
+    this.realAuthority = realUri.getAuthority();
 
     this.myScheme = myUri.getScheme();
     this.myAuthority=myUri.getAuthority();

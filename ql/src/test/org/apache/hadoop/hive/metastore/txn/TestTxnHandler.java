@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -1756,15 +1757,20 @@ public class TestTxnHandler {
   }
 
   @Test
-  @Ignore("unstable HIVE-23630")
   public void allocateNextWriteIdRetriesAfterDetectingConflictingConcurrentInsert() throws Exception {
     String dbName = "abc";
     String tableName = "def";
     int numTxns = 2;
+    int iterations = 20;
+    // use TxnHandler instance w/ increased retry limit
+    long originalLimit = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, iterations + 1);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
     try (Connection dbConn = ((TxnHandler) txnHandler).getDbConn(Connection.TRANSACTION_READ_COMMITTED);
          Statement stmt = dbConn.createStatement()) {
       // run this multiple times to get write-write conflicts with relatively high chance
-      for (int i = 0; i < 20; ++i) {
+      for (int i = 0; i < iterations; ++i) {
         // make sure these 2 tables have no records of our dbName.tableName
         // this ensures that allocateTableWriteIds() will try to insert into next_write_id (instead of update)
         stmt.executeUpdate("TRUNCATE TABLE \"NEXT_WRITE_ID\"");
@@ -1807,6 +1813,8 @@ public class TestTxnHandler {
         assertEquals(i * numTxns + 2, result.getTxnToWriteIds().get(1).getTxnId());
         assertEquals(2, result.getTxnToWriteIds().get(1).getWriteId());
       }
+      // restore to original retry limit value
+      MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, originalLimit);
     }
   }
 

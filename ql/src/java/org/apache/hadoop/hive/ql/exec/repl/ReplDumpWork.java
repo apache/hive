@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -164,6 +165,9 @@ public class ReplDumpWork implements Serializable {
   }
 
   public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
     List<Task<?>> tasks = new ArrayList<>();
     while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
       DirCopyWork dirCopyWork = dirCopyIterator.next();
@@ -176,6 +180,9 @@ public class ReplDumpWork implements Serializable {
   }
 
   public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
     List<Task<?>> tasks = new ArrayList<>();
     while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
       EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();

@@ -27,6 +27,23 @@ properties([
     ])
 ])
 
+this.prHead = null;
+def checkPrHead() {
+  if(env.CHANGE_ID) {
+    println("checkPrHead - prHead:" + prHead)
+    println("checkPrHead - prHead2:" + pullRequest.head)
+    if (prHead == null) {
+      prHead = pullRequest.head;
+    } else {
+      if(prHead != pullRequest.head) {
+        currentBuild.result = 'ABORTED'
+        error('Found new changes on PR; aborting current build')
+      }
+    }
+  }
+}
+checkPrHead()
+
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
    def mapping=[
@@ -77,6 +94,7 @@ if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.t
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
+df -h
 '''
     }
   }
@@ -88,7 +106,7 @@ def hdbPodTemplate(closure) {
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
-        resourceLimitCpu: '3000m',
+        resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi'
     ),
@@ -119,6 +137,7 @@ def jobWrappers(closure) {
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
+        checkPrHead()
         closure()
       }
     }
@@ -149,9 +168,18 @@ jobWrappers {
       stage('Checkout') {
         checkout scm
       }
+      stage('Prechecks') {
+        def findbugsProjects = [
+            ":hive-shims-aggregator",
+            ":hive-shims-common",
+            ":hive-storage-api"
+        ]
+        buildHive("-Pfindbugs -pl " + findbugsProjects.join(",") + " -am compile findbugs:check")
+      }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
       }
+      checkPrHead()
       stage('Upload') {
         saveWS()
         sh '''#!/bin/bash -e
@@ -180,7 +208,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("install -q")
+              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
             stage('Archive') {
