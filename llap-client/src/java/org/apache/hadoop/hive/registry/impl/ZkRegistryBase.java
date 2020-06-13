@@ -339,7 +339,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
 
-  final void initializeWithoutRegisteringInternal() throws IOException {
+  final protected void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
       try {
