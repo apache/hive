@@ -235,7 +235,11 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
     for (int i = 0; i < inputs.size(); ++i) {
       RelDataType preCastDataType =  inputs.get(i).getType();
-      if (ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
+      // If the datatypes are compatible, we don't want to cast it.
+      // If the datatype is null, they are compatible, but we always want to cast it
+      // to its proper datatype.
+      if (preCastDataType.getSqlTypeName() != SqlTypeName.NULL &&
+	   ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
         newOperands.add(inputs.get(i));
       } else {
         RelDataType castedRelDataType = getCastedDataType(typeFactory, castTypes.get(i), preCastDataType);

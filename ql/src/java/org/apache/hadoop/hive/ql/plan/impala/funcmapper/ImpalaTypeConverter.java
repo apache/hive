@@ -125,6 +125,8 @@ public class ImpalaTypeConverter {
         return Type.DATE;
       case SYMBOL:
         return null;
+      case NULL:
+        return Type.NULL;
       default:
         throw new RuntimeException("Unknown SqlTypeName " + sqlTypeName + " to convert to Impala.");
     }

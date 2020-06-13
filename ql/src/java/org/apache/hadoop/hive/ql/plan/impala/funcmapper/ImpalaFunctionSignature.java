@@ -208,6 +208,11 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
 
     boolean retVal = true;
     for (int i = 0; i < argsToCheck; ++i) {
+      // if either arg type is null, the signature will match because nulls can be
+      // used for any datatype.
+      if (this.argTypes.get(i) == Type.NULL || other.argTypes.get(i) == Type.NULL) {
+	continue;
+      }
       if (!this.argTypes.get(i).equals(other.argTypes.get(i))) {
         retVal = false;
         break;
@@ -296,14 +301,21 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
   }
 
   /**
-   * Returns true if datatypes are compatible. In the case of character data,
-   * char, varchar, and string are all compatible.
+   * Returns true if datatypes are compatible within the Impala function. In the case of character,
+   * data, char, varchar, and string are all compatible.  Nulls are compatible with everything
+   * since the function signature will never take a null type and if the data is null, it can
+   * go into any Impala function.
    */
   public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2) {
     if (SqlTypeName.CHAR_TYPES.contains(dt1.getSqlTypeName()) &&
         SqlTypeName.CHAR_TYPES.contains(dt2.getSqlTypeName())) {
       return true;
     }
+
+    if (dt1.getSqlTypeName() == SqlTypeName.NULL || dt2.getSqlTypeName() == SqlTypeName.NULL) {
+      return true;
+    }
+
     return dt1.getSqlTypeName() == dt2.getSqlTypeName();
   }
 
