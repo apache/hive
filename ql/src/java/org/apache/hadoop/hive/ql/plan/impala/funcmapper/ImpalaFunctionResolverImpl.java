@@ -239,7 +239,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       // If the datatype is null, they are compatible, but we always want to cast it
       // to its proper datatype.
       if (preCastDataType.getSqlTypeName() != SqlTypeName.NULL &&
-	   ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
+          ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
         newOperands.add(inputs.get(i));
       } else {
         RelDataType castedRelDataType = getCastedDataType(typeFactory, castTypes.get(i), preCastDataType);

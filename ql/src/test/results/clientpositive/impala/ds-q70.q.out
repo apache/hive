@@ -81,8 +81,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(total_sum=[$0], s_state=[$1], s_county=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   ImpalaSortRel(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    ImpalaProjectRel(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[$0])
-      ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0)])
+    ImpalaProjectRel(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $2 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[CASE(=($4, 0), $0, null:VARCHAR(2147483647))])
+      ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))])
         ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           ImpalaProjectPassthroughRel($f0=[$7], $f1=[$6], $f2=[$1])
             ImpalaJoinRel(condition=[=($7, $8)], joinType=[inner])

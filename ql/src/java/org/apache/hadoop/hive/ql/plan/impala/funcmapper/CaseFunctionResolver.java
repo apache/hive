@@ -74,6 +74,11 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
     if (castTypes == null) {
       throw new HiveException("getCastOperandTypes() for case statement failed.");
     }
+    // if there are less input nodes than cast types, then we have an implicit "else null" that
+    // we need to create.
+    if (newInputs.size() < castTypes.size()) {
+      newInputs.add(rexBuilder.makeNullLiteral(castTypes.get(castTypes.size() - 1)));
+    }
     return castInputs(newInputs, castTypes);
   }
 
@@ -110,10 +115,9 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
       // second argument is the candidate type.
       castArgTypes.add(candidate.getArgTypes().get(0));
     }
-    // Handle "else" argument if it exists.
-    if (this.argTypes.size() % 2 == 0) {
-      castArgTypes.add(candidate.getArgTypes().get(0));
-    }
+    // Handle "else" argument.
+    castArgTypes.add(candidate.getArgTypes().get(0));
+
     return castArgTypes;
   }
 

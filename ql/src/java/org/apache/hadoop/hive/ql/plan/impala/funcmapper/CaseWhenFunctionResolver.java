@@ -77,9 +77,15 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
   public List<RexNode> getConvertedInputs(ImpalaFunctionSignature candidate) throws HiveException {
     List<RelDataType> castTypes = getCastOperandTypes(candidate);
     if (castTypes == null) {
-      throw new HiveException();
+      throw new HiveException("getCastOperandTypes() for case statement failed.");
     }
-    return castInputs(inputNodes, castTypes);
+    List<RexNode> inputNodesCopy = Lists.newArrayList(inputNodes);
+    // if there are less input nodes than cast types, then we have an implicit "else null" that
+    // we need to create.
+    if (inputNodes.size() < castTypes.size()) {
+      inputNodesCopy.add(rexBuilder.makeNullLiteral(castTypes.get(castTypes.size() - 1)));
+    }
+    return castInputs(inputNodesCopy, castTypes);
   }
 
   @Override
@@ -117,10 +123,9 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
       // second argument is the candidate type.
       castArgTypes.add(candidate.getArgTypes().get(0));
     }
-    // Handle "else" argument if it exists.
-    if (this.argTypes.size() % 2 == 1) {
-      castArgTypes.add(candidate.getArgTypes().get(0));
-    }
+    // Handle "else" argument.
+    castArgTypes.add(candidate.getArgTypes().get(0));
+
     return castArgTypes;
   }
 }

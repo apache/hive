@@ -211,7 +211,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
       // if either arg type is null, the signature will match because nulls can be
       // used for any datatype.
       if (this.argTypes.get(i) == Type.NULL || other.argTypes.get(i) == Type.NULL) {
-	continue;
+        continue;
       }
       if (!this.argTypes.get(i).equals(other.argTypes.get(i))) {
         retVal = false;

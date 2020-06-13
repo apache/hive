@@ -164,7 +164,7 @@ POSTHOOK: Input: default@tab_sales_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$7], i_category=[$0], i_class=[$1], lochierarchy=[$5], rank_within_parent=[rank() OVER (PARTITION BY $5, $6 ORDER BY $7 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
-  ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], GROUPING__ID=[$4], $func_0=[GROUPING($4, 0:BIGINT)], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0)], $func_2=[/($2, $3)])
+  ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], GROUPING__ID=[$4], $func_0=[GROUPING($4, 0:BIGINT)], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
     ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], GROUPING__ID=[GROUPING__ID()])
       ImpalaProjectPassthroughRel($f0=[$5], $f1=[$4], $f2=[$2], $f3=[$1])
         ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
@@ -213,7 +213,7 @@ POSTHOOK: Input: default@tab_sales_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$6], i_category=[$1], i_class=[$0], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
-  ImpalaProjectRel(i_class=[$0], i_category=[$1], $f2=[$2], $f3=[$3], $func_0=[+(CAST(CHAR_LENGTH($1)):BIGINT, CAST(CHAR_LENGTH($0)):BIGINT)], $func_1=[CASE(=(CHAR_LENGTH($0), 0), $1)], $func_2=[/($2, $3)])
+  ImpalaProjectRel(i_class=[$0], i_category=[$1], $f2=[$2], $f3=[$3], $func_0=[+(CAST(CHAR_LENGTH($1)):BIGINT, CAST(CHAR_LENGTH($0)):BIGINT)], $func_1=[CASE(=(CHAR_LENGTH($0), 0), $1, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
     ImpalaAggregateRel(group=[{4, 5}], groups=[[{4, 5}, {5}, {}]], agg#0=[sum($2)], agg#1=[sum($1)])
       ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
         ImpalaProjectPassthroughRel(ss_item_sk=[$2], ss_ext_sales_price=[$15], ss_net_profit=[$22])
@@ -261,7 +261,7 @@ POSTHOOK: Input: default@tab_sales_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$7], i_category=[$0], i_class=[$1], lochierarchy=[$5], rank_within_parent=[rank() OVER (PARTITION BY $5, $6 ORDER BY $7 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
-  ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], GROUPING__ID=[$4], $func_0=[+(GROUPING($4, 1:BIGINT), GROUPING($4, 0:BIGINT))], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0)], $func_2=[/($2, $3)])
+  ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], GROUPING__ID=[$4], $func_0=[+(GROUPING($4, 1:BIGINT), GROUPING($4, 0:BIGINT))], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
     ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], GROUPING__ID=[GROUPING__ID()])
       ImpalaProjectPassthroughRel($f0=[$5], $f1=[$4], $f2=[$2], $f3=[$1])
         ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
