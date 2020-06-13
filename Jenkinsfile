@@ -170,8 +170,7 @@ jobWrappers {
       }
       stage('Prechecks') {
         def spotbugsProjects = [
-            ":hive-shims-aggregator",
-            ":hive-shims-common",
+            ":hive-shims",
             ":hive-storage-api"
         ]
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
