@@ -384,7 +384,7 @@ public class HiveMetaStoreChecker {
       List<String> paritions = new ArrayList<>();
       for (Path path : allPartDirs) {
         // remove the table's path from the partition path
-        //todo: add appropriate comments on what we are doing here
+        // eg: <tablePath>/p1=1/p2=2/p3=3 ---> p1=1/p2=2/p3=3
         paritions.add(path.toString().substring(tablePath.toString().length() + 1));
       }
       // Remove all partition paths which does not matches the filter expression.
