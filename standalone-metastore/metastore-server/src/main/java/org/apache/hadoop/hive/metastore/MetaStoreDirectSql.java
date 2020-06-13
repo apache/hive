@@ -496,7 +496,7 @@ class MetaStoreDirectSql {
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
     List<String> mvs = executeWithArray(
-          queryParams, pms.toArray(), queryText);
+        queryParams, pms.toArray(), queryText);
     List<String> results = new ArrayList<String>(mvs);
     queryParams.closeAll();
     return results;
