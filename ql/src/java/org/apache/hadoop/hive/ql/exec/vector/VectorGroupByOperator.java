@@ -180,21 +180,20 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       if (!groupingSetsPresent) {
         doProcessBatch(batch, false, null);
-        return;
-      }
+      } else {
+        // We drive the doProcessBatch logic with the same batch but different
+        // grouping set id and null variation.
+        // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
 
-      // We drive the doProcessBatch logic with the same batch but different
-      // grouping set id and null variation.
-      // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
+        final int size = groupingSets.length;
+        for (int i = 0; i < size; i++) {
 
-      final int size = groupingSets.length;
-      for (int i = 0; i < size; i++) {
+          // NOTE: We are overwriting the constant vector value...
+          groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
+          groupingSetsDummyVectorExpression.evaluate(batch);
 
-        // NOTE: We are overwriting the constant vector value...
-        groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
-        groupingSetsDummyVectorExpression.evaluate(batch);
-
-        doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+          doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+        }
       }
 
       if (this instanceof ProcessingModeHashAggregate) {
