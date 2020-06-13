@@ -135,3 +135,5 @@ dfs -touchz ${system:test.warehouse.dir}/repairtable_filter/p1=bbsc/p2=e/datafil
 
 MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 like 'e%');
 show partitions repairtable_filter;
+
+DROP TABLE repairtable_filter;

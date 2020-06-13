@@ -368,3 +368,11 @@ p1=cob/p2=es
 p1=cobf/p2=ess
 p1=cp/p2=eg
 p1=cpa/p2=eg
+PREHOOK: query: DROP TABLE repairtable_filter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_filter
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: DROP TABLE repairtable_filter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_filter
+POSTHOOK: Output: default@repairtable_filter
