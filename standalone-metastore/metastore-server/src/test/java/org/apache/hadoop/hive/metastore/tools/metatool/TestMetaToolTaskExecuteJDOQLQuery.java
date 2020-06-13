@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
@@ -61,7 +60,7 @@ public class TestMetaToolTaskExecuteJDOQLQuery {
 
     ObjectStore mockObjectStore = Mockito.mock(ObjectStore.class);
     doReturn(Arrays.asList(entry1, entry2))
-      .when(mockObjectStore).executeJDOQLSelect(eq(selectQuery), any(ObjectStore.QueryWrapper.class));
+      .when(mockObjectStore).executeJDOQLSelect(eq(selectQuery));
 
     MetaToolTaskExecuteJDOQLQuery t = new MetaToolTaskExecuteJDOQLQuery();
     t.setCommandLine(new HiveMetaToolCommandLine(new String[] {"-executeJDOQL", selectQuery}));
