@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -83,6 +84,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Expression factory for Hive {@link ExprNodeDesc}.
  */
+@Evolving
 public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescExprFactory.class);
@@ -505,6 +507,20 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
         new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
             bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected ExprNodeConstantDesc createExactWholeNumber(String value) {
+    ExprNodeConstantDesc result = createBigintConstantExpr(value);
+    try {
+      result = createIntConstantExpr(value);
+    } catch (NumberFormatException e) {
+      // do nothing here, we will throw an exception in the following block
+    }
+    return result;
   }
 
   /**

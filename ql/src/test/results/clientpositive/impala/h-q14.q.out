@@ -37,7 +37,7 @@ ImpalaProjectPassthroughRel(promo_revenue=[/(*(100:DECIMAL(3, 0), $0), $1)])
   ImpalaAggregateRel(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)])
     ImpalaProjectPassthroughRel($f0=[CASE($3, $1, 0:DECIMAL(1, 0))], $f1=[$1])
       ImpalaJoinRel(condition=[=($0, $2)], joinType=[inner])
-        ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(10, 0), $6))])
+        ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(3, 0), $6))])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1995-09-01'), <($10, _UTF-16LE'1995-10-01'), IS NOT NULL($1))])
         ImpalaProjectPassthroughRel(p_partkey=[$0], LIKE=[LIKE($4, _UTF-16LE'PROMO%')])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[IS NOT NULL($0)])
@@ -106,7 +106,7 @@ Per-Host Resources: mem-estimate=11.94MB mem-reservation=1.94MB thread-reservati
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE
-  |  output: sum(CASE WHEN _impala_builtins.like(default.impala_tpch_part.p_type, 'PROMO%') THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(1,0)) END), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(CASE WHEN _impala_builtins.like(default.impala_tpch_part.p_type, 'PROMO%') THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(1,0)) END), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=32B cardinality=1
   |  in pipelines: 03(GETNEXT), 00(OPEN)

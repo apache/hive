@@ -61,7 +61,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(=($3, 3), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(t_time_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 9:BIGINT, +(9:BIGINT, 1:BIGINT)), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, $3, 9, CAST(+(9:SMALLINT, 1:SMALLINT)):INTEGER NOT NULL), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(wp_web_page_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_page]], condition=[AND(BETWEEN(false, $10, 5000, 5200), IS NOT NULL($0))])
       ImpalaAggregateRel(group=[{}], agg#0=[count()])
@@ -73,7 +73,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(=($3, 3), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(t_time_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 16:BIGINT, +(16:BIGINT, 1:BIGINT)), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(BETWEEN(false, $3, 16, CAST(+(16:SMALLINT, 1:SMALLINT)):INTEGER NOT NULL), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(wp_web_page_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_page]], condition=[AND(BETWEEN(false, $10, 5000, 5200), IS NOT NULL($0))])
 
@@ -252,7 +252,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:SCAN HDFS [default.impala_tpcds_time_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_time_dim.t_time_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_time_dim.t_hour) >= CAST(9 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_time_dim.t_hour) <= _impala_builtins.add(CAST(9 AS BIGINT), CAST(1 AS BIGINT))
+     predicates: default.impala_tpcds_time_dim.t_time_sk IS NOT NULL, default.impala_tpcds_time_dim.t_hour >= CAST(9 AS INT) AND default.impala_tpcds_time_dim.t_hour <= _impala_builtins.casttoint(_impala_builtins.add(CAST(9 AS SMALLINT), CAST(1 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -370,7 +370,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:SCAN HDFS [default.impala_tpcds_time_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_time_dim_0.t_time_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_time_dim_0.t_hour) >= CAST(16 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_time_dim_0.t_hour) <= _impala_builtins.add(CAST(16 AS BIGINT), CAST(1 AS BIGINT))
+     predicates: default.impala_tpcds_time_dim_0.t_time_sk IS NOT NULL, default.impala_tpcds_time_dim_0.t_hour >= CAST(16 AS INT) AND default.impala_tpcds_time_dim_0.t_hour <= _impala_builtins.casttoint(_impala_builtins.add(CAST(16 AS SMALLINT), CAST(1 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import com.google.common.base.Preconditions;
+import java.math.BigDecimal;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
@@ -26,6 +27,7 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -40,7 +42,16 @@ import java.util.List;
 /**
  * Function helper for Impala.
  */
+@Evolving
 public class ImpalaFunctionHelper implements FunctionHelper {
+
+  private static final BigDecimal TINYINT_MIN_VALUE = BigDecimal.valueOf(Byte.MIN_VALUE);
+  private static final BigDecimal TINYINT_MAX_VALUE = BigDecimal.valueOf(Byte.MAX_VALUE);
+  private static final BigDecimal SMALLINT_MIN_VALUE = BigDecimal.valueOf(Short.MIN_VALUE);
+  private static final BigDecimal SMALLINT_MAX_VALUE = BigDecimal.valueOf(Short.MAX_VALUE);
+  private static final BigDecimal INT_MIN_VALUE = BigDecimal.valueOf(Integer.MIN_VALUE);
+  private static final BigDecimal INT_MAX_VALUE = BigDecimal.valueOf(Integer.MAX_VALUE);
+
   private final RexNodeExprFactory factory;
   private final RexExecutor rexExecutor;
 
@@ -136,6 +147,27 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+  }
+
+  /**
+   * Given a whole number, it returns smaller exact numeric
+   * that can hold this value between bigint, int, smallint,
+   * and tinyint.
+   */
+  public RexNode getExactWholeNumber(String value) {
+    RexBuilder rexBuilder = factory.getRexBuilder();
+    BigDecimal bd = new BigDecimal(Long.parseLong(value));
+    SqlTypeName type = SqlTypeName.BIGINT;
+    if (bd.compareTo(TINYINT_MIN_VALUE) >= 0 && bd.compareTo(TINYINT_MAX_VALUE) <= 0) {
+      type = SqlTypeName.TINYINT;
+    } else if (bd.compareTo(SMALLINT_MIN_VALUE) >= 0 && bd.compareTo(SMALLINT_MAX_VALUE) <= 0) {
+      type = SqlTypeName.SMALLINT;
+    } else if (bd.compareTo(INT_MIN_VALUE) >= 0 && bd.compareTo(INT_MAX_VALUE) <= 0) {
+      type = SqlTypeName.INTEGER;
+    }
+    return rexBuilder.makeLiteral(bd,
+        rexBuilder.getTypeFactory().createSqlType(type),
+        false);
   }
 
   /**

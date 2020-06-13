@@ -94,11 +94,11 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC])
   ImpalaProjectRel(o_year=[$0], mkt_share=[/($1, $2)])
     ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)])
-      ImpalaProjectPassthroughRel($f0=[$11], $f1=[CASE(=($8, _UTF-16LE'BRAZIL'), $3, 0:DECIMAL(10, 0))], $f2=[$3])
+      ImpalaProjectPassthroughRel($f0=[$11], $f1=[CASE(=($8, _UTF-16LE'BRAZIL'), $3, 0:DECIMAL(3, 0))], $f2=[$3])
         ImpalaJoinRel(condition=[=($0, $9)], joinType=[inner])
           ImpalaJoinRel(condition=[=($5, $2)], joinType=[inner])
             ImpalaJoinRel(condition=[=($4, $1)], joinType=[inner])
-              ImpalaProjectPassthroughRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], *=[*($5, -(1:DECIMAL(10, 0), $6))])
+              ImpalaProjectPassthroughRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], *=[*($5, -(1:DECIMAL(3, 0), $6))])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(IS NOT NULL($1), IS NOT NULL($2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(p_partkey=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(=($4, _UTF-16LE'ECONOMY ANODIZED STEEL'), IS NOT NULL($0))])
@@ -263,7 +263,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, HASH(_impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate)))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:AGGREGATE [STREAMING]
-  |  output: sum(CASE WHEN n2.n_name = 'BRAZIL' THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(10,0)) END), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(CASE WHEN n2.n_name = 'BRAZIL' THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(3,0)) END), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  group by: _impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=36B cardinality=0

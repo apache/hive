@@ -118,7 +118,7 @@ ImpalaProjectPassthroughRel(i_category=[$0], i_brand=[$1], d_year=[$2], d_moy=[$
                   ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT))), OR(=($6, 1999), AND(=(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =($8, 12)), AND(=(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT)), =($8, 1))), IS NOT NULL($0))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =($6, -(1999, 1)), =($6, +(1999, 1))), OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$2], (tok_function sum (tok_table_or_col cs_sales_price))=[$3], +=[+($4, 1)])
             ImpalaProjectRel((tok_table_or_col i_category)=[$2], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$0], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], rank_window_1=[rank() OVER (PARTITION BY $2, $1, $0 ORDER BY $3 NULLS LAST, $4 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
               ImpalaAggregateRel(group=[{5, 7, 8, 10, 11}], agg#0=[sum($3)])
@@ -132,7 +132,7 @@ ImpalaProjectPassthroughRel(i_category=[$0], i_brand=[$1], d_year=[$2], d_moy=[$
                     ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
                   ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT))), OR(=($6, 1999), AND(=(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =($8, 12)), AND(=(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT)), =($8, 1))), IS NOT NULL($0))])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =($6, -(1999, 1)), =($6, +(1999, 1))), OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$2], (tok_function sum (tok_table_or_col cs_sales_price))=[$3], -=[-($4, 1)])
           ImpalaProjectRel((tok_table_or_col i_category)=[$2], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$0], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], rank_window_1=[rank() OVER (PARTITION BY $2, $1, $0 ORDER BY $3 NULLS LAST, $4 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
             ImpalaAggregateRel(group=[{5, 7, 8, 10, 11}], agg#0=[sum($3)])
@@ -146,7 +146,7 @@ ImpalaProjectPassthroughRel(i_category=[$0], i_brand=[$1], d_year=[$2], d_moy=[$
                   ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT))), OR(=($6, 1999), AND(=(CAST($6):BIGINT, -(1999:BIGINT, 1:BIGINT)), =($8, 12)), AND(=(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT)), =($8, 1))), IS NOT NULL($0))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), =($6, -(1999, 1)), =($6, +(1999, 1))), OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IS NOT NULL($0))])
 
 PREHOOK: query: explain with v1 as(
  select i_category, i_brand,
@@ -475,7 +475,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -629,7 +629,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)), default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)), default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -783,7 +783,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   34:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)), default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_year) = _impala_builtins.subtract(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT) OR _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)), default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

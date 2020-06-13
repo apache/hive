@@ -66,7 +66,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC])
   ImpalaAggregateRel(group=[{4}], agg#0=[sum($1)], agg#1=[sum($2)])
     ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
-      ImpalaProjectPassthroughRel(o_orderkey=[$0], CAST=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT'), =($5, _UTF-16LE'2-HIGH')), 1, 0)):BIGINT], CAST2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT'), <>($5, _UTF-16LE'2-HIGH')), 1, 0)):BIGINT])
+      ImpalaProjectPassthroughRel(o_orderkey=[$0], CAST=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT'), =($5, _UTF-16LE'2-HIGH')), 1:TINYINT, 0:TINYINT)):BIGINT], CAST2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT'), <>($5, _UTF-16LE'2-HIGH')), 1:TINYINT, 0:TINYINT)):BIGINT])
         ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[IS NOT NULL($0)])
       ImpalaProjectPassthroughRel(l_orderkey=[$0], l_shipmode=[$14])
         ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($12, _UTF-16LE'1994-01-01'), <($12, _UTF-16LE'1995-01-01'), <($11, $12), <($10, $11), IN($14, _UTF-16LE'MAIL', _UTF-16LE'SHIP'), IS NOT NULL($0))])
@@ -182,7 +182,7 @@ Per-Host Resources: mem-estimate=130.00MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=06, HASH(default.impala_tpch_lineitem.l_shipmode)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority = '1-URGENT' OR default.impala_tpch_orders.o_orderpriority = '2-HIGH' THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END))
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority = '1-URGENT' OR default.impala_tpch_orders.o_orderpriority = '2-HIGH' THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END))
   |  group by: default.impala_tpch_lineitem.l_shipmode
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=28B cardinality=0

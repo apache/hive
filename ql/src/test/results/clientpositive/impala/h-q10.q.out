@@ -89,7 +89,7 @@ ImpalaSortRel(sort0=[$2], sort1=[$0], dir0=[DESC], dir1=[ASC], fetch=[20])
         ImpalaJoinRel(condition=[=($2, $0)], joinType=[inner])
           ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1])
             ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(>=($4, _UTF-16LE'1993-10-01'), <($4, _UTF-16LE'1994-01-01'), IS NOT NULL($1), IS NOT NULL($0))])
-          ImpalaProjectPassthroughRel(l_orderkey=[$0], *=[*($5, -(1:DECIMAL(10, 0), $6))])
+          ImpalaProjectPassthroughRel(l_orderkey=[$0], *=[*($5, -(1:DECIMAL(3, 0), $6))])
             ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(=($8, _UTF-16LE'R'), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
@@ -223,7 +223,7 @@ Per-Host Resources: mem-estimate=131.96MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=13, HASH(default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name,default.impala_tpch_customer.c_address,default.impala_tpch_customer.c_phone,default.impala_tpch_customer.c_acctbal,default.impala_tpch_customer.c_comment,default.impala_tpch_nation.n_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   08:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_comment, default.impala_tpch_nation.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=92B cardinality=0

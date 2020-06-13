@@ -129,7 +129,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(ss_customer_sk=[$0], ratio=[$1], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[$5], other_chan_wholesale_cost=[$6], other_chan_sales_price=[$7])
   ImpalaSortRel(sort0=[$0], sort1=[$8], sort2=[$9], sort3=[$10], sort4=[$5], sort5=[$6], sort6=[$7], sort7=[$1], dir0=[ASC], dir1=[DESC], dir2=[DESC], dir3=[DESC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], fetch=[100])
-    ImpalaProjectRel(ss_customer_sk=[$1], ratio=[ROUND(/(CAST($2):DOUBLE, CAST(+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))):DOUBLE), 2:BIGINT)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))], other_chan_wholesale_cost=[+(COALESCE($8, 0:DECIMAL(10, 0)), COALESCE($13, 0:DECIMAL(10, 0)))], other_chan_sales_price=[+(COALESCE($9, 0:DECIMAL(10, 0)), COALESCE($14, 0:DECIMAL(10, 0)))], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4])
+    ImpalaProjectRel(ss_customer_sk=[$1], ratio=[ROUND(/(CAST($2):DOUBLE, CAST(+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))):DOUBLE), 2:BIGINT)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(COALESCE($7, 0:BIGINT), COALESCE($12, 0:BIGINT))], other_chan_wholesale_cost=[+(COALESCE($8, 0:DECIMAL(3, 0)), COALESCE($13, 0:DECIMAL(3, 0)))], other_chan_sales_price=[+(COALESCE($9, 0:DECIMAL(3, 0)), COALESCE($14, 0:DECIMAL(3, 0)))], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4])
       ImpalaJoinRel(condition=[AND(=($10, $0), =($11, $1))], joinType=[left])
         ImpalaJoinRel(condition=[AND(=($5, $0), =($6, $1))], joinType=[left])
           ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($5)], agg#1=[sum($2)], agg#2=[sum($3)])

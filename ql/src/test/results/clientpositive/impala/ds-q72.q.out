@@ -75,7 +75,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$5], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[sum($4)], agg#2=[count()])
-    ImpalaProjectPassthroughRel($f0=[$15], $f1=[$13], $f2=[$19], $f3=[CAST(CASE(IS NULL($25), 1, 0)):BIGINT], $f4=[CAST(CASE(IS NOT NULL($25), 1, 0)):BIGINT])
+    ImpalaProjectPassthroughRel($f0=[$15], $f1=[$13], $f2=[$19], $f3=[CAST(CASE(IS NULL($25), 1:TINYINT, 0:TINYINT)):BIGINT], $f4=[CAST(CASE(IS NOT NULL($25), 1:TINYINT, 0:TINYINT)):BIGINT])
       ImpalaJoinRel(condition=[AND(=($26, $4), =($27, $6))], joinType=[left])
         ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_ship_date_sk=[$1], cs_bill_cdemo_sk=[$2], cs_bill_hdemo_sk=[$3], cs_item_sk=[$4], cs_promo_sk=[$5], cs_order_number=[$6], cs_quantity=[$7], inv_date_sk=[$13], inv_item_sk=[$14], inv_warehouse_sk=[$15], inv_quantity_on_hand=[$16], w_warehouse_sk=[$19], w_warehouse_name=[$20], i_item_sk=[$11], i_item_desc=[$12], cd_demo_sk=[$8], hd_demo_sk=[$9], d_date_sk=[$21], d_week_seq=[$22], +=[$23], d_date_sk0=[$17], d_week_seq0=[$18], d_date_sk1=[$24], CAST=[$25], p_promo_sk=[$10])
           ImpalaJoinRel(condition=[AND(=($1, $24), >($25, $23))], joinType=[inner])
@@ -231,7 +231,7 @@ Per-Host Resources: mem-estimate=143.70MB mem-reservation=49.50MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=33, HASH(default.impala_tpcds_item.i_item_desc,default.impala_tpcds_warehouse.w_warehouse_name,d1.d_week_seq)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_promotion.p_promo_sk IS NULL THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_promotion.p_promo_sk IS NOT NULL THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), count()
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_promotion.p_promo_sk IS NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_promotion.p_promo_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), count()
   |  group by: default.impala_tpcds_item.i_item_desc, default.impala_tpcds_warehouse.w_warehouse_name, d1.d_week_seq
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=22 row-size=52B cardinality=0

@@ -271,40 +271,40 @@ ImpalaSortRel(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[
       ImpalaAggregateRel(group=[{0, 1, 2, 3, 4}])
         ImpalaUnionRel(all=[true])
           ImpalaProjectPassthroughRel(channel=[_UTF-16LE'web':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0 ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0 ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
               ImpalaProjectRel(ws_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
                   ImpalaJoinRel(condition=[AND(=($2, $7), =($1, $6))], joinType=[inner])
                     ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
-                      ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_order_number=[$17], CAST=[CAST(COALESCE($18, 0)):BIGINT], COALESCE=[COALESCE($29, 0:DECIMAL(10, 0))])
+                      ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_order_number=[$17], CAST=[CAST(COALESCE($18, 0)):BIGINT], COALESCE=[COALESCE($29, 0:DECIMAL(3, 0))])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(>($18, 0), >($33, 1), >($29, 0), IS NOT NULL($17), IS NOT NULL($3), IS NOT NULL($0))])
                       ImpalaProjectPassthroughRel(d_date_sk=[$0])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, 12), IS NOT NULL($0))])
-                    ImpalaProjectPassthroughRel(wr_item_sk=[$2], wr_order_number=[$13], CAST=[CAST(COALESCE($14, 0)):BIGINT], COALESCE=[COALESCE($15, 0:DECIMAL(10, 0))])
+                    ImpalaProjectPassthroughRel(wr_item_sk=[$2], wr_order_number=[$13], CAST=[CAST(COALESCE($14, 0)):BIGINT], COALESCE=[COALESCE($15, 0:DECIMAL(3, 0))])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_returns]], condition=[AND(>($15, 10000), IS NOT NULL($13), IS NOT NULL($2))])
           ImpalaProjectPassthroughRel(channel=[_UTF-16LE'catalog':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0 ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0 ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
               ImpalaProjectRel(cs_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
                   ImpalaJoinRel(condition=[AND(=($2, $7), =($1, $6))], joinType=[inner])
                     ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
-                      ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_order_number=[$17], CAST=[CAST(COALESCE($18, 0)):BIGINT], COALESCE=[COALESCE($29, 0:DECIMAL(10, 0))])
+                      ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_order_number=[$17], CAST=[CAST(COALESCE($18, 0)):BIGINT], COALESCE=[COALESCE($29, 0:DECIMAL(3, 0))])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(>($18, 0), >($33, 1), >($29, 0), IS NOT NULL($17), IS NOT NULL($15), IS NOT NULL($0))])
                       ImpalaProjectPassthroughRel(d_date_sk=[$0])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, 12), IS NOT NULL($0))])
-                    ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], CAST=[CAST(COALESCE($17, 0)):BIGINT], COALESCE=[COALESCE($18, 0:DECIMAL(10, 0))])
+                    ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], CAST=[CAST(COALESCE($17, 0)):BIGINT], COALESCE=[COALESCE($18, 0:DECIMAL(3, 0))])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(>($18, 10000), IS NOT NULL($16), IS NOT NULL($2))])
       ImpalaProjectPassthroughRel(channel=[_UTF-16LE'store':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-        ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0 ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0 ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+        ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
           ImpalaProjectRel(ss_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
             ImpalaAggregateRel(group=[{0}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
               ImpalaJoinRel(condition=[AND(=($1, $7), =($0, $6))], joinType=[inner])
                 ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
-                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_ticket_number=[$8], ss_sold_date_sk=[$22], CAST=[CAST(COALESCE($9, 0)):BIGINT], COALESCE=[COALESCE($19, 0:DECIMAL(10, 0))])
+                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_ticket_number=[$8], ss_sold_date_sk=[$22], CAST=[CAST(COALESCE($9, 0)):BIGINT], COALESCE=[COALESCE($19, 0:DECIMAL(3, 0))])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(>($9, 0), >($21, 1), >($19, 0), IS NOT NULL($8), IS NOT NULL($1), IS NOT NULL($22))])
                   ImpalaProjectPassthroughRel(d_date_sk=[$0])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, 12), IS NOT NULL($0))])
-                ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9], CAST=[CAST(COALESCE($10, 0)):BIGINT], COALESCE=[COALESCE($11, 0:DECIMAL(10, 0))])
+                ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9], CAST=[CAST(COALESCE($10, 0)):BIGINT], COALESCE=[COALESCE($11, 0:DECIMAL(3, 0))])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(>($11, 10000), IS NOT NULL($9), IS NOT NULL($2))])
 
 PREHOOK: query: explain select  
@@ -771,7 +771,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=46, HASH(ws.ws_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(wr.wr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(ws.ws_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(wr.wr_return_amt, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.coalesce(ws.ws_net_paid, CAST(0 AS DECIMAL(10,0))))
+  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(wr.wr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(ws.ws_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(wr.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(ws.ws_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: ws.ws_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=56B cardinality=0
@@ -877,7 +877,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=51, HASH(cs.cs_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cr.cr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cs.cs_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(cr.cr_return_amount, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.coalesce(cs.cs_net_paid, CAST(0 AS DECIMAL(10,0))))
+  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cr.cr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cs.cs_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(cr.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(cs.cs_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: cs.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=56B cardinality=0
@@ -983,7 +983,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F19, EXCHANGE=56, HASH(sts.ss_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sr.sr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sts.ss_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(sr.sr_return_amt, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.coalesce(sts.ss_net_paid, CAST(0 AS DECIMAL(10,0))))
+  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sr.sr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sts.ss_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(sr.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(sts.ss_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: sts.ss_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=46 row-size=56B cardinality=0

@@ -79,7 +79,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[sum($1)])
   ImpalaJoinRel(condition=[AND(=($8, $0), OR(AND($9, $10, $2, $3, $11), AND($12, $13, $4, $5, $14), AND($15, $16, $6, $7, $17)))], joinType=[inner])
-    ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(10, 0), $6))], >==[>=($4, 1)], <==[<=($4, 11)], >=4=[>=($4, 10)], <=5=[<=($4, 20)], >=6=[>=($4, 20)], <=7=[<=($4, 30)])
+    ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(3, 0), $6))], >==[>=($4, 1)], <==[<=($4, 11)], >=4=[>=($4, 10)], <=5=[<=($4, 20)], >=6=[>=($4, 20)], <=7=[<=($4, 30)])
       ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(OR(>=($4, 1), <=($4, 11), >=($4, 10), <=($4, 20), >=($4, 20), <=($4, 30)), =($13, _UTF-16LE'DELIVER IN PERSON'), IN($14, _UTF-16LE'AIR', _UTF-16LE'AIR REG'), IS NOT NULL($1))])
     ImpalaProjectPassthroughRel(p_partkey=[$0], ==[=($3, _UTF-16LE'Brand#12')], IN=[IN($6, _UTF-16LE'SM CASE', _UTF-16LE'SM BOX', _UTF-16LE'SM PACK', _UTF-16LE'SM PKG')], BETWEEN=[BETWEEN(false, $5, 1, 5)], =4=[=($3, _UTF-16LE'Brand#23')], IN5=[IN($6, _UTF-16LE'MED BAG', _UTF-16LE'MED BOX', _UTF-16LE'MED PKG', _UTF-16LE'MED PACK')], BETWEEN6=[BETWEEN(false, $5, 1, 10)], =7=[=($3, _UTF-16LE'Brand#34')], IN8=[IN($6, _UTF-16LE'LG CASE', _UTF-16LE'LG BOX', _UTF-16LE'LG PACK', _UTF-16LE'LG PKG')], BETWEEN9=[BETWEEN(false, $5, 1, 15)])
       ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(OR(BETWEEN(false, $5, 1, 5), BETWEEN(false, $5, 1, 10), BETWEEN(false, $5, 1, 15)), OR(=($3, _UTF-16LE'Brand#12'), =($3, _UTF-16LE'Brand#23'), =($3, _UTF-16LE'Brand#34')), OR(IN($6, _UTF-16LE'SM CASE', _UTF-16LE'SM BOX', _UTF-16LE'SM PACK', _UTF-16LE'SM PKG'), IN($6, _UTF-16LE'MED BAG', _UTF-16LE'MED BOX', _UTF-16LE'MED PKG', _UTF-16LE'MED PACK'), IN($6, _UTF-16LE'LG CASE', _UTF-16LE'LG BOX', _UTF-16LE'LG PACK', _UTF-16LE'LG PKG')), IS NOT NULL($0))])
@@ -192,7 +192,7 @@ Per-Host Resources: mem-estimate=11.94MB mem-reservation=1.94MB thread-reservati
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(10,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=16B cardinality=1
   |  in pipelines: 03(GETNEXT), 00(OPEN)

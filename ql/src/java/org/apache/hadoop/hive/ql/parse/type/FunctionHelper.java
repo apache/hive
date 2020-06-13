@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * Interface to handle function information while generating
  * Calcite {@link RexNode}.
  */
+@Evolving
 public interface FunctionHelper {
 
   /**
@@ -71,6 +73,12 @@ public interface FunctionHelper {
   RexNode getExpression(String functionText, FunctionInfo functionInfo,
       List<RexNode> inputs, RelDataType returnType)
       throws SemanticException;
+
+  /**
+   * Given a whole number, it returns smaller exact numeric
+   * that can hold this value.
+   */
+  RexNode getExactWholeNumber(String value);
 
   /**
    * Returns aggregation information based on given parameters.

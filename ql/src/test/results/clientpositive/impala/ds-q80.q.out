@@ -218,7 +218,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
     ImpalaUnionRel(all=[true])
       ImpalaProjectPassthroughRel(channel=[_UTF-16LE'store channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'store', $0)], sales=[$1], returns=[$2], profit=[$3])
         ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
-          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$4], $f2=[COALESCE($9, 0:DECIMAL(10, 0))], $f3=[-($5, COALESCE($10, 0:DECIMAL(10, 0)))])
+          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$4], $f2=[COALESCE($9, 0:DECIMAL(3, 0))], $f3=[-($5, COALESCE($10, 0:DECIMAL(3, 0)))])
             ImpalaJoinRel(condition=[=($1, $14)], joinType=[inner])
               ImpalaJoinRel(condition=[=($2, $13)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
@@ -238,7 +238,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
       ImpalaProjectPassthroughRel(channel=[_UTF-16LE'catalog channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'catalog_page', $0)], sales=[$1], returns=[$2], profit=[$3])
         ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
-          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$5], $f2=[COALESCE($9, 0:DECIMAL(10, 0))], $f3=[-($6, COALESCE($10, 0:DECIMAL(10, 0)))])
+          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$5], $f2=[COALESCE($9, 0:DECIMAL(3, 0))], $f3=[-($6, COALESCE($10, 0:DECIMAL(3, 0)))])
             ImpalaJoinRel(condition=[=($1, $14)], joinType=[inner])
               ImpalaJoinRel(condition=[=($3, $13)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
@@ -258,7 +258,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_page]], condition=[IS NOT NULL($0)])
       ImpalaProjectPassthroughRel(channel=[_UTF-16LE'web channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'web_site', $0)], sales=[$1], returns=[$2], profit=[$3])
         ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
-          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$5], $f2=[COALESCE($9, 0:DECIMAL(10, 0))], $f3=[-($6, COALESCE($10, 0:DECIMAL(10, 0)))])
+          ImpalaProjectPassthroughRel($f0=[$15], $f1=[$5], $f2=[COALESCE($9, 0:DECIMAL(3, 0))], $f3=[-($6, COALESCE($10, 0:DECIMAL(3, 0)))])
             ImpalaJoinRel(condition=[=($2, $14)], joinType=[inner])
               ImpalaJoinRel(condition=[=($3, $13)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($1, $12)], joinType=[inner])
@@ -612,7 +612,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=45, HASH(default.impala_tpcds_store.s_store_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_store_returns.sr_return_amt, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_store_sales.ss_net_profit, _impala_builtins.coalesce(default.impala_tpcds_store_returns.sr_net_loss, CAST(0 AS DECIMAL(10,0)))))
+  |  output: sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_store_returns.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_store_sales.ss_net_profit, _impala_builtins.coalesce(default.impala_tpcds_store_returns.sr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_tpcds_store.s_store_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=60B cardinality=0
@@ -773,7 +773,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=52, HASH(default.impala_tpcds_catalog_page.cp_catalog_page_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   24:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_catalog_returns.cr_return_amount, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_catalog_sales.cs_net_profit, _impala_builtins.coalesce(default.impala_tpcds_catalog_returns.cr_net_loss, CAST(0 AS DECIMAL(10,0)))))
+  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_catalog_returns.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_catalog_sales.cs_net_profit, _impala_builtins.coalesce(default.impala_tpcds_catalog_returns.cr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_tpcds_catalog_page.cp_catalog_page_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=60B cardinality=0
@@ -932,7 +932,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=59, HASH(default.impala_tpcds_web_site.web_site_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpcds_web_sales.ws_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_web_returns.wr_return_amt, CAST(0 AS DECIMAL(10,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_web_sales.ws_net_profit, _impala_builtins.coalesce(default.impala_tpcds_web_returns.wr_net_loss, CAST(0 AS DECIMAL(10,0)))))
+  |  output: sum(default.impala_tpcds_web_sales.ws_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_tpcds_web_returns.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_tpcds_web_sales.ws_net_profit, _impala_builtins.coalesce(default.impala_tpcds_web_returns.wr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_tpcds_web_site.web_site_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=38 row-size=60B cardinality=0

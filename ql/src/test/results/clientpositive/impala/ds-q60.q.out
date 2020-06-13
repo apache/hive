@@ -177,7 +177,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1998), =($8, 10), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(ca_address_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5)):DECIMAL(10, 0) NOT NULL), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5:TINYINT)):DECIMAL(3, 0) NOT NULL), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
             ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
@@ -192,7 +192,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1998), =($8, 10), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(ca_address_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5)):DECIMAL(10, 0) NOT NULL), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5:TINYINT)):DECIMAL(3, 0) NOT NULL), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
             ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
@@ -207,7 +207,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1998), =($8, 10), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(ca_address_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5)):DECIMAL(10, 0) NOT NULL), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($11, CAST(-(5:TINYINT)):DECIMAL(3, 0) NOT NULL), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
             ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
@@ -558,12 +558,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: default.impala_tpcds_customer_address.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=8B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -712,12 +712,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_customer_address_0.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_0.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     predicates: default.impala_tpcds_customer_address_0.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_0.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: default.impala_tpcds_customer_address_0.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     parquet statistics predicates: default.impala_tpcds_customer_address_0.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=16 row-size=8B cardinality=0
      in pipelines: 15(GETNEXT)
@@ -866,12 +866,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   26:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_customer_address_1.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_1.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     predicates: default.impala_tpcds_customer_address_1.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_1.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: default.impala_tpcds_customer_address_1.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS INT)))
+     parquet statistics predicates: default.impala_tpcds_customer_address_1.ca_gmt_offset = _impala_builtins.casttodecimal(_impala_builtins.negative(CAST(5 AS TINYINT)))
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=28 row-size=8B cardinality=0
      in pipelines: 26(GETNEXT)

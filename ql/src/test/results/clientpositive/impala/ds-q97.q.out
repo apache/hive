@@ -55,7 +55,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(fetch=[100])
   ImpalaAggregateRel(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)], agg#2=[sum($2)])
-    ImpalaProjectPassthroughRel($f0=[CAST(CASE(AND(IS NULL($2), IS NOT NULL($0)), 1, 0)):BIGINT], $f1=[CAST(CASE(AND(IS NULL($0), IS NOT NULL($2)), 1, 0)):BIGINT], $f2=[CAST(CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1, 0)):BIGINT])
+    ImpalaProjectPassthroughRel($f0=[CAST(CASE(AND(IS NULL($2), IS NOT NULL($0)), 1:TINYINT, 0:TINYINT)):BIGINT], $f1=[CAST(CASE(AND(IS NULL($0), IS NOT NULL($2)), 1:TINYINT, 0:TINYINT)):BIGINT], $f2=[CAST(CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1:TINYINT, 0:TINYINT)):BIGINT])
       ImpalaJoinRel(condition=[AND(=($0, $2), =($1, $3))], joinType=[full])
         ImpalaProjectPassthroughRel(ss_customer_sk=[$1], ss_item_sk=[$0])
           ImpalaAggregateRel(group=[{0, 1}])
@@ -63,13 +63,13 @@ ImpalaSortRel(fetch=[100])
               ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_sold_date_sk=[$22])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[IS NOT NULL($22)])
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
-                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1190:BIGINT, +(1190:BIGINT, 11:BIGINT)), IS NOT NULL($0))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1190, +(1190, 11)), IS NOT NULL($0))])
         ImpalaAggregateRel(group=[{1, 2}])
           ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
             ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[IS NOT NULL($0)])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1190:BIGINT, +(1190:BIGINT, 11:BIGINT)), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1190, +(1190, 11)), IS NOT NULL($0))])
 
 PREHOOK: query: explain with ssci as (
 select ss_customer_sk customer_sk
@@ -161,7 +161,7 @@ Per-Host Resources: mem-estimate=139.94MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=18, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE
-  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS INT) ELSE CAST(0 AS INT) END))
+  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
   |  in pipelines: 09(GETNEXT), 13(OPEN)
@@ -229,7 +229,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) >= CAST(1190 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq) <= _impala_builtins.add(CAST(1190 AS BIGINT), CAST(11 AS BIGINT))
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim.d_month_seq <= _impala_builtins.add(CAST(1190 AS INT), CAST(11 AS INT))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -292,7 +292,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq) >= CAST(1190 AS BIGINT) AND _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq) <= _impala_builtins.add(CAST(1190 AS BIGINT), CAST(11 AS BIGINT))
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim_0.d_month_seq <= _impala_builtins.add(CAST(1190 AS INT), CAST(11 AS INT))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

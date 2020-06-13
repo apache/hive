@@ -47,6 +47,7 @@ import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -72,10 +73,8 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -96,6 +95,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Expression factory for Calcite {@link RexNode}.
  */
+@Evolving
 public class RexNodeExprFactory extends ExprFactory<RexNode> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RexNodeExprFactory.class);
@@ -218,7 +218,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected RexNode createBigintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
-        new BigDecimal(Long.valueOf(value)),
+        new BigDecimal(Long.parseLong(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
         false);
   }
@@ -229,7 +229,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected RexNode createIntConstantExpr(String value) {
     return rexBuilder.makeLiteral(
-        new BigDecimal(Integer.valueOf(value)),
+        new BigDecimal(Integer.parseInt(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.INTEGER),
         false);
   }
@@ -240,7 +240,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected RexNode createSmallintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
-        new BigDecimal(Short.valueOf(value)),
+        new BigDecimal(Short.parseShort(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.SMALLINT),
         false);
   }
@@ -251,7 +251,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected RexNode createTinyintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
-        new BigDecimal(Byte.valueOf(value)),
+        new BigDecimal(Byte.parseByte(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.TINYINT),
         false);
   }
@@ -261,7 +261,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexNode createFloatConstantExpr(String value) {
-    Float f = Float.valueOf(value);
+    float f = Float.parseFloat(value);
     return rexBuilder.makeApproxLiteral(
         new BigDecimal(Float.toString(f)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT));
@@ -272,7 +272,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexNode createDoubleConstantExpr(String value) throws SemanticException {
-    Double d = Double.valueOf(value);
+    double d = Double.parseDouble(value);
     // TODO: The best solution is to support NaN in expression reduction.
     if (Double.isNaN(d)) {
       throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
@@ -316,8 +316,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       prec = hd.precision();
       scale = hd.scale();
     }
-    DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-    return typeInfo;
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
   /**
@@ -569,6 +568,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     return rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
         new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
             SqlParserPos(1, 1)));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected RexNode createExactWholeNumber(String value) {
+    return functionHelper.getExactWholeNumber(value);
   }
 
   /**

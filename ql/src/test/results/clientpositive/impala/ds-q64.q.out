@@ -265,10 +265,10 @@ POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_street_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(1999):INTEGER], cnt=[$11], s11=[$12], s21=[$13], s31=[$14], s12=[$15], s22=[$16], s32=[$17], syear1=[$18], cnt1=[$19])
-  ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$19], sort3=[$20], sort4=[$21], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
-    ImpalaProjectRel(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_street_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s11=[$13], s21=[$14], s31=[$15], s12=[$21], s22=[$22], s32=[$23], syear1=[$19], cnt1=[$20], s1=[$13], s13=[$21])
-      ImpalaJoinRel(condition=[AND(=($1, $16), <=($20, $12), =($2, $17), =($3, $18))], joinType=[inner])
+ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_street_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(1999):INTEGER], cnt=[$11], s11=[$12], s21=[$13], s31=[$14], s12=[$15], s22=[$16], s32=[$17], syear1=[CAST(+(1999, 1)):INTEGER], cnt1=[$18])
+  ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$18], sort3=[$19], sort4=[$20], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
+    ImpalaProjectRel(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_street_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s11=[$13], s21=[$14], s31=[$15], s12=[$20], s22=[$21], s32=[$22], cnt1=[$19], s1=[$13], s13=[$20])
+      ImpalaJoinRel(condition=[AND(=($1, $16), <=($19, $12), =($2, $17), =($3, $18))], joinType=[inner])
         ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
           ImpalaProjectRel(i_product_name=[$1], i_item_sk=[$0], s_store_name=[$2], s_zip=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_city=[$6], ca_zip=[$7], ca_street_number0=[$10], ca_street_name0=[$11], ca_city0=[$12], ca_zip0=[$13], d_year=[$8], d_year0=[$9], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17])
             ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
@@ -291,14 +291,14 @@ ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], 
                               ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
                                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
                             ImpalaProjectPassthroughRel($f0=[$0])
-                              ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(10, 0), $2))])
+                              ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
                                 ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
                                   ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
                                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
                                   ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
                                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
                           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure', _UTF-16LE'gainsboro', _UTF-16LE'misty', _UTF-16LE'blush', _UTF-16LE'hot', _UTF-16LE'lemon'), BETWEEN(false, $5, 80:DECIMAL(10, 0), CAST(+(80:BIGINT, 10:BIGINT)):DECIMAL(38, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:BIGINT, 1:BIGINT)):DECIMAL(38, 0) NOT NULL, CAST(+(80:BIGINT, 15:BIGINT)):DECIMAL(38, 0) NOT NULL), IS NOT NULL($0))])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure', _UTF-16LE'gainsboro', _UTF-16LE'misty', _UTF-16LE'blush', _UTF-16LE'hot', _UTF-16LE'lemon'), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
                         ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
                           ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
                             ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
@@ -330,36 +330,36 @@ ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], 
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
                 ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
-        ImpalaProjectPassthroughRel($f1=[$1], $f2=[$2], $f3=[$3], $f12=[$12], $f15=[$15], $f16=[$16], $f17=[$17], $f18=[$18])
-          ImpalaProjectRel(i_product_name=[$2], i_item_sk=[$1], s_store_name=[$3], s_zip=[$4], ca_street_number=[$5], ca_street_name=[$6], ca_city=[$7], ca_zip=[$8], ca_street_number0=[$11], ca_street_name0=[$12], ca_city0=[$13], ca_zip0=[$14], d_year=[$0], d_year0=[$9], d_year1=[$10], $f15=[$15], $f16=[$16], $f17=[$17], $f18=[$18])
-            ImpalaAggregateRel(group=[{17, 18, 19, 24, 25, 27, 28, 29, 30, 40, 42, 47, 48, 49, 50}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
-              ImpalaJoinRel(condition=[AND(<>($52, $38), =($2, $51))], joinType=[inner])
-                ImpalaJoinRel(condition=[=($1, $31)], joinType=[inner])
-                  ImpalaJoinRel(condition=[=($4, $26)], joinType=[inner])
-                    ImpalaJoinRel(condition=[=($5, $23)], joinType=[inner])
-                      ImpalaJoinRel(condition=[=($3, $20)], joinType=[inner])
-                        ImpalaJoinRel(condition=[=($0, $18)], joinType=[inner])
-                          ImpalaJoinRel(condition=[=($11, $16)], joinType=[inner])
-                            ImpalaJoinRel(condition=[=($0, $15)], joinType=[inner])
-                              ImpalaJoinRel(condition=[AND(=($0, $13), =($7, $14))], joinType=[inner])
-                                ImpalaJoinRel(condition=[=($6, $12)], joinType=[inner])
+        ImpalaProjectPassthroughRel($f1=[$1], $f2=[$2], $f3=[$3], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
+          ImpalaProjectRel(i_product_name=[$1], i_item_sk=[$0], s_store_name=[$2], s_zip=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_city=[$6], ca_zip=[$7], ca_street_number0=[$10], ca_street_name0=[$11], ca_city0=[$12], ca_zip0=[$13], d_year=[$8], d_year0=[$9], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17])
+            ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
+              ImpalaJoinRel(condition=[AND(<>($51, $37), =($2, $50))], joinType=[inner])
+                ImpalaJoinRel(condition=[=($1, $30)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($4, $25)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($5, $22)], joinType=[inner])
+                      ImpalaJoinRel(condition=[=($3, $19)], joinType=[inner])
+                        ImpalaJoinRel(condition=[=($0, $17)], joinType=[inner])
+                          ImpalaJoinRel(condition=[=($0, $16)], joinType=[inner])
+                            ImpalaJoinRel(condition=[AND(=($0, $14), =($7, $15))], joinType=[inner])
+                              ImpalaJoinRel(condition=[=($6, $13)], joinType=[inner])
+                                ImpalaJoinRel(condition=[=($11, $12)], joinType=[inner])
                                   ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_promo_sk=[$7], ss_ticket_number=[$8], ss_wholesale_cost=[$10], ss_list_price=[$11], ss_coupon_amt=[$18], ss_sold_date_sk=[$22])
                                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8), IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($4), IS NOT NULL($5))])
-                                  ImpalaProjectPassthroughRel(p_promo_sk=[$0])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
-                                ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
-                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
-                              ImpalaProjectPassthroughRel($f0=[$0])
-                                ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(10, 0), $2))])
-                                  ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
-                                    ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
-                                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
-                                    ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
-                                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
-                            ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
-                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=(CAST($6):BIGINT, +(1999:BIGINT, 1:BIGINT)), IS NOT NULL($0))])
+                                  ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, +(1999, 1)), IS NOT NULL($0))])
+                                ImpalaProjectPassthroughRel(p_promo_sk=[$0])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
+                              ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
+                                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+                            ImpalaProjectPassthroughRel($f0=[$0])
+                              ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
+                                ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
+                                  ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
+                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
+                                  ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
+                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
                           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure', _UTF-16LE'gainsboro', _UTF-16LE'misty', _UTF-16LE'blush', _UTF-16LE'hot', _UTF-16LE'lemon'), BETWEEN(false, $5, 80:DECIMAL(10, 0), CAST(+(80:BIGINT, 10:BIGINT)):DECIMAL(38, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:BIGINT, 1:BIGINT)):DECIMAL(38, 0) NOT NULL, CAST(+(80:BIGINT, 15:BIGINT)):DECIMAL(38, 0) NOT NULL), IS NOT NULL($0))])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure', _UTF-16LE'gainsboro', _UTF-16LE'misty', _UTF-16LE'blush', _UTF-16LE'hot', _UTF-16LE'lemon'), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
                         ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
                           ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
                             ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
@@ -667,43 +667,43 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F45:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=284.00KB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=280.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: product_name, store_name, store_zip, b_street_number, b_street_name, b_city, b_zip, c_street_number, c_street_name, c_city, c_zip, CAST(1999 AS INT), cnt, s11, s21, s31, s12, s22, s32, syear1, cnt1
+  |  output exprs: product_name, store_name, store_zip, b_street_number, b_street_name, b_city, b_zip, c_street_number, c_street_name, c_city, c_zip, CAST(1999 AS INT), cnt, s11, s21, s31, s12, s22, s32, _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)), cnt1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   130:MERGING-EXCHANGE [UNPARTITIONED]
      order by: product_name ASC NULLS LAST, store_name ASC NULLS LAST, cnt1 ASC NULLS LAST, s1 ASC NULLS LAST, s13 ASC NULLS LAST
-     mem-estimate=284.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=81 row-size=280B cardinality=0
+     mem-estimate=280.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=81 row-size=276B cardinality=0
      in pipelines: 84(GETNEXT)
 
 F44:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=142.35MB mem-reservation=47.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=142.34MB mem-reservation=47.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F45, EXCHANGE=130, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   84:SORT
   |  order by: product_name ASC NULLS LAST, store_name ASC NULLS LAST, cnt1 ASC NULLS LAST, s1 ASC NULLS LAST, s13 ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=81 row-size=280B cardinality=0
+  |  tuple-ids=81 row-size=276B cardinality=0
   |  in pipelines: 84(GETNEXT), 106(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=80 row-size=280B cardinality=0
+  |  tuple-ids=80 row-size=276B cardinality=0
   |  in pipelines: 106(GETNEXT)
   |
   83:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: i_item_sk = i_item_sk, s_store_name = s_store_name, s_zip = s_zip
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: $f15 <= $f14
+  |  other join predicates: $f14 <= $f14
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=39,79 row-size=412B cardinality=0
+  |  tuple-ids=39,79 row-size=408B cardinality=0
   |  in pipelines: 106(GETNEXT), 128(OPEN)
   |
   |--129:EXCHANGE [BROADCAST]
-  |     mem-estimate=212.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=79 row-size=208B cardinality=0
+  |     mem-estimate=208.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=79 row-size=204B cardinality=0
   |     in pipelines: 128(GETNEXT)
   |
   41:SELECT
@@ -927,7 +927,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   90:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_list_price), _impala_builtins.sum:merge(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales.cs_item_sk
-  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(10,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit)))
+  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit)))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=40B cardinality=0
   |  in pipelines: 90(GETNEXT), 09(OPEN)
@@ -992,7 +992,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:SCAN HDFS [default.impala_tpcds_item, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item.i_current_price >= CAST(80 AS DECIMAL(10,0)) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(10 AS BIGINT))), default.impala_tpcds_item.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(1 AS BIGINT))) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(15 AS BIGINT)))
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -1267,41 +1267,41 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 38(GETNEXT)
 
 F43:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.21MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.20MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F44, EXCHANGE=129, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   82:SELECT
-  |  predicates: $f15 IS NOT NULL
+  |  predicates: $f14 IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=79 row-size=208B cardinality=0
+  |  tuple-ids=79 row-size=204B cardinality=0
   |  in pipelines: 128(GETNEXT)
   |
   42:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=79 row-size=208B cardinality=0
+  |  tuple-ids=79 row-size=204B cardinality=0
   |  in pipelines: 128(GETNEXT)
   |
   128:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge(), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_coupon_amt)
-  |  group by: d1_0.d_year, default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
+  |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=78 row-size=208B cardinality=0
+  |  tuple-ids=78 row-size=204B cardinality=0
   |  in pipelines: 128(GETNEXT), 43(OPEN)
   |
-  127:EXCHANGE [HASH(d1_0.d_year,default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_item_0.i_product_name,default.impala_tpcds_store_0.s_store_name,default.impala_tpcds_store_0.s_zip,ad1_0.ca_street_number,ad1_0.ca_street_name,ad1_0.ca_city,ad1_0.ca_zip,d2_0.d_year,d3_0.d_year,ad2_0.ca_street_number,ad2_0.ca_street_name,ad2_0.ca_city,ad2_0.ca_zip)]
-     mem-estimate=212.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=78 row-size=208B cardinality=0
+  127:EXCHANGE [HASH(default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_item_0.i_product_name,default.impala_tpcds_store_0.s_store_name,default.impala_tpcds_store_0.s_zip,ad1_0.ca_street_number,ad1_0.ca_street_name,ad1_0.ca_city,ad1_0.ca_zip,d2_0.d_year,d3_0.d_year,ad2_0.ca_street_number,ad2_0.ca_street_name,ad2_0.ca_city,ad2_0.ca_zip)]
+     mem-estimate=208.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=78 row-size=204B cardinality=0
      in pipelines: 43(GETNEXT)
 
 F22:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F43, EXCHANGE=127, HASH(d1_0.d_year,default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_item_0.i_product_name,default.impala_tpcds_store_0.s_store_name,default.impala_tpcds_store_0.s_zip,ad1_0.ca_street_number,ad1_0.ca_street_name,ad1_0.ca_city,ad1_0.ca_zip,d2_0.d_year,d3_0.d_year,ad2_0.ca_street_number,ad2_0.ca_street_name,ad2_0.ca_city,ad2_0.ca_zip)]
+  DATASTREAM SINK [FRAGMENT=F43, EXCHANGE=127, HASH(default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_item_0.i_product_name,default.impala_tpcds_store_0.s_store_name,default.impala_tpcds_store_0.s_zip,ad1_0.ca_street_number,ad1_0.ca_street_name,ad1_0.ca_city,ad1_0.ca_zip,d2_0.d_year,d3_0.d_year,ad2_0.ca_street_number,ad2_0.ca_street_name,ad2_0.ca_city,ad2_0.ca_zip)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   81:AGGREGATE [STREAMING]
   |  output: count(), sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost), sum(default.impala_tpcds_store_sales_0.ss_list_price), sum(default.impala_tpcds_store_sales_0.ss_coupon_amt)
-  |  group by: d1_0.d_year, default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
+  |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=78 row-size=208B cardinality=0
+  |  tuple-ids=78 row-size=204B cardinality=0
   |  in pipelines: 43(GETNEXT)
   |
   80:HASH JOIN [INNER JOIN, BROADCAST]
@@ -1309,7 +1309,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  fk/pk conjuncts: assumed fk/pk
   |  other join predicates: cd1_0.cd_marital_status != cd2_0.cd_marital_status
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52,54,56,58,60,62,64,66,68,70,72,74,76 row-size=388B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52,54,56,58,60,62,64,66,68,70,72,74,76 row-size=388B cardinality=0
   |  in pipelines: 43(GETNEXT), 79(OPEN)
   |
   |--126:EXCHANGE [BROADCAST]
@@ -1321,7 +1321,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_customer_sk = default.impala_tpcds_customer_0.c_customer_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52,54,56,58,60,62,64,66,68,70,72,74 row-size=372B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52,54,56,58,60,62,64,66,68,70,72,74 row-size=372B cardinality=0
   |  in pipelines: 43(GETNEXT), 65(OPEN)
   |
   |--125:EXCHANGE [BROADCAST]
@@ -1333,7 +1333,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_addr_sk = ad1_0.ca_address_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52,54,56,58,60 row-size=252B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52,54,56,58,60 row-size=252B cardinality=0
   |  in pipelines: 43(GETNEXT), 63(OPEN)
   |
   |--118:EXCHANGE [BROADCAST]
@@ -1345,7 +1345,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_store_sk = default.impala_tpcds_store_0.s_store_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52,54,56,58 row-size=200B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52,54,56,58 row-size=200B cardinality=0
   |  in pipelines: 43(GETNEXT), 61(OPEN)
   |
   |--117:EXCHANGE [BROADCAST]
@@ -1357,7 +1357,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_hdemo_sk = hd1_0.hd_demo_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52,54,56 row-size=172B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52,54,56 row-size=172B cardinality=0
   |  in pipelines: 43(GETNEXT), 57(OPEN)
   |
   |--116:EXCHANGE [BROADCAST]
@@ -1369,7 +1369,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_item_sk = default.impala_tpcds_item_0.i_item_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50,52 row-size=160B cardinality=0
+  |  tuple-ids=40,41,43,45,51,52 row-size=160B cardinality=0
   |  in pipelines: 43(GETNEXT), 55(OPEN)
   |
   |--114:EXCHANGE [BROADCAST]
@@ -1378,51 +1378,51 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   |     in pipelines: 55(GETNEXT)
   |
   54:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpcds_store_sales_0.ss_sold_date_sk = d1_0.d_date_sk
-  |  fk/pk conjuncts: assumed fk/pk
-  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49,50 row-size=124B cardinality=0
-  |  in pipelines: 43(GETNEXT), 53(OPEN)
-  |
-  |--113:EXCHANGE [BROADCAST]
-  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=50 row-size=8B cardinality=0
-  |     in pipelines: 53(GETNEXT)
-  |
-  52:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_item_sk = default.impala_tpcds_catalog_sales_0.cs_item_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43,49 row-size=116B cardinality=0
-  |  in pipelines: 43(GETNEXT), 111(OPEN)
+  |  tuple-ids=40,41,43,45,51 row-size=124B cardinality=0
+  |  in pipelines: 43(GETNEXT), 112(OPEN)
   |
-  |--112:EXCHANGE [BROADCAST]
+  |--113:EXCHANGE [BROADCAST]
   |     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=49 row-size=40B cardinality=0
-  |     in pipelines: 111(GETNEXT)
+  |     tuple-ids=51 row-size=40B cardinality=0
+  |     in pipelines: 112(GETNEXT)
   |
-  47:HASH JOIN [INNER JOIN, BROADCAST]
+  49:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_item_sk = default.impala_tpcds_store_returns_0.sr_item_sk, default.impala_tpcds_store_sales_0.ss_ticket_number = default.impala_tpcds_store_returns_0.sr_ticket_number
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41,43 row-size=76B cardinality=0
-  |  in pipelines: 43(GETNEXT), 46(OPEN)
+  |  tuple-ids=40,41,43,45 row-size=84B cardinality=0
+  |  in pipelines: 43(GETNEXT), 48(OPEN)
   |
-  |--108:EXCHANGE [BROADCAST]
+  |--109:EXCHANGE [BROADCAST]
   |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=43 row-size=16B cardinality=0
-  |     in pipelines: 46(GETNEXT)
+  |     tuple-ids=45 row-size=16B cardinality=0
+  |     in pipelines: 48(GETNEXT)
   |
-  45:HASH JOIN [INNER JOIN, BROADCAST]
+  47:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales_0.ss_promo_sk = default.impala_tpcds_promotion_0.p_promo_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=40,41 row-size=60B cardinality=0
+  |  tuple-ids=40,41,43 row-size=68B cardinality=0
+  |  in pipelines: 43(GETNEXT), 46(OPEN)
+  |
+  |--108:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=43 row-size=4B cardinality=0
+  |     in pipelines: 46(GETNEXT)
+  |
+  45:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpcds_store_sales_0.ss_sold_date_sk = d1_0.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=40,41 row-size=64B cardinality=0
   |  in pipelines: 43(GETNEXT), 44(OPEN)
   |
   |--107:EXCHANGE [BROADCAST]
   |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=41 row-size=4B cardinality=0
+  |     tuple-ids=41 row-size=8B cardinality=0
   |     in pipelines: 44(GETNEXT)
   |
   43:SCAN HDFS [default.impala_tpcds_store_sales, RANDOM]
@@ -1442,7 +1442,23 @@ F23:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=107, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  44:SCAN HDFS [default.impala_tpcds_promotion, RANDOM]
+  44:SCAN HDFS [default.impala_tpcds_date_dim d1_0, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: d1_0.d_date_sk IS NOT NULL, d1_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: d1_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=41 row-size=8B cardinality=0
+     in pipelines: 44(GETNEXT)
+
+F24:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=108, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  46:SCAN HDFS [default.impala_tpcds_promotion, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_promotion_0.p_promo_sk IS NOT NULL
      stored statistics:
@@ -1450,14 +1466,14 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=41 row-size=4B cardinality=0
-     in pipelines: 44(GETNEXT)
+     tuple-ids=43 row-size=4B cardinality=0
+     in pipelines: 46(GETNEXT)
 
-F24:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+F25:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=108, BROADCAST]
+  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=109, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  46:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
+  48:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_returns_0.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns_0.sr_ticket_number IS NOT NULL
      stored statistics:
@@ -1465,50 +1481,50 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=43 row-size=16B cardinality=0
-     in pipelines: 46(GETNEXT)
-
-F27:PLAN FRAGMENT [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=112, BROADCAST]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  111:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), _impala_builtins.sum:merge(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
-  |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
-  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(10,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit)))
-  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=49 row-size=40B cardinality=0
-  |  in pipelines: 111(GETNEXT), 48(OPEN)
-  |
-  110:EXCHANGE [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
-     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=49 row-size=40B cardinality=0
+     tuple-ids=45 row-size=16B cardinality=0
      in pipelines: 48(GETNEXT)
 
-F25:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=110, HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
+F28:PLAN FRAGMENT [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=113, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  51:AGGREGATE [STREAMING]
+  112:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), _impala_builtins.sum:merge(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
+  |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
+  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit)))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=51 row-size=40B cardinality=0
+  |  in pipelines: 112(GETNEXT), 50(OPEN)
+  |
+  111:EXCHANGE [HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
+     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=51 row-size=40B cardinality=0
+     in pipelines: 50(GETNEXT)
+
+F26:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F28, EXCHANGE=111, HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  53:AGGREGATE [STREAMING]
   |  output: sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=49 row-size=40B cardinality=0
-  |  in pipelines: 48(GETNEXT)
+  |  tuple-ids=51 row-size=40B cardinality=0
+  |  in pipelines: 50(GETNEXT)
   |
-  50:HASH JOIN [INNER JOIN, BROADCAST]
+  52:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_catalog_sales_0.cs_item_sk = default.impala_tpcds_catalog_returns_0.cr_item_sk, default.impala_tpcds_catalog_sales_0.cs_order_number = default.impala_tpcds_catalog_returns_0.cr_order_number
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=45,47 row-size=48B cardinality=0
-  |  in pipelines: 48(GETNEXT), 49(OPEN)
+  |  tuple-ids=47,49 row-size=48B cardinality=0
+  |  in pipelines: 50(GETNEXT), 51(OPEN)
   |
-  |--109:EXCHANGE [BROADCAST]
+  |--110:EXCHANGE [BROADCAST]
   |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=47 row-size=28B cardinality=0
-  |     in pipelines: 49(GETNEXT)
+  |     tuple-ids=49 row-size=28B cardinality=0
+  |     in pipelines: 51(GETNEXT)
   |
-  48:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
+  50:SCAN HDFS [default.impala_tpcds_catalog_sales, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales_0.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_0.cs_order_number IS NOT NULL
      stored statistics:
@@ -1516,14 +1532,14 @@ Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=45 row-size=20B cardinality=0
-     in pipelines: 48(GETNEXT)
+     tuple-ids=47 row-size=20B cardinality=0
+     in pipelines: 50(GETNEXT)
 
-F26:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+F27:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F25, EXCHANGE=109, BROADCAST]
+  DATASTREAM SINK [FRAGMENT=F26, EXCHANGE=110, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  49:SCAN HDFS [default.impala_tpcds_catalog_returns, RANDOM]
+  51:SCAN HDFS [default.impala_tpcds_catalog_returns, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_returns_0.cr_item_sk IS NOT NULL, default.impala_tpcds_catalog_returns_0.cr_order_number IS NOT NULL
      stored statistics:
@@ -1531,23 +1547,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=47 row-size=28B cardinality=0
-     in pipelines: 49(GETNEXT)
-
-F28:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=113, BROADCAST]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  53:SCAN HDFS [default.impala_tpcds_date_dim d1_0, RANDOM]
-     HDFS partitions=1/1 files=0 size=0B
-     predicates: d1_0.d_date_sk IS NOT NULL, _impala_builtins.casttobigint(d1_0.d_year) = _impala_builtins.add(CAST(1999 AS BIGINT), CAST(1 AS BIGINT))
-     stored statistics:
-       table: rows=0 size=0B
-       columns: unavailable
-     extrapolated-rows=disabled max-scan-range-rows=0
-     mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=50 row-size=8B cardinality=0
-     in pipelines: 53(GETNEXT)
+     tuple-ids=49 row-size=28B cardinality=0
+     in pipelines: 51(GETNEXT)
 
 F29:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
@@ -1555,7 +1556,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   55:SCAN HDFS [default.impala_tpcds_item, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_item_0.i_item_sk IS NOT NULL, default.impala_tpcds_item_0.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item_0.i_current_price >= CAST(80 AS DECIMAL(10,0)) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(10 AS BIGINT))), default.impala_tpcds_item_0.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(1 AS BIGINT))) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS BIGINT), CAST(15 AS BIGINT)))
+     predicates: default.impala_tpcds_item_0.i_item_sk IS NOT NULL, default.impala_tpcds_item_0.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item_0.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item_0.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

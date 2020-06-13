@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -33,6 +34,7 @@ import org.apache.hive.common.util.DateUtils;
 /**
  * Generic expressions factory.
  */
+@Evolving
 public abstract class ExprFactory<T> {
 
   static final BigDecimal NANOS_PER_SEC_BD =
@@ -234,13 +236,18 @@ public abstract class ExprFactory<T> {
           result = null; // We will use decimal if all else fails.
         }
       }
-      result = createBigintConstantExpr(value);
-      result = createIntConstantExpr(value);
+
+      result = createExactWholeNumber(value);
     } catch (NumberFormatException e) {
       // do nothing here, we will throw an exception in the following block
     }
     return result != null ? result : result2;
   }
+
+  /**
+   * Creates the smaller exact numeric that can hold this value.
+   */
+  protected abstract T createExactWholeNumber(String value);
 
   /**
    * Creates a struct with given type.

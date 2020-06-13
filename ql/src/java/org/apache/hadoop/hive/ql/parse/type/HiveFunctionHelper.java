@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,7 +37,9 @@ import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -88,9 +91,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Function helper for Hive.
  */
+@Evolving
 public class HiveFunctionHelper implements FunctionHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveFunctionHelper.class);
+
+  private static final BigDecimal INT_MIN_VALUE = BigDecimal.valueOf(Integer.MIN_VALUE);
+  private static final BigDecimal INT_MAX_VALUE = BigDecimal.valueOf(Integer.MAX_VALUE);
 
   private final RexNodeExprFactory rexNodeExprFactory;
   private final RexBuilder rexBuilder;
@@ -377,6 +384,21 @@ public class HiveFunctionHelper implements FunctionHelper {
     }
   }
 
+  /**
+   * Given a whole number, it returns smaller exact numeric
+   * that can hold this value between bigint, and int.
+   */
+  public RexNode getExactWholeNumber(String value) {
+    RexBuilder rexBuilder = rexNodeExprFactory.getRexBuilder();
+    BigDecimal bd = new BigDecimal(Long.parseLong(value));
+    SqlTypeName type = SqlTypeName.BIGINT;
+    if (bd.compareTo(INT_MIN_VALUE) >= 0 && bd.compareTo(INT_MAX_VALUE) <= 0) {
+      type = SqlTypeName.INTEGER;
+    }
+    return rexBuilder.makeLiteral(bd,
+        rexBuilder.getTypeFactory().createSqlType(type),
+        false);
+  }
 
   /**
    * {@inheritDoc}

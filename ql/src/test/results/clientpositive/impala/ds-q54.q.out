@@ -128,7 +128,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaProjectRel(segment=[$0], num_customers=[$1], segment_base=[*(CAST($0):BIGINT, 50)])
     ImpalaAggregateRel(group=[{0}], agg#0=[count()])
-      ImpalaProjectPassthroughRel(segment=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER NOT NULL])
+      ImpalaProjectPassthroughRel(segment=[CAST(/($1, 50:DECIMAL(3, 0))):INTEGER NOT NULL])
         ImpalaAggregateRel(group=[{0}], agg#0=[sum($3)])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaProjectPassthroughRel($f0=[$7], $f1=[$8], ss_customer_sk=[$0], ss_ext_sales_price=[$1], ss_sold_date_sk=[$2], ca_address_sk=[$9], ca_county=[$10], ca_state=[$11], s_county=[$12], s_state=[$13], d_date_sk=[$5], d_month_seq=[$6], cnt=[$4], $f00=[$3])
@@ -357,7 +357,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   34:AGGREGATE [STREAMING]
   |  output: count()
-  |  group by: _impala_builtins.casttoint(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(10,0))))
+  |  group by: _impala_builtins.casttoint(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(3,0))))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=34 row-size=12B cardinality=0
   |  in pipelines: 62(GETNEXT)

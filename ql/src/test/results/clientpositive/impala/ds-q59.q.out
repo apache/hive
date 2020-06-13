@@ -104,7 +104,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
                 ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
           ImpalaProjectPassthroughRel(d_week_seq=[$4])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, 1205:BIGINT, +(1205:BIGINT, 11:BIGINT)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1205, +(1205, 11)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
         ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
           ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
@@ -119,7 +119,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
               ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
         ImpalaProjectPassthroughRel(d_week_seq=[$4])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($3):BIGINT, +(1205:BIGINT, 12:BIGINT), +(1205:BIGINT, 23:BIGINT)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, +(1205, 12), +(1205, 23)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
 
 PREHOOK: query: explain with wss as 
  (select d_week_seq,
@@ -354,7 +354,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:SCAN HDFS [default.impala_tpcds_date_dim d, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(d.d_week_seq) IS NOT NULL, _impala_builtins.casttobigint(d.d_month_seq) >= CAST(1205 AS BIGINT) AND _impala_builtins.casttobigint(d.d_month_seq) <= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(11 AS BIGINT))
+     predicates: d.d_week_seq IS NOT NULL, d.d_month_seq >= CAST(1205 AS INT) AND d.d_month_seq <= _impala_builtins.add(CAST(1205 AS INT), CAST(11 AS INT)), _impala_builtins.casttobigint(d.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -490,7 +490,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:SCAN HDFS [default.impala_tpcds_date_dim d_0, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d_0.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(d_0.d_week_seq) IS NOT NULL, _impala_builtins.casttobigint(d_0.d_month_seq) >= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(12 AS BIGINT)) AND _impala_builtins.casttobigint(d_0.d_month_seq) <= _impala_builtins.add(CAST(1205 AS BIGINT), CAST(23 AS BIGINT))
+     predicates: d_0.d_week_seq IS NOT NULL, d_0.d_month_seq >= _impala_builtins.add(CAST(1205 AS INT), CAST(12 AS INT)) AND d_0.d_month_seq <= _impala_builtins.add(CAST(1205 AS INT), CAST(23 AS INT)), _impala_builtins.casttobigint(d_0.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

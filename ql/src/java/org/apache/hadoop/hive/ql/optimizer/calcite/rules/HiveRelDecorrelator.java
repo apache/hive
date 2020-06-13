@@ -1918,7 +1918,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           boolean[] update = {false};
           List<RexNode> clonedOperands = visitList(newOperands, update);
 
-          return relBuilder.call(call.getOperator(), clonedOperands);
+          return rexBuilder.makeCall(call.getType(), call.getOperator(), clonedOperands);
         }
       }
       return super.visitCall(call);
