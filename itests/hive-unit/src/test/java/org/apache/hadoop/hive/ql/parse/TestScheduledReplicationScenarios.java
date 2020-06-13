@@ -58,7 +58,7 @@ import java.util.ArrayList;
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
-  private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 2 minutes
+  private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -180,6 +180,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
 
   @Test
   public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
+    MetricCollector.getInstance().deinit();
     // Bootstrap
     String withClause = " WITH('" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
             + "'='/replica_external_base', '" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA

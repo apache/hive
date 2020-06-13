@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -87,8 +88,8 @@ public final class MetricCollector {
     return metricList;
   }
 
-  //For testing
-  synchronized void deinit() {
+  @VisibleForTesting
+  public synchronized void deinit() {
     if (isInited) {
       isInited = false;
       metricMap.clear();
