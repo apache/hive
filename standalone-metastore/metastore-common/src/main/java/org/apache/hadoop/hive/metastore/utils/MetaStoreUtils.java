@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.metastore.utils;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -195,15 +198,15 @@ public class MetaStoreUtils {
    */
   public static boolean validateName(String name, Configuration conf) {
     Pattern tpat;
-    String allowedSpecialCharacters = "";
+    StringBuilder allowedSpecialCharacters = new StringBuilder();
     if (conf != null
         && MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
       for (Character c : SPECIAL_CHARACTERS_IN_TABLE_NAMES) {
-        allowedSpecialCharacters += c;
+        allowedSpecialCharacters.append(c);
       }
     }
-    tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters) + "]+");
+    tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters.toString()) + "]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
   }
@@ -405,13 +408,6 @@ public class MetaStoreUtils {
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
     List<URL> curPath = getCurrentClassPaths(cloader);
-    ArrayList<URL> newPath = new ArrayList<>(curPath.size());
-
-    // get a list with the current classpath components
-    for (URL onePath : curPath) {
-      newPath.add(onePath);
-    }
-    curPath = newPath;
 
     for (String onestr : newPaths) {
       URL oneurl = urlFromPathString(onestr);
@@ -420,7 +416,12 @@ public class MetaStoreUtils {
       }
     }
 
-    return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
+    return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+      @Override
+      public ClassLoader run() {
+        return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
+      }
+    });
   }
 
   /**
@@ -887,7 +888,9 @@ public class MetaStoreUtils {
    * database name with the proper delimiters.
    */
   public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
-    if (dbName == null) return nullCatalogAndDatabase;
+    if (dbName == null) {
+      return Arrays.copyOf(nullCatalogAndDatabase, nullCatalogAndDatabase.length);
+    }
     if (hasCatalogName(dbName)) {
       if (dbName.endsWith(CATALOG_DB_SEPARATOR)) {
         // This means the DB name is null

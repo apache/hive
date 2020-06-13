@@ -385,7 +385,7 @@
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
@@ -400,7 +400,7 @@
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
