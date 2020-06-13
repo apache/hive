@@ -21,18 +21,22 @@ package org.apache.hadoop.hive.ql.ddl.misc.msck;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.function.AbstractFunctionAnalyzer;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * Analyzer for metastore check commands.
@@ -63,13 +67,24 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     }
 
     Table table = getTable(tableName);
-    List<Map<String, String>> specs = getPartitionSpecs(table, root);
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = getFullPartitionSpecs(root, table, conf, false);
+    byte[] filterExp = null;
+    if (partitionSpecs != null & !partitionSpecs.isEmpty()) {
+      // explicitly set expression proxy class to PartitionExpressionForMetastore since we intend to use the
+      // filterPartitionsByExpr of PartitionExpressionForMetastore for partition pruning down the line.
+      conf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+          PartitionExpressionForMetastore.class.getCanonicalName());
+      // fetch the first value of partitionSpecs map since it will always have one key, value pair
+      filterExp = SerializationUtilities.serializeExpressionToKryo(
+          (ExprNodeGenericFuncDesc) ((List) partitionSpecs.values().toArray()[0]).get(0));
+    }
+
     if (repair && AcidUtils.isTransactionalTable(table)) {
       outputs.add(new WriteEntity(table, WriteType.DDL_EXCLUSIVE));
     } else {
       outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_SHARED));
     }
-    MsckDesc desc = new MsckDesc(tableName, specs, ctx.getResFile(), repair, addPartitions, dropPartitions);
+    MsckDesc desc = new MsckDesc(tableName, filterExp, ctx.getResFile(), repair, addPartitions, dropPartitions);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 

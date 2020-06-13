@@ -1942,9 +1942,8 @@ metastoreCheck
 @after { popMsg(state); }
     : KW_MSCK (repair=KW_REPAIR)?
       (KW_TABLE tableName
-        ((add=KW_ADD | drop=KW_DROP | sync=KW_SYNC) (parts=KW_PARTITIONS))? |
-        (partitionSpec)?)
-    -> ^(TOK_MSCK $repair? tableName? $add? $drop? $sync? (partitionSpec*)?)
+        (add=KW_ADD | drop=KW_DROP | sync=KW_SYNC) (parts=KW_PARTITIONS) (filterPartitionSpec)?)
+    -> ^(TOK_MSCK $repair? tableName? $add? $drop? $sync? (filterPartitionSpec)?)
     ;
 
 resourceList
