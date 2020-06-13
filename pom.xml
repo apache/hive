@@ -216,6 +216,7 @@
     <json-path.version>2.4.0</json-path.version>
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.0.0-incubating</datasketches.version>
+    <spotbugs.version>4.0.3</spotbugs.version>
   </properties>
 
   <repositories>
@@ -1107,6 +1108,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -1617,7 +1624,7 @@
               <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs</artifactId>
-                <version>4.0.3</version>
+                <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
             <configuration>
