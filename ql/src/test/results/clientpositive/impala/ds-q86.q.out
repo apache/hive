@@ -144,7 +144,7 @@ Per-Host Resources: mem-estimate=72.00KB mem-reservation=0B thread-reservation=1
      order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
      limit: 100
      mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=19 row-size=68B cardinality=0
+     tuple-ids=18 row-size=68B cardinality=0
      in pipelines: 11(GETNEXT)
 
 F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -154,12 +154,12 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   11:TOP-N [LIMIT=100]
   |  order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=19 row-size=68B cardinality=0
+  |  tuple-ids=18 row-size=68B cardinality=0
   |  in pipelines: 11(GETNEXT), 09(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=12 row-size=68B cardinality=0
+  |  tuple-ids=11 row-size=68B cardinality=0
   |  in pipelines: 09(GETNEXT)
   |
   10:ANALYTIC
@@ -168,18 +168,18 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   |  order by: $f2 DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=17,16 row-size=76B cardinality=0
+  |  tuple-ids=16,15 row-size=76B cardinality=0
   |  in pipelines: 09(GETNEXT)
   |
   09:SORT
   |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $f2 DESC NULLS FIRST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=17 row-size=68B cardinality=0
+  |  tuple-ids=16 row-size=68B cardinality=0
   |  in pipelines: 09(GETNEXT), 08(OPEN)
   |
   16:EXCHANGE [HASH($func_0,$func_1)]
      mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=11 row-size=68B cardinality=0
+     tuple-ids=10 row-size=68B cardinality=0
      in pipelines: 08(GETNEXT)
 
 F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -188,14 +188,14 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=11 row-size=68B cardinality=0
+  |  tuple-ids=10 row-size=68B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
   08:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(6,7,8) IN (CAST(6 AS INT), CAST(7 AS INT), CAST(8 AS INT)), CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN CAST(7 AS INT) THEN sum(default.impala_tpcds_web_sales.ws_net_paid) WHEN CAST(8 AS INT) THEN sum(default.impala_tpcds_web_sales.ws_net_paid) END), aggif(valid_tid(6,7,8) IN (CAST(6 AS INT), CAST(7 AS INT), CAST(8 AS INT)), CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(7 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(8 AS INT) THEN CAST(3 AS BIGINT) END)
   |  group by: CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(7 AS INT) THEN default.impala_tpcds_item.i_category WHEN CAST(8 AS INT) THEN NULL END, CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN default.impala_tpcds_item.i_class WHEN CAST(7 AS INT) THEN NULL WHEN CAST(8 AS INT) THEN NULL END, CASE valid_tid(6,7,8) WHEN CAST(6 AS INT) THEN CAST(6 AS INT) WHEN CAST(7 AS INT) THEN CAST(7 AS INT) WHEN CAST(8 AS INT) THEN CAST(8 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=10 row-size=52B cardinality=0
+  |  tuple-ids=9 row-size=52B cardinality=0
   |  in pipelines: 08(GETNEXT), 15(OPEN)
   |
   15:AGGREGATE [FINALIZE]

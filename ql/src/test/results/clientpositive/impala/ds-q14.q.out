@@ -657,7 +657,7 @@ Per-Host Resources: mem-estimate=56.00KB mem-reservation=0B thread-reservation=1
      order by: CASE valid_tid(135,136,137,138,139) WHEN 135 THEN channel WHEN 136 THEN channel WHEN 137 THEN channel WHEN 138 THEN channel WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_brand_id WHEN 136 THEN i_brand_id WHEN 137 THEN i_brand_id WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_class_id WHEN 136 THEN i_class_id WHEN 137 THEN NULL WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_category_id WHEN 136 THEN NULL WHEN 137 THEN NULL WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST
      limit: 100
      mem-estimate=56.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=142 row-size=52B cardinality=0
+     tuple-ids=141 row-size=52B cardinality=0
      in pipelines: 126(GETNEXT)
 
 F82:PLAN FRAGMENT [HASH(CASE valid_tid(135,136,137,138,139) WHEN 135 THEN murmur_hash(channel) WHEN 136 THEN murmur_hash(channel) WHEN 137 THEN murmur_hash(channel) WHEN 138 THEN murmur_hash(channel) WHEN 139 THEN murmur_hash(NULL) END,CASE valid_tid(135,136,137,138,139) WHEN 135 THEN murmur_hash(i_brand_id) WHEN 136 THEN murmur_hash(i_brand_id) WHEN 137 THEN murmur_hash(i_brand_id) WHEN 138 THEN murmur_hash(NULL) WHEN 139 THEN murmur_hash(NULL) END,CASE valid_tid(135,136,137,138,139) WHEN 135 THEN murmur_hash(i_class_id) WHEN 136 THEN murmur_hash(i_class_id) WHEN 137 THEN murmur_hash(NULL) WHEN 138 THEN murmur_hash(NULL) WHEN 139 THEN murmur_hash(NULL) END,CASE valid_tid(135,136,137,138,139) WHEN 135 THEN murmur_hash(i_category_id) WHEN 136 THEN murmur_hash(NULL) WHEN 137 THEN murmur_hash(NULL) WHEN 138 THEN murmur_hash(NULL) WHEN 139 THEN murmur_hash(NULL) END)] hosts=1 instances=1
@@ -667,14 +667,14 @@ Per-Host Resources: mem-estimate=650.00MB mem-reservation=171.94MB thread-reserv
   126:TOP-N [LIMIT=100]
   |  order by: CASE valid_tid(135,136,137,138,139) WHEN 135 THEN channel WHEN 136 THEN channel WHEN 137 THEN channel WHEN 138 THEN channel WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_brand_id WHEN 136 THEN i_brand_id WHEN 137 THEN i_brand_id WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_class_id WHEN 136 THEN i_class_id WHEN 137 THEN NULL WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST, CASE valid_tid(135,136,137,138,139) WHEN 135 THEN i_category_id WHEN 136 THEN NULL WHEN 137 THEN NULL WHEN 138 THEN NULL WHEN 139 THEN NULL END ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=142 row-size=52B cardinality=0
+  |  tuple-ids=141 row-size=52B cardinality=0
   |  in pipelines: 126(GETNEXT), 125(OPEN)
   |
   125:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(135,136,137,138,139) IN (CAST(135 AS INT), CAST(136 AS INT), CAST(137 AS INT), CAST(138 AS INT), CAST(139 AS INT)), CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN _impala_builtins.sum(sales) WHEN CAST(136 AS INT) THEN sum(sales) WHEN CAST(137 AS INT) THEN sum(sales) WHEN CAST(138 AS INT) THEN sum(sales) WHEN CAST(139 AS INT) THEN sum(sales) END), aggif(valid_tid(135,136,137,138,139) IN (CAST(135 AS INT), CAST(136 AS INT), CAST(137 AS INT), CAST(138 AS INT), CAST(139 AS INT)), CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN _impala_builtins.sum(number_sales) WHEN CAST(136 AS INT) THEN sum(number_sales) WHEN CAST(137 AS INT) THEN sum(number_sales) WHEN CAST(138 AS INT) THEN sum(number_sales) WHEN CAST(139 AS INT) THEN sum(number_sales) END)
   |  group by: CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN channel WHEN CAST(136 AS INT) THEN channel WHEN CAST(137 AS INT) THEN channel WHEN CAST(138 AS INT) THEN channel WHEN CAST(139 AS INT) THEN NULL END, CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN i_brand_id WHEN CAST(136 AS INT) THEN i_brand_id WHEN CAST(137 AS INT) THEN i_brand_id WHEN CAST(138 AS INT) THEN NULL WHEN CAST(139 AS INT) THEN NULL END, CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN i_class_id WHEN CAST(136 AS INT) THEN i_class_id WHEN CAST(137 AS INT) THEN NULL WHEN CAST(138 AS INT) THEN NULL WHEN CAST(139 AS INT) THEN NULL END, CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN i_category_id WHEN CAST(136 AS INT) THEN NULL WHEN CAST(137 AS INT) THEN NULL WHEN CAST(138 AS INT) THEN NULL WHEN CAST(139 AS INT) THEN NULL END, CASE valid_tid(135,136,137,138,139) WHEN CAST(135 AS INT) THEN CAST(135 AS INT) WHEN CAST(136 AS INT) THEN CAST(136 AS INT) WHEN CAST(137 AS INT) THEN CAST(137 AS INT) WHEN CAST(138 AS INT) THEN CAST(138 AS INT) WHEN CAST(139 AS INT) THEN CAST(139 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=141 row-size=52B cardinality=0
+  |  tuple-ids=140 row-size=52B cardinality=0
   |  in pipelines: 125(GETNEXT), 206(OPEN)
   |
   206:AGGREGATE [FINALIZE]

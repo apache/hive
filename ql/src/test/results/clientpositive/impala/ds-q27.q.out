@@ -144,7 +144,7 @@ Per-Host Resources: mem-estimate=68.00KB mem-reservation=0B thread-reservation=1
      order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
      limit: 100
      mem-estimate=68.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=18 row-size=64B cardinality=0
+     tuple-ids=17 row-size=64B cardinality=0
      in pipelines: 12(GETNEXT)
 
 F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -154,19 +154,19 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   12:TOP-N [LIMIT=100]
   |  order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=18 row-size=64B cardinality=0
+  |  tuple-ids=17 row-size=64B cardinality=0
   |  in pipelines: 12(GETNEXT), 11(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=17 row-size=64B cardinality=0
+  |  tuple-ids=16 row-size=64B cardinality=0
   |  in pipelines: 11(GETNEXT)
   |
   11:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(12 AS INT) THEN avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(14 AS INT) THEN avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_list_price) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_coupon_amt) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_sales_price) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(12 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(14 AS INT) THEN CAST(3 AS BIGINT) END)
   |  group by: CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(12 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(14 AS INT) THEN NULL END, CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN default.impala_tpcds_store.s_state WHEN CAST(12 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL END, CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN CAST(10 AS INT) WHEN CAST(12 AS INT) THEN CAST(12 AS INT) WHEN CAST(14 AS INT) THEN CAST(14 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=16 row-size=68B cardinality=0
+  |  tuple-ids=15 row-size=68B cardinality=0
   |  in pipelines: 11(GETNEXT), 18(OPEN)
   |
   18:AGGREGATE [FINALIZE]

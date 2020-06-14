@@ -324,7 +324,7 @@ Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=116.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=14,13 row-size=108B cardinality=0
+     tuple-ids=13,12 row-size=108B cardinality=0
      in pipelines: 06(GETNEXT)
 
 F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
@@ -337,18 +337,18 @@ Per-Host Resources: mem-estimate=16.10MB mem-reservation=16.00MB thread-reservat
   |  order by: $func_2 ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14,13 row-size=108B cardinality=0
+  |  tuple-ids=13,12 row-size=108B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
   |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14 row-size=100B cardinality=0
+  |  tuple-ids=13 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
   11:EXCHANGE [HASH($func_0,$func_1)]
      mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=9 row-size=100B cardinality=0
+     tuple-ids=8 row-size=100B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -357,14 +357,14 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=9 row-size=100B cardinality=0
+  |  tuple-ids=8 row-size=100B cardinality=0
   |  in pipelines: 05(GETNEXT)
   |
   05:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) END), aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(5 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(6 AS INT) THEN CAST(3 AS BIGINT) END)
   |  group by: CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(5 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_class WHEN CAST(5 AS INT) THEN NULL WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN CAST(4 AS INT) WHEN CAST(5 AS INT) THEN CAST(5 AS INT) WHEN CAST(6 AS INT) THEN CAST(6 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=8 row-size=68B cardinality=0
+  |  tuple-ids=7 row-size=68B cardinality=0
   |  in pipelines: 05(GETNEXT), 10(OPEN)
   |
   10:AGGREGATE [FINALIZE]
@@ -503,7 +503,7 @@ Per-Host Resources: mem-estimate=108.00KB mem-reservation=0B thread-reservation=
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=108.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=14,13 row-size=100B cardinality=0
+     tuple-ids=13,12 row-size=100B cardinality=0
      in pipelines: 06(GETNEXT)
 
 F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
@@ -516,18 +516,18 @@ Per-Host Resources: mem-estimate=16.09MB mem-reservation=16.00MB thread-reservat
   |  order by: $func_2 ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14,13 row-size=100B cardinality=0
+  |  tuple-ids=13,12 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
   |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14 row-size=92B cardinality=0
+  |  tuple-ids=13 row-size=92B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
   11:EXCHANGE [HASH($func_0,$func_1)]
      mem-estimate=96.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=9 row-size=92B cardinality=0
+     tuple-ids=8 row-size=92B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -536,14 +536,14 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=9 row-size=92B cardinality=0
+  |  tuple-ids=8 row-size=92B cardinality=0
   |  in pipelines: 05(GETNEXT)
   |
   05:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)
   |  group by: CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_class WHEN CAST(5 AS INT) THEN NULL WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(5 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN CAST(4 AS INT) WHEN CAST(5 AS INT) THEN CAST(5 AS INT) WHEN CAST(6 AS INT) THEN CAST(6 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=8 row-size=60B cardinality=0
+  |  tuple-ids=7 row-size=60B cardinality=0
   |  in pipelines: 05(GETNEXT), 10(OPEN)
   |
   10:AGGREGATE [FINALIZE]
@@ -682,7 +682,7 @@ Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=116.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=14,13 row-size=108B cardinality=0
+     tuple-ids=13,12 row-size=108B cardinality=0
      in pipelines: 06(GETNEXT)
 
 F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
@@ -695,18 +695,18 @@ Per-Host Resources: mem-estimate=16.10MB mem-reservation=16.00MB thread-reservat
   |  order by: $func_2 ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14,13 row-size=108B cardinality=0
+  |  tuple-ids=13,12 row-size=108B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
   |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14 row-size=100B cardinality=0
+  |  tuple-ids=13 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
   11:EXCHANGE [HASH($func_0,$func_1)]
      mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=9 row-size=100B cardinality=0
+     tuple-ids=8 row-size=100B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -715,14 +715,14 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=9 row-size=100B cardinality=0
+  |  tuple-ids=8 row-size=100B cardinality=0
   |  in pipelines: 05(GETNEXT)
   |
   05:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(5 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN CAST(6 AS INT) THEN sum(default.tab_sales_n0.ss_ext_sales_price) END), aggif(valid_tid(4,5,6) IN (CAST(4 AS INT), CAST(5 AS INT), CAST(6 AS INT)), CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(5 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(6 AS INT) THEN CAST(3 AS BIGINT) END)
   |  group by: CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(5 AS INT) THEN default.tab_item_n0.i_category WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN default.tab_item_n0.i_class WHEN CAST(5 AS INT) THEN NULL WHEN CAST(6 AS INT) THEN NULL END, CASE valid_tid(4,5,6) WHEN CAST(4 AS INT) THEN CAST(4 AS INT) WHEN CAST(5 AS INT) THEN CAST(5 AS INT) WHEN CAST(6 AS INT) THEN CAST(6 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=8 row-size=68B cardinality=0
+  |  tuple-ids=7 row-size=68B cardinality=0
   |  in pipelines: 05(GETNEXT), 10(OPEN)
   |
   10:AGGREGATE [FINALIZE]

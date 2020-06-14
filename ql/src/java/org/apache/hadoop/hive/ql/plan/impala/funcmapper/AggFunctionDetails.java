@@ -138,9 +138,13 @@ public class AggFunctionDetails implements FunctionDetails {
       return getRetType();
     }
     if (impalaIntermediateType == null) {
-      Type impalaType = ImpalaTypeConverter.getImpalaType(intermediateType);
-      impalaIntermediateType =
-          ImpalaTypeConverter.createImpalaType(impalaType, intermediateTypeLength, 0);
+      impalaIntermediateType = ImpalaTypeConverter.getImpalaType(intermediateType);
+      // The only case where intermediateTypeLength is set is for FIXED_UDA_INTERMEDIATE.
+      if (intermediateTypeLength > 0) {
+        Preconditions.checkState(intermediateType == TPrimitiveType.FIXED_UDA_INTERMEDIATE);
+        impalaIntermediateType =
+            ImpalaTypeConverter.createImpalaType(impalaIntermediateType, intermediateTypeLength, 0);
+      }
     }
     return impalaIntermediateType;
   }

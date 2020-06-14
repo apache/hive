@@ -509,7 +509,7 @@ Per-Host Resources: mem-estimate=80.00KB mem-reservation=0B thread-reservation=1
      order by: CASE valid_tid(39,40,41) WHEN 39 THEN channel WHEN 40 THEN channel WHEN 41 THEN NULL END ASC NULLS LAST, CASE valid_tid(39,40,41) WHEN 39 THEN id WHEN 40 THEN NULL WHEN 41 THEN NULL END ASC NULLS LAST
      limit: 100
      mem-estimate=80.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=44 row-size=76B cardinality=0
+     tuple-ids=43 row-size=76B cardinality=0
      in pipelines: 39(GETNEXT)
 
 F22:PLAN FRAGMENT [HASH(CASE valid_tid(39,40,41) WHEN 39 THEN murmur_hash(channel) WHEN 40 THEN murmur_hash(channel) WHEN 41 THEN murmur_hash(NULL) END,CASE valid_tid(39,40,41) WHEN 39 THEN murmur_hash(id) WHEN 40 THEN murmur_hash(NULL) WHEN 41 THEN murmur_hash(NULL) END)] hosts=1 instances=1
@@ -519,14 +519,14 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   39:TOP-N [LIMIT=100]
   |  order by: CASE valid_tid(39,40,41) WHEN 39 THEN channel WHEN 40 THEN channel WHEN 41 THEN NULL END ASC NULLS LAST, CASE valid_tid(39,40,41) WHEN 39 THEN id WHEN 40 THEN NULL WHEN 41 THEN NULL END ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=44 row-size=76B cardinality=0
+  |  tuple-ids=43 row-size=76B cardinality=0
   |  in pipelines: 39(GETNEXT), 38(OPEN)
   |
   38:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(sales) WHEN CAST(40 AS INT) THEN sum(sales) WHEN CAST(41 AS INT) THEN sum(sales) END), aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(returns) WHEN CAST(40 AS INT) THEN sum(returns) WHEN CAST(41 AS INT) THEN sum(returns) END), aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(profit) WHEN CAST(40 AS INT) THEN sum(profit) WHEN CAST(41 AS INT) THEN sum(profit) END)
   |  group by: CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN channel WHEN CAST(40 AS INT) THEN channel WHEN CAST(41 AS INT) THEN NULL END, CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN id WHEN CAST(40 AS INT) THEN NULL WHEN CAST(41 AS INT) THEN NULL END, CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN CAST(39 AS INT) WHEN CAST(40 AS INT) THEN CAST(40 AS INT) WHEN CAST(41 AS INT) THEN CAST(41 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=43 row-size=76B cardinality=0
+  |  tuple-ids=42 row-size=76B cardinality=0
   |  in pipelines: 38(GETNEXT), 62(OPEN)
   |
   62:AGGREGATE [FINALIZE]
