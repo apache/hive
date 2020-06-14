@@ -722,7 +722,7 @@
       <plugin>
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-maven-plugin</artifactId>
-        <version>4.0.5</version>
+        <version>5.2.1</version>
         <configuration>
           <api>JDO</api>
           <verbose>false</verbose>
