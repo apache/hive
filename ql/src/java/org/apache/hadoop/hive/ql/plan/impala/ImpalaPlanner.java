@@ -110,6 +110,12 @@ public class ImpalaPlanner {
 
     Planner.checkForSmallQueryOptimization(planNodeRoot, ctx_);
 
+    // Although the Hive CBO plan creates the relative order among different
+    // joins, currently it does not swap left and right inputs if the right
+    // input has higher estimated cardinality. Do this through Impala's method
+    // since we are using Impala's cardinality estimates in the physical planning.
+    Planner.invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
+
     List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
     Preconditions.checkArgument(fragments.size() > 0);
     PlanFragment planFragmentRoot = fragments.get(0);
