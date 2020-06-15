@@ -293,7 +293,7 @@ public class Warehouse {
   @Deprecated
   public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
-    return getDefaultTablePath(db, tableName, false);
+    return getDefaultTablePath(db, tableName, true);
   }
 
   public Path getDefaultTablePath(Database db, String tableName, boolean isExternal) throws MetaException {
@@ -305,11 +305,7 @@ public class Warehouse {
         dbPath = getDefaultExternalDatabasePath(db.getName());
       }
     } else {
-      if (isTenantBasedStorage) {
-        dbPath = getDatabaseManagedPath(db);
-      } else {
-        dbPath = getDatabasePath(db);
-      }
+      dbPath = getDatabaseManagedPath(db);
     }
     return getDnsPath(
         new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
