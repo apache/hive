@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -785,7 +786,7 @@ public final class OpProcFactory {
           exprs.addAll(finalCandidates);
         }
       }
-      
+
       if (!nonFinalCandidates.isEmpty()) {
         createFilter((Operator) nd, nonFinalCandidates, owi);
       }
@@ -1006,9 +1007,10 @@ public final class OpProcFactory {
       HiveConf hiveConf = owi.getParseContext().getConf();
       pushFilterToStorage =
         hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_STORAGE);
+      TableScanOperator tsOp = (TableScanOperator) op;
       if (pushFilterToStorage) {
         condn = pushFilterToStorageHandler(
-          (TableScanOperator) op,
+          tsOp,
           (ExprNodeGenericFuncDesc)condn,
           owi,
           hiveConf);
@@ -1016,6 +1018,18 @@ public final class OpProcFactory {
           // we pushed the whole thing down
           return null;
         }
+      }
+
+      // TODO [PANOS] maybe have static PPD vs MJ filter in different conf?
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)
+              && OrcInputFormat.class.isAssignableFrom(tsOp.getConf().getTableMetadata().getInputFormatClass())) {
+        if (tsOp.getProbeDecodeContext() == null) {
+          tsOp.setProbeDecodeContext(new TableScanOperator.ProbeDecodeContext());
+        }
+        tsOp.getProbeDecodeContext().setStaticFilterExpr(condn);
+        LOG.info("ProbeDecode pushing RowFiler {}", condn);
+        // Whole filter can be applied so FilterOp can be removed.
+        return null;
       }
     }
 
