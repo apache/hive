@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,13 +32,16 @@ import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
@@ -47,11 +51,28 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Optimization to reduce the amount of broadcasted/shuffled data throughout the DAG processing.
@@ -179,15 +200,20 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
             tableScan.getRowType().getFieldCount(), tableToJoinBack.keys.cardinality());
         int projectIndex = 0;
         int offset = newInput.getRowType().getFieldCount();
+
         for (int source : tableToJoinBack.projectedFields.fieldsInSourceTable) {
           if (tableToJoinBack.keys.get(source)) {
             // 5.3 Map key field to it's index in the Project on the TableScan
             keyMapping.set(source, projectIndex);
           } else {
             // 5.4 if this is not a key field then we need it in the new Project on the top of Join backs
+            ProjectMapping currentProjectMapping =
+                tableToJoinBack.projectedFields.mapping.stream()
+                    .filter(projectMapping -> projectMapping.indexInSourceTable == source)
+                    .findFirst().get();
             addToProject(projectTableAccessRel, projectIndex, rexBuilder,
                 offset + projectIndex,
-                tableToJoinBack.projectedFields.mapping.stream().filter(projectMapping -> projectMapping.indexInSourceTable == source).findFirst().get().indexInRootProject,
+                currentProjectMapping.indexInRootProject,
                 newProjects, newColumnNames);
           }
           ++projectIndex;
@@ -207,8 +233,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       relBuilder.push(newInput);
       relBuilder.project(asList(newProjects), asList(newColumnNames));
 
-      root.replaceInput(0, relBuilder.build());
-      return root;
+      return root.copy(root.getTraitSet(), singletonList(relBuilder.build()));
     } finally {
       REL_BUILDER.remove();
     }
@@ -217,8 +242,8 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
   private List<ProjectedFields> getExpressionLineageOf(
       List<RexInputRef> projectExpressions, RelNode projectInput) {
     RelMetadataQuery relMetadataQuery = RelMetadataQuery.instance();
-    Map<RelOptHiveTable, ProjectedFieldsBuilder> fieldMappingBuilders = new HashMap<>();
-    List<RelOptHiveTable> tablesOrdered = new ArrayList<>(); // use this list to keep the order of tables
+    Map<RexTableInputRef.RelTableRef, ProjectedFieldsBuilder> fieldMappingBuilders = new HashMap<>();
+    List<RexTableInputRef.RelTableRef> tablesOrdered = new ArrayList<>(); // use this list to keep the order of tables
     for (RexInputRef expr : projectExpressions) {
       Set<RexNode> expressionLineage = relMetadataQuery.getExpressionLineage(projectInput, expr);
       if (expressionLineage == null || expressionLineage.size() != 1) {
@@ -233,14 +258,13 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         return null;
       }
 
-      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) rexTableInputRef.getTableRef().getTable();
+      RexTableInputRef.RelTableRef tableRef = rexTableInputRef.getTableRef();
       ProjectedFieldsBuilder projectedFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
-          relOptHiveTable, k -> {
-            tablesOrdered.add(relOptHiveTable);
-            return new ProjectedFieldsBuilder(relOptHiveTable);
+          tableRef, k -> {
+            tablesOrdered.add(tableRef);
+            return new ProjectedFieldsBuilder(tableRef);
           });
-      projectedFieldsBuilder.add(expr.getIndex(), rexTableInputRef.getIndex(),
-          new ProjectMapping(expr.getIndex(), rexTableInputRef.getIndex()));
+      projectedFieldsBuilder.add(expr, rexTableInputRef);
     }
 
     return tablesOrdered.stream()
@@ -303,9 +327,9 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     private final int indexInRootProject;
     private final int indexInSourceTable;
 
-    private ProjectMapping(int indexInRootProject, int indexInSourceTable) {
+    private ProjectMapping(int indexInRootProject, RexTableInputRef rexTableInputRef) {
       this.indexInRootProject = indexInRootProject;
-      this.indexInSourceTable = indexInSourceTable;
+      this.indexInSourceTable = rexTableInputRef.getIndex();
     }
   }
 
@@ -315,10 +339,10 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     private final ImmutableBitSet fieldsInSourceTable;
     private final List<ProjectMapping> mapping;
 
-    private ProjectedFields(RelOptHiveTable relOptHiveTable,
+    private ProjectedFields(RexTableInputRef.RelTableRef relTableRef,
                             ImmutableBitSet fieldsInRootProject, ImmutableBitSet fieldsInSourceTable,
                             List<ProjectMapping> mapping) {
-      this.relOptHiveTable = relOptHiveTable;
+      this.relOptHiveTable = (RelOptHiveTable) relTableRef.getTable();
       this.fieldsInRootProject = fieldsInRootProject;
       this.fieldsInSourceTable = fieldsInSourceTable;
       this.mapping = mapping;
@@ -336,23 +360,23 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
   }
 
   private static class ProjectedFieldsBuilder {
-    private final RelOptHiveTable relOptHiveTable;
+    private final RexTableInputRef.RelTableRef relTableRef;
     private final ImmutableBitSet.Builder fieldsInRootProjectBuilder = ImmutableBitSet.builder();
     private final ImmutableBitSet.Builder fieldsInSourceTableBuilder = ImmutableBitSet.builder();
     private final List<ProjectMapping> mapping = new ArrayList<>();
 
-    private ProjectedFieldsBuilder(RelOptHiveTable relOptHiveTable) {
-      this.relOptHiveTable = relOptHiveTable;
+    private ProjectedFieldsBuilder(RexTableInputRef.RelTableRef relTableRef) {
+      this.relTableRef = relTableRef;
     }
 
-    public void add(int indexInRoot, int indexInSourceTable, ProjectMapping projectMapping) {
-      fieldsInRootProjectBuilder.set(indexInRoot);
-      fieldsInSourceTableBuilder.set(indexInSourceTable);
-      mapping.add(projectMapping);
+    public void add(RexInputRef rexInputRef, RexTableInputRef sourceTableInputRef) {
+      fieldsInRootProjectBuilder.set(rexInputRef.getIndex());
+      fieldsInSourceTableBuilder.set(sourceTableInputRef.getIndex());
+      mapping.add(new ProjectMapping(rexInputRef.getIndex(), sourceTableInputRef));
     }
 
     public ProjectedFields build() {
-      return new ProjectedFields(relOptHiveTable,
+      return new ProjectedFields(relTableRef,
           fieldsInRootProjectBuilder.build(),
           fieldsInSourceTableBuilder.build(),
           mapping);

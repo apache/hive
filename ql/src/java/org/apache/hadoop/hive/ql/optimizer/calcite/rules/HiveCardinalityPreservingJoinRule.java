@@ -17,9 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultTezModelRelMetadataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,16 +33,42 @@ import org.slf4j.LoggerFactory;
 public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
   private static final Logger LOG = LoggerFactory.getLogger(HiveCardinalityPreservingJoinRule.class);
 
-  public HiveCardinalityPreservingJoinRule() {
+  private final double factor;
+
+  public HiveCardinalityPreservingJoinRule(double factor) {
     super(false, "HiveCardinalityPreservingJoinRule");
+    this.factor = Math.max(factor, 0.0);
   }
 
   @Override
   protected RelNode trim(RelOptRuleCall call, RelNode node) {
     RelNode optimized = new HiveCardinalityPreservingJoinOptimization().trim(call.builder(), node);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Plan after:\n" + RelOptUtil.toString(optimized));
+    if (optimized == node) {
+      return node;
     }
-    return optimized;
+
+    JaninoRelMetadataProvider original = RelMetadataQuery.THREAD_PROVIDERS.get();
+    RelMetadataQuery.THREAD_PROVIDERS.set(getJaninoRelMetadataProvider());
+    RelMetadataQuery metadataQuery = RelMetadataQuery.instance();
+
+    RelOptCost optimizedCost = metadataQuery.getCumulativeCost(optimized);
+    RelOptCost originalCost = metadataQuery.getCumulativeCost(node);
+    originalCost = originalCost.multiplyBy(factor);
+    LOG.debug("Original plan cost {} Optimized plan cost {}", originalCost, optimizedCost);
+    if (optimizedCost.isLt(originalCost)) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after:\n" + RelOptUtil.toString(optimized));
+      }
+
+      RelMetadataQuery.THREAD_PROVIDERS.set(original);
+      return optimized;
+    }
+
+    RelMetadataQuery.THREAD_PROVIDERS.set(original);
+    return node;
+  }
+
+  private JaninoRelMetadataProvider getJaninoRelMetadataProvider() {
+    return new HiveDefaultTezModelRelMetadataProvider().getMetadataProvider();
   }
 }
