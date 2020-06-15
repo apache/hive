@@ -2342,7 +2342,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             Path location;
             // If the CTAS query does specify a location, use the table location, else use the db location
-            if (qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
+            if (qb.isMaterializedView() && qb.getViewDesc() != null && qb.getViewDesc().getLocation() != null) {
+              location = new Path(qb.getViewDesc().getLocation());
+            } else if (qb.isCTAS() && qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
               location = new Path(qb.getTableDesc().getLocation());
             } else {
               // allocate a temporary output dir on the location of the table
@@ -2355,7 +2357,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 if (destTableDb == null) {
                   destTableDb = names[0];
                 }
-                location = wh.getDatabasePath(db.getDatabase(destTableDb));
+                boolean useExternal = false;
+                if (qb.isMaterializedView()) {
+                  useExternal = !AcidUtils.isTransactionalView(qb.getViewDesc()) && !makeAcid();
+                } else {
+                  useExternal = (qb.getTableDesc() == null || qb.getTableDesc().isTemporary()
+                    || qb.getTableDesc().isExternal() || !makeAcid());
+                }
+                if (useExternal) {
+                  location = wh.getDatabaseExternalPath(db.getDatabase(destTableDb));
+                } else {
+                  location = wh.getDatabaseManagedPath(db.getDatabase(destTableDb));
+                }
               } catch (MetaException e) {
                 throw new SemanticException(e);
               }
