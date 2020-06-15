@@ -49,8 +49,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
     AcidUtils.Directory dir = AcidUtils
-        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false,
-            table.getParameters(), false);
+        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     String tmpLocation = Util.generateTmpPath(storageDescriptor);

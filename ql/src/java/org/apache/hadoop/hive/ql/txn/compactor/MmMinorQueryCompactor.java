@@ -53,7 +53,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
     AcidUtils.Directory dir = AcidUtils
         .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
-            Ref.from(false), false, table.getParameters(), false);
+            Ref.from(false), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
     String tmpLocation = Util.generateTmpPath(storageDescriptor);
     Path sourceTabLocation = new Path(tmpLocation);

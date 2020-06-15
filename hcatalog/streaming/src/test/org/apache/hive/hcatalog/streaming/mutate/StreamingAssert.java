@@ -95,7 +95,7 @@ public class StreamingAssert {
     writeIds = TxnUtils.createValidReaderWriteIdList(v.get(0));
 
     partitionLocation = getPartitionLocation();
-    dir = AcidUtils.getAcidState(null, partitionLocation, conf, writeIds, null, false, null, true);
+    dir = AcidUtils.getAcidState(null, partitionLocation, conf, writeIds, null, false);
     assertEquals(0, dir.getObsolete().size());
     assertEquals(0, dir.getOriginalFiles().size());
 
