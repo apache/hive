@@ -4853,6 +4853,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         }
         pm.makePersistentAll(mConstraintsList);
+        query.closeAll();
       }
       // Finally replace CD
       oldSd.setCD(newSd.getCD());
@@ -7375,6 +7376,7 @@ public class ObjectStore implements RawStore, Configurable {
           "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName, String authorizer) throws Exception {
@@ -7439,6 +7441,7 @@ public class ObjectStore implements RawStore, Configurable {
           "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
@@ -7446,7 +7449,10 @@ public class ObjectStore implements RawStore, Configurable {
       String catCol) {
     Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
         dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
-    return (List<T>)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight());
+    List<T> results = new ArrayList<T>(
+        (List)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight()));
+    queryAndParams.getLeft().closeAll();
+    return results;
   }
 
   private Pair<Query, Object[]> makeQueryByPartitionNames(
@@ -9473,6 +9479,7 @@ public class ObjectStore implements RawStore, Configurable {
         catName, dbName, tableName, partNames, MPartitionColumnStatistics.class,
         "tableName", "dbName", "partition.partitionName", "catName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   @Override
@@ -12849,19 +12856,18 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
+    Query q = null;
     try {
       openTransaction();
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
-      Query q = pm.newQuery(MRuntimeStat.class);
+      q = pm.newQuery(MRuntimeStat.class);
       q.setFilter("createTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, q);
     }
   }
 
@@ -12900,6 +12906,7 @@ public class ObjectStore implements RawStore, Configurable {
         break;
       }
     }
+    query.closeAll();
     return ret;
   }
 
@@ -12991,9 +12998,10 @@ public class ObjectStore implements RawStore, Configurable {
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
+    Query q = null;
     try {
       openTransaction();
-      Query q = pm.newQuery(MScheduledQuery.class,
+      q = pm.newQuery(MScheduledQuery.class,
           "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
@@ -13026,6 +13034,9 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Caught jdo exception; exclusive", e);
       commited = false;
     } finally {
+      if (q != null) {
+        q.closeAll();
+      }
       if (commited) {
         return ret;
       } else {
@@ -13340,19 +13351,18 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
+    Query q = null;
     try {
       openTransaction();
       int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
-      Query q = pm.newQuery(MScheduledExecution.class);
+      q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("startTime <= maxCreateTime");
       q.declareParameters("int maxCreateTime");
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, q);
     }
   }
 
@@ -13363,10 +13373,11 @@ public class ObjectStore implements RawStore, Configurable {
       return 0;
     }
     boolean committed = false;
+    Query q = null;
     try {
       openTransaction();
       int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
-      Query q = pm.newQuery(MScheduledExecution.class);
+      q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("lastUpdateTime <= maxLastUpdateTime && (state == 'INITED' || state == 'EXECUTING')");
       q.declareParameters("int maxLastUpdateTime");
 
@@ -13386,9 +13397,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return results.size();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, q);
     }
   }
 
@@ -13407,5 +13416,6 @@ public class ObjectStore implements RawStore, Configurable {
         pm.makePersistent(e);
       }
     }
+    q.closeAll();
   }
 }
