@@ -96,7 +96,7 @@ public class ImpalaPlanner {
    * @return TExecRequest thrift structure for backend to execute
    * @throws ImpalaException
    */
-  public TExecRequest createExecRequest(PlanNode planNodeRoot) throws ImpalaException {
+  public TExecRequest createExecRequest(PlanNode planNodeRoot, boolean isExplain) throws ImpalaException {
     // Create the values transfer graph in the Analyzer. Note that FENG plans
     // don't register equijoin predicates in the Analyzer's GlobalState since
     // Hive/Calcite should have already done the predicate inferencing analysis.
@@ -149,7 +149,11 @@ public class ImpalaPlanner {
     // create EXPLAIN output after setting everything else
     queryExecRequest.setQuery_ctx(ctx_.getQueryCtx()); // needed by getExplainString()
     List<PlanFragment> allFragments = planFragmentRoot.getNodesPreOrder();
-    String explainStr = getExplainString(allFragments, ctx_.getQueryOptions().getExplain_level());
+
+    // to mimic Impala's behavior, use EXTENDED mode explain except for EXPLAIN statements
+    TExplainLevel explainLevel = isExplain ? ctx_.getQueryOptions().getExplain_level() :
+        TExplainLevel.EXTENDED;
+    String explainStr = getExplainString(allFragments, explainLevel);
     queryExecRequest.setQuery_plan(explainStr);
 
     ctx_.getQueryCtx().setDesc_tbl_serialized(ctx_.getRootAnalyzer().getDescTbl().toSerializedThrift());

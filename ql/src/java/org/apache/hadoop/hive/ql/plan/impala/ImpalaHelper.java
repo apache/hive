@@ -98,8 +98,8 @@ public class ImpalaHelper {
     return programBuilder.build();
   }
 
-  public ImpalaCompiledPlan compilePlan(HiveConf conf, RelNode rootRelNode, String db, String userName)
-      throws HiveException {
+  public ImpalaCompiledPlan compilePlan(HiveConf conf, RelNode rootRelNode, String db, String userName,
+      boolean isExplain) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel);
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
@@ -107,7 +107,7 @@ public class ImpalaHelper {
       ImpalaPlanner impalaPlanner = new ImpalaPlanner(db, userName, options);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
-      TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode);
+      TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);
       LOG.debug("Impala request is {}", execRequest);
       return new ImpalaCompiledPlan(execRequest);
     } catch (ImpalaException | MetaException e) {
