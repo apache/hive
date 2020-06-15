@@ -667,7 +667,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
-              null sort order: zz
+              null sort order: az
               sort order: -+
               Statistics: Num rows: 62500 Data size: 1390500 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -930,7 +930,7 @@ STAGE PLANS:
               Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: string)
-                null sort order: zz
+                null sort order: aa
                 sort order: --
                 Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
           TableScan
@@ -938,7 +938,7 @@ STAGE PLANS:
               Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: string)
-                null sort order: zz
+                null sort order: aa
                 sort order: --
                 Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:

@@ -73,16 +73,16 @@ POSTHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-yy2GiGM	ll2TvTZ
-yxN0212hM17E8J8bJj8D7b	lkA0212uZ17R8W8oWw8Q7o
-ywA68u76Jv06axCv451avL4	ljN68h76Wi06nkPi451niY4
-yvNv1q	liAi1d
-yv3gnG4a33hD7bIm7oxE5rw	li3taT4n33uQ7oVz7bkR5ej
-yv1js	li1wf
-yujO07KWj	lhwB07XJw
-ytpx1RL8F2I	lgck1EY8S2V
-ytj7g5W	lgw7t5J
-ytgaJW1Gvrkv5wFUJU2y1S	lgtnWJ1Tiexi5jSHWH2l1F
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
 PREHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstring1 desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -91,13 +91,13 @@ POSTHOOK: query: SELECT cstring1, rot13(cstring1) from alltypesorc order by cstr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-yy2GiGM	Unvectorized
-yxN0212hM17E8J8bJj8D7b	Unvectorized
-ywA68u76Jv06axCv451avL4	Unvectorized
-yvNv1q	Unvectorized
-yv3gnG4a33hD7bIm7oxE5rw	Unvectorized
-yv1js	Unvectorized
-yujO07KWj	Unvectorized
-ytpx1RL8F2I	Unvectorized
-ytj7g5W	Unvectorized
-ytgaJW1Gvrkv5wFUJU2y1S	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized
+NULL	Unvectorized

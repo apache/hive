@@ -2571,12 +2571,18 @@ columnRefOrder
     // ORDER not present but NULLS ORDER present ex.: ORDER BY col0 NULLS FIRST
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
-    // ORDER present but NULLS ORDER not present and default is NULLS LAST ex.: ORDER BY col0 ASC
-    -> {$nullSpec.tree == null && nullsLast()}?
+    // ASC ORDER present but NULLS ORDER not present and default is NULLS LAST ex.: ORDER BY col0 ASC
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType() == HiveParser.TOK_TABSORTCOLNAMEASC && nullsLast()}?
             ^($orderSpec ^(TOK_NULLS_LAST expression))
-    // ORDER present, NULLS ORDER not present and default is NULLS FIRST ex.: ORDER BY col0 ASC
-    -> {$nullSpec.tree == null}?
+    // DESC ORDER present but NULLS ORDER not present and default is NULLS LAST ex.: ORDER BY col0 DESC
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType() == HiveParser.TOK_TABSORTCOLNAMEDESC && nullsLast()}?
             ^($orderSpec ^(TOK_NULLS_FIRST expression))
+    // ASC ORDER present, NULLS ORDER not present and default is NULLS FIRST ex.: ORDER BY col0 ASC
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType() == HiveParser.TOK_TABSORTCOLNAMEASC}?
+            ^($orderSpec ^(TOK_NULLS_FIRST expression))
+    // DESC ORDER present, NULLS ORDER not present and default is NULLS FIRST ex.: ORDER BY col0 DESC
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType() == HiveParser.TOK_TABSORTCOLNAMEDESC}?
+            ^($orderSpec ^(TOK_NULLS_LAST expression))
     // both ORDER and NULLS ORDER present ex.: ORDER BY col0 ASC NULLS LAST
     -> ^($orderSpec ^($nullSpec expression))
     ;

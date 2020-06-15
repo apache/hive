@@ -76,7 +76,7 @@ POSTHOOK: Input: default@household_demographics
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(call_center=[$0], call_center_name=[$1], manager=[$2], returns_loss=[$3])
-  HiveSortLimit(sort0=[$4], dir0=[DESC-nulls-last])
+  HiveSortLimit(sort0=[$4], dir0=[DESC])
     HiveProject(call_center=[$2], call_center_name=[$3], manager=[$4], returns_loss=[$5], (tok_function sum (tok_table_or_col cr_net_loss))=[$5])
       HiveAggregate(group=[{6, 7, 15, 16, 17}], agg#0=[sum($11)])
         HiveJoin(condition=[=($10, $14)], joinType=[inner], algorithm=[none], cost=[not available])

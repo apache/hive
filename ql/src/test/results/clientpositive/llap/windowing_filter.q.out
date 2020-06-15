@@ -110,13 +110,13 @@ STAGE PLANS:
                 Top N Key Operator
                   sort order: +-
                   keys: _col0 (type: string), _col1 (type: double)
-                  null sort order: az
+                  null sort order: aa
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 5 Data size: 470 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 6
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: double)
-                    null sort order: az
+                    null sort order: aa
                     sort order: +-
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 5 Data size: 470 Basic stats: COMPLETE Column stats: COMPLETE
@@ -137,7 +137,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS LAST
+                        order by: _col1 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:

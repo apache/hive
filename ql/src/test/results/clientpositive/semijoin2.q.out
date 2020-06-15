@@ -148,7 +148,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: (_col98 + _col16) (type: int), floor(_col21) (type: bigint)
-              null sort order: zz
+              null sort order: za
               sort order: +-
               Map-reduce partition columns: (_col98 + _col16) (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -168,7 +168,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (_col98 + _col16) ASC NULLS LAST, floor(_col21) DESC NULLS LAST
+                  order by: (_col98 + _col16) ASC NULLS LAST, floor(_col21) DESC NULLS FIRST
                   partition by: (_col98 + _col16)
                   raw input shape:
                   window functions:
@@ -197,7 +197,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: (_col98 + _col16) (type: int), floor(_col21) (type: bigint)
-              null sort order: zz
+              null sort order: aa
               sort order: --
               Map-reduce partition columns: (_col98 + _col16) (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -216,7 +216,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (_col99 + _col17) DESC NULLS LAST, floor(_col22) DESC NULLS LAST
+                  order by: (_col99 + _col17) DESC NULLS FIRST, floor(_col22) DESC NULLS FIRST
                   partition by: (_col99 + _col17)
                   raw input shape:
                   window functions:

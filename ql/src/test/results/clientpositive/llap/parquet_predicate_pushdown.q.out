@@ -773,7 +773,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -782,7 +782,7 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -863,7 +863,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -872,7 +872,7 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1064,7 +1064,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1093,12 +1093,12 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: _col3 (type: string)
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
-                      null sort order: z
+                      null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
@@ -1182,7 +1182,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -1191,7 +1191,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1211,12 +1211,12 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: _col3 (type: string)
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
-                      null sort order: z
+                      null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
@@ -1312,7 +1312,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: f (type: float)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 38 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -1321,7 +1321,7 @@ STAGE PLANS:
                         Statistics: Num rows: 38 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: float)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 38 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
@@ -1341,12 +1341,12 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: _col0 (type: float)
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Reduce Output Operator
                       key expressions: _col0 (type: float)
-                      null sort order: z
+                      null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
