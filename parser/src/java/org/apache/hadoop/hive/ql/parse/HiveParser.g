@@ -24,7 +24,7 @@ ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
-import SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser;
+import SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, PrepareStatementParser;
 
 tokens {
 TOK_INSERT;
@@ -39,6 +39,9 @@ TOK_PARTVAL;
 TOK_DIR;
 TOK_TABREF;
 TOK_SUBQUERY;
+TOK_PREPARE;
+TOK_EXECUTE_PARAM;
+TOK_EXECUTE_PARAM_LIST;
 TOK_INSERT_INTO;
 TOK_DESTINATION;
 TOK_ALLCOLREF;
@@ -460,6 +463,7 @@ TOK_EXECUTED_AS;
 TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
+TOK_PARAMETER;
 }
 
 
@@ -885,6 +889,8 @@ execStatement
     | updateStatement
     | sqlTransactionStatement
     | mergeStatement
+    | prepareStatement
+    | executeStatement
     ;
 
 loadStatement

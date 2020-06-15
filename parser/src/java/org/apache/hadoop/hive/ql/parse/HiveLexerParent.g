@@ -78,6 +78,7 @@ KW_SORT: 'SORT';
 KW_UNION: 'UNION';
 KW_EXCEPT: 'EXCEPT';
 KW_LOAD: 'LOAD';
+KW_PREPARE: 'PREPARE';
 KW_EXPORT: 'EXPORT';
 KW_IMPORT: 'IMPORT';
 KW_REPLICATION: 'REPLICATION';
@@ -469,6 +470,11 @@ ByteLengthLiteral
 Number
     :
     (Digit)+ ( DOT (Digit)* (Exponent)? | Exponent)?
+    ;
+
+ParamLiteral
+    :
+    (DOLLAR) (Digit)+ { setText(getText().substring(1, getText().length())); }
     ;
 
 /*

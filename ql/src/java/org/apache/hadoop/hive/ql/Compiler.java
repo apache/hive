@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -43,13 +42,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
-import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -72,17 +65,50 @@ public class Compiler {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
 
-  private final Context context;
-  private final DriverContext driverContext;
+  protected final Context context;
+  protected final DriverContext driverContext;
   private final DriverState driverState;
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private ASTNode tree;
 
+  /*
+   * Compiler needs to know if given statement is PREPARE/EXECUTE or otherwise
+   * to orchestrate the planning.
+   * e.g. if plan should be stored or if parameter binding should be done.
+   */
+  enum StatementType{
+    PREPARE,
+    EXECUTE,
+    REGULAR
+  };
+
   public Compiler(Context context, DriverContext driverContext, DriverState driverState) {
     this.context = context;
     this.driverContext = driverContext;
     this.driverState = driverState;
+  }
+
+  /*
+   * Give string command determine the type of statement
+   */
+  private StatementType getStatementType(final ASTNode tree) {
+    //TODO: consider statement over JDBC (it will not contain prepare/execute keyword)
+    ASTNode node = tree;
+    if (tree.getType() == HiveParser.TOK_EXPLAIN) {
+      node = (ASTNode)tree.getChild(0);
+    }
+    if (node.getToken().getType() == HiveParser.TOK_PREPARE) {
+      return StatementType.PREPARE;
+    } else if (node.getToken().getType() == HiveParser.TOK_EXECUTE) {
+      return StatementType.EXECUTE;
+    } else {
+      return StatementType.REGULAR;
+    }
+  }
+
+  public Context getContext() {
+    return context;
   }
 
   /**
@@ -106,8 +132,10 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+      initializeFetchTask(plan);
       authorize(sem);
       explainOutput(sem, plan);
+      savePlan(plan);
     } catch (CommandProcessorException cpe) {
       compileError = true;
       throw cpe;
@@ -329,7 +357,28 @@ public class Compiler {
     LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
-  private QueryPlan createPlan(BaseSemanticAnalyzer sem) {
+  protected QueryPlan createPlan(BaseSemanticAnalyzer sem) {
+    if (getStatementType(tree) == StatementType.EXECUTE) {
+      assert (tree != null);
+      String queryName = PreparePlanUtils.getPrepareStatementName(tree);
+
+      SessionState ss = SessionState.get();
+      if (ss != null) {
+        if (ss.getPreparePlans().containsKey(queryName)) {
+          QueryPlan plan = ss.getPreparePlans().get(queryName);
+          QueryPlan planCopy = PreparePlanUtils.makeCopy(plan);
+          bindDynamicParams(planCopy, getParameterMap());
+          // This is no longer prepare plan
+          planCopy.setIsPrepareQuery(false);
+          //TODO: this will create empty schema, need to figure out a way to create proper schema
+          // from cached plan
+          setSchema(sem);
+          return planCopy;
+        } else {
+          //TODO: throw an error
+        }
+      }
+    }
     // get the output schema
     setSchema(sem);
     QueryPlan plan = new QueryPlan(driverContext.getQueryString(), sem,
@@ -339,18 +388,58 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
-    // initialize FetchTask right here
-    if (plan.getFetchTask() != null) {
-      plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
+    // this will be required later
+    if (getStatementType(tree) == StatementType.PREPARE) {
+      plan.setIsPrepareQuery(true);
+    } else {
+      plan.setIsPrepareQuery(false);
     }
 
     return plan;
   }
 
+
+
+  /*
+   * save the plan in session for prepare statements
+   */
+  protected void savePlan(QueryPlan plan) {
+    if (plan.isExplain()) {
+      return;
+    }
+
+    if (getStatementType(tree) == StatementType.PREPARE) {
+      SessionState ss = SessionState.get();
+      if (ss != null) {
+        ss.getPreparePlans().put(PreparePlanUtils.getPrepareStatementName(tree), plan);
+      }
+    }
+  }
+
+  protected Map<Integer, String> getParameterMap() {
+    return context.getParamMap();
+  }
+
+  protected void bindDynamicParams(QueryPlan plan, Map<Integer, String> paramMap) {
+    assert(getStatementType(tree) == StatementType.EXECUTE);
+    PreparePlanUtils.bindDynamicParams(plan, paramMap);
+  }
+
+  protected void initializeFetchTask(QueryPlan plan) {
+    // for PREPARE statement we should avoid initializing operators
+    if (getStatementType(tree) == StatementType.PREPARE) {
+      return;
+    }
+    // initialize FetchTask right here
+    if (plan.getFetchTask() != null) {
+      plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
+    }
+  }
+
   /**
    * Get a Schema with fields represented with native Hive types.
    */
-  private void setSchema(BaseSemanticAnalyzer sem) {
+  protected void setSchema(BaseSemanticAnalyzer sem) {
     Schema schema = new Schema();
 
     // If we have a plan, prefer its logical result schema if it's available; otherwise, try digging out a fetch task;

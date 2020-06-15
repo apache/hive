@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -37,11 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.ExplainTask;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -49,10 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
 import org.apache.hadoop.hive.ql.plan.api.NodeType;
 import org.apache.hadoop.hive.ql.plan.api.TaskType;
@@ -106,10 +98,12 @@ public class QueryPlan implements Serializable {
   private org.apache.hadoop.hive.ql.plan.api.Query query;
   private final Map<String, Map<String, Long>> counters =
       new ConcurrentHashMap<String, Map<String, Long>>();
-  private final Set<String> done = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
-  private final Set<String> started = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
+  //private final Set<String> done = Collections.newSetFromMap(new
+   //   ConcurrentHashMap<String, Boolean>());
+  private final Map<String, Boolean> done = new ConcurrentHashMap<>();
+  //private final Set<String> started = Collections.newSetFromMap(new
+   //   ConcurrentHashMap<String, Boolean>());
+  private final Map<String, Boolean> started = new ConcurrentHashMap<>();
 
   private QueryProperties queryProperties;
 
@@ -120,6 +114,8 @@ public class QueryPlan implements Serializable {
   private final WriteEntity acidAnalyzeTable;
   private final DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
+
+  private Boolean isPrepareQuery;
 
   public QueryPlan() {
     this(null);
@@ -132,6 +128,7 @@ public class QueryPlan implements Serializable {
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
+    this.isPrepareQuery = false;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -164,6 +161,7 @@ public class QueryPlan implements Serializable {
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
     this.cboInfo = sem.getCboInfo();
+    this.isPrepareQuery = false;
   }
 
   /**
@@ -194,6 +192,14 @@ public class QueryPlan implements Serializable {
 
   public String getQueryId() {
     return queryId;
+  }
+
+  public void setIsPrepareQuery (boolean isPrepareQuery) {
+    this.isPrepareQuery = isPrepareQuery;
+  }
+
+  public boolean getIsPrepareQuery() {
+    return isPrepareQuery;
   }
 
   public static String makeQueryId() {
@@ -363,25 +369,25 @@ public class QueryPlan implements Serializable {
    * the query plan.
    */
   private void updateCountersInQueryPlan() {
-    query.setStarted(started.contains(query.getQueryId()));
-    query.setDone(done.contains(query.getQueryId()));
+    query.setStarted(started.containsKey(query.getQueryId()));
+    query.setDone(done.containsKey(query.getQueryId()));
     if (query.getStageList() != null) {
       for (org.apache.hadoop.hive.ql.plan.api.Stage stage : query
           .getStageList()) {
         if (stage.getStageId() == null) {
           continue;
         }
-        stage.setStarted(started.contains(stage.getStageId()));
+        stage.setStarted(started.containsKey(stage.getStageId()));
         stage.setStageCounters(counters.get(stage.getStageId()));
-        stage.setDone(done.contains(stage.getStageId()));
+        stage.setDone(done.containsKey(stage.getStageId()));
         for (org.apache.hadoop.hive.ql.plan.api.Task task : stage.getTaskList()) {
           task.setTaskCounters(counters.get(task.getTaskId()));
           if (task.getTaskType() == TaskType.OTHER) {
-            task.setStarted(started.contains(stage.getStageId()));
-            task.setDone(done.contains(stage.getStageId()));
+            task.setStarted(started.containsKey(stage.getStageId()));
+            task.setDone(done.containsKey(stage.getStageId()));
           } else {
-            task.setStarted(started.contains(task.getTaskId()));
-            task.setDone(done.contains(task.getTaskId()));
+            task.setStarted(started.containsKey(task.getTaskId()));
+            task.setDone(done.containsKey(task.getTaskId()));
             if (task.getOperatorList() == null) {
               return;
             }
@@ -389,9 +395,9 @@ public class QueryPlan implements Serializable {
               task.getOperatorList()) {
               // if the task has started, all operators within the task have
               // started
-              op.setStarted(started.contains(task.getTaskId()));
+              op.setStarted(started.containsKey(task.getTaskId()));
               // if the task is done, all operators are done as well
-              op.setDone(done.contains(task.getTaskId()));
+              op.setDone(done.containsKey(task.getTaskId()));
             }
           }
         }
@@ -422,7 +428,7 @@ public class QueryPlan implements Serializable {
       if (task.getId() == null) {
         continue;
       }
-      if (started.contains(task.getId()) && done.contains(task.getId())) {
+      if (started.containsKey(task.getId()) && done.containsKey(task.getId())) {
         continue;
       }
 
@@ -431,25 +437,25 @@ public class QueryPlan implements Serializable {
 
       // check if task is started
       if (task.started()) {
-        started.add(task.getId());
+        started.put(task.getId(), true);
       }
       if (task.done()) {
-        done.add(task.getId());
+        done.put(task.getId(), true);
       }
       if (task instanceof ExecDriver) {
         ExecDriver mrTask = (ExecDriver) task;
         if (mrTask.mapStarted()) {
-          started.add(task.getId() + "_MAP");
+          started.put(task.getId() + "_MAP", true);
         }
         if (mrTask.mapDone()) {
-          done.add(task.getId() + "_MAP");
+          done.put(task.getId() + "_MAP", true);
         }
         if (mrTask.hasReduce()) {
           if (mrTask.reduceStarted()) {
-            started.add(task.getId() + "_REDUCE");
+            started.put(task.getId() + "_REDUCE", true);
           }
           if (mrTask.reduceDone()) {
-            done.add(task.getId() + "_REDUCE");
+            done.put(task.getId() + "_REDUCE", true);
           }
         }
       } else if (task instanceof ConditionalTask) {
@@ -683,18 +689,18 @@ public class QueryPlan implements Serializable {
   }
 
   public void setStarted() {
-    started.add(queryId);
+    started.put(queryId ,true);
   }
 
   public void setDone() {
-    done.add(queryId);
+    done.put(queryId, true);
   }
 
-  public Set<String> getStarted() {
+  public Map<String, Boolean> getStarted() {
     return started;
   }
 
-  public Set<String> getDone() {
+  public Map<String, Boolean> getDone() {
     return done;
   }
 
@@ -870,4 +876,6 @@ public class QueryPlan implements Serializable {
   public String getCboInfo() {
     return cboInfo;
   }
+
+
 }

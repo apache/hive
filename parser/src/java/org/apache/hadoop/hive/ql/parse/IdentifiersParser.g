@@ -345,6 +345,15 @@ constant
     | charSetStringLiteral
     | booleanValue
     | KW_NULL -> TOK_NULL
+    | prepareStmtParam
+    ;
+
+prepareStmtParam
+    : arg=ParamLiteral
+    ->
+    {
+      adaptor.create(TOK_PARAMETER, $arg.getText())
+      }
     ;
 
 stringLiteralSequence

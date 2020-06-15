@@ -22,7 +22,9 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+import org.xbill.DNS.*;
 
+import java.io.*;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class ColumnAccessInfo {
+public class ColumnAccessInfo implements Serializable {
   /**
    * Map of table name to names of accessed columns (directly and indirectly -through views-).
    */
@@ -111,7 +113,7 @@ public class ColumnAccessInfo {
   /**
    * Column access information.
    */
-  private static class ColumnAccess {
+  private static class ColumnAccess implements Serializable{
     private final String columnName;
     private final Access access;
     

@@ -73,7 +73,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.*;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -140,6 +140,9 @@ public class SessionState implements ISessionAuthState{
       new ConcurrentHashMap<>();
   private final Map<String, TempTable> tempPartitions =
       new ConcurrentHashMap<>();
+
+  // Prepared statement plans
+  private final Map<String, QueryPlan> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -1947,6 +1950,11 @@ public class SessionState implements ISessionAuthState{
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
+
+  public Map<String, QueryPlan> getPreparePlans() {
+    return preparePlanMap;
+  }
+
   public Map<String, TempTable> getTempPartitions() {
     return tempPartitions;
   }

@@ -22,6 +22,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.ddl.table.drop.*;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +105,10 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
       case HiveParser.TOK_DROP_SCHEDULED_QUERY:
         return new ScheduledQueryAnalyzer(queryState);
-
+      case HiveParser.TOK_EXECUTE:
+        return new ExecuteStatementAnalyzer(queryState);
+      case HiveParser.TOK_PREPARE:
+        return new PrepareStatementAnalyzer(queryState);
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:
       case HiveParser.TOK_ROLLBACK:

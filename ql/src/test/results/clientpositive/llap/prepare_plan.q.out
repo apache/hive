@@ -1,0 +1,108 @@
+PREHOOK: query: execute p1 (1,0)
+PREHOOK: type: null
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: execute p1 (1,0)
+POSTHOOK: type: null
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: select * from src where key > 0 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src where key > 0 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: execute p1 (1,200)
+PREHOOK: type: null
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: execute p1 (1,200)
+POSTHOOK: type: null
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+311	val_311
+409	val_409
+255	val_255
+278	val_278
+484	val_484
+265	val_265
+401	val_401
+273	val_273
+224	val_224
+PREHOOK: query: select * from src where key > 200 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src where key > 200 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+311	val_311
+409	val_409
+255	val_255
+278	val_278
+484	val_484
+265	val_265
+401	val_401
+273	val_273
+224	val_224
+PREHOOK: query: execute p2(1, 0, 2, 255)
+PREHOOK: type: null
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: execute p2(1, 0, 2, 255)
+POSTHOOK: type: null
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+311	val_311
+409	val_409
+278	val_278
+484	val_484
+265	val_265
+401	val_401
+273	val_273
+369	val_369
+406	val_406
+429	val_429
+PREHOOK: query: select * from src where key > (0 + 255) limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src where key > (0 + 255) limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+311	val_311
+409	val_409
+278	val_278
+484	val_484
+265	val_265
+401	val_401
+273	val_273
+369	val_369
+406	val_406
+429	val_429

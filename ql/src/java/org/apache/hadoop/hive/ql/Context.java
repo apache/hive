@@ -94,6 +94,7 @@ public class Context {
   // scratch directory to use for local file system tmp folders
   private final String localScratchDir;
 
+  protected Map<Integer, String> paramMap;
   // the permission to scratch directory (local and hdfs)
   private final String scratchDirPermission;
 
@@ -193,6 +194,13 @@ public class Context {
     this.wmContext = wmContext;
   }
 
+  public Map<Integer, String> getParamMap() {
+    return this.paramMap;
+  }
+
+  public void setParamMap(Map<Integer, String> paramMap) {
+    this.paramMap = paramMap;
+  }
   /**
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)

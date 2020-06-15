@@ -156,7 +156,7 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
     setOrAnnotateStats(ops, pctx);
   }
 
-  private Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {
+  public static Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {
     Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
     Stack<Operator<?>> opStack = new Stack<Operator<?>>();
     // add all children
