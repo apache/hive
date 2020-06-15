@@ -174,7 +174,7 @@ public class TestVectorFilterOperator {
     Assert.assertFalse(vrb.isSelectedInUse());
 
     // All the magic happens here..
-    ORCRowFilter rb = ORCRowFilter.getRowFilter(predicateExpr, allCols);
+    ORCRowFilter rb = ORCRowFilter.getRowFilter(predicateExpr, allCols, true);
     rb.rowFilterCallback(vrb);
 
     //Verify

@@ -54,12 +54,13 @@ public class ORCRowFilter {
     private int filterExprMaxColdId;
 
     private final Map<Integer, TypeInfo> filterExprScratchColTypeMap;
-    private boolean useDecimal64ColumnVectors = true;
+    private boolean useDecimal64ColumnVectors;
 
-    public ORCRowFilter(VectorExpression expression, VectorizationContext vc) {
+    public ORCRowFilter(VectorExpression expression, VectorizationContext vc, boolean useDecimal64ColumnVectors) {
         this.filterExprScratchColTypeMap = new HashMap<>();
         this.filterExpression = expression;
         this.filterVc = vc;
+        this.useDecimal64ColumnVectors = useDecimal64ColumnVectors;
 
         filterExprMaxColdId = vc.getInitialColumnNames().size() -1;
         Stack<VectorExpression> exprStack = new Stack<>();
@@ -83,13 +84,13 @@ public class ORCRowFilter {
      * Properly handle conversion from ExprNodeDesc to VectorExpression
      */
     @VisibleForTesting
-    public static ORCRowFilter getRowFilter(ExprNodeDesc filterExpr, List<String> columns) {
+    public static ORCRowFilter getRowFilter(ExprNodeDesc filterExpr, List<String> columns, boolean useDecimal64ColumnVectors) {
         ORCRowFilter createdFilter = null;
         try {
             VectorizationContext vc = new VectorizationContext("row_filter", columns);
             VectorExpression currFilterExpr = vc.getVectorExpression(filterExpr, VectorExpressionDescriptor.Mode.FILTER);
             LOG.info("ProbeDecode converted {} filter to {} VectorExpression", filterExpr, currFilterExpr);
-            createdFilter = new ORCRowFilter(currFilterExpr, vc);
+            createdFilter = new ORCRowFilter(currFilterExpr, vc, useDecimal64ColumnVectors);
         } catch (HiveException e) {
             LOG.error("ProbeDecode could not covert filter {}, {}",filterExpr, e.getMessage());
             throw new RuntimeException("ProbeDecode could not covert filter " + e);

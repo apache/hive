@@ -208,7 +208,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
       includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
-      LOG.info("LlapRecordReader ProbeDecode is enabled\n{}", mapWork.getProbeDecodeContext().toString());
+      LOG.info("LlapRecordReader ProbeDecode is enabled\n{}", mapWork.getProbeDecodeContext());
     }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
@@ -772,7 +772,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 //          }
 //        }
 
-        this.probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDecodeContext.getStaticFilterExpr(), allIncludedColNames);
+        this.probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDecodeContext.getStaticFilterExpr(),
+                allIncludedColNames, HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+                        .equalsIgnoreCase("decimal_64"));
         List<String> filterColNames = probeDecodeContext.getStaticFilterExpr().getCols();
 
         // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
