@@ -63,6 +63,7 @@ public abstract class AbstractCliConfig {
   private String hiveConfDir;
   private MiniClusterType clusterType;
   private FsType fsType;
+  private String metastoreType;
 
   // FIXME: null value is treated differently on the other end..when those filter will be
   // moved...this may change
@@ -75,6 +76,9 @@ public abstract class AbstractCliConfig {
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
+    // By default get metastoreType from system properties but allow specific configs to override
+    metastoreType = QTestSystemProperties.getMetaStoreDb() == null ? "derby"
+        : QTestSystemProperties.getMetaStoreDb();
   }
 
   protected void setQueryDir(String dir) {
@@ -405,4 +409,11 @@ public abstract class AbstractCliConfig {
     return new File(new File(HIVE_ROOT), dir).getAbsolutePath();
   }
 
+  public String getMetastoreType() {
+    return metastoreType;
+  }
+
+  protected void setMetastoreType(String metastoreType) {
+    this.metastoreType = metastoreType;
+  }
 }
