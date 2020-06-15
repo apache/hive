@@ -202,7 +202,7 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
       return conjuncts;
     }
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(relNode), partitionColsIndexes);
+        analyzer, ImmutableList.of(relNode), partitionColsIndexes, getCluster().getRexBuilder());
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       // reset the visitor's partition state because we want each conjunct's

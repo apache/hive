@@ -89,7 +89,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       return conjuncts;
     }
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(this));
+        analyzer, ImmutableList.of(this), getCluster().getRexBuilder());
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       conjuncts.add(andOperand.accept(visitor));

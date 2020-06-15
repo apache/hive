@@ -98,7 +98,7 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     List<Expr> nonEquiJoinConjuncts = new ArrayList<>();
 
     ImpalaInferMappingRexVisitor rexVisitor = new ImpalaInferMappingRexVisitor(
-        ctx.getRootAnalyzer(), inputRels);
+        ctx.getRootAnalyzer(), inputRels, getCluster().getRexBuilder());
 
     JoinOperator joinOp = getImpalaJoinOp(join);
 

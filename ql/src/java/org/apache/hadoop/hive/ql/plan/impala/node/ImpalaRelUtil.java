@@ -86,7 +86,7 @@ public class ImpalaRelUtil {
    */
   protected static Expr getExpr(RexNode exp, Analyzer analyzer, ImpalaPlanRel input) {
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(input));
+        analyzer, ImmutableList.of(input), input.getCluster().getRexBuilder());
     return exp.accept(visitor);
   }
 
@@ -96,7 +96,7 @@ public class ImpalaRelUtil {
    */
   protected static List<Expr> getExprs(List<RexNode> exp, Analyzer analyzer, ImpalaPlanRel input) {
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(input));
+        analyzer, ImmutableList.of(input), input.getCluster().getRexBuilder());
     return exp.stream().map(e -> e.accept(visitor)).collect(Collectors.toList());
   }
 

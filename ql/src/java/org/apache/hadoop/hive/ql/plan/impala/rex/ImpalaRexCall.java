@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -33,6 +34,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBinaryCompExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCaseExpr;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCastExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCompoundExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
@@ -69,7 +71,7 @@ public class ImpalaRexCall {
    * Returns the Impala Expr object for ImpalaRexCall.
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
-      List<Expr> params) throws HiveException {
+      List<Expr> params, RexBuilder rexBuilder) throws HiveException {
 
     Type calciteReturnType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
 
@@ -78,11 +80,22 @@ public class ImpalaRexCall {
     }
 
     String funcName = rexCall.getOperator().getName().toLowerCase();
-    if (ImpalaFunctionSignature.STRING_ONLY_FUNCTIONS.contains(funcName)) {
-      params = Lists.transform(params, ImpalaRexCall::castParamToString);
+    List<RexNode> operands = rexCall.getOperands();
+    // We need to add additional casting for two types of functions:
+    // 1) Functions that only have a STRING flavor (e.g. upper(STRING)
+    // 2) Functions where a mix of char types may have been passed in 
+    //    (e.g. =(VARCHAR, STRING).  Impala funtions always use only one
+    //    type of character type, so they all get cast to string in this
+    //    case.
+    // Hopefully we can eventually fix this with CDPD-13545, where everything
+    // gets cast correctly in the FunctionResolver.
+    if (ImpalaFunctionSignature.STRING_ONLY_FUNCTIONS.contains(funcName) ||
+       isMultipleCharTypes(params)) {
+      params = castParamsToString(params, rexCall.getOperands(), analyzer);
+      operands = castRexNodesToString(rexCall.getOperands(), rexBuilder);
     }
 
-    Function fn = getFunction(funcName, rexCall.getOperands(), rexCall.getType());
+    Function fn = getFunction(funcName, operands, rexCall.getType());
     Type impalaRetType = ImpalaTypeConverter.createImpalaType(fn.getReturnType(),
         rexCall.getType().getPrecision(), rexCall.getType().getScale());
 
@@ -376,11 +389,63 @@ public class ImpalaRexCall {
     }
   }
 
-  private static Expr castParamToString(Expr param) {
-    return param.getType().matchesType(Type.VARCHAR) || param.getType().matchesType(Type.CHAR)
-        ? new CastExpr(Type.STRING, param)
-        : param;
+  // Return true if the list of params have two different types of char types
+  // declared (e.g. a VARCHAR and a STRING)
+  private static boolean isMultipleCharTypes(List<Expr> params) {
+    Type firstCharTypeParam = null;
+    for (Expr p : params) {
+      Type pType = p.getType();
+      if (pType.matchesType(Type.VARCHAR) || pType.matchesType(Type.CHAR)
+          || pType.matchesType(Type.STRING)) {
+        if (firstCharTypeParam == null) {
+          firstCharTypeParam = pType;
+        } else {
+          if (!firstCharTypeParam.matchesType(pType)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
+
+  private static List<Expr> castParamsToString(List<Expr> params, List<RexNode> operands, Analyzer analyzer) {
+    List<Expr> castParams = Lists.newArrayList();
+    Preconditions.checkState(params.size() == operands.size());
+    for (int i = 0; i < params.size(); ++i) {
+      Expr param = params.get(i);
+      if (param.getType().matchesType(Type.VARCHAR) || param.getType().matchesType(Type.CHAR)) {
+        try {
+          Function castFn = getFunction("cast", operands.subList(i, i+1),
+	      ImpalaTypeConverter.getRelDataType(Type.STRING));
+          ImpalaCastExpr castExpr = new ImpalaCastExpr(analyzer, castFn, Type.STRING, param);
+          castParams.add(castExpr);
+        } catch (Exception e) {
+          throw new RuntimeException("Casting exception: " + e);
+        }
+      } else { 
+        castParams.add(param);
+      }
+    }
+    return castParams;
+  }
+
+  private static List<RexNode> castRexNodesToString(List<RexNode> operands, RexBuilder rexBuilder) {
+    List<RexNode> castOperands = Lists.newArrayList(); 
+    for (RexNode operand : operands) {
+      RelDataType relDataType = ImpalaTypeConverter.getNormalizedImpalaType(operand);
+      SqlTypeName sqlTypeName = relDataType.getSqlTypeName();
+      if ((sqlTypeName == SqlTypeName.CHAR) || ((sqlTypeName == SqlTypeName.VARCHAR) &&
+        relDataType.getPrecision() != Integer.MAX_VALUE)) {
+          castOperands.add(rexBuilder.makeCast(
+              ImpalaTypeConverter.getRelDataType(Type.STRING), operand, true));
+      } else {
+        castOperands.add(operand);
+      }
+    }
+    return castOperands;
+  }
+
 
   private static Function getFunction(String name, List<RexNode> args,
       RelDataType retType) throws HiveException {

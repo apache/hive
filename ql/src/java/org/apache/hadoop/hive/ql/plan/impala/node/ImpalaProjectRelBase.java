@@ -116,7 +116,7 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
   private ImpalaInferMappingRexVisitor generateVisitor(ImpalaPlannerContext ctx,
       ImpalaPlanRel inputRel) {
     return new ImpalaInferMappingRexVisitor(ctx.getRootAnalyzer(),
-        ImmutableList.of(inputRel));
+        ImmutableList.of(inputRel), getCluster().getRexBuilder());
   }
 
   private ImpalaProvidedMappingRexVisitor generateAnalyticVisitor(ImpalaPlannerContext ctx,
@@ -159,7 +159,7 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     }
     LOG.debug("Mapping from nodes created by analytic planner : {}", mapping);
     return new ImpalaProvidedMappingRexVisitor(ctx.getRootAnalyzer(),
-        mapping);
+        mapping, getCluster().getRexBuilder());
   }
 
   @Override

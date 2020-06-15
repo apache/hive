@@ -137,20 +137,20 @@ public class ImpalaTypeConverter {
    * the class description on the definition of normalized.
    */
   public static List<RelDataType> getNormalizedImpalaTypeList(List<RexNode> rexNodes) {
-    List<RelDataType> list = Lists.newArrayList();
-    for (RexNode node : rexNodes) {
-      SqlTypeName sqlTypeName = node.getType().getSqlTypeName();
-      if (node instanceof RexLiteral &&
-          SqlTypeName.CHAR_TYPES.contains(sqlTypeName)) {
-        list.add(getInterpretationType((RexLiteral) node));
-      } else if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
-        list.add(node.getType());
-      } else {
-        Type impalaType = getNormalizedImpalaType(node.getType());
-        list.add(getRelDataType(impalaType));
-      }
+    return Lists.transform(rexNodes, ImpalaTypeConverter::getNormalizedImpalaType);
+  }
+
+  public static RelDataType getNormalizedImpalaType(RexNode node) {
+    SqlTypeName sqlTypeName = node.getType().getSqlTypeName();
+    if (node instanceof RexLiteral &&
+        SqlTypeName.CHAR_TYPES.contains(sqlTypeName)) {
+      return getInterpretationType((RexLiteral) node);
+    } else if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
+      return node.getType();
+    } else {
+      Type impalaType = getNormalizedImpalaType(node.getType());
+      return getRelDataType(impalaType);
     }
-    return Collections.unmodifiableList(list);
   }
 
   // helper function to handle translation of lists.

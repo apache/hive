@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.impala.rex;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
@@ -53,10 +54,13 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   private final Analyzer analyzer;
 
-  protected ImpalaRexVisitor(Analyzer analyzer) {
+  private final RexBuilder rexBuilder;
+
+  protected ImpalaRexVisitor(Analyzer analyzer, RexBuilder rexBuilder) {
     super(false);
     Preconditions.checkArgument(analyzer != null);
     this.analyzer = analyzer;
+    this.rexBuilder = rexBuilder;
   }
 
   @Override
@@ -72,7 +76,7 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
       for (RexNode operand : rexCall.getOperands()) {
         params.add(operand.accept(this));
       }
-      return ImpalaRexCall.getExpr(analyzer, rexCall, params);
+      return ImpalaRexCall.getExpr(analyzer, rexCall, params, rexBuilder);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
@@ -152,13 +156,14 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
     // true if this expr contains non-partition column references
     private boolean hasNonPartitionCols;
 
-    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
-      this(analyzer, impalaPlanNodes, null);
+    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes,
+        RexBuilder rexBuilder) {
+      this(analyzer, impalaPlanNodes, null, rexBuilder);
     }
 
     public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes,
-        Set<Integer> partitionColsIndexes) {
-      super(analyzer);
+        Set<Integer> partitionColsIndexes, RexBuilder rexBuilder) {
+      super(analyzer, rexBuilder);
       Preconditions.checkArgument(impalaPlanNodes != null);
       this.impalaPlanNodes = impalaPlanNodes;
       this.partitionColsIndexes = partitionColsIndexes;
@@ -216,8 +221,9 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
     private final Map<RexNode, Expr> exprsMap;
 
-    public ImpalaProvidedMappingRexVisitor(Analyzer analyzer, Map<RexNode, Expr> exprsMap) {
-      super(analyzer);
+    public ImpalaProvidedMappingRexVisitor(Analyzer analyzer, Map<RexNode, Expr> exprsMap,
+        RexBuilder rexBuilder) {
+      super(analyzer, rexBuilder);
       Preconditions.checkArgument(exprsMap != null);
       this.exprsMap = exprsMap;
     }
