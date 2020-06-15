@@ -495,6 +495,14 @@ public final class ColumnPrunerProcFactory {
 
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd, cols);
       RowSchema inputRS = scanOp.getSchema();
+      // TODO [PANOS] is this the best way to do it?
+      if (cols != null && scanOp.getProbeDecodeContext() != null &&
+              scanOp.getProbeDecodeContext().getStaticFilterExpr() != null) {
+        for (String colName: scanOp.getProbeDecodeContext().getStaticFilterExpr().getCols()) {
+          if (!cols.contains(colName))
+            cols.add( new FieldNode(colName));
+        }
+      }
       setupNeededColumns(scanOp, inputRS, cols);
 
       return null;

@@ -21,10 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -38,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -93,10 +92,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    */
   public static class ProbeDecodeContext {
 
-    private final String mjSmallTableCacheKey;
-    private final String mjBigTableKeyColName;
-    private final byte mjSmallTablePos;
-    private final double keyRatio;
+    private String mjSmallTableCacheKey;
+    private String mjBigTableKeyColName;
+    private byte mjSmallTablePos;
+    private double keyRatio;
+
+    private ExprNodeDesc staticFilterExpr;
+
+    public  ProbeDecodeContext() { }
 
     public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName,
         double keyRatio) {
@@ -104,6 +107,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       this.mjSmallTablePos = mjSmallTablePos;
       this.mjBigTableKeyColName = mjBigTableKeyColName;
       this.keyRatio = keyRatio;
+    }
+
+    public ExprNodeDesc getStaticFilterExpr() {
+      return staticFilterExpr;
+    }
+
+    public void setStaticFilterExpr(ExprNodeDesc staticFilterExpr) {
+      this.staticFilterExpr = staticFilterExpr;
     }
 
     public String getMjSmallTableCacheKey() {
@@ -125,7 +136,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     @Override
     public String toString() {
       return "cacheKey:" + mjSmallTableCacheKey + ", bigKeyColName:" + mjBigTableKeyColName +
-          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio;
+          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio  + "\n" +
+           ", staticFilterExpr: " + staticFilterExpr;
     }
   }
 
