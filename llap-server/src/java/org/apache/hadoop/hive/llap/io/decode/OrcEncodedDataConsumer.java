@@ -266,6 +266,9 @@ public class OrcEncodedDataConsumer
       }
     }
     positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
+    if (includes.getProbeStaticRowFilter() != null) {
+      includes.genProbeStaticFilterExpr(evolution);
+    }
   }
 
   private ColumnVector createColumn(TypeDescription type, int batchSize, final boolean useDecimal64ColumnVectors) {

@@ -47,6 +47,7 @@ public interface ColumnVectorProducer {
 
   public interface Includes {
     boolean[] generateFileIncludes(TypeDescription fileSchema);
+    void genProbeStaticFilterExpr(SchemaEvolution schemaEvolution);
     List<Integer> getPhysicalColumnIds();
     List<Integer> getReaderLogicalColumnIds();
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
