@@ -322,13 +322,13 @@ public class Initiator extends MetaStoreCompactorThread {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false, tblproperties, false);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
     Path base = dir.getBaseDirectory();
     long baseSize = 0;
     FileStatus stat = null;
     if (base != null) {
       stat = fs.getFileStatus(base);
-      if (!stat.isDir()) {
+      if (!stat.isDirectory()) {
         LOG.error("Was assuming base " + base.toString() + " is directory, but it's a file!");
         return null;
       }
@@ -344,7 +344,7 @@ public class Initiator extends MetaStoreCompactorThread {
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     for (AcidUtils.ParsedDelta delta : deltas) {
       stat = fs.getFileStatus(delta.getPath());
-      if (!stat.isDir()) {
+      if (!stat.isDirectory()) {
         LOG.error("Was assuming delta " + delta.getPath().toString() + " is a directory, " +
             "but it's a file!");
         return null;

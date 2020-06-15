@@ -497,7 +497,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       // Don't start compaction or cleaning if not necessary
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-          tblValidWriteIds, Ref.from(false), true, null, false);
+          tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));

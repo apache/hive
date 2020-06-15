@@ -1215,8 +1215,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * For plain or acid tables this is the root of the partition (or table if not partitioned).
      * For MM table this is delta/ or base/ dir.  In MM case applying of the ValidTxnList that
-     * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} normally does has already
-     * been done in {@link HiveInputFormat#processPathsForMmRead(List, JobConf, ValidWriteIdList)}.
+     * {@link AcidUtils#getAcidState(FileSystem, Path, Configuration, ValidWriteIdList, Ref, boolean)}
+     * normally does has already been done in
+     * {@link HiveInputFormat#processPathsForMmRead(List, Configuration, ValidWriteIdList, List, List)}
      */
     private final Path dir;
     private final Ref<Boolean> useFileIds;
@@ -1257,10 +1258,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private Directory getAcidState() throws IOException {
       if (context.isAcid && context.splitStrategyKind == SplitStrategyKind.BI) {
         return AcidUtils.getAcidStateFromCache(fs, dir, context.conf,
-            context.writeIdList, useFileIds, true, null, true);
+            context.writeIdList, useFileIds, true);
       } else {
         return AcidUtils.getAcidState(fs.get(), dir, context.conf, context.writeIdList,
-            useFileIds, true, null, true);
+            useFileIds, true);
       }
     }
 
