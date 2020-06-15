@@ -266,7 +266,7 @@ public class OrcEncodedDataConsumer
       }
     }
     positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
-    if (includes.getProbeStaticRowFilter() != null) {
+    if (includes.isProbeDecodeEnabled()) {
       includes.genProbeStaticFilterExpr(evolution);
     }
   }

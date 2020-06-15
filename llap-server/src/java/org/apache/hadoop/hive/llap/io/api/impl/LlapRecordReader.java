@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -63,7 +62,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -210,7 +208,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
       includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
-      LOG.info("LlapRecordReader ProbeDecode is enabled");
+      LOG.info("LlapRecordReader ProbeDecode is enabled\n{}", mapWork.getProbeDecodeContext().toString());
     }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
@@ -653,8 +651,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
-    // ProbeDecode context for row-level filtering on MJ using dynamic HT values
-    private TableScanOperator.ProbeDecodeContext probeDynHTContext = null;
+    // ProbeDecode context for row-level filtering used BOTH for MJs
+    // using dynamic HT values AND static filterExpressions
+    private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
     // ProbeDecode context for row-level filtering on a static FilterExpression
     private ORCRowFilter probeStaticRowFilter = null;
     // Index of ColIds that are used for filtering on static expressions
@@ -743,27 +742,28 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     @Override
     public void genProbeStaticFilterExpr(SchemaEvolution schemaEvolution) {
-      if (readerLogicalColumnIds.size() < probeDynHTContext.getStaticFilterExpr().getCols().size()) {
-        LOG.warn("ProbeDecode RowFilter logicalCols {} missmatch Expr {}", readerLogicalColumnIds,
-                probeDynHTContext.getStaticFilterExpr().getCols());
-        return;
-      }
+      if (this.probeDecodeContext.getStaticFilterExpr() != null) {
+        if (this.readerLogicalColumnIds.size() <  this.probeDecodeContext.getStaticFilterExpr().getCols().size()) {
+          LOG.warn("ProbeDecode RowFilter logicalCols {} missmatch Expr {}", this.readerLogicalColumnIds,
+                  this.probeDecodeContext.getStaticFilterExpr().getCols());
+          return;
+        }
 
 //        SchemaEvolution schemaEvolution = this.createSchemaEvolution(readerSchema);
-      // Get the colIds use for static filter (and thus rowFiltering)
-      int[] filterColumnIds = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
-              ConvertAstToSearchArg.create(
-                      jobConf,
-                      (ExprNodeGenericFuncDesc) probeDynHTContext.getStaticFilterExpr()).getLeaves(),
-              schemaEvolution);
+        // Get the colIds use for static filter (and thus rowFiltering)
+        int[] filterColumnIds = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
+                ConvertAstToSearchArg.create(
+                        jobConf,
+                        (ExprNodeGenericFuncDesc) probeDecodeContext.getStaticFilterExpr()).getLeaves(),
+                schemaEvolution);
 
-      // Get all included ColIds -> ColNames (needed by the generated filterExpression below)
-      // Make sure that they are in the same order as the are going to be read!
-      List<String> allIncludedColNames = Arrays.asList(new String[filePhysicalColumnIds.size()]);
-      for (int includedColidx : filePhysicalColumnIds) {
-        allIncludedColNames.set(filePhysicalColumnIds.indexOf(includedColidx),
-                readerSchema.getFieldNames().get(includedColidx));
-      }
+        // Get all included ColIds -> ColNames (needed by the generated filterExpression below)
+        // Make sure that they are in the same order as the are going to be read!
+        List<String> allIncludedColNames = Arrays.asList(new String[filePhysicalColumnIds.size()]);
+        for (int includedColidx : filePhysicalColumnIds) {
+          allIncludedColNames.set(filePhysicalColumnIds.indexOf(includedColidx),
+                  readerSchema.getFieldNames().get(includedColidx));
+        }
 
 //        for (int i =0; i < schemaEvolution.getFileSchema().getMaximumId(); i++) {
 //          TypeDescription col  = schemaEvolution.getFileSchema().getChildren().get(i);
@@ -772,23 +772,24 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 //          }
 //        }
 
-      probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDynHTContext.getStaticFilterExpr(), allIncludedColNames);
-      List<String> filterColNames = probeDynHTContext.getStaticFilterExpr().getCols();
+        this.probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDecodeContext.getStaticFilterExpr(), allIncludedColNames);
+        List<String> filterColNames = probeDecodeContext.getStaticFilterExpr().getCols();
 
-      // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
-      int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
-      probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
-      for (int i : filterColumnIds) {
-        if (i > 0) {
-          probeStaticColidIndex[colIdAcidAddition + i] = true;
+        // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
+        int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
+        this.probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
+        for (int i : filterColumnIds) {
+          if (i > 0) {
+            this.probeStaticColidIndex[colIdAcidAddition + i] = true;
+          }
         }
+        LOG.info("ProbeDecode RowFilter IncludedCols: {}, filterColNames {} FilterColidIndex {}",
+                allIncludedColNames, filterColNames, DebugUtils.toString(probeStaticColidIndex));
       }
-      LOG.info("ProbeDecode RowFilter IncludedCols: {}, filterColNames {} FilterColidIndex {}",
-              allIncludedColNames, filterColNames, DebugUtils.toString(probeStaticColidIndex));
     }
 
     public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext) {
-      this.probeDynHTContext = currProbeDecodeContext;
+      this.probeDecodeContext = currProbeDecodeContext;
     }
 
     @Override
@@ -814,30 +815,30 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     @Override
     public boolean isProbeDecodeEnabled() {
-      return this.probeDynHTContext != null || this.probeStaticRowFilter != null;
+      return this.probeDecodeContext != null;
     }
 
     @Override
     public byte getProbeDynMjSmallTablePos() {
-      return this.probeDynHTContext.getMjSmallTablePos();
+      return this.probeDecodeContext.getMjSmallTablePos();
     }
 
     @Override
     public int getProbeDynMjColIdx() {
       // TODO: is this the best way to get the ColId?
       Pattern pattern = Pattern.compile("_col([0-9]+)");
-      Matcher matcher = pattern.matcher(this.probeDynHTContext.getMjBigTableKeyColName());
+      Matcher matcher = pattern.matcher(this.probeDecodeContext.getMjBigTableKeyColName());
       return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
     }
 
     @Override
     public String getProbeDynMjColName() {
-      return this.probeDynHTContext.getMjBigTableKeyColName();
+      return this.probeDecodeContext.getMjBigTableKeyColName();
     }
 
     @Override
     public String getProbeDynMjCacheKey() {
-      return this.probeDynHTContext.getMjSmallTableCacheKey();
+      return this.probeDecodeContext.getMjSmallTableCacheKey();
     }
     @Override
     public ORCRowFilter getProbeStaticRowFilter() {
