@@ -391,7 +391,11 @@ public class CachedStore implements RawStore, Configurable {
         break;
       case MessageBuilder.ADD_FOREIGNKEY_EVENT:
           AddForeignKeyMessage addForeignKeyMessage = deserializer.getAddForeignKeyMessage(message);
-          sharedCache.addForeignKeysToCache(catalogName, dbName, tableName, addForeignKeyMessage.getForeignKeys());
+          for (SQLForeignKey fk : addForeignKeyMessage.getForeignKeys()) {
+            // This is done because dbName and tblName for Foreign key events are currently set to PK table and db.
+            sharedCache.addForeignKeysToCache(catalogName, fk.getFktable_db(), fk.getFktable_name(), Arrays.asList(fk));
+          }
+
         break;
       case MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT:
           AddNotNullConstraintMessage notNullConstraintMessage = deserializer.getAddNotNullConstraintMessage(message);

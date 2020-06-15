@@ -2260,11 +2260,11 @@ public class SharedCache {
     }
 
     // filter out required foreign keys based on parent db/tbl name
-    if (parentTblName != null || parentDbName != null) {
+    if (!StringUtils.isEmpty(parentTblName) && !StringUtils.isEmpty(parentDbName)) {
       List<SQLForeignKey> filteredKeys = new ArrayList<>();
       for (SQLForeignKey key : keys) {
-        if ((parentTblName == null || parentTblName.equalsIgnoreCase(key.getPktable_name()))
-                && (parentDbName == null || parentDbName.equalsIgnoreCase(key.getPktable_db()))) {
+        if (parentTblName.equalsIgnoreCase(key.getPktable_name())
+                && parentDbName.equalsIgnoreCase(key.getPktable_db())) {
           filteredKeys.add(key);
         }
       }
