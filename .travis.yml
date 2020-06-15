@@ -15,7 +15,6 @@
 # limitations under the License.
 
 # https://docs.travis-ci.com/user/reference/overview/
-# trusty - 7.5GB memory and 2 cores
 dist: bionic
 
 # travis performs a shallow clone by default, in case of any issues
@@ -24,12 +23,7 @@ dist: bionic
 
 language: java
 jdk:
-  - openjdk8
-
-# disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
-#cache:
-#  directories:
-#  - $HOME/.m2
+  - openjdk11
 
 env:
   MAVEN_SKIP_RC=true
