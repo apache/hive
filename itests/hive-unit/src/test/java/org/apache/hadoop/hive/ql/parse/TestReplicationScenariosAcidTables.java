@@ -185,9 +185,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<String> withClauseOptions = new LinkedList<>();
     withClauseOptions.add("'hive.repl.dump.skip.immutable.data.copy'='true'");
 
-    prepareDataAndDump(primaryDbName, withClauseOptions);
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, withClauseOptions);
     replica.load(replicatedDbName, primaryDbName, withClauseOptions);
     verifyAcidTableLoadWithoutData(replicatedDbName);
+
+    Path hiveDumpDir = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path loadAck = new Path(hiveDumpDir, ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertFalse("For immutable dataset, load ack should not be there", fs.exists(loadAck));
   }
 
   private void verifyAcidTableLoadWithoutData(String replicatedDbName) throws Throwable {
