@@ -72,6 +72,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
             UserGroupInformation.getCurrentUser().getUserName());
     internalBeforeClassSetup(overrides, TestScheduledReplicationScenarios.class);
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf);
   }
 
   static void internalBeforeClassSetup(Map<String, String> overrides,
@@ -121,8 +122,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                     "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
             .run("insert into t1 values(2)");
-    try (ScheduledQueryExecutionService schqS =
-                 ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
+    try {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
       primary.run("create scheduled query s1_t1 every 5 seconds as repl dump " + primaryDbName);
@@ -193,8 +193,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
             .run("create external table t2 (id int)")
             .run("insert into t2 values(1)")
             .run("insert into t2 values(2)");
-    try (ScheduledQueryExecutionService schqS =
-                 ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
+    try {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
