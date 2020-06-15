@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query93.tpl and seed 1200409435
 explain
 select  ss_customer_sk

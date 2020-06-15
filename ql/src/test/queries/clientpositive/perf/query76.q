@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query76.tpl and seed 2031708268
 explain
 select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (

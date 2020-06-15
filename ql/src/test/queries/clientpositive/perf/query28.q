@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.metadataonly=true;
+set hive.materializedview.rewriting=false;
 
 -- start query 1 in stream 0 using template query28.tpl and seed 444293455
 explain

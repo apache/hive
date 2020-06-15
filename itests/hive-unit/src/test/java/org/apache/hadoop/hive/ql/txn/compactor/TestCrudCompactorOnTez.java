@@ -146,6 +146,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tblName);
     FileSystem fs = FileSystem.get(conf);
     // Verify deltas (delta_0000001_0000001_0000, delta_0000002_0000002_0000) are present
+<<<<<<< HEAD
     Assert.assertEquals("Delta directories does not match before compaction",
         Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
@@ -1085,12 +1086,12 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("delete from " + tblName + " where b = 2", driver);
 
     List<String> expectedRsBucket0PtnToday = new ArrayList<>();
-    expectedRsBucket0PtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\t3\tNULL\ttoday");
-    expectedRsBucket0PtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t4\tNULL\ttoday");
-    expectedRsBucket0PtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
+    expectedRsBucket0PtnToday.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t2\t3\tNULL\ttoday");
+    expectedRsBucket0PtnToday.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t2\t4\tNULL\ttoday");
+    expectedRsBucket0PtnToday.add("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
     List<String> expectedRsBucket1PtnToday = new ArrayList<>();
-    expectedRsBucket1PtnToday.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t1\t3\tNULL\ttoday");
-    expectedRsBucket1PtnToday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t4\t4\t1005\ttoday");
+    expectedRsBucket1PtnToday.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t3\tNULL\ttoday");
+    expectedRsBucket1PtnToday.add("{\"writeid\":4,\"bucketid\":536936448,\"rowid\":1}\t4\t4\t1005\ttoday");
     // Bucket 0, partition 'today'
     List<String> rsBucket0PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  "
         + tblName + " where ROW__ID.bucketid = 536870912 and ds='today' order by a,b", driver);
@@ -1151,15 +1152,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         .runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true, "ds=yesterday", "ds=today");
     CompactorTestUtil.runCleaner(hiveConf);
     List<String> expectedRsPtnToday = new ArrayList<>();
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t2\t4\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":2}\t4\t4\t1005\ttoday");
+    expectedRsPtnToday.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t1\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":2}\t2\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":3}\t2\t4\tNULL\ttoday");
+    expectedRsPtnToday.add("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
+    expectedRsPtnToday.add("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":2}\t4\t4\t1005\ttoday");
     List<String> expectedRsPtnYesterday = new ArrayList<>();
-    expectedRsPtnYesterday.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t4\tNULL\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t3\t4\t1002\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":2}\t4\t3\t1004\tyesterday");
+    expectedRsPtnYesterday.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4\tNULL\tyesterday");
+    expectedRsPtnYesterday.add("{\"writeid\":4,\"bucketid\":536936448,\"rowid\":1}\t3\t4\t1002\tyesterday");
+    expectedRsPtnYesterday.add("{\"writeid\":4,\"bucketid\":536936448,\"rowid\":2}\t4\t3\t1004\tyesterday");
     // Partition 'today'
     List<String> rsCompactPtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
         + " where ds='today'", driver);

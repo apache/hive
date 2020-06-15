@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query90.tpl and seed 2031708268
 explain
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio

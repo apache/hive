@@ -16,4 +16,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
 PREHOOK: query: alter table table3 add constraint fk1 foreign key (c) references table1(a) disable novalidate
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Child table not found: table3)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.InvalidTableException: Table not found table3

@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query85.tpl and seed 622697896
 explain
 select  substr(r_reason_desc,1,20)

@@ -1,6 +1,7 @@
 set hive.auto.convert.join=true;
 set hive.tez.cartesian-product.enabled=true;
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query6.tpl and seed 1819994127
 explain
 select  a.ca_state state, count(*) cnt

@@ -116,9 +116,9 @@ POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-1
 2
 3
+4
 PREHOOK: query: explain
 select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY

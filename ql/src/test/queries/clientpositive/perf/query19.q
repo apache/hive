@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query19.tpl and seed 1930872976
 explain
 select  i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,

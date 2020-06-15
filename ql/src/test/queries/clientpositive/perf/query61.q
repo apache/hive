@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query61.tpl and seed 1930872976
 explain
 select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100

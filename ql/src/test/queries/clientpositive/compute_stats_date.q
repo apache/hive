@@ -23,6 +23,6 @@ analyze table tab_date compute statistics for columns fl_date;
 describe formatted tab_date fl_date;
 
 -- Update stats manually. Try both yyyy-mm-dd and integer value for high/low value
-alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0');
+alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0', 'numNulls'='0');
 
 describe formatted tab_date fl_date;
