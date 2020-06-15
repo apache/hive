@@ -32,11 +32,11 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Analyzer for set serde properties commands.
+ * Analyzer for unset serde properties commands.
  */
-@DDLType(types = {HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES, HiveParser.TOK_ALTERPARTITION_SETSERDEPROPERTIES})
-public class AlterTableSetSerdePropsAnalyzer extends AbstractAlterTableAnalyzer {
-  public AlterTableSetSerdePropsAnalyzer(QueryState queryState) throws SemanticException {
+@DDLType(types = {HiveParser.TOK_ALTERTABLE_UNSETSERDEPROPERTIES, HiveParser.TOK_ALTERPARTITION_UNSETSERDEPROPERTIES})
+public class AlterTableUnsetSerdePropsAnalyzer extends AbstractAlterTableAnalyzer {
+  public AlterTableUnsetSerdePropsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -45,7 +45,7 @@ public class AlterTableSetSerdePropsAnalyzer extends AbstractAlterTableAnalyzer 
       throws SemanticException {
     Map<String, String> props = getProps((ASTNode) (command.getChild(0)).getChild(0));
 
-    AlterTableSetSerdePropsDesc desc = new AlterTableSetSerdePropsDesc(tableName, partitionSpec, props);
+    AlterTableUnsetSerdePropsDesc desc = new AlterTableUnsetSerdePropsDesc(tableName, partitionSpec, props);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SERDE_PROPS, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
