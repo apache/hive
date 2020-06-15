@@ -118,6 +118,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "state:" + state + "," +
       "type:" + type + "," +
       "enqueueTime:" + enqueueTime + "," +
+      "start:" + start + "," +
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
