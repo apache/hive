@@ -99,7 +99,6 @@
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
@@ -1168,18 +1167,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.datanucleus</groupId>
-          <artifactId>datanucleus-maven-plugin</artifactId>
-          <version>${datanucleus.maven.plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.datanucleus</groupId>
-              <artifactId>datanucleus-core</artifactId>
-              <version>${datanucleus-core.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
