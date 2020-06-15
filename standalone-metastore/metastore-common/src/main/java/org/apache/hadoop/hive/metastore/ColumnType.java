@@ -21,6 +21,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -133,16 +134,18 @@ public class ColumnType {
   );
 
   // This map defines the progression of up casts in numeric types.
-  public static final Map<String, Integer> NumericCastOrder = new HashMap<>();
+  public static final Map<String, Integer> NumericCastOrder;
 
   static {
-    NumericCastOrder.put(TINYINT_TYPE_NAME, 1);
-    NumericCastOrder.put(SMALLINT_TYPE_NAME, 2);
-    NumericCastOrder.put(INT_TYPE_NAME, 3);
-    NumericCastOrder.put(BIGINT_TYPE_NAME, 4);
-    NumericCastOrder.put(DECIMAL_TYPE_NAME, 5);
-    NumericCastOrder.put(FLOAT_TYPE_NAME, 6);
-    NumericCastOrder.put(DOUBLE_TYPE_NAME, 7);
+    Map<String, Integer> map = new HashMap<>();
+    map.put(TINYINT_TYPE_NAME, 1);
+    map.put(SMALLINT_TYPE_NAME, 2);
+    map.put(INT_TYPE_NAME, 3);
+    map.put(BIGINT_TYPE_NAME, 4);
+    map.put(DECIMAL_TYPE_NAME, 5);
+    map.put(FLOAT_TYPE_NAME, 6);
+    map.put(DOUBLE_TYPE_NAME, 7);
+    NumericCastOrder = Collections.unmodifiableMap(map);
   }
 
   private static final Set<String> decoratedTypeNames = new HashSet<>();
