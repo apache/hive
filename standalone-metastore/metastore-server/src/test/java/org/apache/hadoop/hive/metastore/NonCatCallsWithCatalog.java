@@ -93,6 +93,7 @@ public abstract class NonCatCallsWithCatalog {
   protected abstract IMetaStoreClient getClient() throws Exception;
   protected abstract String expectedCatalog();
   protected abstract String expectedBaseDir() throws MetaException;
+  protected abstract String expectedExtBaseDir() throws MetaException;
 
   @Before
   public void setUp() throws Exception {
@@ -218,7 +219,7 @@ public abstract class NonCatCallsWithCatalog {
     }
 
     Database fetched = client.getDatabase(dbNames[0]);
-    String expectedLocation = new File(expectedBaseDir(), dbNames[0] + ".db").toURI().toString();
+    String expectedLocation = new File(expectedExtBaseDir(), dbNames[0] + ".db").toURI().toString();
     Assert.assertEquals(expectedCatalog(), fetched.getCatalogName());
     Assert.assertEquals(expectedLocation, fetched.getLocationUri() + "/");
     String db0Location = new URI(fetched.getLocationUri()).getPath();
