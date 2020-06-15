@@ -20,12 +20,10 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Ignore;
 
 /**
  * Tests for retriable interface.
  */
-@Ignore("unstable HIVE-23677")
 public class RetryTest {
   @Test
   public void testRetrySuccess() {
@@ -118,7 +116,7 @@ public class RetryTest {
       Assert.fail();
     } catch (Exception e) {
       Assert.assertEquals(NullPointerException.class, e.getClass());
-      Assert.assertTrue(System.currentTimeMillis() - startTime > 180 * 1000);
+      Assert.assertTrue(System.currentTimeMillis() - startTime >= 180 * 1000);
     }
   }
 }
