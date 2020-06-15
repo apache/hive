@@ -116,10 +116,10 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
-    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
+    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
