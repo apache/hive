@@ -901,7 +901,7 @@ public class CachedStore implements RawStore, Configurable {
     }
 
     private void updateTableForeignKeys(RawStore rawStore, String catName, String dbName, String tblName) {
-      LOG.debug("CachedStore: updating cached primary keys objects for catalog: {}, database: {}, table: {}", catName,
+      LOG.debug("CachedStore: updating cached foreign keys objects for catalog: {}, database: {}, table: {}", catName,
               dbName, tblName);
       try {
         Deadline.startTimer("getForeignKeys");
@@ -909,10 +909,10 @@ public class CachedStore implements RawStore, Configurable {
         Deadline.stopTimer();
         sharedCache.refreshForeignKeysInCache(StringUtils.normalizeIdentifier(catName),
                 StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), fks);
-        LOG.debug("CachedStore: updated cached primary keys objects for catalog: {}, database: {}, table: {}", catName,
+        LOG.debug("CachedStore: updated cached foreign keys objects for catalog: {}, database: {}, table: {}", catName,
                 dbName, tblName);
       } catch (MetaException e) {
-        LOG.info("Updating CachedStore: unable to read primary keys of table: " + tblName, e);
+        LOG.info("Updating CachedStore: unable to read foreign keys of table: " + tblName, e);
       }
     }
 
@@ -2643,7 +2643,7 @@ public class CachedStore implements RawStore, Configurable {
 
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (tbl == null) {
-      // The table containing the primary keys is not yet loaded in cache
+      // The table containing the unique constraints is not yet loaded in cache
       return rawStore.getUniqueConstraints(catName, dbName, tblName);
     }
     List<SQLUniqueConstraint> keys = sharedCache.listCachedUniqueConstraint(catName, dbName, tblName);
@@ -2662,7 +2662,7 @@ public class CachedStore implements RawStore, Configurable {
 
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (tbl == null) {
-      // The table containing the primary keys is not yet loaded in cache
+      // The table containing the not null constraints is not yet loaded in cache
       return rawStore.getNotNullConstraints(catName, dbName, tblName);
     }
     List<SQLNotNullConstraint> keys = sharedCache.listCachedNotNullConstraints(catName, dbName, tblName);

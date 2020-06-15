@@ -53,7 +53,22 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -116,7 +131,7 @@ public class SharedCache {
 
   private enum MemberName {
     TABLE_COL_STATS_CACHE, PARTITION_CACHE, PARTITION_COL_STATS_CACHE, AGGR_COL_STATS_CACHE, PRIMARY_KEY_CACHE,
-    FOREIGN_KEY_CACHE, NOTNULL_CONSTRAINT, UNIQUE_CONSTRAINT
+    FOREIGN_KEY_CACHE, NOTNULL_CONSTRAINT_CACHE, UNIQUE_CONSTRAINT_CACHE
   }
 
   static {
@@ -284,13 +299,13 @@ public class SharedCache {
     private Map<String, SQLPrimaryKey> primaryKeyCache = new ConcurrentHashMap<>();
     private AtomicBoolean isPrimaryKeyCacheDirty = new AtomicBoolean(false);
 
-    private Map<String, SQLForeignKey> foreignKeyMap = new ConcurrentHashMap<>();
+    private Map<String, SQLForeignKey> foreignKeyCache = new ConcurrentHashMap<>();
     private AtomicBoolean isForeignKeyCacheDirty = new AtomicBoolean(false);
 
-    private Map<String, SQLNotNullConstraint> notNullConstraintMap = new ConcurrentHashMap<>();
+    private Map<String, SQLNotNullConstraint> notNullConstraintCache = new ConcurrentHashMap<>();
     private AtomicBoolean isNotNullConstraintCacheDirty = new AtomicBoolean(false);
 
-    private Map<String, SQLUniqueConstraint> uniqueConstraintMap = new ConcurrentHashMap<>();
+    private Map<String, SQLUniqueConstraint> uniqueConstraintCache = new ConcurrentHashMap<>();
     private AtomicBoolean isUniqueConstraintCacheDirty = new AtomicBoolean(false);
 
     TableWrapper(Table t, byte[] sdHash, String location, Map<String, String> parameters) {
@@ -435,14 +450,14 @@ public class SharedCache {
             foreignKeyCacheSize = size;
           }
           break;
-        case UNIQUE_CONSTRAINT:
+        case UNIQUE_CONSTRAINT_CACHE:
           if (mode == SizeMode.Delta) {
             uniqueConstraintCacheSize += size;
           } else {
             uniqueConstraintCacheSize = size;
           }
           break;
-        case NOTNULL_CONSTRAINT:
+        case NOTNULL_CONSTRAINT_CACHE:
           if (mode == SizeMode.Delta) {
             notNullConstraintCacheSize += size;
           } else {
@@ -521,12 +536,12 @@ public class SharedCache {
 
     boolean cacheUniqueConstraints(List<SQLUniqueConstraint> uniqueConstraints, boolean fromPrewarm) {
       return cacheConstraints(uniqueConstraints, SQLUniqueConstraint.class, fromPrewarm,
-              MemberName.UNIQUE_CONSTRAINT, this.isUniqueConstraintCacheDirty);
+              MemberName.UNIQUE_CONSTRAINT_CACHE, this.isUniqueConstraintCacheDirty);
     }
 
     boolean cacheNotNulConstraints(List<SQLNotNullConstraint> notNullConstraints, boolean fromPrewarm) {
       return cacheConstraints(notNullConstraints, SQLNotNullConstraint.class, fromPrewarm,
-              MemberName.NOTNULL_CONSTRAINT, this.isNotNullConstraintCacheDirty);
+              MemberName.NOTNULL_CONSTRAINT_CACHE, this.isNotNullConstraintCacheDirty);
     }
 
     // Common method to cache constraints
@@ -547,13 +562,13 @@ public class SharedCache {
             this.primaryKeyCache.put(key.getPk_name(), key);
           } else if (constraintClass == SQLForeignKey.class) {
             SQLForeignKey key = (SQLForeignKey) constraintsList.get(i);
-            this.foreignKeyMap.put(key.getFk_name(), key);
+            this.foreignKeyCache.put(key.getFk_name(), key);
           } else if (constraintClass == SQLNotNullConstraint.class) {
             SQLNotNullConstraint key = (SQLNotNullConstraint) constraintsList.get(i);
-            this.notNullConstraintMap.put(key.getNn_name(), key);
+            this.notNullConstraintCache.put(key.getNn_name(), key);
           } else if (constraintClass == SQLUniqueConstraint.class) {
             SQLUniqueConstraint key = (SQLUniqueConstraint) constraintsList.get(i);
-            this.uniqueConstraintMap.put(key.getUk_name(), key);
+            this.uniqueConstraintCache.put(key.getUk_name(), key);
           }
           size += getObjectSize(constraintClass, constraintsList.get(i));
         }
@@ -584,7 +599,7 @@ public class SharedCache {
       List<SQLForeignKey> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.foreignKeyMap.values());
+        keys = new ArrayList<>(this.foreignKeyCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
@@ -595,7 +610,7 @@ public class SharedCache {
       List<SQLUniqueConstraint> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.uniqueConstraintMap.values());
+        keys = new ArrayList<>(this.uniqueConstraintCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
@@ -606,7 +621,7 @@ public class SharedCache {
       List<SQLNotNullConstraint> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.notNullConstraintMap.values());
+        keys = new ArrayList<>(this.notNullConstraintCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
@@ -668,19 +683,19 @@ public class SharedCache {
           mn = MemberName.PRIMARY_KEY_CACHE;
           isPrimaryKeyCacheDirty.set(true);
           constraintClass = SQLPrimaryKey.class;
-        } else if (this.foreignKeyMap.containsKey(name)) {
-          constraint = this.foreignKeyMap.remove(name);
+        } else if (this.foreignKeyCache.containsKey(name)) {
+          constraint = this.foreignKeyCache.remove(name);
           mn = MemberName.FOREIGN_KEY_CACHE;
           isForeignKeyCacheDirty.set(true);
           constraintClass = SQLForeignKey.class;
-        } else if (this.notNullConstraintMap.containsKey(name)) {
-          constraint = this.notNullConstraintMap.remove(name);
-          mn = MemberName.NOTNULL_CONSTRAINT;
+        } else if (this.notNullConstraintCache.containsKey(name)) {
+          constraint = this.notNullConstraintCache.remove(name);
+          mn = MemberName.NOTNULL_CONSTRAINT_CACHE;
           isNotNullConstraintCacheDirty.set(true);
           constraintClass = SQLNotNullConstraint.class;
-        } else if (this.uniqueConstraintMap.containsKey(name)) {
-          constraint = this.uniqueConstraintMap.remove(name);
-          mn = MemberName.UNIQUE_CONSTRAINT;
+        } else if (this.uniqueConstraintCache.containsKey(name)) {
+          constraint = this.uniqueConstraintCache.remove(name);
+          mn = MemberName.UNIQUE_CONSTRAINT_CACHE;
           isUniqueConstraintCacheDirty.set(true);
           constraintClass = SQLUniqueConstraint.class;
         }
@@ -732,7 +747,7 @@ public class SharedCache {
           newKeys.put(key.getFk_name(), key);
           size += getObjectSize(SQLForeignKey.class, key);
         }
-        foreignKeyMap = newKeys;
+        foreignKeyCache = newKeys;
         updateMemberSize(MemberName.FOREIGN_KEY_CACHE, size, SizeMode.Snapshot);
       } finally {
         tableLock.writeLock().unlock();
@@ -753,8 +768,8 @@ public class SharedCache {
           newConstraints.put(constraint.getNn_name(), constraint);
           size += getObjectSize(SQLNotNullConstraint.class, constraint);
         }
-        notNullConstraintMap = newConstraints;
-        updateMemberSize(MemberName.NOTNULL_CONSTRAINT, size, SizeMode.Snapshot);
+        notNullConstraintCache = newConstraints;
+        updateMemberSize(MemberName.NOTNULL_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -774,8 +789,8 @@ public class SharedCache {
           newConstraints.put(constraint.getUk_name(), constraint);
           size += getObjectSize(SQLUniqueConstraint.class, constraint);
         }
-        uniqueConstraintMap = newConstraints;
-        updateMemberSize(MemberName.UNIQUE_CONSTRAINT, size, SizeMode.Snapshot);
+        uniqueConstraintCache = newConstraints;
+        updateMemberSize(MemberName.UNIQUE_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
       } finally {
         tableLock.writeLock().unlock();
       }
