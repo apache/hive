@@ -15767,7 +15767,7 @@ class CompactionInfoStruct:
    - highestWriteId
    - errorMessage
    - hasoldabort
-   - queueTime
+   - enqueueTime
   """
 
   thrift_spec = (
@@ -15786,10 +15786,10 @@ class CompactionInfoStruct:
     (12, TType.I64, 'highestWriteId', None, None, ), # 12
     (13, TType.STRING, 'errorMessage', None, None, ), # 13
     (14, TType.BOOL, 'hasoldabort', None, None, ), # 14
-    (15, TType.I64, 'queueTime', None, None, ), # 15
+    (15, TType.I64, 'enqueueTime', None, None, ), # 15
   )
 
-  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, queueTime=None,):
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None,):
     self.id = id
     self.dbname = dbname
     self.tablename = tablename
@@ -15804,7 +15804,7 @@ class CompactionInfoStruct:
     self.highestWriteId = highestWriteId
     self.errorMessage = errorMessage
     self.hasoldabort = hasoldabort
-    self.queueTime = queueTime
+    self.enqueueTime = enqueueTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15887,7 +15887,7 @@ class CompactionInfoStruct:
           iprot.skip(ftype)
       elif fid == 15:
         if ftype == TType.I64:
-          self.queueTime = iprot.readI64()
+          self.enqueueTime = iprot.readI64()
         else:
           iprot.skip(ftype)
       else:
@@ -15956,9 +15956,9 @@ class CompactionInfoStruct:
       oprot.writeFieldBegin('hasoldabort', TType.BOOL, 14)
       oprot.writeBool(self.hasoldabort)
       oprot.writeFieldEnd()
-    if self.queueTime is not None:
-      oprot.writeFieldBegin('queueTime', TType.I64, 15)
-      oprot.writeI64(self.queueTime)
+    if self.enqueueTime is not None:
+      oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
+      oprot.writeI64(self.enqueueTime)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -15991,7 +15991,7 @@ class CompactionInfoStruct:
     value = (value * 31) ^ hash(self.highestWriteId)
     value = (value * 31) ^ hash(self.errorMessage)
     value = (value * 31) ^ hash(self.hasoldabort)
-    value = (value * 31) ^ hash(self.queueTime)
+    value = (value * 31) ^ hash(self.enqueueTime)
     return value
 
   def __repr__(self):
@@ -16231,7 +16231,7 @@ class ShowCompactResponseElement:
    - hadoopJobId
    - id
    - errorMessage
-   - queueTime
+   - enqueueTime
   """
 
   thrift_spec = (
@@ -16250,10 +16250,10 @@ class ShowCompactResponseElement:
     (12, TType.STRING, 'hadoopJobId', None, "None", ), # 12
     (13, TType.I64, 'id', None, None, ), # 13
     (14, TType.STRING, 'errorMessage', None, None, ), # 14
-    (15, TType.I64, 'queueTime', None, None, ), # 15
+    (15, TType.I64, 'enqueueTime', None, None, ), # 15
   )
 
-  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None, errorMessage=None, queueTime=None,):
+  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None, errorMessage=None, enqueueTime=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partitionname = partitionname
@@ -16268,7 +16268,7 @@ class ShowCompactResponseElement:
     self.hadoopJobId = hadoopJobId
     self.id = id
     self.errorMessage = errorMessage
-    self.queueTime = queueTime
+    self.enqueueTime = enqueueTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16351,7 +16351,7 @@ class ShowCompactResponseElement:
           iprot.skip(ftype)
       elif fid == 15:
         if ftype == TType.I64:
-          self.queueTime = iprot.readI64()
+          self.enqueueTime = iprot.readI64()
         else:
           iprot.skip(ftype)
       else:
@@ -16420,9 +16420,9 @@ class ShowCompactResponseElement:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 14)
       oprot.writeString(self.errorMessage)
       oprot.writeFieldEnd()
-    if self.queueTime is not None:
-      oprot.writeFieldBegin('queueTime', TType.I64, 15)
-      oprot.writeI64(self.queueTime)
+    if self.enqueueTime is not None:
+      oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
+      oprot.writeI64(self.enqueueTime)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -16455,7 +16455,7 @@ class ShowCompactResponseElement:
     value = (value * 31) ^ hash(self.hadoopJobId)
     value = (value * 31) ^ hash(self.id)
     value = (value * 31) ^ hash(self.errorMessage)
-    value = (value * 31) ^ hash(self.queueTime)
+    value = (value * 31) ^ hash(self.enqueueTime)
     return value
 
   def __repr__(self):

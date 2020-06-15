@@ -81,7 +81,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
     os.write(Utilities.tabCode);
-    os.writeBytes("Queue Time");
+    os.writeBytes("Enqueue Time");
     os.write(Utilities.tabCode);
     os.writeBytes("Start Time");
     os.write(Utilities.tabCode);
@@ -114,7 +114,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes(wid == null ? NO_VAL : wid.split("-")[1]);
     os.write(Utilities.tabCode);
-    os.writeBytes(e.isSetQueueTime() ? Long.toString(e.getQueueTime()) : NO_VAL);
+    os.writeBytes(e.isSetEnqueueTime() ? Long.toString(e.getEnqueueTime()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);

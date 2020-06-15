@@ -591,7 +591,7 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
-  public void testQueueTimeEvenAfterFailed() throws Exception {
+  public void testEnqueueTimeEvenAfterFailed() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
     final String partitionName = "ds=today";
@@ -602,19 +602,19 @@ public class TestCompactionTxnHandler {
     long after = System.currentTimeMillis();
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
-    assertTrue(element.isSetQueueTime());
-    long queueTime = element.getQueueTime();
-    assertTrue(queueTime <= after);
-    assertTrue(queueTime >= before);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
 
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markFailed(ci);
 
-    checkQueueTime(queueTime);
+    checkEnqueueTime(enqueueTime);
   }
 
   @Test
-  public void testQueueTimeThroughLifeCycle() throws Exception {
+  public void testEnqueueTimeThroughLifeCycle() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
     final String partitionName = "ds=today";
@@ -625,28 +625,28 @@ public class TestCompactionTxnHandler {
     long after = System.currentTimeMillis();
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
-    assertTrue(element.isSetQueueTime());
-    long queueTime = element.getQueueTime();
-    assertTrue(queueTime <= after);
-    assertTrue(queueTime >= before);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
 
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     ci.runAs = "bob";
     txnHandler.updateCompactorState(ci, openTxn());
-    checkQueueTime(queueTime);
+    checkEnqueueTime(enqueueTime);
 
     txnHandler.markCompacted(ci);
-    checkQueueTime(queueTime);
+    checkEnqueueTime(enqueueTime);
 
     txnHandler.markCleaned(ci);
-    checkQueueTime(queueTime);
+    checkEnqueueTime(enqueueTime);
   }
 
-  private void checkQueueTime(long queueTime) throws MetaException {
+  private void checkEnqueueTime(long enqueueTime) throws MetaException {
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
-    assertTrue(element.isSetQueueTime());
-    assertEquals(queueTime, element.getQueueTime());
+    assertTrue(element.isSetEnqueueTime());
+    assertEquals(enqueueTime, element.getEnqueueTime());
   }
 
   @Before

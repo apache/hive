@@ -145,7 +145,7 @@ PREHOOK: query: show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
 POSTHOOK: type: SHOW COMPACTIONS
-CompactionId	Database	Table	Partition	Type	State	Hostname	Worker	Queue Time	Start Time	Duration(ms)	HadoopJobId	Error message
+CompactionId	Database	Table	Partition	Type	State	Hostname	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message
 1	default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 
 PREHOOK: query: drop table partitioned_acid_table
 PREHOOK: type: DROPTABLE

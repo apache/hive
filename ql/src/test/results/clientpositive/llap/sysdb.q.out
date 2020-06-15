@@ -454,12 +454,12 @@ columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
 compaction_queue	cq_database
+compaction_queue	cq_enqueue_time
 compaction_queue	cq_error_message
 #### A masked pattern was here ####
 compaction_queue	cq_highest_write_id
 compaction_queue	cq_id
 compaction_queue	cq_partition
-compaction_queue	cq_queue_time
 compaction_queue	cq_run_as
 compaction_queue	cq_start
 compaction_queue	cq_state
@@ -473,6 +473,8 @@ compactions	c_database
 compactions	c_database
 compactions	c_duration
 compactions	c_duration
+compactions	c_enqueue_time
+compactions	c_enqueue_time
 #### A masked pattern was here ####
 compactions	c_highest_write_id
 compactions	c_highest_write_id
@@ -482,8 +484,6 @@ compactions	c_id
 compactions	c_id
 compactions	c_partition
 compactions	c_partition
-compactions	c_queue_time
-compactions	c_queue_time
 compactions	c_run_as
 compactions	c_run_as
 compactions	c_start
@@ -498,12 +498,12 @@ compactions	c_worker_id
 compactions	c_worker_id
 completed_compactions	cc_database
 completed_compactions	cc_end
+completed_compactions	cc_enqueue_time
 completed_compactions	cc_error_message
 #### A masked pattern was here ####
 completed_compactions	cc_highest_write_id
 completed_compactions	cc_id
 completed_compactions	cc_partition
-completed_compactions	cc_queue_time
 completed_compactions	cc_run_as
 completed_compactions	cc_start
 completed_compactions	cc_state

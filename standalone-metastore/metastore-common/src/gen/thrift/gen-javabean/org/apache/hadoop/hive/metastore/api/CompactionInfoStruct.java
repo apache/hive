@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField HIGHEST_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("highestWriteId", org.apache.thrift.protocol.TType.I64, (short)12);
   private static final org.apache.thrift.protocol.TField ERROR_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorMessage", org.apache.thrift.protocol.TType.STRING, (short)13);
   private static final org.apache.thrift.protocol.TField HASOLDABORT_FIELD_DESC = new org.apache.thrift.protocol.TField("hasoldabort", org.apache.thrift.protocol.TType.BOOL, (short)14);
-  private static final org.apache.thrift.protocol.TField QUEUE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("queueTime", org.apache.thrift.protocol.TType.I64, (short)15);
+  private static final org.apache.thrift.protocol.TField ENQUEUE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("enqueueTime", org.apache.thrift.protocol.TType.I64, (short)15);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
   private long highestWriteId; // optional
   private String errorMessage; // optional
   private boolean hasoldabort; // optional
-  private long queueTime; // optional
+  private long enqueueTime; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -96,7 +96,7 @@ import org.slf4j.LoggerFactory;
     HIGHEST_WRITE_ID((short)12, "highestWriteId"),
     ERROR_MESSAGE((short)13, "errorMessage"),
     HASOLDABORT((short)14, "hasoldabort"),
-    QUEUE_TIME((short)15, "queueTime");
+    ENQUEUE_TIME((short)15, "enqueueTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -139,8 +139,8 @@ import org.slf4j.LoggerFactory;
           return ERROR_MESSAGE;
         case 14: // HASOLDABORT
           return HASOLDABORT;
-        case 15: // QUEUE_TIME
-          return QUEUE_TIME;
+        case 15: // ENQUEUE_TIME
+          return ENQUEUE_TIME;
         default:
           return null;
       }
@@ -186,9 +186,9 @@ import org.slf4j.LoggerFactory;
   private static final int __START_ISSET_ID = 2;
   private static final int __HIGHESTWRITEID_ISSET_ID = 3;
   private static final int __HASOLDABORT_ISSET_ID = 4;
-  private static final int __QUEUETIME_ISSET_ID = 5;
+  private static final int __ENQUEUETIME_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.QUEUE_TIME};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.ENQUEUE_TIME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -220,7 +220,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HASOLDABORT, new org.apache.thrift.meta_data.FieldMetaData("hasoldabort", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.QUEUE_TIME, new org.apache.thrift.meta_data.FieldMetaData("queueTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.ENQUEUE_TIME, new org.apache.thrift.meta_data.FieldMetaData("enqueueTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionInfoStruct.class, metaDataMap);
@@ -280,7 +280,7 @@ import org.slf4j.LoggerFactory;
       this.errorMessage = other.errorMessage;
     }
     this.hasoldabort = other.hasoldabort;
-    this.queueTime = other.queueTime;
+    this.enqueueTime = other.enqueueTime;
   }
 
   public CompactionInfoStruct deepCopy() {
@@ -308,8 +308,8 @@ import org.slf4j.LoggerFactory;
     this.errorMessage = null;
     setHasoldabortIsSet(false);
     this.hasoldabort = false;
-    setQueueTimeIsSet(false);
-    this.queueTime = 0;
+    setEnqueueTimeIsSet(false);
+    this.enqueueTime = 0;
   }
 
   public long getId() {
@@ -637,26 +637,26 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __HASOLDABORT_ISSET_ID, value);
   }
 
-  public long getQueueTime() {
-    return this.queueTime;
+  public long getEnqueueTime() {
+    return this.enqueueTime;
   }
 
-  public void setQueueTime(long queueTime) {
-    this.queueTime = queueTime;
-    setQueueTimeIsSet(true);
+  public void setEnqueueTime(long enqueueTime) {
+    this.enqueueTime = enqueueTime;
+    setEnqueueTimeIsSet(true);
   }
 
-  public void unsetQueueTime() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __QUEUETIME_ISSET_ID);
+  public void unsetEnqueueTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ENQUEUETIME_ISSET_ID);
   }
 
-  /** Returns true if field queueTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetQueueTime() {
-    return EncodingUtils.testBit(__isset_bitfield, __QUEUETIME_ISSET_ID);
+  /** Returns true if field enqueueTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetEnqueueTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __ENQUEUETIME_ISSET_ID);
   }
 
-  public void setQueueTimeIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __QUEUETIME_ISSET_ID, value);
+  public void setEnqueueTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ENQUEUETIME_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -773,11 +773,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case QUEUE_TIME:
+    case ENQUEUE_TIME:
       if (value == null) {
-        unsetQueueTime();
+        unsetEnqueueTime();
       } else {
-        setQueueTime((Long)value);
+        setEnqueueTime((Long)value);
       }
       break;
 
@@ -828,8 +828,8 @@ import org.slf4j.LoggerFactory;
     case HASOLDABORT:
       return isHasoldabort();
 
-    case QUEUE_TIME:
-      return getQueueTime();
+    case ENQUEUE_TIME:
+      return getEnqueueTime();
 
     }
     throw new IllegalStateException();
@@ -870,8 +870,8 @@ import org.slf4j.LoggerFactory;
       return isSetErrorMessage();
     case HASOLDABORT:
       return isSetHasoldabort();
-    case QUEUE_TIME:
-      return isSetQueueTime();
+    case ENQUEUE_TIME:
+      return isSetEnqueueTime();
     }
     throw new IllegalStateException();
   }
@@ -1015,12 +1015,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_queueTime = true && this.isSetQueueTime();
-    boolean that_present_queueTime = true && that.isSetQueueTime();
-    if (this_present_queueTime || that_present_queueTime) {
-      if (!(this_present_queueTime && that_present_queueTime))
+    boolean this_present_enqueueTime = true && this.isSetEnqueueTime();
+    boolean that_present_enqueueTime = true && that.isSetEnqueueTime();
+    if (this_present_enqueueTime || that_present_enqueueTime) {
+      if (!(this_present_enqueueTime && that_present_enqueueTime))
         return false;
-      if (this.queueTime != that.queueTime)
+      if (this.enqueueTime != that.enqueueTime)
         return false;
     }
 
@@ -1101,10 +1101,10 @@ import org.slf4j.LoggerFactory;
     if (present_hasoldabort)
       list.add(hasoldabort);
 
-    boolean present_queueTime = true && (isSetQueueTime());
-    list.add(present_queueTime);
-    if (present_queueTime)
-      list.add(queueTime);
+    boolean present_enqueueTime = true && (isSetEnqueueTime());
+    list.add(present_enqueueTime);
+    if (present_enqueueTime)
+      list.add(enqueueTime);
 
     return list.hashCode();
   }
@@ -1257,12 +1257,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetQueueTime()).compareTo(other.isSetQueueTime());
+    lastComparison = Boolean.valueOf(isSetEnqueueTime()).compareTo(other.isSetEnqueueTime());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQueueTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queueTime, other.queueTime);
+    if (isSetEnqueueTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.enqueueTime, other.enqueueTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1398,10 +1398,10 @@ import org.slf4j.LoggerFactory;
       sb.append(this.hasoldabort);
       first = false;
     }
-    if (isSetQueueTime()) {
+    if (isSetEnqueueTime()) {
       if (!first) sb.append(", ");
-      sb.append("queueTime:");
-      sb.append(this.queueTime);
+      sb.append("enqueueTime:");
+      sb.append(this.enqueueTime);
       first = false;
     }
     sb.append(")");
@@ -1577,10 +1577,10 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // QUEUE_TIME
+          case 15: // ENQUEUE_TIME
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.queueTime = iprot.readI64();
-              struct.setQueueTimeIsSet(true);
+              struct.enqueueTime = iprot.readI64();
+              struct.setEnqueueTimeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1678,9 +1678,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.hasoldabort);
         oprot.writeFieldEnd();
       }
-      if (struct.isSetQueueTime()) {
-        oprot.writeFieldBegin(QUEUE_TIME_FIELD_DESC);
-        oprot.writeI64(struct.queueTime);
+      if (struct.isSetEnqueueTime()) {
+        oprot.writeFieldBegin(ENQUEUE_TIME_FIELD_DESC);
+        oprot.writeI64(struct.enqueueTime);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -1735,7 +1735,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHasoldabort()) {
         optionals.set(9);
       }
-      if (struct.isSetQueueTime()) {
+      if (struct.isSetEnqueueTime()) {
         optionals.set(10);
       }
       oprot.writeBitSet(optionals, 11);
@@ -1769,8 +1769,8 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHasoldabort()) {
         oprot.writeBool(struct.hasoldabort);
       }
-      if (struct.isSetQueueTime()) {
-        oprot.writeI64(struct.queueTime);
+      if (struct.isSetEnqueueTime()) {
+        oprot.writeI64(struct.enqueueTime);
       }
     }
 
@@ -1827,8 +1827,8 @@ import org.slf4j.LoggerFactory;
         struct.setHasoldabortIsSet(true);
       }
       if (incoming.get(10)) {
-        struct.queueTime = iprot.readI64();
-        struct.setQueueTimeIsSet(true);
+        struct.enqueueTime = iprot.readI64();
+        struct.setEnqueueTimeIsSet(true);
       }
     }
   }
