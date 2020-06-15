@@ -559,6 +559,10 @@ public class WindowingSpec {
           this.windowType, start, end);
     }
 
+    public boolean isBothUnbounded() {
+      return start.isUnboundedAmount() && end.isUnboundedAmount();
+    }
+
   }
 
   public static enum Direction
@@ -644,6 +648,10 @@ public class WindowingSpec {
 
       // Valid range is "range/rows between 10 preceding and 2 preceding" for preceding case
       return this.direction == Direction.PRECEDING ? other.amt - amt : amt - other.amt;
+    }
+
+    public boolean isUnboundedAmount() {
+      return (amt == UNBOUNDED_AMOUNT);
     }
   }
 }

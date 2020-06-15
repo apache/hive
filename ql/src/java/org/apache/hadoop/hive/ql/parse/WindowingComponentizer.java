@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * breakup the original WindowingSpec into a set of WindowingSpecs.
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
  */
 public class WindowingComponentizer {
 
+  private static final Logger LOG = LoggerFactory.getLogger(WindowingComponentizer.class.getName());
   WindowingSpec originalSpec;
   LinkedHashMap<PartitioningSpec, WindowingSpec> groups;
 
@@ -83,8 +86,8 @@ public class WindowingComponentizer {
       WindowingSpec wSpec = entry.getValue();
       try {
         PTFTranslator t = new PTFTranslator();
-        t.translate(wSpec, semAly, hCfg, inputRR, unparseT);
         groups.remove(entry.getKey());
+        t.translate(wSpec, semAly, hCfg, inputRR, unparseT);
         return wSpec;
       } catch (SemanticException se) {
         originalException = se;

@@ -588,6 +588,19 @@ public class PTFInvocationSpec {
     {
       return String.format("%s %s %s", super.toString(), order, nullOrder);
     }
+
+    public void reverseOrder() {
+      if (this.order == Order.ASC) {
+        this.order = Order.DESC;
+      } else {
+        this.order = Order.ASC;
+      }
+      if (this.nullOrder == NullOrder.NULLS_FIRST) {
+        this.nullOrder = NullOrder.NULLS_LAST;
+      } else {
+        this.nullOrder = NullOrder.NULLS_FIRST;
+      }
+    }
   }
 
 }

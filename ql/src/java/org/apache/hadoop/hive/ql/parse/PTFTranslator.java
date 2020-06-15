@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFFirstValue;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
@@ -142,6 +143,19 @@ public class PTFTranslator {
       UnparseTranslator unparseT)
       throws SemanticException {
     init(semAly, hCfg, inputRR, unparseT);
+    for (int i = 0; i < wdwSpec.getWindowExpressions().size(); ++i) {
+      WindowExpressionSpec wes = wdwSpec.getWindowExpressions().get(i);
+      if (wes instanceof WindowFunctionSpec && ((WindowFunctionSpec) wes).getName().equals("last_value")
+        && ((WindowFunctionSpec) wes).windowSpec.getWindowFrame().isBothUnbounded()) {
+        ((WindowFunctionSpec) wes).setName("first_value");
+        OrderSpec orderSpec = ((WindowFunctionSpec) wes).windowSpec.getOrder();
+        if (orderSpec != null) {
+          for(int j = 0; j < orderSpec.expressions.size(); ++j) {
+            orderSpec.expressions.get(j).reverseOrder();
+          }
+        }
+      }
+    }
     windowingSpec = wdwSpec;
     ptfDesc = new PTFDesc();
     ptfDesc.setCfg(hCfg);
