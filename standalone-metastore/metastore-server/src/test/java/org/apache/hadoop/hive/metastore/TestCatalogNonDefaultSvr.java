@@ -65,4 +65,9 @@ public class TestCatalogNonDefaultSvr extends NonCatCallsWithCatalog {
   protected String expectedBaseDir() throws MetaException {
     return catLocation;
   }
+
+  @Override
+  protected String expectedExtBaseDir() throws MetaException {
+    return catLocation;
+  }
 }
