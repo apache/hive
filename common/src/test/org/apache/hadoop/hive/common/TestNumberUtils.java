@@ -47,4 +47,11 @@ public class TestNumberUtils {
     Assert.assertEquals(0, NumberUtils.getSecondInt(pair));
   }
 
+  @Test
+  public void testNegativePositiveLong() {
+    final long pair = NumberUtils.makeIntPair(1, -1);
+    Assert.assertEquals(1, NumberUtils.getFirstInt(pair));
+    Assert.assertEquals(-1, NumberUtils.getSecondInt(pair));
+  }
+
 }
