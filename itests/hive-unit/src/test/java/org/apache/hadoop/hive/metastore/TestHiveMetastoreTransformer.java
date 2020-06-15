@@ -1383,8 +1383,10 @@ public class TestHiveMetastoreTransformer {
       resetHMSClient();
 
       String dbName = "testdb";
+      String dbWithLocation = "dbWithLocation";
       try {
         silentDropDatabase(dbName);
+        silentDropDatabase(dbWithLocation);
       } catch (Exception e) {
         LOG.info("Drop database failed for " + dbName);
       }
@@ -1416,6 +1418,31 @@ public class TestHiveMetastoreTransformer {
       db = client.getDatabase(dbName);
       assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+
+      Warehouse wh = new Warehouse(conf);
+      String mgdPath = wh.getDefaultDatabasePath(dbWithLocation, false).toString();
+      new DatabaseBuilder()
+          .setName(dbWithLocation)
+          .setLocation(mgdPath)
+          .create(client, conf);
+
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      setHMSClient("TestGetDatabaseWithLocation", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbWithLocation);
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      assertNull("Database managed location expected to be null", db.getManagedLocationUri());
+      resetHMSClient();
+
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestGetDatabaseWithLocation#2", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbWithLocation);
+      assertTrue("Database location expected to be external warehouse", db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      assertEquals("Database managedLocationUri expected to be set to locationUri", mgdPath, db.getManagedLocationUri());
       resetHMSClient();
     } catch (Exception e) {
       System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
