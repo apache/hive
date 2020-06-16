@@ -81,8 +81,7 @@ public class OrcEncodedDataConsumer
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
     if (includes.isProbeDecodeEnabled()) {
-      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
-              this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
+      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled");
     }
   }
 

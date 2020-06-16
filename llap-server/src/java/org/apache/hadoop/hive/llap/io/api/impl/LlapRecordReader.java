@@ -203,7 +203,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
     if (this.probeDecodeEnabled) {
       includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
-      LOG.info("LlapRecordReader ProbeDecode is enabled");
+      LOG.info("LlapRecordReader ProbeDecode is enabled {} ", mapWork.getProbeDecodeContext());
     }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
