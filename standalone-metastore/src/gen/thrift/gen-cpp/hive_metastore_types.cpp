@@ -22784,6 +22784,11 @@ void CompactionInfoStruct::__set_hasoldabort(const bool val) {
 __isset.hasoldabort = true;
 }
 
+void CompactionInfoStruct::__set_enqueueTime(const int64_t val) {
+  this->enqueueTime = val;
+__isset.enqueueTime = true;
+}
+
 uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22923,6 +22928,14 @@ uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->enqueueTime);
+          this->__isset.enqueueTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -23014,6 +23027,11 @@ uint32_t CompactionInfoStruct::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeBool(this->hasoldabort);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.enqueueTime) {
+    xfer += oprot->writeFieldBegin("enqueueTime", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeI64(this->enqueueTime);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -23035,6 +23053,7 @@ void swap(CompactionInfoStruct &a, CompactionInfoStruct &b) {
   swap(a.highestWriteId, b.highestWriteId);
   swap(a.errorMessage, b.errorMessage);
   swap(a.hasoldabort, b.hasoldabort);
+  swap(a.enqueueTime, b.enqueueTime);
   swap(a.__isset, b.__isset);
 }
 
@@ -23053,6 +23072,7 @@ CompactionInfoStruct::CompactionInfoStruct(const CompactionInfoStruct& other879)
   highestWriteId = other879.highestWriteId;
   errorMessage = other879.errorMessage;
   hasoldabort = other879.hasoldabort;
+  enqueueTime = other879.enqueueTime;
   __isset = other879.__isset;
 }
 CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct& other880) {
@@ -23070,6 +23090,7 @@ CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct
   highestWriteId = other880.highestWriteId;
   errorMessage = other880.errorMessage;
   hasoldabort = other880.hasoldabort;
+  enqueueTime = other880.enqueueTime;
   __isset = other880.__isset;
   return *this;
 }
@@ -23090,6 +23111,7 @@ void CompactionInfoStruct::printTo(std::ostream& out) const {
   out << ", " << "highestWriteId="; (__isset.highestWriteId ? (out << to_string(highestWriteId)) : (out << "<null>"));
   out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ", " << "hasoldabort="; (__isset.hasoldabort ? (out << to_string(hasoldabort)) : (out << "<null>"));
+  out << ", " << "enqueueTime="; (__isset.enqueueTime ? (out << to_string(enqueueTime)) : (out << "<null>"));
   out << ")";
 }
 
@@ -23446,6 +23468,11 @@ void ShowCompactResponseElement::__set_errorMessage(const std::string& val) {
 __isset.errorMessage = true;
 }
 
+void ShowCompactResponseElement::__set_enqueueTime(const int64_t val) {
+  this->enqueueTime = val;
+__isset.enqueueTime = true;
+}
+
 uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -23585,6 +23612,14 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->enqueueTime);
+          this->__isset.enqueueTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -23676,6 +23711,11 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeString(this->errorMessage);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.enqueueTime) {
+    xfer += oprot->writeFieldBegin("enqueueTime", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeI64(this->enqueueTime);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -23697,6 +23737,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.hadoopJobId, b.hadoopJobId);
   swap(a.id, b.id);
   swap(a.errorMessage, b.errorMessage);
+  swap(a.enqueueTime, b.enqueueTime);
   swap(a.__isset, b.__isset);
 }
 
@@ -23715,6 +23756,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   hadoopJobId = other888.hadoopJobId;
   id = other888.id;
   errorMessage = other888.errorMessage;
+  enqueueTime = other888.enqueueTime;
   __isset = other888.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other889) {
@@ -23732,6 +23774,7 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   hadoopJobId = other889.hadoopJobId;
   id = other889.id;
   errorMessage = other889.errorMessage;
+  enqueueTime = other889.enqueueTime;
   __isset = other889.__isset;
   return *this;
 }
@@ -23752,6 +23795,7 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "hadoopJobId="; (__isset.hadoopJobId ? (out << to_string(hadoopJobId)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
+  out << ", " << "enqueueTime="; (__isset.enqueueTime ? (out << to_string(enqueueTime)) : (out << "<null>"));
   out << ")";
 }
 

@@ -178,6 +178,7 @@ public final class TxnDbUtil {
           " CQ_TYPE char(1) NOT NULL," +
           " CQ_TBLPROPERTIES varchar(2048)," +
           " CQ_WORKER_ID varchar(128)," +
+          " CQ_ENQUEUE_TIME bigint, " +
           " CQ_START bigint," +
           " CQ_RUN_AS varchar(128)," +
           " CQ_HIGHEST_WRITE_ID bigint," +
@@ -200,6 +201,7 @@ public final class TxnDbUtil {
           " CC_TYPE char(1) NOT NULL," +
           " CC_TBLPROPERTIES varchar(2048)," +
           " CC_WORKER_ID varchar(128)," +
+          " CC_ENQUEUE_TIME bigint," +
           " CC_START bigint," +
           " CC_END bigint," +
           " CC_RUN_AS varchar(128)," +
