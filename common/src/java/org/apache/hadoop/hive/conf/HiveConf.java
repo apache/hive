@@ -2521,6 +2521,13 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_NTILE_SKETCH("hive.optimize.bi.rewrite.ntile.sketch", "kll",
         new StringSet("kll"),
         "Defines which sketch type to use when rewriting NTILE expressions. Options: kll"),
+    //FIXME
+    HIVE_OPTIMIZE_BI_REWRITE_RANK_ENABLED("hive.optimize.bi.rewrite.rank.enabled",
+        true,
+        "Enables to rewrite NTILE(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_RANK_SKETCH("hive.optimize.bi.rewrite.rank.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting NTILE expressions. Options: kll"),
 
 
     // Statistics

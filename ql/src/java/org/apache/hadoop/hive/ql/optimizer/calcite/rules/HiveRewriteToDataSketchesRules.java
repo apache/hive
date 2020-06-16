@@ -705,4 +705,70 @@ public final class HiveRewriteToDataSketchesRules {
       }
     }
   }
+
+  /**
+   * Rewrites {@code rank() over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, RANK() OVER (ORDER BY id) FROM sketch_input;
+   *   FIXME
+   *     ⇒ SELECT id, CASE
+   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
+   *                      THEN 1
+   *                    ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
+   *                  END
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static class RankRewrite extends AbstractKllRewrite {
+
+    public RankRewrite(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+      return new VB(sketchType, call.builder());
+    }
+
+    // FIXME rename?
+    private static class VB extends VB1 {
+
+      protected VB(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
+
+      @Override
+      boolean isApplicable(RexOver over) {
+        SqlAggFunction aggOp = over.getAggOperator();
+        RexWindow window = over.getWindow();
+        if (aggOp.getName().equalsIgnoreCase("rank") && window.orderKeys.size() == 1
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
+          return true;
+        }
+        return false;
+      }
+
+      @Override
+      protected RexNode evaluateCdfValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        RexNode ret = projRex;
+        RexNode literal1 = relBuilder.literal(1.0);
+
+        SqlOperator getNOperator = getSqlOperator(DataSketchesFunctions.GET_N);
+        RexNode n = rexBuilder.makeCall(getNOperator, ImmutableList.of(sketchInputRef));
+
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, n);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, ret, literal1);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(ret, literal1), literal1, ret);
+        return ret;
+      }
+
+      private RexNode lt(RexNode op1, RexNode op2) {
+        return rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, op1, op2);
+      }
+    }
+  }
 }
