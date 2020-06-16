@@ -9,8 +9,8 @@ MSCK TABLE repairtable_n5;
 
 show partitions repairtable_n5;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n5/p1=c/p2=a/p3=b;
-dfs -touchz ${system:test.warehouse.dir}/repairtable_n5/p1=c/p2=a/p3=b/datafile;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n5/p1=c/p2=a/p3=b;
+dfs -touchz ${system:test.local.warehouse.dir}/repairtable_n5/p1=c/p2=a/p3=b/datafile;
 
 MSCK TABLE default.repairtable_n5;
 
@@ -26,8 +26,8 @@ show partitions repairtable_n5;
 
 set hive.mapred.mode=strict;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n5/p1=e/p2=f/p3=g;
-dfs -touchz ${system:test.warehouse.dir}/repairtable_n5/p1=e/p2=f/p3=g/datafile;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n5/p1=e/p2=f/p3=g;
+dfs -touchz ${system:test.local.warehouse.dir}/repairtable_n5/p1=e/p2=f/p3=g/datafile;
 
 MSCK REPAIR TABLE default.repairtable_n5;
 
