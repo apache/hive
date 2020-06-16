@@ -762,7 +762,7 @@ public final class HiveRewriteToDataSketchesRules {
         ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, n);
         ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);
         ret = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, ret, literal1);
-        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(ret, literal1), literal1, ret);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(n, ret), n, ret);
         return ret;
       }
 
