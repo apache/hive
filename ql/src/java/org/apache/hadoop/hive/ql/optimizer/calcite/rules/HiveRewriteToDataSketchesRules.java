@@ -502,18 +502,30 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static abstract class AbstractHistogramRewrite extends WindowingToProjectAggregateJoinProject {
+  public static abstract class AbstractRankBasedRewriteRule extends WindowingToProjectAggregateJoinProject {
 
-    public AbstractHistogramRewrite(String sketchType) {
+    public AbstractRankBasedRewriteRule(String sketchType) {
       super(sketchType);
     }
 
-    // FIXME RENAME
-    protected static abstract class VB1 extends VbuilderPAP {
+    protected static abstract class AbstractRankBasedRewriteBuilder extends VbuilderPAP {
 
-      protected VB1(String sketchClass, RelBuilder relBuilder) {
+      protected AbstractRankBasedRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
       }
+
+      @Override
+      final boolean isApplicable(RexOver over) {
+        RexWindow window = over.getWindow();
+        if (window.orderKeys.size() == 1
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
+            && isApplicable1(over)) {
+          return true;
+        }
+        return false;
+      }
+
+      protected abstract boolean isApplicable1(RexOver over);
 
       @Override
       final RexNode rewrite(RexOver over) {
@@ -586,32 +598,27 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class CumeDistRewrite extends AbstractHistogramRewrite {
+  public static class CumeDistRewriteRule extends AbstractRankBasedRewriteRule {
 
-    public CumeDistRewrite(String sketchType) {
+    public CumeDistRewriteRule(String sketchType) {
       super(sketchType);
     }
 
     @Override
     protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
-      return new VB(sketchType, call.builder());
+      return new CumeDistRewriteBuilder(sketchType, call.builder());
     }
 
-    private static class VB extends VB1 {
+    private static class CumeDistRewriteBuilder extends AbstractRankBasedRewriteBuilder {
 
-      protected VB(String sketchClass, RelBuilder relBuilder) {
+      protected CumeDistRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
       }
 
       @Override
-      boolean isApplicable(RexOver over) {
+      protected boolean isApplicable1(RexOver over) {
         SqlAggFunction aggOp = over.getAggOperator();
-        RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
-            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
-          return true;
-        }
-        return false;
+        return aggOp.getName().equalsIgnoreCase("cume_dist");
       }
 
       @Override
@@ -636,7 +643,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class NTileRewrite extends AbstractHistogramRewrite {
+  public static class NTileRewrite extends AbstractRankBasedRewriteRule {
 
     public NTileRewrite(String sketchType) {
       super(sketchType);
@@ -644,25 +651,19 @@ public final class HiveRewriteToDataSketchesRules {
 
     @Override
     protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
-      return new VB(sketchType, call.builder());
+      return new NTileRewriteBuilder(sketchType, call.builder());
     }
 
-    // FIXME rename?
-    private static class VB extends VB1 {
+    private static class NTileRewriteBuilder extends AbstractRankBasedRewriteBuilder {
 
-      protected VB(String sketchClass, RelBuilder relBuilder) {
+      protected NTileRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
       }
 
       @Override
-      boolean isApplicable(RexOver over) {
+      protected boolean isApplicable1(RexOver over) {
         SqlAggFunction aggOp = over.getAggOperator();
-        RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("ntile") && window.orderKeys.size() == 1
-            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
-          return true;
-        }
-        return false;
+        return aggOp.getName().equalsIgnoreCase("ntile");
       }
 
       @Override
@@ -699,33 +700,27 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class RankRewrite extends AbstractHistogramRewrite {
+  public static class RankRewriteRule extends AbstractRankBasedRewriteRule {
 
-    public RankRewrite(String sketchType) {
+    public RankRewriteRule(String sketchType) {
       super(sketchType);
     }
 
     @Override
     protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
-      return new VB(sketchType, call.builder());
+      return new RankRewriteBuilder(sketchType, call.builder());
     }
 
-    // FIXME rename?
-    private static class VB extends VB1 {
+    private static class RankRewriteBuilder extends AbstractRankBasedRewriteBuilder {
 
-      protected VB(String sketchClass, RelBuilder relBuilder) {
+      protected RankRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
       }
 
       @Override
-      boolean isApplicable(RexOver over) {
+      protected boolean isApplicable1(RexOver over) {
         SqlAggFunction aggOp = over.getAggOperator();
-        RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("rank") && window.orderKeys.size() == 1
-            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
-          return true;
-        }
-        return false;
+        return aggOp.getName().equalsIgnoreCase("rank");
       }
 
       @Override
