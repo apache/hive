@@ -19,6 +19,7 @@
 
 // 2.9G w/o dist
 // 4.9G w/ dist
+// 3.9G w/ perf
 
 properties([
     // max 5 build/branch/day
@@ -104,9 +105,9 @@ def hdbPodTemplate(closure) {
         alwaysPullImage: true,
         privileged: true,
     ),
-/*  ],
+  ],
   volumes: [
-    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),*/
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
   ], yaml:'''
 spec:
   securityContext:
