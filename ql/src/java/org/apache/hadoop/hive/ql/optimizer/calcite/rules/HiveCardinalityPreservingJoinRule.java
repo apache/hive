@@ -48,24 +48,26 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
     }
 
     JaninoRelMetadataProvider original = RelMetadataQuery.THREAD_PROVIDERS.get();
-    RelMetadataQuery.THREAD_PROVIDERS.set(getJaninoRelMetadataProvider());
-    RelMetadataQuery metadataQuery = RelMetadataQuery.instance();
+    try {
+      RelMetadataQuery.THREAD_PROVIDERS.set(getJaninoRelMetadataProvider());
+      RelMetadataQuery metadataQuery = RelMetadataQuery.instance();
 
-    RelOptCost optimizedCost = metadataQuery.getCumulativeCost(optimized);
-    RelOptCost originalCost = metadataQuery.getCumulativeCost(node);
-    originalCost = originalCost.multiplyBy(factor);
-    LOG.debug("Original plan cost {} Optimized plan cost {}", originalCost, optimizedCost);
-    if (optimizedCost.isLt(originalCost)) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan after:\n" + RelOptUtil.toString(optimized));
+      RelOptCost optimizedCost = metadataQuery.getCumulativeCost(optimized);
+      RelOptCost originalCost = metadataQuery.getCumulativeCost(node);
+      originalCost = originalCost.multiplyBy(factor);
+      LOG.debug("Original plan cost {} vs Optimized plan cost {}", originalCost, optimizedCost);
+      if (optimizedCost.isLt(originalCost)) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Plan after:\n" + RelOptUtil.toString(optimized));
+        }
+        return optimized;
       }
 
-      RelMetadataQuery.THREAD_PROVIDERS.set(original);
-      return optimized;
+      return node;
     }
-
-    RelMetadataQuery.THREAD_PROVIDERS.set(original);
-    return node;
+    finally {
+      RelMetadataQuery.THREAD_PROVIDERS.set(original);
+    }
   }
 
   private JaninoRelMetadataProvider getJaninoRelMetadataProvider() {
