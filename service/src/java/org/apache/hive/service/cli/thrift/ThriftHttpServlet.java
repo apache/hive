@@ -40,6 +40,8 @@ import javax.ws.rs.core.NewCookie;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
@@ -609,7 +611,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
     // Each http request must have an Authorization header
-    if (authHeader == null || authHeader.isEmpty()) {
+    if (StringUtils.isBlank(authHeader)) {
       throw new HttpEmptyAuthenticationException("Authorization header received " +
           "from the client is empty.");
     }
