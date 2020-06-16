@@ -749,14 +749,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           return;
         }
 
-//        SchemaEvolution schemaEvolution = this.createSchemaEvolution(readerSchema);
-        // Get the colIds use for static filter (and thus rowFiltering)
-        int[] filterColumnIds = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
-                ConvertAstToSearchArg.create(
-                        jobConf,
-                        (ExprNodeGenericFuncDesc) probeDecodeContext.getStaticFilterExpr()).getLeaves(),
-                schemaEvolution);
-
         // Get all included ColIds -> ColNames (needed by the generated filterExpression below)
         // Make sure that they are in the same order as the are going to be read!
         List<String> allIncludedColNames = Arrays.asList(new String[filePhysicalColumnIds.size()]);
@@ -764,13 +756,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           allIncludedColNames.set(filePhysicalColumnIds.indexOf(includedColidx),
                   readerSchema.getFieldNames().get(includedColidx));
         }
-
-//        for (int i =0; i < schemaEvolution.getFileSchema().getMaximumId(); i++) {
-//          TypeDescription col  = schemaEvolution.getFileSchema().getChildren().get(i);
-//          if (schemaEvolution.getFileIncluded()[col.getId()]) {
-//            allIncludedColNames.add(schemaEvolution.getFileSchema().getFieldNames().get(i));
-//          }
-//        }
 
         this.probeStaticRowFilter = ORCRowFilter.getRowFilter(probeDecodeContext.getStaticFilterExpr(),
                 allIncludedColNames, HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
@@ -780,12 +765,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         // Create a boolean index for RowFilter columns (indexed by ColId) -- take into account ACID format!
         int colIdAcidAddition = acidStructColumnId == null ? 0 : acidStructColumnId + 1;
         this.probeStaticColidIndex = new boolean[schemaEvolution.getFileSchema().getMaximumId() + colIdAcidAddition + 1];
-        for (int i : filterColumnIds) {
-          if (i > 0) {
-            this.probeStaticColidIndex[colIdAcidAddition + i] = true;
-          }
+        for (String filterCol : filterColNames) {
+          this.probeStaticColidIndex[allIncludedColNames.indexOf(filterCol)] = true;
         }
-        LOG.info("ProbeDecode RowFilter IncludedCols: {}, filterColNames {} FilterColidIndex {}",
+        LOG.info("ProbeDecode RowFilter IncludedCols: {}, filterColNames {} FilterColReaderIndex {}",
                 allIncludedColNames, filterColNames, DebugUtils.toString(probeStaticColidIndex));
       }
     }

@@ -89,7 +89,8 @@ public class ORCRowFilter {
         try {
             VectorizationContext vc = new VectorizationContext("row_filter", columns);
             VectorExpression currFilterExpr = vc.getVectorExpression(filterExpr, VectorExpressionDescriptor.Mode.FILTER);
-            LOG.info("ProbeDecode converted {} filter to {} VectorExpression", filterExpr, currFilterExpr);
+            LOG.info("ProbeDecode converted {} filter to {} VectorExpression useDecimal64 {}",
+                    filterExpr, currFilterExpr, useDecimal64ColumnVectors);
             createdFilter = new ORCRowFilter(currFilterExpr, vc, useDecimal64ColumnVectors);
         } catch (HiveException e) {
             LOG.error("ProbeDecode could not covert filter {}, {}",filterExpr, e.getMessage());
