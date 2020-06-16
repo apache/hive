@@ -525,8 +525,6 @@ public final class HiveRewriteToDataSketchesRules {
         return false;
       }
 
-      protected abstract boolean isApplicable1(RexOver over);
-
       @Override
       final RexNode rewrite(RexOver over) {
         RexWindow w = over.getWindow();
@@ -576,13 +574,29 @@ public final class HiveRewriteToDataSketchesRules {
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = evaluateCdfValue(projRex, over, sketchInputRef);
+        projRex = evaluateRankValue(projRex, over, sketchInputRef);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
       }
 
-      protected abstract RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef);
+      /**
+       * The concreate rewrite should filter supported expressions.
+       *
+       * @param over the windowing expression in question
+       * @return
+       */
+      protected abstract boolean isApplicable1(RexOver over);
+
+      /**
+       * The concreate rewrite should transform the rank value into the desired range/type/etc.
+       *
+       * @param rank the current rank value is in the range of [0,1]
+       * @param over the windowing expression
+       * @param sketchInputRef the sketch is accessible thru this fields if needed
+       * @return
+       */
+      protected abstract RexNode evaluateRankValue(RexNode rank, RexOver over, RexInputRef sketchInputRef);
 
     }
   }
@@ -622,7 +636,7 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      protected RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+      protected RexNode evaluateRankValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
         return projRex;
       }
     }
@@ -667,7 +681,7 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      protected RexNode evaluateCdfValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+      protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
         RexNode ntileOperand = over.getOperands().get(0);
         RexNode ret = projRex;
         RexNode literal1 = relBuilder.literal(1.0);
@@ -724,7 +738,7 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      protected RexNode evaluateCdfValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+      protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
         RexNode ret = projRex;
         RexNode literal1 = relBuilder.literal(1.0);
 
