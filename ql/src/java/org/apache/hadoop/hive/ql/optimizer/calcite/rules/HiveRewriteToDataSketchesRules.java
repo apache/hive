@@ -510,6 +510,85 @@ public final class HiveRewriteToDataSketchesRules {
   }
 
   /**
+   * Provides a generic way to rewrite function into using an estimation based on CDF.
+   *
+   *  There are a few methods which could be supported this way: NTILE, CUME_DIST, RANK
+   *
+   *  For example:
+   *  <pre>
+   *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static abstract class AbstractKllRewrite extends WindowingToProjectAggregateJoinProject {
+
+    public AbstractKllRewrite(String sketchType) {
+      super(sketchType);
+    }
+
+    protected static abstract class VB1 extends VbuilderPAP {
+
+      protected VB1(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
+
+      @Override
+      final RexNode rewrite(RexOver over) {
+        RexWindow w = over.getWindow();
+        RexFieldCollation orderKey = w.orderKeys.get(0);
+        // we don't really support nulls in aggregate/etc...they are actually ignored
+        // so some hack will be needed for NULLs anyway..
+        ImmutableList<RexNode> partitionKeys = w.partitionKeys;
+
+        relBuilder.push(relBuilder.peek());
+        // the CDF function utilizes the '<' operator;
+        // negating the input will mirror the values on the x axis
+        // by using 1-CDF(-x) we could get a <= operator
+        RexNode key = orderKey.getKey();
+        key = rexBuilder.makeCast(getFloatType(), key);
+
+        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
+            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH), /* distinct */ false,
+            /* approximate */ false, /* ignoreNulls */ true, null, ImmutableList.of(), null, ImmutableList.of(key));
+
+        relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
+
+        List<RexNode> joinConditions;
+        joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
+          RexNode f = relBuilder.field(2, 1, o.i);
+          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, o.e, f);
+        }).collect(Collectors.toList());
+        relBuilder.join(JoinRelType.INNER, joinConditions);
+
+        int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
+        RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
+
+        // NULLs will be replaced by this value - to be before / after the other values
+        // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
+        final RexNode nullReplacement =
+            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+
+        RexNode projRex = key;
+        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
+        projRex = rexBuilder.makeCast(getFloatType(), projRex);
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
+        projRex = makeItemCall(projRex, relBuilder.literal(0));
+        projRex = evaluateCdfValue(projRex, over, sketchInputRef);
+        projRex = rexBuilder.makeCast(over.getType(), projRex);
+
+        return projRex;
+      }
+
+      protected abstract RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef);
+
+    }
+  }
+
+  /**
    * Rewrites {@code cume_dist() over (order by id)}.
    *
    *  <pre>
@@ -520,7 +599,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
+  public static class CumeDistRewrite extends AbstractKllRewrite {
 
     public CumeDistRewrite(String sketchType) {
       super(sketchType);
@@ -531,7 +610,7 @@ public final class HiveRewriteToDataSketchesRules {
       return new VB(sketchType, call.builder());
     }
 
-    private static class VB extends VbuilderPAP {
+    private static class VB extends VB1 {
 
       protected VB(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
@@ -549,55 +628,7 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      RexNode rewrite(RexOver over) {
-        RexWindow w = over.getWindow();
-        RexFieldCollation orderKey = w.orderKeys.get(0);
-        // we don't really support nulls in aggregate/etc...they are actually ignored
-        // so some hack will be needed for NULLs anyway..
-        ImmutableList<RexNode> partitionKeys = w.partitionKeys;
-
-        relBuilder.push(relBuilder.peek());
-        // the CDF function utilizes the '<' operator;
-        // negating the input will mirror the values on the x axis
-        // by using 1-CDF(-x) we could get a <= operator
-        RexNode key = orderKey.getKey();
-        key = rexBuilder.makeCast(getFloatType(), key);
-
-        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
-            /* distinct */ false,
-            /* approximate */ false,
-            /* ignoreNulls */ true,
-            null,
-            ImmutableList.of(),
-            null,
-            ImmutableList.of(key));
-
-        relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
-
-        List<RexNode> joinConditions;
-        joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
-          RexNode f = relBuilder.field(2, 1, o.i);
-          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, o.e, f);
-        }).collect(Collectors.toList());
-        relBuilder.join(JoinRelType.INNER, joinConditions);
-
-        int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
-        RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-
-        // NULLs will be replaced by this value - to be before / after the other values
-        // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
-        final RexNode nullReplacement =
-            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
-
-        RexNode projRex = key;
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
-        projRex = rexBuilder.makeCast(getFloatType(), projRex);
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = makeItemCall(projRex, relBuilder.literal(0));
-        projRex = rexBuilder.makeCast(over.getType(), projRex);
-
+      protected RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
         return projRex;
       }
     }
@@ -614,7 +645,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class NTileRewrite extends WindowingToProjectAggregateJoinProject {
+  public static class NTileRewrite extends AbstractKllRewrite {
 
     public NTileRewrite(String sketchType) {
       super(sketchType);
@@ -625,7 +656,7 @@ public final class HiveRewriteToDataSketchesRules {
       return new VB(sketchType, call.builder());
     }
 
-    private static class VB extends VbuilderPAP {
+    private static class VB extends VB1 {
 
       protected VB(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
@@ -643,60 +674,10 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      RexNode rewrite(RexOver over) {
-        RexWindow w = over.getWindow();
-        RexFieldCollation orderKey = w.orderKeys.get(0);
-        // we don't really support nulls in aggregate/etc...they are actually ignored
-        // so some hack will be needed for NULLs anyway..
-        ImmutableList<RexNode> partitionKeys = w.partitionKeys;
-
-        relBuilder.push(relBuilder.peek());
-        // the CDF function utilizes the '<' operator;
-        // negating the input will mirror the values on the x axis
-        // by using 1-CDF(-x) we could get a <= operator
-        RexNode key = orderKey.getKey();
-        key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
-        key = rexBuilder.makeCast(getFloatType(), key);
-
-        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
-            /* distinct */ false,
-            /* approximate */ false,
-            /* ignoreNulls */ true,
-            null,
-            ImmutableList.of(),
-            null,
-            ImmutableList.of(key));
-
-        relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
-
-        List<RexNode> joinConditions;
-        joinConditions = Ord.zip(partitionKeys).stream().map(o -> {
-          RexNode f = relBuilder.field(2, 1, o.i);
-          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, o.e, f);
-        }).collect(Collectors.toList());
-        relBuilder.join(JoinRelType.INNER, joinConditions);
-
-        int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
-        RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
-
-        // NULLs will be replaced by this value - to be before / after the other values
-        // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
-        final RexNode nullReplacement =
-            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
-
-        // long story short: CAST(1.0f-CDF(CAST(COALESCE(-X, nullReplacement) AS FLOAT))[0] AS targetType)
-        RexNode projRex = key;
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
-        projRex = rexBuilder.makeCast(getFloatType(), projRex);
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = makeItemCall(projRex, relBuilder.literal(0));
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
-        projRex = rexBuilder.makeCast(over.getType(), projRex);
-
+      protected RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
         return projRex;
       }
+
     }
   }
 }
