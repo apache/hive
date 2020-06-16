@@ -417,7 +417,6 @@ public final class HiveRewriteToDataSketchesRules {
 
     protected abstract VbuilderPAP buildProcessor(RelOptRuleCall call);
 
-    // FIXME RENAME?
     protected static abstract class VbuilderPAP {
       private final String sketchClass;
       protected final RelBuilder relBuilder;
@@ -503,9 +502,9 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static abstract class AbstractKllRewrite extends WindowingToProjectAggregateJoinProject {
+  public static abstract class AbstractHistogramRewrite extends WindowingToProjectAggregateJoinProject {
 
-    public AbstractKllRewrite(String sketchType) {
+    public AbstractHistogramRewrite(String sketchType) {
       super(sketchType);
     }
 
@@ -587,7 +586,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class CumeDistRewrite extends AbstractKllRewrite {
+  public static class CumeDistRewrite extends AbstractHistogramRewrite {
 
     public CumeDistRewrite(String sketchType) {
       super(sketchType);
@@ -637,7 +636,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class NTileRewrite extends AbstractKllRewrite {
+  public static class NTileRewrite extends AbstractHistogramRewrite {
 
     public NTileRewrite(String sketchType) {
       super(sketchType);
@@ -700,7 +699,7 @@ public final class HiveRewriteToDataSketchesRules {
    *       ) q;
    *  </pre>
    */
-  public static class RankRewrite extends AbstractKllRewrite {
+  public static class RankRewrite extends AbstractHistogramRewrite {
 
     public RankRewrite(String sketchType) {
       super(sketchType);
