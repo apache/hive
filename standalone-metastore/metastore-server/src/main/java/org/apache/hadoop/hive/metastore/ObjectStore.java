@@ -13104,6 +13104,7 @@ public class ObjectStore implements RawStore, Configurable {
           mReplicationMetrics.setDumpExecutionId(replicationMetric.getDumpExecutionId());
           mReplicationMetrics.setScheduledExecutionId(replicationMetric.getScheduledExecutionId());
           mReplicationMetrics.setPolicy(replicationMetric.getPolicy());
+          mReplicationMetrics.setStartTime((int) (System.currentTimeMillis()/1000));
         }
         if (!StringUtils.isEmpty(replicationMetric.getMetadata())) {
           mReplicationMetrics.setMetadata(replicationMetric.getMetadata());
@@ -13139,6 +13140,28 @@ public class ObjectStore implements RawStore, Configurable {
       if (!committed) {
         rollbackTransaction();
       }
+    }
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    if (maxRetainSecs < 0) {
+      LOG.debug("replication metrics deletion is disabled");
+      return 0;
+    }
+    boolean committed = false;
+    Query q = null;
+    try {
+      openTransaction();
+      int maxCreateTime = (int) ((System.currentTimeMillis() / 1000) - maxRetainSecs);
+      q = pm.newQuery(MReplicationMetrics.class);
+      q.setFilter("startTime <= maxCreateTime");
+      q.declareParameters("long maxCreateTime");
+      long deleted = q.deletePersistentAll(maxCreateTime);
+      committed = commitTransaction();
+      return (int) deleted;
+    } finally {
+      rollbackAndCleanup(committed, q);
     }
   }
 
