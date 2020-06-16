@@ -418,6 +418,7 @@ public final class HiveRewriteToDataSketchesRules {
 
     protected abstract VbuilderPAP buildProcessor(RelOptRuleCall call);
 
+    // FIXME RENAME?
     protected static abstract class VbuilderPAP {
       private final String sketchClass;
       protected final RelBuilder relBuilder;
@@ -529,6 +530,7 @@ public final class HiveRewriteToDataSketchesRules {
       super(sketchType);
     }
 
+    // FIXME RENAME
     protected static abstract class VB1 extends VbuilderPAP {
 
       protected VB1(String sketchClass, RelBuilder relBuilder) {
@@ -668,6 +670,7 @@ public final class HiveRewriteToDataSketchesRules {
       return new VB(sketchType, call.builder());
     }
 
+    // FIXME rename?
     private static class VB extends VB1 {
 
       protected VB(String sketchClass, RelBuilder relBuilder) {
