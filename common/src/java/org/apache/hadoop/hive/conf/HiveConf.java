@@ -2514,20 +2514,18 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH("hive.optimize.bi.rewrite.cume_dist.sketch", "kll",
         new StringSet("kll"),
         "Defines which sketch type to use when rewriting CUME_DIST expressions. Options: kll"),
-    //FIXME
     HIVE_OPTIMIZE_BI_REWRITE_NTILE_ENABLED("hive.optimize.bi.rewrite.ntile.enabled",
         true,
-        "Enables to rewrite NTILE(X) queries to be rewritten to use sketch functions."),
+        "Enables to rewrite NTILE(X) queries to be rewritten as sketch functions."),
     HIVE_OPTIMIZE_BI_REWRITE_NTILE_SKETCH("hive.optimize.bi.rewrite.ntile.sketch", "kll",
         new StringSet("kll"),
         "Defines which sketch type to use when rewriting NTILE expressions. Options: kll"),
-    //FIXME
     HIVE_OPTIMIZE_BI_REWRITE_RANK_ENABLED("hive.optimize.bi.rewrite.rank.enabled",
         true,
-        "Enables to rewrite NTILE(X) queries to be rewritten to use sketch functions."),
+        "Enables to rewrite RANK() queries to be rewritten to use sketch functions."),
     HIVE_OPTIMIZE_BI_REWRITE_RANK_SKETCH("hive.optimize.bi.rewrite.rank.sketch", "kll",
         new StringSet("kll"),
-        "Defines which sketch type to use when rewriting NTILE expressions. Options: kll"),
+        "Defines which sketch type to use when rewriting RANK expressions. Options: kll"),
 
 
     // Statistics
