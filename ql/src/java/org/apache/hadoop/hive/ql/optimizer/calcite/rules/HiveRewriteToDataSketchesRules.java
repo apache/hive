@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -470,26 +469,6 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
-      protected final RexNode makeItemCall(RexNode arr, RexNode offset) {
-        if (getClass().desiredAssertionStatus()) {
-          try {
-            SqlKind.class.getField("ITEM");
-            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
-          } catch (NoSuchFieldException e) {
-            // ignore
-          }
-        }
-
-        try {
-          SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
-              ImmutableList.of(arr.getType(), offset.getType()), arr.getType().getComponentType(), true, false);
-          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
-          return call;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
       protected final RelDataType getFloatType() {
         RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
         RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
@@ -520,7 +499,7 @@ public final class HiveRewriteToDataSketchesRules {
    *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
    *     ⇒ SELECT id, ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]
    *       FROM sketch_input JOIN (
-   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
    *       ) q;
    *  </pre>
    */
@@ -575,7 +554,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_RANK);
 
         // NULLs will be replaced by this value - to be before / after the other values
         // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
@@ -586,7 +565,6 @@ public final class HiveRewriteToDataSketchesRules {
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = makeItemCall(projRex, relBuilder.literal(0));
         projRex = evaluateCdfValue(projRex, over, sketchInputRef);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
