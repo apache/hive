@@ -91,6 +91,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -754,6 +755,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     // this is done to remove any scheme related information that will be present in the base path
     // specifically when we are replicating to cloud storage
+    URI basePathUri  = (baseDir == null) ? null : new Path(baseDir).toUri();
+    if (basePathUri == null || basePathUri.getScheme() == null || basePathUri.getAuthority() == null) {
+      throw new SemanticException(
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' ('%s') is required",
+                      baseDir));
+    }
     Path basePath = new Path(baseDir);
     for (Path sourcePath : sourceLocations) {
       Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
