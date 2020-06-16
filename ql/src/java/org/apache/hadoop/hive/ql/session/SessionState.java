@@ -392,11 +392,11 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+    this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
 
   public boolean getIsUsingThriftJDBCBinarySerDe() {
-	return isUsingThriftJDBCBinarySerDe;
+    return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setIsHiveServerQuery(boolean isHiveServerQuery) {

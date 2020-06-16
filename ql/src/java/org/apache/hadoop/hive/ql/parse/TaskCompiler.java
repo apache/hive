@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
@@ -77,6 +78,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -174,39 +176,37 @@ public abstract class TaskCompiler {
       String cols = loadFileDesc.getColumns();
       String colTypes = loadFileDesc.getColumnTypes();
 
-      String resFileFormat;
       TableDesc resultTab = pCtx.getFetchTableDesc();
+      boolean shouldSetOutputFormatter = false;
       if (resultTab == null) {
-        resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+        ResultFileFormat resFileFormat = conf.getResultFileFormat();
+        String fileFormat;
+        Class<? extends Deserializer> serdeClass;
         if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()
-            && ("SequenceFile".equalsIgnoreCase(resFileFormat))) {
-          resultTab =
-              PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
-                  ThriftJDBCBinarySerDe.class);
-          // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
-          // read formatted thrift objects from the output SequenceFile written by Tasks.
-          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
+            && resFileFormat == ResultFileFormat.SEQUENCEFILE) {
+          fileFormat = resFileFormat.toString();
+          serdeClass = ThriftJDBCBinarySerDe.class;
+          shouldSetOutputFormatter = true;
+        } else if (resFileFormat == ResultFileFormat.SEQUENCEFILE) {
+          // file format is changed so that IF file sink provides list of files to fetch from (instead
+          // of whole directory) list status is done on files (which is what HiveSequenceFileInputFormat does)
+          fileFormat = "HiveSequenceFile";
+          serdeClass = LazySimpleSerDe.class;
         } else {
-          if("SequenceFile".equalsIgnoreCase(resFileFormat)) {
-            // file format is changed so that IF file sink provides list of files to fetch from (instead
-            // of whle directory) list status is done on files (which is what HiveSequenceFileInputFormat do)
-            resultTab =
-                PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, "HiveSequenceFile",
-                                                         LazySimpleSerDe.class);
-
-          } else {
-            resultTab =
-                PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
-                                                         LazySimpleSerDe.class);
-          }
+          // All other cases we use the defined file format and LazySimpleSerde
+          fileFormat = resFileFormat.toString();
+          serdeClass = LazySimpleSerDe.class;
         }
+        resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat, serdeClass);
       } else {
-        if (resultTab.getProperties().getProperty(serdeConstants.SERIALIZATION_LIB)
-            .equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName())) {
-          // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
-          // read formatted thrift objects from the output SequenceFile written by Tasks.
-          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
-        }
+        shouldSetOutputFormatter = resultTab.getProperties().getProperty(serdeConstants.SERIALIZATION_LIB)
+          .equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName());
+      }
+
+      if (shouldSetOutputFormatter) {
+        // Set the fetch formatter to be a no-op for the ListSinkOperator, since we will
+        // read formatted thrift objects from the output SequenceFile written by Tasks.
+        conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
       }
 
       FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit);
@@ -612,17 +612,12 @@ public abstract class TaskCompiler {
     String cols = loadFileWork.get(0).getColumns();
     String colTypes = loadFileWork.get(0).getColumnTypes();
 
-    String resFileFormat;
     TableDesc resultTab;
     if (SessionState.get().isHiveServerQuery() && conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
-      resFileFormat = "SequenceFile";
-      resultTab =
-          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+      resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, ResultFileFormat.SEQUENCEFILE.toString(),
               ThriftJDBCBinarySerDe.class);
     } else {
-      resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-      resultTab =
-          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+      resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, conf.getResultFileFormat().toString(),
               LazySimpleSerDe.class);
     }
 
