@@ -61,9 +61,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
 
 /**
  * This optimization attempts to identify and close expanded INs and BETWEENs
@@ -84,8 +82,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Filter conditions. */
   public static class FilterCondition extends HivePointLookupOptimizerRule {
-    public FilterCondition (int minNumORClauses) {
-      super(operand(Filter.class, any()), minNumORClauses);
+    public FilterCondition (int minNumORClauses, boolean multiColumnClauseSupported) {
+      super(operand(Filter.class, any()), minNumORClauses, multiColumnClauseSupported);
     }
 
     @Override
@@ -108,8 +106,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Join conditions. */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
-    public JoinCondition (int minNumORClauses) {
-      super(operand(Join.class, any()), minNumORClauses);
+    public JoinCondition (int minNumORClauses, boolean multiColumnClauseSupported) {
+      super(operand(Join.class, any()), minNumORClauses, multiColumnClauseSupported);
     }
 
     @Override
@@ -138,8 +136,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Projections. */
   public static class ProjectionExpressions extends HivePointLookupOptimizerRule {
-    public ProjectionExpressions(int minNumORClauses) {
-      super(operand(Project.class, any()), minNumORClauses);
+    public ProjectionExpressions(int minNumORClauses, boolean multiColumnClauseSupported) {
+      super(operand(Project.class, any()), minNumORClauses, multiColumnClauseSupported);
     }
 
     @Override
@@ -172,16 +170,20 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   // Minimum number of OR clauses needed to transform into IN clauses
   protected final int minNumORClauses;
+  // Support multi-column clause
+  protected final boolean multiColumnClauseSupported;
 
   protected HivePointLookupOptimizerRule(
-    RelOptRuleOperand operand, int minNumORClauses) {
+    RelOptRuleOperand operand, int minNumORClauses, boolean multiColumnClauseSupported) {
     super(operand);
     this.minNumORClauses = minNumORClauses;
+    this.multiColumnClauseSupported = multiColumnClauseSupported;
   }
 
   public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
     // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(
+        rexBuilder, minNumORClauses, multiColumnClauseSupported);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
     // 2. We merge IN expressions
@@ -459,10 +461,13 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
     private final int minNumORClauses;
+    private final boolean multiColumnClauseSupported;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
+    RexTransformIntoInClause(RexBuilder rexBuilder,
+        int minNumORClauses, boolean multiColumnClauseSupported) {
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
+      this.multiColumnClauseSupported = multiColumnClauseSupported;
     }
 
     @Override
@@ -474,7 +479,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         case OR:
           try {
             RexNode newNode = transformIntoInClauseCondition(rexBuilder,
-                call, minNumORClauses);
+                call, minNumORClauses, multiColumnClauseSupported);
             if (newNode != null) {
               return newNode;
             }
@@ -608,7 +613,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RexNode condition,
-            int minNumORClauses) throws SemanticException {
+            int minNumORClauses, boolean multiColumnClauseSupported) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
@@ -635,6 +640,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         if (sa.getValue().size() < 2 || sa.getValue().size() < minNumORClauses) {
           continue;
         }
+        // multi-column IN clause
+        if (sa.getKey().size() > 1 && !multiColumnClauseSupported) {
+          continue;
+        }
 
         allNodes.add(new ConstraintGroup(buildInFor(sa.getKey(), sa.getValue())));
         processedNodes.addAll(sa.getValue());
@@ -658,12 +667,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     private RexNode buildInFor(Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
 
-      List<RexNodeRef> columns = new ArrayList<>();
-      columns.addAll(set);
+      List<RexNodeRef> columns = new ArrayList<>(set);
       columns.sort(RexNodeRef.COMPARATOR);
       List<RexNode >operands = new ArrayList<>();
 
-      List<RexNode> columnNodes = columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList());
+      List<RexNode> columnNodes = columns.stream().map(RexNodeRef::getRexNode).collect(Collectors.toList());
       operands.add(useStructIfNeeded(columnNodes));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);

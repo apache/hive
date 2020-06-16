@@ -78,11 +78,11 @@ POSTHOOK: Input: default@impala_tpch_part
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[sum($1)])
-  ImpalaJoinRel(condition=[AND(=($8, $0), OR(AND($9, $10, $2, $3, $11), AND($12, $13, $4, $5, $14), AND($15, $16, $6, $7, $17)))], joinType=[inner])
-    ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(3, 0), $6))], >==[>=($4, 1)], <==[<=($4, 11)], >=4=[>=($4, 10)], <=5=[<=($4, 20)], >=6=[>=($4, 20)], <=7=[<=($4, 30)])
-      ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(OR(>=($4, 1), <=($4, 11), >=($4, 10), <=($4, 20), >=($4, 20), <=($4, 30)), =($13, _UTF-16LE'DELIVER IN PERSON'), IN($14, _UTF-16LE'AIR', _UTF-16LE'AIR REG'), IS NOT NULL($1))])
+  ImpalaJoinRel(condition=[AND(=($5, $0), OR(AND($6, $7, $2, $8), AND($9, $10, $3, $11), AND($12, $13, $4, $14)))], joinType=[inner])
+    ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(3, 0), $6))], BETWEEN=[BETWEEN(false, $4, 1:DECIMAL(12, 2), 11:DECIMAL(12, 2))], BETWEEN3=[BETWEEN(false, $4, 10:DECIMAL(12, 2), 20:DECIMAL(12, 2))], BETWEEN4=[BETWEEN(false, $4, 20:DECIMAL(12, 2), 30:DECIMAL(12, 2))])
+      ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(OR(>=($4, 1), <=($4, 11), >=($4, 10), <=($4, 20), >=($4, 20), <=($4, 30)), IN($14, _UTF-16LE'AIR', _UTF-16LE'AIR REG'), =($13, _UTF-16LE'DELIVER IN PERSON'), IS NOT NULL($1))])
     ImpalaProjectPassthroughRel(p_partkey=[$0], ==[=($3, _UTF-16LE'Brand#12')], IN=[IN($6, _UTF-16LE'SM CASE', _UTF-16LE'SM BOX', _UTF-16LE'SM PACK', _UTF-16LE'SM PKG')], BETWEEN=[BETWEEN(false, $5, 1, 5)], =4=[=($3, _UTF-16LE'Brand#23')], IN5=[IN($6, _UTF-16LE'MED BAG', _UTF-16LE'MED BOX', _UTF-16LE'MED PKG', _UTF-16LE'MED PACK')], BETWEEN6=[BETWEEN(false, $5, 1, 10)], =7=[=($3, _UTF-16LE'Brand#34')], IN8=[IN($6, _UTF-16LE'LG CASE', _UTF-16LE'LG BOX', _UTF-16LE'LG PACK', _UTF-16LE'LG PKG')], BETWEEN9=[BETWEEN(false, $5, 1, 15)])
-      ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(OR(BETWEEN(false, $5, 1, 5), BETWEEN(false, $5, 1, 10), BETWEEN(false, $5, 1, 15)), OR(=($3, _UTF-16LE'Brand#12'), =($3, _UTF-16LE'Brand#23'), =($3, _UTF-16LE'Brand#34')), OR(IN($6, _UTF-16LE'SM CASE', _UTF-16LE'SM BOX', _UTF-16LE'SM PACK', _UTF-16LE'SM PKG'), IN($6, _UTF-16LE'MED BAG', _UTF-16LE'MED BOX', _UTF-16LE'MED PKG', _UTF-16LE'MED PACK'), IN($6, _UTF-16LE'LG CASE', _UTF-16LE'LG BOX', _UTF-16LE'LG PACK', _UTF-16LE'LG PKG')), IS NOT NULL($0))])
+      ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(OR(BETWEEN(false, $5, 1, 5), BETWEEN(false, $5, 1, 10), BETWEEN(false, $5, 1, 15)), OR(IN($6, _UTF-16LE'SM CASE', _UTF-16LE'SM BOX', _UTF-16LE'SM PACK', _UTF-16LE'SM PKG'), IN($6, _UTF-16LE'MED BAG', _UTF-16LE'MED BOX', _UTF-16LE'MED PKG', _UTF-16LE'MED PACK'), IN($6, _UTF-16LE'LG CASE', _UTF-16LE'LG BOX', _UTF-16LE'LG PACK', _UTF-16LE'LG PKG')), IN($3, _UTF-16LE'Brand#12', _UTF-16LE'Brand#23', _UTF-16LE'Brand#34'), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   sum(l_extendedprice * (1 - l_discount)) as revenue
@@ -228,11 +228,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:SCAN HDFS [default.impala_tpch_part, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(5 AS INT) OR default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(10 AS INT) OR default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(15 AS INT), default.impala_tpch_part.p_container IN ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') OR default.impala_tpch_part.p_container IN ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') OR default.impala_tpch_part.p_container IN ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG'), default.impala_tpch_part.p_brand = 'Brand#12' OR default.impala_tpch_part.p_brand = 'Brand#23' OR default.impala_tpch_part.p_brand = 'Brand#34'
+     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_brand IN ('Brand#12', 'Brand#23', 'Brand#34'), default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(5 AS INT) OR default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(10 AS INT) OR default.impala_tpch_part.p_size >= CAST(1 AS INT) AND default.impala_tpch_part.p_size <= CAST(15 AS INT), default.impala_tpch_part.p_container IN ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') OR default.impala_tpch_part.p_container IN ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') OR default.impala_tpch_part.p_container IN ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpch_part.p_brand IN ('Brand#12', 'Brand#23', 'Brand#34')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=36B cardinality=0
      in pipelines: 01(GETNEXT)

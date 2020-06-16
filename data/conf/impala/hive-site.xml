@@ -57,12 +57,6 @@
 </property>
 
 <property>
-  <name>hive.optimize.point.lookup</name>
-  <!--Needed to be false because Impala can't handle 'between'-->
-  <value>false</value>
-</property>
-
-<property>
   <name>hive.tez.input.format</name>
   <value>org.apache.hadoop.hive.ql.io.HiveInputFormat</value>
   <description>The default input format for tez. Tez groups splits in the AM.</description>

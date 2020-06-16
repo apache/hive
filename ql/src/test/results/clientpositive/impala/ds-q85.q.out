@@ -193,11 +193,11 @@ ImpalaProjectPassthroughRel(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
                   ImpalaProjectPassthroughRel(r_reason_sk=[$0], r_reason_desc=[$2])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_reason]], condition=[IS NOT NULL($0)])
                 ImpalaProjectPassthroughRel(ca_address_sk=[$0], IN=[IN($8, _UTF-16LE'TX', _UTF-16LE'VA', _UTF-16LE'CA')], IN2=[IN($8, _UTF-16LE'AR', _UTF-16LE'NE', _UTF-16LE'MO')], IN3=[IN($8, _UTF-16LE'IA', _UTF-16LE'MS', _UTF-16LE'WA')])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(OR(IN($8, _UTF-16LE'TX', _UTF-16LE'VA', _UTF-16LE'CA'), IN($8, _UTF-16LE'AR', _UTF-16LE'NE', _UTF-16LE'MO'), IN($8, _UTF-16LE'IA', _UTF-16LE'MS', _UTF-16LE'WA')), =($10, _UTF-16LE'United States'), IS NOT NULL($0))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN($8, _UTF-16LE'TX', _UTF-16LE'VA', _UTF-16LE'CA', _UTF-16LE'AR', _UTF-16LE'NE', _UTF-16LE'MO', _UTF-16LE'IA', _UTF-16LE'MS', _UTF-16LE'WA'), =($10, _UTF-16LE'United States'), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3], ==[=($2, _UTF-16LE'M')], =4=[=($3, _UTF-16LE'4 yr Degree')], =5=[=($2, _UTF-16LE'S')], =6=[=($3, _UTF-16LE'College')], =7=[=($2, _UTF-16LE'D')], =8=[=($3, _UTF-16LE'Secondary')])
-                ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(=($2, _UTF-16LE'M'), =($2, _UTF-16LE'S'), =($2, _UTF-16LE'D')), OR(=($3, _UTF-16LE'4 yr Degree'), =($3, _UTF-16LE'College'), =($3, _UTF-16LE'Secondary')), IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($3))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(IN($2, _UTF-16LE'M', _UTF-16LE'S', _UTF-16LE'D'), IN($3, _UTF-16LE'4 yr Degree', _UTF-16LE'College', _UTF-16LE'Secondary'), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(=($2, _UTF-16LE'M'), =($2, _UTF-16LE'S'), =($2, _UTF-16LE'D')), OR(=($3, _UTF-16LE'4 yr Degree'), =($3, _UTF-16LE'College'), =($3, _UTF-16LE'Secondary')), IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($3))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(IN($2, _UTF-16LE'M', _UTF-16LE'S', _UTF-16LE'D'), IN($3, _UTF-16LE'4 yr Degree', _UTF-16LE'College', _UTF-16LE'Secondary'), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
             ImpalaJoinRel(condition=[=($2, $11)], joinType=[inner])
               ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_web_page_sk=[$12], ws_order_number=[$17], CAST=[CAST($18):BIGINT], BETWEEN=[BETWEEN(false, $33, 100:DECIMAL(3, 0), 200:DECIMAL(5, 0))], BETWEEN6=[BETWEEN(false, $33, 150:DECIMAL(5, 0), 300:DECIMAL(5, 0))], BETWEEN7=[BETWEEN(false, $33, 50:DECIMAL(3, 0), 250:DECIMAL(5, 0))], BETWEEN8=[BETWEEN(false, $21, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0))], BETWEEN9=[BETWEEN(false, $21, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0))], BETWEEN10=[BETWEEN(false, $21, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))])
@@ -539,12 +539,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_country = 'United States', default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA') OR default.impala_tpcds_customer_address.ca_state IN ('AR', 'NE', 'MO') OR default.impala_tpcds_customer_address.ca_state IN ('IA', 'MS', 'WA')
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA', 'AR', 'NE', 'MO', 'IA', 'MS', 'WA'), default.impala_tpcds_customer_address.ca_country = 'United States'
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: default.impala_tpcds_customer_address.ca_country = 'United States'
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA', 'AR', 'NE', 'MO', 'IA', 'MS', 'WA'), default.impala_tpcds_customer_address.ca_country = 'United States'
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=28B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -555,11 +555,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:SCAN HDFS [default.impala_tpcds_customer_demographics cd1, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: cd1.cd_demo_sk IS NOT NULL, cd1.cd_education_status IS NOT NULL, cd1.cd_marital_status IS NOT NULL, cd1.cd_marital_status = 'M' OR cd1.cd_marital_status = 'S' OR cd1.cd_marital_status = 'D', cd1.cd_education_status = '4 yr Degree' OR cd1.cd_education_status = 'College' OR cd1.cd_education_status = 'Secondary'
+     predicates: cd1.cd_demo_sk IS NOT NULL, cd1.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd1.cd_marital_status IN ('M', 'S', 'D')
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: cd1.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd1.cd_marital_status IN ('M', 'S', 'D')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=28B cardinality=0
      in pipelines: 06(GETNEXT)
@@ -570,11 +571,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   08:SCAN HDFS [default.impala_tpcds_customer_demographics cd2, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: cd2.cd_demo_sk IS NOT NULL, cd2.cd_education_status IS NOT NULL, cd2.cd_marital_status IS NOT NULL, cd2.cd_marital_status = 'M' OR cd2.cd_marital_status = 'S' OR cd2.cd_marital_status = 'D', cd2.cd_education_status = '4 yr Degree' OR cd2.cd_education_status = 'College' OR cd2.cd_education_status = 'Secondary'
+     predicates: cd2.cd_demo_sk IS NOT NULL, cd2.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd2.cd_marital_status IN ('M', 'S', 'D')
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: cd2.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd2.cd_marital_status IN ('M', 'S', 'D')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=28B cardinality=0
      in pipelines: 08(GETNEXT)

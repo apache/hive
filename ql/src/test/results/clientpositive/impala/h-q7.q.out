@@ -100,7 +100,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
             ImpalaProjectPassthroughRel(s_suppkey=[$0], s_nationkey=[$3])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
           ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'FRANCE')], =3=[=($1, _UTF-16LE'GERMANY')])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'FRANCE'), =($1, _UTF-16LE'GERMANY')), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(IN($1, _UTF-16LE'FRANCE', _UTF-16LE'GERMANY'), IS NOT NULL($0))])
         ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
           ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
             ImpalaProjectPassthroughRel(c_custkey=[$0], c_nationkey=[$3])
@@ -108,7 +108,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
             ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
           ImpalaProjectPassthroughRel(n_nationkey=[$0], n_name=[$1], ==[=($1, _UTF-16LE'GERMANY')], =3=[=($1, _UTF-16LE'FRANCE')])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(OR(=($1, _UTF-16LE'GERMANY'), =($1, _UTF-16LE'FRANCE')), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(IN($1, _UTF-16LE'GERMANY', _UTF-16LE'FRANCE'), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   supp_nation,
@@ -328,11 +328,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:SCAN HDFS [default.impala_tpch_nation n1, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: n1.n_nationkey IS NOT NULL, n1.n_name = 'FRANCE' OR n1.n_name = 'GERMANY'
+     predicates: n1.n_nationkey IS NOT NULL, n1.n_name IN ('FRANCE', 'GERMANY')
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: n1.n_name IN ('FRANCE', 'GERMANY')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=14B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -397,11 +398,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:SCAN HDFS [default.impala_tpch_nation n2, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: n2.n_nationkey IS NOT NULL, n2.n_name = 'GERMANY' OR n2.n_name = 'FRANCE'
+     predicates: n2.n_nationkey IS NOT NULL, n2.n_name IN ('GERMANY', 'FRANCE')
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: n2.n_name IN ('GERMANY', 'FRANCE')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=10 row-size=14B cardinality=0
      in pipelines: 09(GETNEXT)

@@ -2113,9 +2113,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
+        // Currently Impala does not support multi-column IN clauses.
+        // We can enable the transformation when it does.
+        boolean multiColumnClauseSupported = !isImpalaPlan(conf);
+        rules.add(
+            new HivePointLookupOptimizerRule.FilterCondition(
+                minNumORClauses, multiColumnClauseSupported));
+        rules.add(
+            new HivePointLookupOptimizerRule.JoinCondition(
+                minNumORClauses, multiColumnClauseSupported));
+        rules.add(
+            new HivePointLookupOptimizerRule.ProjectionExpressions(
+                minNumORClauses, multiColumnClauseSupported));
       }
       rules.add(HiveProjectJoinTransposeRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&

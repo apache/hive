@@ -76,7 +76,7 @@ ImpalaSortRel(sort0=[$3], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=
         ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaProjectPassthroughRel(p_partkey=[$0], p_brand=[$3], p_type=[$4], p_size=[$5])
-              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(<>($3, _UTF-16LE'Brand#45'), IN($5, 49, 14, 23, 45, 19, 3, 36, 9), IS NOT NULL($0), NOT(LIKE($4, _UTF-16LE'MEDIUM POLISHED%')))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(IN($5, 49, 14, 23, 45, 19, 3, 36, 9), <>($3, _UTF-16LE'Brand#45'), IS NOT NULL($0), NOT(LIKE($4, _UTF-16LE'MEDIUM POLISHED%')))])
             ImpalaAggregateRel(group=[{}], c=[COUNT()], ck=[COUNT($0)])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[LIKE($6, _UTF-16LE'%Customer%Complaints%')])
           ImpalaJoinRel(condition=[=($1, $2)], joinType=[left])

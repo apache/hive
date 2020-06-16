@@ -88,7 +88,7 @@ ImpalaProjectPassthroughRel(call_center=[$0], call_center_name=[$1], manager=[$2
               ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(LIKE($2, _UTF-16LE'Unknown%'), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(=($2, _UTF-16LE'M'), =($2, _UTF-16LE'W')), OR(=($3, _UTF-16LE'Unknown'), =($3, _UTF-16LE'Advanced Degree')), OR(AND(=($2, _UTF-16LE'M'), =($3, _UTF-16LE'Unknown')), AND(=($2, _UTF-16LE'W'), =($3, _UTF-16LE'Advanced Degree'))), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(OR(AND(=($2, _UTF-16LE'M'), =($3, _UTF-16LE'Unknown')), AND(=($2, _UTF-16LE'W'), =($3, _UTF-16LE'Advanced Degree'))), IN($2, _UTF-16LE'M', _UTF-16LE'W'), IN($3, _UTF-16LE'Unknown', _UTF-16LE'Advanced Degree'), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
             ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
               ImpalaProjectPassthroughRel(cr_returned_date_sk=[$0], cr_returning_customer_sk=[$7], cr_call_center_sk=[$11], cr_net_loss=[$26])
@@ -326,11 +326,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:SCAN HDFS [default.impala_tpcds_customer_demographics, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_customer_demographics.cd_demo_sk IS NOT NULL, default.impala_tpcds_customer_demographics.cd_marital_status = 'M' OR default.impala_tpcds_customer_demographics.cd_marital_status = 'W', default.impala_tpcds_customer_demographics.cd_education_status = 'Unknown' OR default.impala_tpcds_customer_demographics.cd_education_status = 'Advanced Degree', default.impala_tpcds_customer_demographics.cd_marital_status = 'M' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Unknown' OR default.impala_tpcds_customer_demographics.cd_marital_status = 'W' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Advanced Degree'
+     predicates: default.impala_tpcds_customer_demographics.cd_demo_sk IS NOT NULL, default.impala_tpcds_customer_demographics.cd_education_status IN ('Unknown', 'Advanced Degree'), default.impala_tpcds_customer_demographics.cd_marital_status IN ('M', 'W'), default.impala_tpcds_customer_demographics.cd_marital_status = 'M' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Unknown' OR default.impala_tpcds_customer_demographics.cd_marital_status = 'W' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Advanced Degree'
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer_demographics.cd_education_status IN ('Unknown', 'Advanced Degree'), default.impala_tpcds_customer_demographics.cd_marital_status IN ('M', 'W')
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=28B cardinality=0
      in pipelines: 06(GETNEXT)
