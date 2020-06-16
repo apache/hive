@@ -111,6 +111,10 @@ public class BytesColumnVector extends ColumnVector {
    * @param length  length of source byte sequence
    */
   public void setRef(int elementNum, byte[] sourceBuf, int start, int length) {
+    if (sourceBuf == null) {
+      this.isNull[elementNum] = true;
+      this.noNulls = false;
+    }
     vector[elementNum] = sourceBuf;
     this.start[elementNum] = start;
     this.length[elementNum] = length;
