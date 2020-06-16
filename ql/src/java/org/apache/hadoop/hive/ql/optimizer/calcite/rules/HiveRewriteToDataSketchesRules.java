@@ -643,11 +643,15 @@ public final class HiveRewriteToDataSketchesRules {
   }
 
   /**
-   * FIXME Rewrites {@code cume_dist() over (order by id)}.
+   * Rewrites {@code ntile(n) over (order by id)}.
    *
    *  <pre>
-   *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
-   *     ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+   *   SELECT id, NTILE(4) OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, CASE
+   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
+  *                      THEN 1
+  *                      ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
+  *                    END
    *       FROM sketch_input JOIN (
    *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
    *       ) q;
