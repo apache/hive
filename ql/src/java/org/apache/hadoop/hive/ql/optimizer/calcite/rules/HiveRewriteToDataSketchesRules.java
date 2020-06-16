@@ -703,11 +703,10 @@ public final class HiveRewriteToDataSketchesRules {
    *
    *  <pre>
    *   SELECT id, RANK() OVER (ORDER BY id) FROM sketch_input;
-   *   FIXME
    *     ⇒ SELECT id, CASE
-   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
-   *                      THEN 1
-   *                    ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
+   *                    WHEN ds_kll_n(ds) < (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
+   *                    THEN ds_kll_n(ds)
+   *                    ELSE (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
    *                  END
    *       FROM sketch_input JOIN (
    *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
