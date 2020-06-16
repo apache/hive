@@ -32,11 +32,8 @@ import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
-import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -51,28 +48,11 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
-import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Optimization to reduce the amount of broadcasted/shuffled data throughout the DAG processing.
@@ -131,6 +111,11 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
 
       RexBuilder rexBuilder = relBuilder.getRexBuilder();
       RelNode rootInput = root.getInput(0);
+      if (rootInput instanceof Aggregate) {
+        LOG.debug("Root input is Aggregate: not supported.");
+        return root;
+      }
+
       // Build the list of projected fields from root's input RowType
       List<RexInputRef> rootFieldList = new ArrayList<>(rootInput.getRowType().getFieldCount());
       for (int i = 0; i < rootInput.getRowType().getFieldList().size(); ++i) {
