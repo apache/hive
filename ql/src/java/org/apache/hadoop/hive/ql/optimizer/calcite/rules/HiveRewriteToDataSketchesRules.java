@@ -550,9 +550,17 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode key = orderKey.getKey();
         key = rexBuilder.makeCast(getFloatType(), key);
 
+        // @formatter:off
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH), /* distinct */ false,
-            /* approximate */ false, /* ignoreNulls */ true, null, ImmutableList.of(), null, ImmutableList.of(key));
+            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
+            /* distinct */ false,
+            /* approximate */ false,
+            /* ignoreNulls */ true,
+            null,
+            ImmutableList.of(),
+            null,
+            ImmutableList.of(key));
+        // @formatter:on
 
         relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
@@ -570,7 +578,7 @@ public final class HiveRewriteToDataSketchesRules {
         // NULLs will be replaced by this value - to be before / after the other values
         // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
         final RexNode nullReplacement =
-            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+            relBuilder.literal(orderKey.getNullDirection() == NullDirection.LAST ? Float.MAX_VALUE : -Float.MAX_VALUE);
 
         RexNode projRex = key;
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
@@ -666,7 +674,7 @@ public final class HiveRewriteToDataSketchesRules {
       boolean isApplicable(RexOver over) {
         SqlAggFunction aggOp = over.getAggOperator();
         RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("ntile0") && window.orderKeys.size() == 1
+        if (aggOp.getName().equalsIgnoreCase("ntile") && window.orderKeys.size() == 1
             && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
           return true;
         }
@@ -674,10 +682,20 @@ public final class HiveRewriteToDataSketchesRules {
       }
 
       @Override
-      protected RexNode evaluateCdfValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
-        return projRex;
+      protected RexNode evaluateCdfValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        RexNode ntileOperand = over.getOperands().get(0);
+        RexNode ret = projRex;
+        RexNode literal1 = relBuilder.literal(1.0);
+
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, ntileOperand);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(ret, literal1), literal1, ret);
+        return ret;
       }
 
+      private RexNode lt(RexNode op1, RexNode op2) {
+        return rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, op1, op2);
+      }
     }
   }
 }

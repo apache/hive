@@ -122,7 +122,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),-3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -273,7 +273,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),-3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -467,7 +467,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 24 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),-3.4028234663852886E38D)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 24 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -564,8 +564,8 @@ POSTHOOK: query: select id,'rewrite',cume_dist() over (order by id nulls first) 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-NULL	rewrite	1.0
-NULL	rewrite	1.0
+NULL	rewrite	0.0
+NULL	rewrite	0.0
 1	rewrite	0.0
 1	rewrite	0.0
 2	rewrite	0.09090909090909091
@@ -619,7 +619,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 24 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),-3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 24 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -738,8 +738,8 @@ POSTHOOK: Input: default@sketch_input
 13	rewrite	0.8636363636363636
 14	rewrite	0.9090909090909091
 15	rewrite	0.9545454545454546
-NULL	rewrite	0.0
-NULL	rewrite	0.0
+NULL	rewrite	1.0
+NULL	rewrite	1.0
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -771,5 +771,5 @@ POSTHOOK: Input: default@sketch_input
 13	0.8636363636363636
 14	0.9090909090909091
 15	0.9545454545454546
-NULL	0.0
-NULL	0.0
+NULL	1.0
+NULL	1.0
