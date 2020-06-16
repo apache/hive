@@ -514,7 +514,7 @@ public final class HiveRewriteToDataSketchesRules {
    *
    *  <pre>
    *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
-   *     ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+   *     ⇒ SELECT id, ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]
    *       FROM sketch_input JOIN (
    *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
    *       ) q;
@@ -561,7 +561,6 @@ public final class HiveRewriteToDataSketchesRules {
         // negating the input will mirror the values on the x axis
         // by using 1-CDF(-x) we could get a <= operator
         RexNode key = orderKey.getKey();
-        key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
         key = rexBuilder.makeCast(getFloatType(), key);
 
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
@@ -592,13 +591,11 @@ public final class HiveRewriteToDataSketchesRules {
         final RexNode nullReplacement =
             relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
 
-        // long story short: CAST(1.0f-CDF(CAST(COALESCE(-X, nullReplacement) AS FLOAT))[0] AS targetType)
         RexNode projRex = key;
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
         projRex = makeItemCall(projRex, relBuilder.literal(0));
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
