@@ -537,6 +537,10 @@ public class HiveConf extends Configuration {
             "hive",
             "This configuration will define the service name for which the ranger authorization"
                     + " policies needs to be replicated"),
+    REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
+      true,
+      "This configuration will add a deny policy on the target database for all users except hive"
+        + " to avoid any update to the target database"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
