@@ -107,6 +107,9 @@ enum StageType {
   REPL_TXN,
   REPL_INCREMENTAL_LOAD,
   SCHEDULED_QUERY_MAINT,
+  ACK,
+  RANGER_DUMP,
+  RANGER_LOAD
 }
 
 struct Stage {
