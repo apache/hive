@@ -993,11 +993,77 @@ public class TestInitiator extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.CLEANING_RESPONSE).intValue());
   }
 
+  @Test
+  public void testAgeMetricsNotSet() {
+    Metrics.initialize(conf);
+    ShowCompactResponse scr = new ShowCompactResponse();
+    List<ShowCompactResponseElement> elements = new ArrayList<>();
+    elements.add(generateElement(1, "db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE, 1L));
+    elements.add(generateElement(5, "db", "tb3", "p1", CompactionType.MINOR, TxnStore.ATTEMPTED_RESPONSE, 2L));
+    elements.add(generateElement(9, "db2", "tb", null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE, 3L));
+    elements.add(generateElement(13, "db3", "tb3", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, 4L));
+    elements.add(generateElement(14, "db3", "tb4", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE, 5L));
+
+    scr.setCompacts(elements);
+    Initiator.updateCompactionMetrics(scr);
+    // Check that it is not set
+    Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue());
+  }
+
+  @Test
+  public void testAgeMetricsAge() {
+    Metrics.initialize(conf);
+    ShowCompactResponse scr = new ShowCompactResponse();
+    List<ShowCompactResponseElement> elements = new ArrayList<>();
+    long start = System.currentTimeMillis() - 1000L;
+    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE, start));
+
+    scr.setCompacts(elements);
+    Initiator.updateCompactionMetrics(scr);
+    long diff = (System.currentTimeMillis() - start)/1000;
+    // Check that we have at least 1s old compaction age, but not more than expected
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() >= 1);
+  }
+
+  @Test
+  public void testAgeMetricsOrder() {
+    Metrics.initialize(conf);
+    ShowCompactResponse scr = new ShowCompactResponse();
+    long start = System.currentTimeMillis();
+    List<ShowCompactResponseElement> elements = new ArrayList<>();
+    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE,
+        start - 1000L));
+    elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE,
+        start - 100000L));
+
+    scr.setCompacts(elements);
+    Initiator.updateCompactionMetrics(scr);
+    // Check that the age is older than 10s
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 10);
+
+    // Check the reverse order
+    elements = new ArrayList<>();
+    elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE,
+        start - 100000L));
+    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE,
+        start - 1000L));
+
+    // Check that the age is older than 10s
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 10);
+  }
+
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {
+    return generateElement(id, db, table, partition, type, state, System.currentTimeMillis());
+  }
+
+  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
+      CompactionType type, String state, long enqueueTime) {
     ShowCompactResponseElement element = new ShowCompactResponseElement(db, table, type, state);
     element.setId(id);
     element.setPartitionname(partition);
+    element.setEnqueueTime(enqueueTime);
     return element;
   }
 
