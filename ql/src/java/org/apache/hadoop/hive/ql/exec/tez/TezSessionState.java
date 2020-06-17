@@ -265,7 +265,7 @@ public class TezSessionState implements TezSession {
     // Do not initialize prewarm here. Either it's already prewarmed or we don't care (for now).
 
     TezClient session = createTezClientObject(
-        tezConfig, commonLocalResources, llapCredentials, spd);
+        tezConfig, commonLocalResources, conf, llapCredentials, spd);
 
     // Note: if this ever moved on a threadpool, see isOnThread stuff
     //       in open() w.r.t. how to propagate errors correctly.
@@ -281,9 +281,10 @@ public class TezSessionState implements TezSession {
   }
 
   protected final TezClient createTezClientObject(TezConfiguration tezConfig,
-      Map<String, LocalResource> commonLocalResources,
+      Map<String, LocalResource> commonLocalResources, HiveConf hiveConf,
       Credentials llapCredentials, ServicePluginsDescriptor spd) {
-    return TezClient.newBuilder("HIVE-" + sessionId, tezConfig).setIsSession(true)
+    String tezJobNameFormat = HiveConf.getVar(hiveConf, ConfVars.HIVETEZJOBNAME);
+    return TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig).setIsSession(true)
         .setLocalResources(commonLocalResources).setCredentials(llapCredentials)
         .setServicePluginDescriptor(spd).build();
   }
@@ -363,7 +364,7 @@ public class TezSessionState implements TezSession {
     }
 
     TezClient session = createTezClientObject(
-        tezConfig, commonLocalResources, llapCredentials, spd);
+        tezConfig, commonLocalResources, conf, llapCredentials, spd);
 
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
