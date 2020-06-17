@@ -81,10 +81,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -2369,19 +2366,13 @@ public class AcidUtils {
   }
 
   /**
-   * This is called by Hive.java for all write operations (DDL). Advance write id
-   * for the table via transaction manager, and store it in config. The write id
-   * will be marked as committed instantly in config, as all DDL are auto
-   * committed, there's no chance to rollback.
+   * This is called by Driver.java for all write operations (DDL). This updates the latest validWriteIdList in config,
+   * so that the same can be sent from HMS Client during invocation of get_* HMS APIs.
    */
-  public static ValidWriteIdList advanceWriteId(HiveConf conf, Table tbl) throws LockException {
-    if (!isTransactionalTable(tbl)) {
-      return null;
-    }
+  public static ValidWriteIdList updateValidWriteIdList(HiveConf conf, String fullTableName) throws LockException {
+
     HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
-    long writeId = SessionState.get().getTxnMgr().getTableWriteId(tbl.getDbName(), tbl.getTableName());
     List<String> txnTables = new ArrayList<>();
-    String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
     txnTables.add(fullTableName);
     ValidTxnWriteIdList txnWriteIds;
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
@@ -2398,7 +2389,6 @@ public class AcidUtils {
     }
     ValidWriteIdList writeIds = txnWriteIds.getTableValidWriteIdList(fullTableName);
     if (writeIds != null) {
-      writeIds.locallyCommitWriteId(writeId);
       conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
     }
     return writeIds;
@@ -3181,6 +3171,19 @@ public class AcidUtils {
   private static void printDirCacheEntries() {
     if (dirCache != null) {
       LOG.debug("Cache entries: {}", Arrays.toString(dirCache.asMap().keySet().toArray()));
+    }
+  }
+
+  /**
+   * Checks whether a given table is enabled for replication.
+   * @param tbl table
+   * @return true, if the table is enabled for replication. False, otherwise.
+   */
+  public static boolean inReplication(Table tbl) {
+    if (tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null) {
+      return true;
+    } else {
+      return false;
     }
   }
 

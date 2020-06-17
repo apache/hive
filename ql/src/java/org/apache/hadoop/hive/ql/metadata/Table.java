@@ -1318,14 +1318,20 @@ public class Table implements Serializable {
     this.isCheckFetched = tbl.isCheckFetched;
   }
 
-  public boolean equalsWithIgnoreWriteId( Entity entity ) {
+  /**
+   * This method ignores the write Id, while comparing two tables.
+   *
+   * @param tbl table to compare with
+   * @return
+   */
+  public boolean equalsWithIgnoreWriteId(Table tbl ) {
     long targetWriteId = getTTable().getWriteId();
-    long entityWriteId = entity.getTable().getTTable().getWriteId();
+    long entityWriteId = tbl.getTTable().getWriteId();
     getTTable().setWriteId(0L);
-    entity.getTable().getTTable().setWriteId(0L);
-    boolean result = equals(entity.getTable());
+    tbl.getTTable().setWriteId(0L);
+    boolean result = equals(tbl);
     getTTable().setWriteId(targetWriteId);
-    entity.getTable().getTTable().setWriteId(entityWriteId);
+    tbl.getTTable().setWriteId(entityWriteId);
     return result;
   }
 

@@ -38,6 +38,6 @@ public class AlterTableNotSkewedDesc extends AbstractAlterTableDesc {
 
   @Override
   public boolean mayNeedWriteId() {
-    return false;
+    return true;
   }
 }

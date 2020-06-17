@@ -192,7 +192,6 @@ public class ColStatsProcessor implements IStatsProcessor {
       request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
       ValidWriteIdList writeId = AcidUtils.getTableValidWriteIdList(conf,
           AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
-      writeId.locallyCommitWriteId(request.getWriteId());
       request.setValidWriteIdList(writeId.toString());
     }
     db.setPartitionColumnStatistics(request);

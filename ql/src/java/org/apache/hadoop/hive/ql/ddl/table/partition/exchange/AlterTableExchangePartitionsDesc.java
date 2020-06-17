@@ -53,4 +53,5 @@ public class AlterTableExchangePartitionsDesc implements DDLDesc {
   public Map<String, String> getPartitionSpecs() {
     return partitionSpecs;
   }
+
 }

@@ -405,7 +405,9 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    */
   private boolean isTargetTable(Entity entity, Table targetTable) {
     //todo: https://issues.apache.org/jira/browse/HIVE-15048
-    return targetTable.equalsWithIgnoreWriteId(entity);
+    // Since any DDL now advances the write id, we should ignore the write Id,
+    // while comparing two tables
+    return targetTable.equalsWithIgnoreWriteId(entity.getTable());
   }
 
   /**
