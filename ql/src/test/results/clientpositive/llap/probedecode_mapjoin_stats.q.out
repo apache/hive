@@ -191,8 +191,8 @@ STAGE PLANS:
                 TableScan
                   alias: orders_fact
                   filterExpr: (key2 is not null and key3 is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:_col0, smallTablePos:1, keyRatio:0.16666666666666666
-                  Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                  probeDecodeDetails: dynFilter={CKey:HASH_MAP_MAPJOIN_46_container, bigTColName:_col0, smallTPos:1, KRatio:0.16666666666666666}, staticFilter={Expr: GenericUDFOPAnd(GenericUDFOPNotNull(Column[key2]), GenericUDFOPNotNull(Column[key3]))}
+                  Statistics: Num rows: 6 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key3:int, 1:key2:int, 2:dt:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -293,7 +293,8 @@ STAGE PLANS:
                 TableScan
                   alias: item_dim
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                  probeDecodeDetails: dynFilter={CKey:null, bigTColName:null, smallTPos:0, KRatio:0.0}, staticFilter={Expr: GenericUDFOPNotNull(Column[key1])}
+                  Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key1:int, 1:name:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -347,7 +348,8 @@ STAGE PLANS:
                 TableScan
                   alias: seller_dim
                   filterExpr: key4 is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  probeDecodeDetails: dynFilter={CKey:null, bigTColName:null, smallTPos:0, KRatio:0.0}, staticFilter={Expr: GenericUDFOPNotNull(Column[key4])}
+                  Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key4:int, 1:sellername:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]

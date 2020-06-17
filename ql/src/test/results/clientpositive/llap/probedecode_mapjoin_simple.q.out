@@ -131,7 +131,7 @@ STAGE PLANS:
                 TableScan
                   alias: orders_fact
                   filterExpr: ((nokey <> 100) and key2 is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:_col0, smallTablePos:1, keyRatio:1.0, staticFilterExpr: GenericUDFOPAnd(GenericUDFOPNotEqual(Column[nokey], Const int 100), GenericUDFOPNotNull(Column[key2]))
+                  probeDecodeDetails: dynFilter={CKey:HASH_MAP_MAPJOIN_25_container, bigTColName:_col0, smallTPos:1, KRatio:1.0}, staticFilter={Expr: GenericUDFOPAnd(GenericUDFOPNotEqual(Column[nokey], Const int 100), GenericUDFOPNotNull(Column[key2]))}
                   Statistics: Num rows: 6 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -212,7 +212,7 @@ STAGE PLANS:
                 TableScan
                   alias: item_dim
                   filterExpr: key1 is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:null, bigKeyColName:null, smallTablePos:0, keyRatio:0.0, staticFilterExpr: GenericUDFOPNotNull(Column[key1])
+                  probeDecodeDetails: dynFilter={CKey:null, bigTColName:null, smallTPos:0, KRatio:0.0}, staticFilter={Expr: GenericUDFOPNotNull(Column[key1])}
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
