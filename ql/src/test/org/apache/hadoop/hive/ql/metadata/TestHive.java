@@ -678,7 +678,7 @@ public class TestHive {
     try {
 
       Table table = createPartitionedTable(dbName, tableName);
-      table.getParameters().put("auto.purge", "true");
+      table.getParameters().put("skip.trash", "true");
       hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
