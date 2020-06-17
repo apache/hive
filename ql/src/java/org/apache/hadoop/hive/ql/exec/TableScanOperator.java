@@ -135,9 +135,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
     @Override
     public String toString() {
-      return "cacheKey:" + mjSmallTableCacheKey + ", bigKeyColName:" + mjBigTableKeyColName +
-          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio +
-           ", staticFilterExpr: " + staticFilterExpr;
+      return "dynFilter {CKey:" + mjSmallTableCacheKey + ", bigTColName:" + mjBigTableKeyColName +
+          ", smallTPos:" + mjSmallTablePos + ", KRatio:" + keyRatio +
+           "}, staticFilter {Expr: " + staticFilterExpr + "}";
     }
   }
 

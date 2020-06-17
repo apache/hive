@@ -56,6 +56,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -73,6 +75,9 @@ import org.apache.hadoop.hive.ql.ppd.ExprWalkerInfo.ExprInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank.GenericUDAFDenseRankEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.GenericUDAFRankEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1020,16 +1025,34 @@ public final class OpProcFactory {
         }
       }
 
-      // TODO [PANOS] maybe have static PPD vs MJ filter in different conf?
+      // TODO [PANOS] maybe static PPD in different conf (and dynamic SJ filters in another)
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)
               && OrcInputFormat.class.isAssignableFrom(tsOp.getConf().getTableMetadata().getInputFormatClass())) {
         if (tsOp.getProbeDecodeContext() == null) {
           tsOp.setProbeDecodeContext(new TableScanOperator.ProbeDecodeContext());
         }
-        tsOp.getProbeDecodeContext().setStaticFilterExpr(condn);
-        LOG.info("ProbeDecode pushing RowFiler {}", condn);
-        // Whole filter can be applied so FilterOp can be removed.
-        return null;
+        List<ExprNodeDesc> remainingFilterPreds = new ArrayList<>();
+        List<ExprNodeDesc> rowFilterPredsIgnoringDynamicVals = extractFiltersIngroringDynPreds(preds, remainingFilterPreds);
+        LOG.debug("ProbeDecode filter pushdown: {} remaining: {}", rowFilterPredsIgnoringDynamicVals, remainingFilterPreds);
+
+        ExprNodeGenericFuncDesc pushedExpr = (ExprNodeGenericFuncDesc) ExprNodeDescUtils.mergePredicates(rowFilterPredsIgnoringDynamicVals);
+        tsOp.getProbeDecodeContext().setStaticFilterExpr(pushedExpr);
+        tsOp.getConf().setProbeDecodeContext(tsOp.getProbeDecodeContext());
+
+        // The original predicate is propagated to the table scan operator
+        // as part of pushFilterToStorageHandler method
+        // tsOp.getConf().setFilterExpr((ExprNodeGenericFuncDesc) condn);
+
+        if (remainingFilterPreds.isEmpty()) {
+          // Whole filter can be pushed-down so FilterOp can be removed
+          return null;
+        }
+        // If we remove partial Filter here it will also affect the TS FilterExpr that is
+        // further optimized and even eventually cleaned by ConstantPropagateTableScanProc
+//        else {
+//          // Part of the filter was pushed-down, filtersExpressions with Dynamic values are in the remainingPreds
+//          condn = ExprNodeDescUtils.mergePredicates(remainingFilterPreds);
+//        }
       }
     }
 
@@ -1152,6 +1175,43 @@ public final class OpProcFactory {
     tableScanDesc.setFilterObject(decomposed.pushedPredicateObject);
 
     return decomposed.residualPredicate;
+  }
+
+
+  /**
+   * Returns the part of the filter that can be pushed-down to TS op for early row-level
+   * filtering. This filter can not contain any dynamic values ( e.g., BF range or In RS list)
+   *
+   * @param filterPreds the original predicates
+   * @param remainingFilterPreds portion of predicate which needs to be evaluated by Hive (populated by method)
+   * @return the part of the predicated that can be pushed-down for row-filtering
+   */
+  private static List<ExprNodeDesc> extractFiltersIngroringDynPreds(List<ExprNodeDesc> filterPreds,
+                                                                    List<ExprNodeDesc> remainingFilterPreds) {
+    List<ExprNodeDesc> rowFilterPredsIgnoringDynamicVals = new ArrayList<>();
+    for (int i = 0; i < filterPreds.size(); i++) {
+      if (filterPreds.get(i) instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) filterPreds.get(i);
+        if (GenericUDFInBloomFilter.class == func.getGenericUDF().getClass()) {
+          remainingFilterPreds.add(filterPreds.get(i));
+          continue;
+        } else if (GenericUDFBetween.class == func.getGenericUDF().getClass() &&
+                (func.getChildren().get(2) instanceof ExprNodeDynamicValueDesc ||
+                        func.getChildren().get(3) instanceof ExprNodeDynamicValueDesc)) {
+          remainingFilterPreds.add(filterPreds.get(i));
+          continue;
+        } else if (GenericUDFIn.class == func.getGenericUDF().getClass() &&
+                func.getChildren().get(1) instanceof ExprNodeDynamicListDesc) {
+          remainingFilterPreds.add(filterPreds.get(i));
+          continue;
+        }
+      } else if(filterPreds.get(i) instanceof ExprNodeDynamicListDesc) {
+        remainingFilterPreds.add(filterPreds.get(i));
+        continue;
+      }
+      rowFilterPredsIgnoringDynamicVals.add(filterPreds.get(i));
+    }
+    return rowFilterPredsIgnoringDynamicVals;
   }
 
   public static SemanticNodeProcessor getFilterProc() {

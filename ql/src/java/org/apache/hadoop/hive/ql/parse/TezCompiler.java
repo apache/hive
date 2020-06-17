@@ -1516,6 +1516,10 @@ public class TezCompiler extends TaskCompiler {
           LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
               probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
               tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
+          // FilterPPD already pushed a staticPred we can utilize
+          if (probeTsMap.getKey().getProbeDecodeContext() != null) {
+            tsCntx.setStaticFilterExpr(probeTsMap.getKey().getProbeDecodeContext().getStaticFilterExpr());
+          }
           probeTsMap.getKey().setProbeDecodeContext(tsCntx);
           probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
         }

@@ -25,7 +25,7 @@ INSERT INTO orders_fact values(67891, 110, '2006-06-30 00:00:00');
 
 SET hive.optimize.scan.probedecode=true;
 
-EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact join item_dim on (orders_fact.key2 = item_dim.key1);
+EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact join item_dim on (orders_fact.key2 = item_dim.key1) where orders_fact.nokey <> 100;
 
 -- two keys match, the remaining rows can be skipped
-select key1, key2, name, dt from orders_fact join item_dim on (orders_fact.key2 = item_dim.key1);
+select key1, key2, name, dt from orders_fact join item_dim on (orders_fact.key2 = item_dim.key1) where orders_fact.nokey <> 100;
