@@ -16,16 +16,11 @@
  * limitations under the License.
  */
 
-
-// 2.9G w/o dist
-// 4.9G w/ dist
-// 3.9G w/ perf
-
 properties([
     // max 5 build/branch/day
-//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
-  //  disableConcurrentBuilds(),
+    disableConcurrentBuilds(),
     parameters([
         string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
@@ -93,7 +88,7 @@ def hdbPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '180m',
+        resourceRequestCpu: '1800m',
         resourceLimitCpu: '4000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
@@ -132,15 +127,12 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-//    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
-   withEnv(["LOCKED_RESOURCE=T"]) {
-
+    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
         closure()
-  //    }
+      }
     }
-}
     finalLabel=currentBuild.currentResult
   } finally {
     setPrLabel(finalLabel)
@@ -163,7 +155,6 @@ def loadWS() {
 jobWrappers {
 
   def splits
-if(false)
   executorNode {
     container('hdb') {
       stage('Checkout') {
@@ -171,8 +162,6 @@ if(false)
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
-//        sh '''sleep 86400'''
-//        sh '''exit 1'''
       }
       stage('Upload') {
         saveWS()
@@ -211,7 +200,6 @@ reinit_metastore $dbType
         }
       }
     }
-    if(false)
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]
