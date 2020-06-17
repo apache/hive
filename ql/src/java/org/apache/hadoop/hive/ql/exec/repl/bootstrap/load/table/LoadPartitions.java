@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -58,6 +59,7 @@ import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -266,7 +268,8 @@ public class LoadPartitions {
       return ptnRootTask;
     }
 
-    Path stagingDir = replicaWarehousePartitionLocation;
+    Path loadTmpDir = replicaWarehousePartitionLocation;
+
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
     if (event.replicationSpec().isInReplicationScope() &&
@@ -276,38 +279,49 @@ public class LoadPartitions {
         // Migrating to transactional tables in bootstrap load phase.
         // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
         // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
-        stagingDir = new Path(stagingDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
+        loadTmpDir = new Path(loadTmpDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
       }
     } else {
        loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
           (event.replicationSpec().isMigratingToTxnTable()
               ? LoadFileType.KEEP_EXISTING
               : LoadFileType.OVERWRITE_EXISTING);
-      stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
+      loadTmpDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
-
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-        event.replicationSpec(),
-        new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
-        stagingDir,
-        context.hiveConf, false, false
-    );
-
+    Path partDataSrc = new Path(event.dataPath(), getPartitionName(sourceWarehousePartitionLocation));
+    /**
+     * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is hdfs,
+     * data is moved directly from Repl staging data dir of partition to the partition's location on target warehouse.
+     */
+    boolean performOnlyMove = event.replicationSpec().isInReplicationScope()
+            && Utils.onSameHDFSFileSystem(event.dataPath(), replicaWarehousePartitionLocation);
+    Path moveSource = performOnlyMove ? partDataSrc : loadTmpDir;
     Task<?> movePartitionTask = null;
     if (loadFileType != LoadFileType.IGNORE) {
       // no need to create move task, if file is moved directly to target location.
-      movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
+      movePartitionTask = movePartitionTask(table, partSpec, moveSource, loadFileType);
     }
-
-    if (ptnRootTask == null) {
-      ptnRootTask = copyTask;
+    if (performOnlyMove) {
+      if (ptnRootTask == null) {
+        ptnRootTask = addPartTask;
+      } else {
+        ptnRootTask.addDependentTask(addPartTask);
+      }
     } else {
-      ptnRootTask.addDependentTask(copyTask);
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+              event.replicationSpec(),
+              partDataSrc,
+              loadTmpDir, context.hiveConf, false, false
+      );
+      if (ptnRootTask == null) {
+        ptnRootTask = copyTask;
+      } else {
+        ptnRootTask.addDependentTask(copyTask);
+      }
+      copyTask.addDependentTask(addPartTask);
     }
-
     // Set Checkpoint task as dependant to the tail of add partition tasks. So, if same dump is
     // retried for bootstrap, we skip current partition update.
-    copyTask.addDependentTask(addPartTask);
     if (movePartitionTask != null) {
       addPartTask.addDependentTask(movePartitionTask);
       movePartitionTask.addDependentTask(ckptTask);
@@ -320,7 +334,7 @@ public class LoadPartitions {
   private String getPartitionName(Path partitionMetadataFullPath) {
     //Get partition name by removing the metadata base path.
     //Needed for getting the data path
-    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length());
+    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length() + 1);
   }
 
   /**

@@ -179,6 +179,63 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("800");
   }
 
+  @Test
+  public void testHdfsMoveOptimizationOnTargetStaging() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
+    withClauseOptions.addAll(externalTableBasePathWithClause());
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('ranchi')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("insert into table t2 partition(country='france') values ('paris')")
+            .dump(primaryDbName, withClauseOptions);
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResult("1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select place from t2 where country = 'india'")
+            .verifyResult("ranchi")
+            .run("select place from t2 where country = 'us'")
+            .verifyResult("austin")
+            .run("select place from t2 where country = 'france'")
+            .verifyResult("paris");
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1 values (2)")
+            .run("insert into table t2 partition(country='india') values ('mysore')")
+            .run("insert into table t2 partition(country='us') values ('decorah')")
+            .run("insert into table t2 partition(country='france') values ('yvoire')")
+            .run("create table t4 (id int)")
+            .run("insert into table t4 values (4)")
+            .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResults(new String[] {"1", "2"})
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't4'")
+            .verifyResult("t4")
+            .run("select place from t2 where country = 'india'")
+            .verifyResults(new String[] {"ranchi", "mysore"})
+            .run("select place from t2 where country = 'us'")
+            .verifyResults(new String[]{"austin", "decorah"})
+            .run("select place from t2 where country = 'france'")
+            .verifyResults(new String[]{"paris", "yvoire"})
+            .run("select id from t4")
+            .verifyResult("4");
+
+  }
+
   private List<String> getStagingLocationConfig(String stagingLoc) {
     List<String> confList = new ArrayList<>();
     confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");

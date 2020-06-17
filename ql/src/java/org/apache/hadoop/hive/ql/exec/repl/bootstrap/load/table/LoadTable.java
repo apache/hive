@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -56,7 +57,6 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -275,7 +275,7 @@ public class LoadTable {
   private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,
       Path fromURI) {
     Path dataPath = fromURI;
-    Path tmpPath = tgtPath;
+    Path loadTmpDir = tgtPath;
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
@@ -286,20 +286,24 @@ public class LoadTable {
         // Migrating to transactional tables in bootstrap load phase.
         // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
         // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
-        tmpPath = new Path(tmpPath, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
+        loadTmpDir = new Path(loadTmpDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
       }
     } else {
       loadFileType = (replicationSpec.isReplace() || replicationSpec.isMigratingToTxnTable())
               ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
-      tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
+      loadTmpDir = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
     }
 
     LOG.debug("adding dependent CopyWork/AddPart/MoveWork for table "
             + table.getCompleteName() + " with source location: "
             + dataPath.toString() + " and target location " + tgtPath.toString());
-
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
-            false, false);
+    /**
+     * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is hdfs,
+     * data is moved directly from Repl staging data dir of the partition to the partition's location on target
+     * warehouse.
+     */
+    boolean performOnlyMove = replicationSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
+    Path moveSrcPath = performOnlyMove ? dataPath : loadTmpDir;
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
@@ -307,7 +311,7 @@ public class LoadTable {
         // Write-id is hardcoded to 1 so that for migration, we just move all original files under base_1 dir.
         // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
         LoadTableDesc loadTableWork = new LoadTableDesc(
-                tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
+                moveSrcPath, Utilities.getTableDesc(table), new TreeMap<>(),
                 loadFileType, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID
         );
         loadTableWork.setStmtId(0);
@@ -317,20 +321,26 @@ public class LoadTable {
         moveWork.setLoadTableWork(loadTableWork);
       } else {
         LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-                Collections.singletonList(tmpPath),
+                Collections.singletonList(moveSrcPath),
                 Collections.singletonList(tgtPath),
                 true, null, null);
         moveWork.setMultiFilesDesc(loadFilesWork);
       }
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
-              tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
+              moveSrcPath, Utilities.getTableDesc(table), new TreeMap<>(),
               loadFileType, 0L
       );
       moveWork.setLoadTableWork(loadTableWork);
     }
     moveWork.setIsInReplicationScope(replicationSpec.isInReplicationScope());
     Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
+    if (performOnlyMove) {
+      //If staging directory is on target cluster and on hdfs, use just move opertaion for data copy.
+      return loadTableTask;
+    }
+    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, loadTmpDir, context.hiveConf,
+            false, false);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;
   }

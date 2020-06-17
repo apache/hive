@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,6 +49,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -365,6 +367,17 @@ public class Utils {
     } else {
       return Collections.singletonList(fromPath);
     }
+  }
+
+  public static boolean onSameHDFSFileSystem(Path dataPath, Path tgtPath) {
+    URI dataUri = dataPath.toUri();
+    URI tgtUri = tgtPath.toUri();
+    boolean hdfsScheme = dataUri.getScheme().equalsIgnoreCase("hdfs")
+            && tgtUri.getScheme().equalsIgnoreCase("hdfs");
+    if (hdfsScheme && StringUtils.equals(dataUri.getAuthority(), tgtUri.getAuthority())) {
+      return true;
+    }
+    return false;
   }
 
   public static boolean shouldDumpMetaDataOnly(HiveConf conf) {

@@ -1539,15 +1539,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t2 values (24)")
             .run("insert into t1 values (4)")
             .dump(primaryDbName, dumpClause);
-
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("select * from t1")
             .verifyResults(new String[]{"1", "2", "3", "4"})
             .run("select * from t2")
             .verifyResults(new String[]{"11", "21", "13", "24"});
-    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
-    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
   }
 
   @Test
@@ -1596,6 +1595,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t3 values (3)")
             .dump(primaryDbName, dumpClause);
 
+    Path tablet3Path = new Path(dbPath, "t3");
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+    assertTrue(fs.exists(tablet3Path));
+
+
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("select * from t1")
@@ -1606,9 +1612,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"t1", "t2", "t3"})
             .run("select * from t3")
             .verifyResults(new String[]{"1", "2", "3"});
-    assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
-    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
-    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+
+    assertFalse(fs.exists(tablet1Path));
+    assertFalse(fs.exists(tablet2Path));
+    assertFalse(fs.exists(tablet3Path));
   }
 
   @Test
