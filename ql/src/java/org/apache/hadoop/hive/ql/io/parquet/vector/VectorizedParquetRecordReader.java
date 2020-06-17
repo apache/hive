@@ -221,7 +221,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       FileSystem fs = file.getFileSystem(configuration);
       if (cacheKey instanceof Long && HiveConf.getBoolVar(
           cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-        file = HdfsUtils.getFileIdPath(fs, file, (long)cacheKey);
+        file = HdfsUtils.getFileIdPath(file, (long)cacheKey);
       }
     }
 

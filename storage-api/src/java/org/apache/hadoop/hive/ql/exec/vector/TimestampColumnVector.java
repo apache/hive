@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This class represents a nullable timestamp column vector capable of handing a wide range of
@@ -132,6 +133,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @param elementNum
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public Timestamp asScratchTimestamp(int elementNum) {
     scratchTimestamp.setTime(time[elementNum]);
     scratchTimestamp.setNanos(nanos[elementNum]);
@@ -142,6 +144,7 @@ public class TimestampColumnVector extends ColumnVector {
    * Return the scratch timestamp (contents undefined).
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public Timestamp getScratchTimestamp() {
     return scratchTimestamp;
   }
