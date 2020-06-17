@@ -156,7 +156,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Object ret;
+    Object ret = null;
     int retriesMade = 0;
     TException caughtException;
 
