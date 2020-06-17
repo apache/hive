@@ -199,7 +199,7 @@ if(false)
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
 set -x
-echo 127.0.0.1 dev_$dbType | sudo tee -a /dev/hosts
+echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
 ping -c2 dev_$dbType
