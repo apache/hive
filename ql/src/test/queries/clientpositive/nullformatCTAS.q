@@ -13,7 +13,7 @@ CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 DESCRIBE EXTENDED null_tab3;
 SHOW CREATE TABLE null_tab3;
 
-dfs -cat ${system:test.warehouse.dir}/null_tab3/*;
+dfs -cat ${system:test.local.warehouse.dir}/null_tab3/*;
 SELECT * FROM null_tab3;
 -- alter the null format and verify that the old null format is no longer in effect
 ALTER TABLE null_tab3 SET SERDEPROPERTIES ( 'serialization.null.format'='foo');
