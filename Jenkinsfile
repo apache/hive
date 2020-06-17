@@ -198,6 +198,7 @@ if(false)
           stage('init-metastore') {
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
+. /etc/profile.d/confs.sh
 sw hive-dev $PWD
 echo 127.0.0.1 dev_$dbType | sudo tee -a /dev/hosts
 export DOCKER_NETWORK=host
