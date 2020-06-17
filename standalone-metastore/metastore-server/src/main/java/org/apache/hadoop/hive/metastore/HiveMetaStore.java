@@ -3239,7 +3239,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean isExternalTablePurge(Table table) {
-      return MetaStoreUtils.isPropertyTrue(table.getParameters(), MetaStoreUtils.EXTERNAL_TABLE_PURGE);
+      return MetaStoreUtils.isExternalTablePurge(table);
     }
 
     @Override
@@ -4795,7 +4795,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       //    3.1. User has specified PURGE from the commandline, and if not,
       //    3.2. User has set the table to auto-purge.
       return ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-        || (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+          || (tbl.isSetParameters() && MetaStoreUtils.isPropertyTrue(tbl.getParameters(), "auto.purge"))
+          || (tbl.isSetParameters() && MetaStoreUtils.isPropertyTrue(tbl.getParameters(), "skip.trash"));
 
     }
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)

@@ -105,6 +105,7 @@ public class MetaStoreUtils {
   public static final String DB_EMPTY_MARKER = "!";
 
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
+  public static final String EXTERNAL_TABLE_AUTODELETE = "external.table.autodelete";
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -246,7 +247,7 @@ public class MetaStoreUtils {
       return false;
     }
 
-    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE);
+    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE) || isPropertyTrue(params, EXTERNAL_TABLE_AUTODELETE);
   }
 
   public static boolean isExternal(Map<String, String> tableParams){
