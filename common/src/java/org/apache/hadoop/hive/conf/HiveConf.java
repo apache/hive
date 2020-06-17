@@ -3233,8 +3233,6 @@ public class HiveConf extends Configuration {
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
 
     // HiveServer2 specific configs
-    HIVE_SERVER2_INIT_LOAD_TABLE_LIMIT("hive.server2.init.load.table.limit", -1,
-             "The number of tables from a database to be inited when starting Hive server2."),
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR_INTERVAL("hive.server2.clear.dangling.scratchdir.interval",

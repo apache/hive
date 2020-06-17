@@ -619,6 +619,9 @@ public class MetastoreConf {
     INIT_HOOKS("metastore.init.hooks", "hive.metastore.init.hooks", "",
         "A comma separated list of hooks to be invoked at the beginning of HMSHandler initialization. \n" +
             "An init hook is specified as the name of Java class which extends org.apache.riven.MetaStoreInitListener."),
+    INIT_LOAD_TABLE_LIMIT("metastore.init.load.table.limit",
+            "hive.metastore.init.load.table.limit", -1,
+            "The number of tables from a database to be inited when starting Hive server2."),
     INIT_METADATA_COUNT_ENABLED("metastore.initial.metadata.count.enabled",
         "hive.metastore.initial.metadata.count.enabled", true,
         "Enable a metadata count at metastore startup for metrics."),
