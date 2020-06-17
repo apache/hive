@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.NoOpRangerRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,8 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
 
   private transient RangerRestClient rangerRestClient;
 
+  private transient ReplLogger replLogger;
+
   public RangerDumpTask() {
     super();
   }
@@ -71,7 +75,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
   @Override
   public int execute() {
     try {
-      int exportCount = 0;
+      long exportCount = 0;
       Path filePath = null;
       LOG.info("Exporting Ranger Metadata");
       if (rangerRestClient == null) {
@@ -83,6 +87,8 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
                 + "Please pass a valid config hive.repl.authorization.provider.service.endpoint");
       }
       String rangerHiveServiceName = conf.getVar(REPL_RANGER_SERVICE_NAME);
+      replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
+      replLogger.startLog();
       RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,
               work.getDbName(), rangerHiveServiceName);
       List<RangerPolicy> rangerPolicies = rangerExportPolicyList.getPolicies();
@@ -101,6 +107,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
           exportCount = rangerExportPolicyList.getListSize();
         }
       }
+      replLogger.endLog(exportCount);
       LOG.debug("Ranger policy export filePath:" + filePath);
       LOG.info("Number of ranger policies exported {}", exportCount);
       return 0;

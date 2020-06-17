@@ -61,7 +61,7 @@ public class NoOpRangerRestClient implements RangerRestClient {
 
   @Override
   public RangerExportPolicyList readRangerPoliciesFromJsonFile(Path filePath, HiveConf conf) throws SemanticException {
-    return null;
+    return new RangerExportPolicyList();
   }
 
   @Override

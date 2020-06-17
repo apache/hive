@@ -15,28 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * ReplLogger.
+ * RangerDumpBegin.
  *
- * Logger class for Repl Events.
+ * ReplState to define Ranger Dump Start.
  **/
-public abstract class ReplLogger<T> {
+public class RangerDumpBegin extends ReplState {
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
+  @JsonProperty
+  private String dbName;
 
-  public ReplLogger() {
-  }
+  @SuppressFBWarnings("URF_UNREAD_FIELD")
+  @JsonProperty
+  private Long dumpStartTime;
 
-  public abstract void startLog();
-
-  public abstract void endLog(T logVal);
-
-  public void tableLog(String tableName, TableType tableType) {
-  }
-  public void functionLog(String funcName){
-  }
-  public void eventLog(String eventId, String eventType) {
+  public RangerDumpBegin(String dbName) {
+    this.dbName = dbName;
+    this.dumpStartTime = System.currentTimeMillis() / 1000;
   }
 }

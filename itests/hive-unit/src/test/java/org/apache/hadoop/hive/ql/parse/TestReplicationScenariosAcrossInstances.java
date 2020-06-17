@@ -1538,8 +1538,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   /*
-Can't test complete replication as mini ranger is not supported
-Testing just the configs and no impact on existing replication
+  Can't test complete replication as mini ranger is not supported
+  Testing just the configs and no impact on existing replication
  */
   @Test
   public void testFailureUnsupportedAuthorizerReplication() throws Throwable {

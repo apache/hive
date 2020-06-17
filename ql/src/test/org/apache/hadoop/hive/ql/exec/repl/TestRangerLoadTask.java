@@ -23,15 +23,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.ArgumentCaptor;
+import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
 
@@ -101,5 +103,48 @@ public class TestRangerLoadTask {
     Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
     int status = task.execute();
     Assert.assertEquals(0, status);
+  }
+
+  @Test
+  public void testSuccessRangerDumpMetrics() throws Exception {
+    Logger logger = Mockito.mock(Logger.class);
+    Whitebox.setInternalState(ReplState.class, logger);
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
+        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
+    Path rangerDumpPath = new Path("/tmp");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    mockClient.saveRangerPoliciesToFile(rangerPolicyList,
+        rangerDumpPath, ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME, new HiveConf());
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    int status = task.execute();
+    Assert.assertEquals(0, status);
+    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
+    Mockito.verify(logger,
+        Mockito.times(2)).info(replStateCaptor.capture(),
+        eventCaptor.capture(), eventDetailsCaptor.capture());
+    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
+    Assert.assertEquals("RANGER_LOAD_START", eventCaptor.getAllValues().get(0));
+    Assert.assertEquals("RANGER_LOAD_END", eventCaptor.getAllValues().get(1));
+    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
+        .toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\":\"tgtdb\""
+        + ",\"estimatedNumPolicies\":1,\"loadStartTime\":"));
+    Assert.assertTrue(eventDetailsCaptor
+        .getAllValues().get(1).toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\""
+        + ":\"tgtdb\",\"actualNumPolicies\":1,\"loadEndTime\""));
   }
 }

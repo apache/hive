@@ -17,44 +17,36 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log;
 
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadBegin;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadEnd;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.IncrementalLoadEvent;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.state.RangerLoadBegin;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.state.RangerLoadEnd;
 
 /**
- * IncrementalLoadLogger.
+ * RangerLoadLogger.
  *
- * Repllogger for Incremental Load.
+ * Repllogger for Ranger Load.
  **/
-public class IncrementalLoadLogger extends ReplLogger<String> {
-  private String dbName;
+public class RangerLoadLogger extends ReplLogger<Long> {
+  private String sourceDbName;
+  private String targetDbName;
   private String dumpDir;
-  private long numEvents;
-  private long eventSeqNo;
+  private long estimatedNumPolicies;
 
-  public IncrementalLoadLogger(String dbName, String dumpDir, int numEvents) {
-    this.dbName = dbName;
+  public RangerLoadLogger(String sourceDbName, String targetDbName, String dumpDir, long estimatedNumPolicies) {
+    this.sourceDbName = sourceDbName;
+    this.targetDbName = targetDbName;
+    this.estimatedNumPolicies = estimatedNumPolicies;
     this.dumpDir = dumpDir;
-    this.numEvents = numEvents;
-    this.eventSeqNo = 0;
   }
 
   @Override
   public void startLog() {
-    (new IncrementalLoadBegin(dbName, dumpDir, numEvents)).log(LogTag.START);
+    new RangerLoadBegin(sourceDbName, targetDbName, estimatedNumPolicies).log(LogTag.RANGER_LOAD_START);
   }
 
   @Override
-  public void eventLog(String eventId, String eventType) {
-    eventSeqNo++;
-    (new IncrementalLoadEvent(dbName, eventId, eventType, eventSeqNo, numEvents))
-            .log(LogTag.EVENT_LOAD);
-  }
-
-  @Override
-  public void endLog(String lastReplId) {
-    (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.END);
+  public void endLog(Long count) {
+    new RangerLoadEnd(sourceDbName, targetDbName, count, dumpDir).log(LogTag.RANGER_LOAD_END);
   }
 }
