@@ -199,7 +199,7 @@ public class TestMetastoreExpr extends TestCase {
       return fn(name, TypeInfoFactory.booleanTypeInfo, args);
     }
 
-    private ExprBuilder fn(String name, TypeInfo ti, int args) throws Exception {
+    public ExprBuilder fn(String name, TypeInfo ti, int args) throws Exception {
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
       for (int i = 0; i < args; ++i) {
         children.add(stack.pop());
