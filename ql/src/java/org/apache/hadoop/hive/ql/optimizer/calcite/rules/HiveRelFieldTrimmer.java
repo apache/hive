@@ -105,7 +105,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       new ThreadLocal<>();
 
 
-  private HiveRelFieldTrimmer(boolean fetchStats) {
+  protected HiveRelFieldTrimmer(boolean fetchStats) {
     this(fetchStats, true);
   }
 
