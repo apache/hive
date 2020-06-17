@@ -594,8 +594,7 @@ public class ThriftHttpServlet extends TServlet {
   private String[] getAuthHeaderTokens(HttpServletRequest request,
       String authType) throws HttpAuthenticationException {
     String authHeaderBase64Str = getAuthHeader(request, authType);
-    String authHeaderString = StringUtils.newStringUtf8(
-        Base64.decodeBase64(authHeaderBase64Str));
+    String authHeaderString = StringUtils.newStringUtf8(Base64.decodeBase64(authHeaderBase64Str));
 
     return authHeaderString.split(":");
   }
