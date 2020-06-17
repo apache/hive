@@ -263,8 +263,6 @@ class CompactorTestUtil {
         return RangeResponse.ALL;
       }
 
-      @Override
-      public void locallyCommitWriteId(long writeId) {}
     };
 
     OrcInputFormat aif = new OrcInputFormat();
