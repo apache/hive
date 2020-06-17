@@ -43,7 +43,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SER
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
 
 /**
- * Unit test class for testing Ranger Dump.
+ * Unit test class for testing Ranger Load.
  */
 public class TestRangerLoadTask {
 
