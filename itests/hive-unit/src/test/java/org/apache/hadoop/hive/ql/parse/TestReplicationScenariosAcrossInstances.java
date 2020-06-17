@@ -1497,8 +1497,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testRangerReplication() throws Throwable {
     List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'",
-        "'hive.repl.authorization.provider.service.endpoint'='http://localhost:6080/ranger'");
+        "'hive.in.test'='true'");
     primary.run("use " + primaryDbName)
         .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
@@ -1513,28 +1512,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] {"acid_table", "table1"})
         .run("select * from table1")
         .verifyResults(new String[] {"1", "2"});
-  }
-
-  /*
-  Can't test complete replication as mini ranger is not supported
-  Testing just the configs and no impact on existing replication
-   */
-  @Test
-  public void testFailureRangerReplication() throws Throwable {
-    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'");
-    primary.run("use " + primaryDbName)
-        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
-            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
-        .run("create table table1 (i String)")
-        .run("insert into table1 values (1)")
-        .run("insert into table1 values (2)");
-    try {
-      primary.dump(primaryDbName, clause);
-    } catch (Exception e) {
-      assertEquals("Ranger endpoint is not valid. Please pass a valid config "
-          + "hive.repl.authorization.provider.service.endpoint", e.getMessage());
-    }
   }
 
   /*

@@ -530,13 +530,6 @@ public class HiveConf extends Configuration {
                     + "with the hive data and metadata replication. Set the configuration "
                     + "hive.repl.include.authorization.metadata to false to disable "
                     + "security policies being replicated "),
-    REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT("hive.repl.authorization.provider.service.endpoint",
-            "",
-            "This configuration will define the authorization service endpoint"),
-    REPL_RANGER_SERVICE_NAME("hive.repl.ranger.service.name",
-            "hive",
-            "This configuration will define the service name for which the ranger authorization"
-                    + " policies needs to be replicated"),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"

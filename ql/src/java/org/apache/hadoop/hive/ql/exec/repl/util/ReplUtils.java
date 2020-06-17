@@ -91,6 +91,12 @@ public class ReplUtils {
 
   public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies.json";
 
+  public static final String RANGER_REST_URL = "ranger.plugin.hive.policy.rest.url";
+
+  public static final String RANGER_HIVE_SERVICE_NAME = "ranger.plugin.hive.service.name";
+
+  public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
+
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
   public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
