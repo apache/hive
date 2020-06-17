@@ -1451,6 +1451,10 @@
       <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
+	    <exclude>**/.factorypath</exclude>
+	    <exclude>**/.classpath</exclude>
+	    <exclude>**/.project</exclude>
+	    <exclude>**/.settings/**</exclude>
 	    <exclude>**/*.arcconfig</exclude>
 	    <exclude>**/package-info.java</exclude>
 	    <exclude>**/*.properties</exclude>
