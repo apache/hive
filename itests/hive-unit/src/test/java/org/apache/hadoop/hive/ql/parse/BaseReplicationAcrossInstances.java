@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -46,6 +48,8 @@ public class BaseReplicationAcrossInstances {
   String primaryDbName, replicatedDbName;
   static HiveConf conf; // for primary
   static HiveConf replicaConf;
+  private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static String fullyQualifiedReplicaExternalBase;
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
@@ -63,6 +67,7 @@ public class BaseReplicationAcrossInstances {
     localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     replicaConf = conf;
+    setReplicaExternalBase();
   }
 
   static void internalBeforeClassSetupExclusiveReplica(Map<String, String> primaryOverrides,
@@ -95,12 +100,18 @@ public class BaseReplicationAcrossInstances {
     localOverrides.put("fs.defaultFS", miniReplicaDFSCluster.getFileSystem().getUri().toString());
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
+    setReplicaExternalBase();
   }
 
   @AfterClass
   public static void classLevelTearDown() throws IOException {
     primary.close();
     replica.close();
+  }
+
+  private static void setReplicaExternalBase() throws IOException {
+    FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
   }
 
   @Before

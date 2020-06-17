@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -58,6 +60,8 @@ public class BaseReplicationScenariosAcidTables {
   public final TestName testName = new TestName();
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static String fullyQualifiedReplicaExternalBase;
   static WarehouseInstance primary;
   static WarehouseInstance replica, replicaNonAcid;
   static HiveConf conf;
@@ -99,6 +103,12 @@ public class BaseReplicationScenariosAcidTables {
     }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+    setReplicaExternalBase();
+  }
+
+  private static void setReplicaExternalBase() throws IOException {
+    FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
   }
 
   @AfterClass

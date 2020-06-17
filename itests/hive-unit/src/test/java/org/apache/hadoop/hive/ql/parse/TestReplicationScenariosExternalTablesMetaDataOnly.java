@@ -60,7 +60,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseReplicationAcrossInstances {
 
-  private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
   String extraPrimaryDb;
 
   @BeforeClass
@@ -211,7 +210,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     externalTableBasePathWithClause();
     List<String> loadWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + REPLICA_EXTERNAL_BASE + "'",
+                    + fullyQualifiedReplicaExternalBase + "'",
             "'distcp.options.update'=''"
     );
 
@@ -478,8 +477,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
                                    "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + REPLICA_EXTERNAL_BASE + "'",
-            "'distcp.options.pugpb'=''");
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + fullyQualifiedReplicaExternalBase
+            + "'", "'distcp.options.pugpb'=''");
     tuple = primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("create external table t3 (id int)")
@@ -644,7 +643,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
+    return ReplicationTestUtils.externalTableBasePathWithClause(fullyQualifiedReplicaExternalBase, replica);
   }
 
   private void assertFalseExternalFileInfo(Path externalTableInfoFile)

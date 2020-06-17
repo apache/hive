@@ -751,6 +751,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private List<DirCopyWork> dirLocationsToCopy(List<Path> sourceLocations)
           throws HiveException {
+    if (sourceLocations.isEmpty()) {
+      return Collections.emptyList();
+    }
     List<DirCopyWork> list = new ArrayList<>(sourceLocations.size());
     String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     // this is done to remove any scheme related information that will be present in the base path
@@ -758,8 +761,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     URI basePathUri  = (baseDir == null) ? null : new Path(baseDir).toUri();
     if (basePathUri == null || basePathUri.getScheme() == null || basePathUri.getAuthority() == null) {
       throw new SemanticException(
-              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' ('%s') is required",
-                      baseDir));
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' %s is required",
+                      baseDir == null ? "" : "('" + baseDir + "')"));
     }
     Path basePath = new Path(baseDir);
     for (Path sourcePath : sourceLocations) {

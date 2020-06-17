@@ -66,7 +66,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
 
-  private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
   String extraPrimaryDb;
 
   @BeforeClass
@@ -227,7 +226,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     Hive hiveForReplica = Hive.get(replica.hiveConf);
     org.apache.hadoop.hive.ql.metadata.Table replicaTable = hiveForReplica.getTable(replicaTableName);
     Path dataLocation = replicaTable.getDataLocation();
-    assertEquals(REPLICA_EXTERNAL_BASE + sourceLocation.toUri().getPath(),
+    assertEquals(fullyQualifiedReplicaExternalBase + sourceLocation.toUri().getPath(),
         dataLocation.toUri().getPath());
     if (sourceTable.isPartitioned()) {
       Set<Partition> sourcePartitions = hiveForPrimary.getAllPartitionsOf(sourceTable);
@@ -235,7 +234,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       assertEquals(sourcePartitions.size(), replicaPartitions.size());
       List<String> expectedPaths =
           sourcePartitions.stream()
-              .map(p -> REPLICA_EXTERNAL_BASE + p.getDataLocation().toUri().getPath())
+              .map(p -> fullyQualifiedReplicaExternalBase + p.getDataLocation().toUri().getPath())
               .collect(Collectors.toList());
       List<String> actualPaths =
           replicaPartitions.stream()
@@ -257,7 +256,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     externalTableBasePathWithClause();
     List<String> withClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + REPLICA_EXTERNAL_BASE + "'",
+                    + fullyQualifiedReplicaExternalBase + "'",
             "'distcp.options.update'=''"
     );
 
@@ -1010,12 +1009,13 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
+    return ReplicationTestUtils.externalTableBasePathWithClause(fullyQualifiedReplicaExternalBase, replica);
   }
 
   private List<String> externalTableWithClause(Boolean bootstrapExtTbl, Boolean includeExtTbl)
           throws IOException, SemanticException {
-    List<String> extTblBaseDir = ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
+    List<String> extTblBaseDir = ReplicationTestUtils.externalTableBasePathWithClause(fullyQualifiedReplicaExternalBase,
+            replica);
     return ReplicationTestUtils.externalTableWithClause(extTblBaseDir, bootstrapExtTbl, includeExtTbl);
   }
 

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -66,6 +67,9 @@ public final class ReplExternalTables {
 
   public static String externalTableLocation(HiveConf hiveConf, String location) throws SemanticException {
     String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    if (StringUtils.isEmpty(baseDir)) {
+      throw new SemanticException("Config 'hive.repl.replica.external.table.base.dir' is required");
+    }
     Path basePath = new Path(baseDir);
     Path currentPath = new Path(location);
     Path dataLocation = externalTableDataPath(hiveConf, basePath, currentPath);
