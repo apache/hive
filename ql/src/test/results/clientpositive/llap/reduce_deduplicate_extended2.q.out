@@ -630,7 +630,7 @@ STAGE PLANS:
                 Statistics: Num rows: 62500 Data size: 11125000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
-                  null sort order: zz
+                  null sort order: az
                   sort order: -+
                   Statistics: Num rows: 62500 Data size: 11125000 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
@@ -869,7 +869,7 @@ STAGE PLANS:
                   Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string), _col0 (type: string)
-                    null sort order: zz
+                    null sort order: aa
                     sort order: --
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
@@ -941,7 +941,7 @@ STAGE PLANS:
                   Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string), _col0 (type: string)
-                    null sort order: zz
+                    null sort order: aa
                     sort order: --
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
         Union 5 
