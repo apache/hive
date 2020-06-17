@@ -91,6 +91,7 @@
     <!-- Determines the log level of the console logger, hive.log is independent of this-->
     <test.console.log.level>INFO</test.console.log.level>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.local.warehouse.dir>${project.build.directory}/localfs/warehouse</test.local.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
@@ -193,7 +194,7 @@
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.9.1</tez.version>
+    <tez.version>0.9.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
@@ -1412,6 +1413,7 @@
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables></test.src.tables>
@@ -1451,6 +1453,10 @@
       <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
+	    <exclude>**/.factorypath</exclude>
+	    <exclude>**/.classpath</exclude>
+	    <exclude>**/.project</exclude>
+	    <exclude>**/.settings/**</exclude>
 	    <exclude>**/*.arcconfig</exclude>
 	    <exclude>**/package-info.java</exclude>
 	    <exclude>**/*.properties</exclude>
