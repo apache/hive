@@ -68,6 +68,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
   private boolean localMetaStore;
+  private final int initTableLimit;
 
 
   protected RetryingMetaStoreClient(Configuration conf, Class<?>[] constructorArgTypes,
@@ -89,6 +90,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     this.lastConnectionTime = System.currentTimeMillis();
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = (msUri == null) || msUri.trim().isEmpty();
+    this.initTableLimit = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_INIT_LOAD_TABLE_LIMIT);
 
     reloginExpiringKeytabUser();
 
@@ -200,6 +202,21 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             } else {
               LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
               throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
+            }
+          }
+        }
+
+        if (initTableLimit != -1){
+          if (args != null) {
+            int maxTableNum = 0;
+            for (Object o : args) {
+              int len = o.toString().split(",").length;
+              if (maxTableNum < len) {
+                maxTableNum = len;
+              }
+            }
+            if (maxTableNum > initTableLimit) {
+              break;
             }
           }
         }
