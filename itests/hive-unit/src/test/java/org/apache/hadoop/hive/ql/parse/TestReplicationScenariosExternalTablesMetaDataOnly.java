@@ -499,9 +499,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         Path dumpPath = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME);
         assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
 
-        // _bootstrap/<db_name>/t2
-        // _bootstrap/<db_name>/t3
-        Path dbPath = new Path(dumpPath, primaryDbName);
+       // _bootstrap/metedata/<db_name>/t2
+      // _bootstrap/metedata/<db_name>/t3
+      Path dbPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME + File.separator + primaryDbName);
         Path tblPath = new Path(dbPath, "t2");
         assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
         tblPath = new Path(dbPath, "t3");

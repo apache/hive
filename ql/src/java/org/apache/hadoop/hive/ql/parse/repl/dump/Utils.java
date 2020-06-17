@@ -64,22 +64,60 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
-    DataOutputStream outStream = null;
-    try {
-      FileSystem fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile);
-      for (List<String> values : listValues) {
-        outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-        for (int i = 1; i < values.size(); i++) {
-          outStream.write(Utilities.tabCode);
-          outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+    writeOutput(listValues, outputFile, hiveConf, false);
+  }
+
+  public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile, update);
+          for (List<String> values : listValues) {
+            outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+            for (int i = 1; i < values.size(); i++) {
+              outStream.write(Utilities.tabCode);
+              outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+            }
+            outStream.write(Utilities.newLineCode);
+          }
+        } finally {
+          IOUtils.closeStream(outStream);
         }
-        outStream.write(Utilities.newLineCode);
+        return null;
       }
-    } catch (IOException e) {
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
       throw new SemanticException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
+    }
+  }
+
+  public static void writeOutput(String content, Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile);
+          outStream.writeBytes(content);
+          outStream.write(Utilities.newLineCode);
+        } finally {
+          IOUtils.closeStream(outStream);
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
   }
 
@@ -98,6 +136,14 @@ public class Utils {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws IOException {
+    FileSystem fs = filePath.getFileSystem(hiveConf);
+    if (fs.exists(filePath)) {
+      return true;
+    }
+    return false;
   }
 
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {

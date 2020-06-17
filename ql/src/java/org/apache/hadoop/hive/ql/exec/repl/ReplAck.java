@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
  */
 public enum ReplAck {
     DUMP_ACKNOWLEDGEMENT("_finished_dump"),
+    EVENTS_DUMP("_events_dump"),
     LOAD_ACKNOWLEDGEMENT("_finished_load");
     private String ack;
     ReplAck(String ack) {

@@ -86,8 +86,8 @@ public class ReplLoadWork implements Serializable {
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
-        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn,
-                true, hiveConf);
+        this.bootstrapIterator = new BootstrapEventsIterator(
+                new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true, hiveConf);
         this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       } else {
         this.bootstrapIterator = null;

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
@@ -241,13 +240,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
 
     // Check if the DB dump path have any tables other than the ones listed in bootstrappedTables.
-    Path dbPath = new Path(dumpPath, primaryDbName);
-    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        return !path.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
-      }
-    });
+    Path dbPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME + File.separator + primaryDbName);
+    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath);
     Assert.assertEquals(fileStatuses.length, bootstrappedTables.length);
 
     // Eg: _bootstrap/<db_name>/t2, _bootstrap/<db_name>/t3 etc

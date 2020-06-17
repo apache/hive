@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -29,11 +31,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.Assert;
@@ -48,6 +53,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -408,6 +414,95 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   }
 
   @Test
+  public void externalTableIncrementalCheckpointing() throws Throwable {
+    List<String> withClause = externalTableBasePathWithClause();
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .run("create external table t2 (id int)")
+            .run("insert into table t2 values (3)")
+            .run("insert into table t2 values (4)")
+            .dump(primaryDbName, withClause);
+
+    assertExternalFileInfo(Arrays.asList(new String[]{"t1", "t2"}), tuple.dumpLocation, primaryDbName, false);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[] {"1", "2"})
+            .run("select * from t2")
+            .verifyResults(new String[] {"3", "4"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    withClause = externalTableWithClause(true, true);
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("drop table t1")
+            .run("insert into table t2 values (5)")
+            .run("insert into table t2 values (6)")
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (8)")
+            .dump(primaryDbName, withClause);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t2", "t3"), incrementalDump1.dumpLocation, true);
+
+    FileSystem fs = primary.miniDFSCluster.getFileSystem();
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+    Path bootstrapDir = new Path(hiveDumpDir, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+    Path metaDir = new Path(bootstrapDir, EximUtil.METADATA_PATH_NAME);
+    Path dataDir = new Path(bootstrapDir, EximUtil.DATA_PATH_NAME);
+    assertFalse(fs.exists(dataDir));
+    long oldMetadirModTime = fs.getFileStatus(metaDir).getModificationTime();
+    fs.delete(ackFile, false);
+    fs.delete(ackLastEventID, false);
+    //delete all the event folders except first event
+    long startEvent = Long.valueOf(tuple.lastReplicationId) + 1;
+    Path startEventRoot = new Path(hiveDumpDir, String.valueOf(startEvent));
+    Map<Path, Long> firstEventModTimeMap = new HashMap<>();
+    for (FileStatus fileStatus: fs.listStatus(startEventRoot)) {
+      firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+    }
+    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
+    assertTrue(endEvent - startEvent > 1);
+    for (long eventDir = startEvent + 1;  eventDir <= endEvent; eventDir++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
+      if (fs.exists(eventRoot)) {
+        fs.delete(eventRoot, true);
+      }
+    }
+    Utils.writeOutput(String.valueOf(startEvent), ackLastEventID, primary.hiveConf);
+    WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
+    assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
+    assertTrue(fs.getFileStatus(metaDir).getModificationTime() > oldMetadirModTime);
+    assertExternalFileInfo(Arrays.asList("t2", "t3"), incrementalDump2.dumpLocation, true);
+    //first event meta is not rewritten
+    for (Map.Entry<Path, Long> entry: firstEventModTimeMap.entrySet()) {
+      assertEquals((long)entry.getValue(), fs.getFileStatus(entry.getKey()).getModificationTime());
+    }
+    replica.load(replicatedDbName, primaryDbName)
+            .status(replicatedDbName)
+            .verifyResult(incrementalDump2.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[] {"t1"})
+            .run("select * from t2")
+            .verifyResults(new String[] {"3", "4", "5", "6"})
+            .run("select * from t3")
+            .verifyResult("8")
+            .verifyReplTargetProperty(replicatedDbName);
+  }
+
+  @Test
   public void externalTableIncrementalReplication() throws Throwable {
     List<String> withClause = externalTableBasePathWithClause();
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
@@ -563,7 +658,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // _bootstrap/<db_name>/t2
     // _bootstrap/<db_name>/t3
-    Path dbPath = new Path(dumpPath, primaryDbName);
+    Path dbPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME + File.separator + primaryDbName);
     Path tblPath = new Path(dbPath, "t2");
     assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
     tblPath = new Path(dbPath, "t3");

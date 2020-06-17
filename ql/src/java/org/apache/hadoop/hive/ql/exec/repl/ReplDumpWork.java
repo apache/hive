@@ -47,7 +47,8 @@ public class ReplDumpWork implements Serializable {
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventFrom;
   Long eventTo;
-  static String testInjectDumpDir = null;
+  private static String testInjectDumpDir = null;
+  private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
   private transient Iterator<DirCopyWork> dirCopyIterator;
@@ -57,7 +58,22 @@ public class ReplDumpWork implements Serializable {
   private boolean shouldOverwrite;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
+    injectNextDumpDirForTest(dumpDir, false);
+  }
+  public static void injectNextDumpDirForTest(String dumpDir, boolean autoIncr) {
     testInjectDumpDir = dumpDir;
+    testInjectDumpDirAutoIncrement = autoIncr;
+  }
+
+  public static synchronized String getTestInjectDumpDir() {
+    return testInjectDumpDir;
+  }
+
+  public static synchronized String getInjectNextDumpDirForTest() {
+    if (testInjectDumpDirAutoIncrement) {
+      testInjectDumpDir = String.valueOf(Integer.parseInt(testInjectDumpDir) + 1);
+    }
+    return testInjectDumpDir;
   }
 
   public static void testDeletePreviousDumpMetaPath(boolean failDeleteDumpMeta) {
