@@ -199,9 +199,10 @@ if(false)
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
 set -x
+echo 127.0.0.1 dev_$dbType | sudo tee -a /dev/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
-echo 127.0.0.1 dev_$dbType | sudo tee -a /dev/hosts
+ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 reinit_metastore $dbType
 '''
