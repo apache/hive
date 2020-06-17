@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -725,7 +726,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   private void truncateTempTable(org.apache.hadoop.hive.metastore.api.Table table) throws MetaException, TException {
 
-    boolean isAutopurge = "true".equalsIgnoreCase(table.getParameters().get("auto.purge"));
+    boolean isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
     try {
       // this is not transactional
       Path location = new Path(table.getSd().getLocation());
@@ -737,13 +738,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        FileUtils.moveToTrash(fs, location, conf, isAutopurge);
+        FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
       } else {
         FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
         if ((statuses != null) && (statuses.length > 0)) {
-          boolean success = Hive.trashFiles(fs, statuses, conf, isAutopurge);
+          boolean success = Hive.trashFiles(fs, statuses, conf, isSkipTrash);
           if (!success) {
             throw new HiveException("Error in deleting the contents of " + location.toString());
           }
