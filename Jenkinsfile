@@ -167,8 +167,8 @@ jobWrappers {
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
-        sh '''sleep 86400'''
-        sh '''exit 1'''
+//        sh '''sleep 86400'''
+//        sh '''exit 1'''
       }
       stage('Upload') {
         saveWS()
@@ -181,10 +181,28 @@ jobWrappers {
     }
   }
 
-  if(false)
   stage('Testing') {
-
     def branches = [:]
+    for (def dbType in ['derby','postgres']) {
+      def splitName = "metastore_init@$dbType"
+      branches[splitName] = {
+        executorNode {
+          stage('Prepare') {
+              loadWS();
+          }
+          stage('init-metastore') {
+             withEnv(["dbType=$dbType"]) {
+               sh '''#!/bin/bash -e
+sw hive-dev $PWD
+export DOCKER_NETWORK=host
+reinit_metastore $dbType
+'''
+            }
+          }
+        }
+      }
+    }
+    if(false)
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]
