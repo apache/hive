@@ -90,7 +90,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     this.lastConnectionTime = System.currentTimeMillis();
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = (msUri == null) || msUri.trim().isEmpty();
-    this.initTableLimit = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_INIT_LOAD_TABLE_LIMIT);
+    this.initTableLimit = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_INIT_LOAD_TABLE_LIMIT);
 
     reloginExpiringKeytabUser();
 
