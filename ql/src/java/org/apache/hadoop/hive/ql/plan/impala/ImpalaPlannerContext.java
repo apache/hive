@@ -49,6 +49,12 @@ public class ImpalaPlannerContext extends PlannerContext {
   @Override
   public Analyzer getRootAnalyzer() {return analyzer;}
 
+  @Override
+  public boolean hasTableSink() {
+    // TODO: CDPD-13837: return true/false based on statement types
+    return false;
+  }
+
   public void setExecRequest(TExecRequest execRequest) {
     this.execRequest = execRequest;
   }

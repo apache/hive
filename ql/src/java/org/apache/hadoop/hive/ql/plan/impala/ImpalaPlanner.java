@@ -28,12 +28,15 @@ import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.planner.DataPartition;
 import org.apache.impala.planner.DistributedPlanner;
+import org.apache.impala.planner.ParallelPlanner;
 import org.apache.impala.planner.PlanFragment;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
+import org.apache.impala.planner.SingleNodePlanner;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TColumn;
@@ -116,17 +119,30 @@ public class ImpalaPlanner {
     // since we are using Impala's cardinality estimates in the physical planning.
     Planner.invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
 
+    Planner.checkParallelPlanEligibility(ctx_);
+
+    SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
+
     List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
     Preconditions.checkArgument(fragments.size() > 0);
     PlanFragment planFragmentRoot = fragments.get(0);
+    List<PlanFragment> rootFragmentList = new ArrayList<>();
+
+    if (Planner.useParallelPlan(ctx_)) {
+      ParallelPlanner parallelPlanner = new ParallelPlanner(ctx_);
+      List<PlanFragment> parallelPlans = parallelPlanner.createPlans(planFragmentRoot);
+      ctx_.getTimeline().markEvent("Parallel plans created");
+
+      // The rootFragmentList contains the 'root' fragments of each of the parallel plans
+      rootFragmentList.addAll(parallelPlans);
+    } else {
+      rootFragmentList.add(planFragmentRoot);
+    }
 
     TQueryExecRequest queryExecRequest = new TQueryExecRequest();
     TExecRequest result = createExecRequest(ctx_.getQueryCtx(), planFragmentRoot,
         queryExecRequest);
     queryExecRequest.setHost_list(hostLocations);
-
-    List<PlanFragment> rootFragmentList = new ArrayList<>();
-    rootFragmentList.add(planFragmentRoot);
 
     boolean isQuery = getStmtType() == TStmtType.QUERY;
 
@@ -135,20 +151,23 @@ public class ImpalaPlanner {
         ctx_, isQuery);
 
     // create the plan's exec-info
-    TPlanExecInfo tPlanExecInfo =
-        Frontend.createPlanExecInfo(planFragmentRoot, ctx_.getQueryCtx());
+    for (PlanFragment planRoot : rootFragmentList) {
+      TPlanExecInfo tPlanExecInfo = Frontend.createPlanExecInfo(planRoot, ctx_.getQueryCtx());
 
-    queryExecRequest.addToPlan_exec_info(tPlanExecInfo);
+      queryExecRequest.addToPlan_exec_info(tPlanExecInfo);
+    }
 
     // assign fragment idx
     int idx = 0;
-    for (TPlanFragment fragment : tPlanExecInfo.fragments) {
-      fragment.setIdx(idx++);
+    for (TPlanExecInfo tPlanExecInfo : queryExecRequest.getPlan_exec_info()) {
+      for (TPlanFragment fragment : tPlanExecInfo.fragments) {
+        fragment.setIdx(idx++);
+      }
     }
 
     // create EXPLAIN output after setting everything else
     queryExecRequest.setQuery_ctx(ctx_.getQueryCtx()); // needed by getExplainString()
-    List<PlanFragment> allFragments = planFragmentRoot.getNodesPreOrder();
+    List<PlanFragment> allFragments = rootFragmentList.get(0).getNodesPreOrder();
 
     // to mimic Impala's behavior, use EXTENDED mode explain except for EXPLAIN statements
     TExplainLevel explainLevel = isExplain ? ctx_.getQueryOptions().getExplain_level() :
@@ -191,11 +210,20 @@ public class ImpalaPlanner {
   private List<PlanFragment> createPlanFragments(PlanNode planNodeRoot) throws ImpalaException {
 
     DistributedPlanner distributedPlanner = new DistributedPlanner(ctx_);
-    List<PlanFragment> fragments = new ArrayList<>();
-    // for queries, isPartitioned is false; in the future, make this conditional
-    // on whether it is an insert/CTAS etc.
-    boolean isPartitioned = false;
-    distributedPlanner.createPlanFragments(planNodeRoot, isPartitioned, fragments);
+    List<PlanFragment> fragments;
+
+    if (ctx_.isSingleNodeExec()) {
+      // create one fragment containing the entire single-node plan tree
+      fragments = Lists.newArrayList(new PlanFragment(
+          ctx_.getNextFragmentId(), planNodeRoot, DataPartition.UNPARTITIONED));
+    } else {
+      fragments = new ArrayList<>();
+      // create distributed plan
+      // for queries, isPartitioned is false; in the future, make this conditional
+      // on whether it is an insert/CTAS etc.
+      boolean isPartitioned = false;
+      distributedPlanner.createPlanFragments(planNodeRoot, isPartitioned, fragments);
+    }
 
     PlanFragment rootFragment = fragments.get(fragments.size() - 1);
 

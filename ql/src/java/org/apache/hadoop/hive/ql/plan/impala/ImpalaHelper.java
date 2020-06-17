@@ -116,8 +116,14 @@ public class ImpalaHelper {
   }
 
   private TQueryOptions createQueryOptions(HiveConf conf) throws HiveException {
-    return conf.getBoolVar(ConfVars.HIVE_IN_TEST) ?
+    TQueryOptions options = conf.getBoolVar(ConfVars.HIVE_IN_TEST) ?
         createTestQueryOptions(conf) : createDefaultQueryOptions(conf);
+
+    // If unset, set MT_DOP to 0 to simplify the rest of the code (this mimics Impala FE)
+    if (!options.isSetMt_dop()) {
+      options.setMt_dop(0);
+    }
+    return options;
   }
 
   private TQueryOptions createTestQueryOptions(HiveConf conf) {
