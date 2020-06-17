@@ -873,7 +873,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       // Assuming the used memory is equally divided among all executors.
       usedMemory = isLlap ? usedMemory / numExecutors : usedMemory;
       rate = (float) usedMemory / (float) maxMemory;
-      if (rate > memoryThreshold){
+      if (rate > memoryThreshold) {
         return (!isTez || numEntriesHashTable != 0);
       }
       for (Integer pos : keyPositionsSize) {
