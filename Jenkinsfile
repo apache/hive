@@ -163,6 +163,7 @@ def loadWS() {
 jobWrappers {
 
   def splits
+if(false)
   executorNode {
     container('hdb') {
       stage('Checkout') {
@@ -186,8 +187,9 @@ jobWrappers {
 
   stage('Testing') {
     def branches = [:]
-    for (def dbType in ['derby','postgres']) {
-      def splitName = "metastore_init@$dbType"
+    for (def d in ['derby','postgres']) {
+      def dbType=d
+      def splitName = "init@$dbType"
       branches[splitName] = {
         executorNode {
           stage('Prepare') {
@@ -197,6 +199,7 @@ jobWrappers {
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
 sw hive-dev $PWD
+echo 127.0.0.1 dev_$dbType | sudo tee -a /dev/hosts
 export DOCKER_NETWORK=host
 reinit_metastore $dbType
 '''
