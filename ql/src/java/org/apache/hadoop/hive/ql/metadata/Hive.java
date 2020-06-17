@@ -4116,7 +4116,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
     FileStatus[] files;
     for (FileStatus src : srcs) {
-      if (src.isDirectory())
+      if (src.isDirectory()) {
         try {
           files = srcFs.listStatus(src.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         } catch (IOException e) {
@@ -4125,16 +4125,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
           throw new HiveException(e);
         }
-      else {
+      } else {
         files = new FileStatus[] {src};
       }
-      
+
       if (isCompactionTable) {
-        // Compaction tables have a special layout after filesink: tmpdir/attemptid/bucketid.
-        // We don't care about the attemptId anymore so just move the bucket files.
+        // Helper tables used for query-based compaction have a special file structure after
+        // filesink: tmpdir/attemptid/bucketid.
+        // We don't care about the attemptId anymore and don't want it in the table's final
+        // structure so just move the bucket files.
         try {
           List<FileStatus> fileStatuses = new ArrayList<>();
-          for (FileStatus file: files) {
+          for (FileStatus file : files) {
             if (file.isDirectory() && AcidUtils.originalBucketFilter.accept(file.getPath())) {
               FileStatus[] taskDir = srcFs.listStatus(file.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
               fileStatuses.addAll(Arrays.asList(taskDir));
@@ -4144,7 +4146,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
           files = fileStatuses.toArray(new FileStatus[files.length]);
         } catch (IOException e) {
-          e.printStackTrace();
+          if (null != pool) {
+            pool.shutdownNow();
+          }
+          throw new HiveException(e);
         }
       }
 

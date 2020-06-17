@@ -335,12 +335,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = new Path(parent, taskWithExt);
             if (conf.isCompactionTable()) {
-              // tables used in compaction are external and non-acid. We need to keep track of
-              // the taskId to avoid overwrites in the case of multiple FileSinkOperators, and the
-              // file names need to reflect the correct bucketId because the files will
-              // eventually be placed in an acid table, and the OrcFileMergeOperator should not
-              // merge data belonging to different buckets. Therefore during compaction, data
-              // will be stored in the final directory like:
+              // Helper tables used for compaction are external and non-acid. We need to keep
+              // track of the taskId to avoid overwrites in the case of multiple
+              // FileSinkOperators, and the file names need to reflect the correct bucketId
+              // because the files will eventually be placed in an acid table, and the
+              // OrcFileMergeOperator should not merge data belonging to different buckets.
+              // Therefore during compaction, data will be stored in the final directory like:
               // ${hive_staging_dir}/final_dir/taskid/bucketId
               // For example, ${hive_staging dir}/-ext-10002/000000_0/bucket_00000
               finalPaths[filesIdx] = new Path(finalPaths[filesIdx],

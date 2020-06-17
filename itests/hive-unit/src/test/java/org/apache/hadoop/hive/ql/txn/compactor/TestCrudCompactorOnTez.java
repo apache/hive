@@ -78,7 +78,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     FileSystem fs = FileSystem.get(conf);
     // Verify deltas (delta_0000001_0000001_0000, delta_0000002_0000002_0000) are present
     Assert.assertEquals("Delta directories does not match before compaction",
-        Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", 
+        Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000",
             "delta_0000004_0000004_0000"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     // Verify that delete delta (delete_delta_0000003_0000003_0000) is present
@@ -121,7 +121,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
-    verifyRowsInCorrectBucketFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
   }
 
   /**
@@ -176,7 +176,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Assert.assertEquals("pre-compaction bucket 1", expectedRsBucket1, preCompactionRsBucket1);
       Assert.assertEquals("pre-compaction bucket 2", expectedRsBucket2, preCompactionRsBucket2);
     } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we 
+      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
       // just check whether the bucket contents change during compaction.
       expectedRsBucket0 = preCompactionRsBucket0;
       expectedRsBucket1 = preCompactionRsBucket1;
@@ -205,9 +205,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("post-compaction bucket 2", expectedRsBucket2, testDataProvider.getBucketData(tblName,
       "537001984"));
     // Check bucket file contents
-    verifyRowsInCorrectBucketFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
-    verifyRowsInCorrectBucketFile(fs, new Path(table.getSd().getLocation(), expectedBase), 1);
-    verifyRowsInCorrectBucketFile(fs, new Path(table.getSd().getLocation(), expectedBase), 2);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 1);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 2);
   }
 
   @Test
@@ -255,7 +255,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
           testDataProvider.getBucketData(tblName, "536870912"));
     } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we 
+      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
       // just check whether the bucket contents change during compaction.
       expectedRsBucket0 = testDataProvider.getBucketData(tblName, "536870912");
     }
@@ -291,9 +291,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
-    verifyRowsInCorrectBucketFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
-    verifyRowsInCorrectBucketFile(fs, new Path(tomorrowPath, "base_0000005_v0000013"), 0);
-    verifyRowsInCorrectBucketFile(fs, new Path(yesterdayPath, "base_0000005_v0000017"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000013"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000005_v0000017"), 0);
   }
 
   @Test public void testMajorCompactionPartitionedWithBuckets() throws Exception {
@@ -327,7 +327,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t3\ttoday",
         "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4\tyesterday");
     List<String> rsBucket0 = dataProvider.getBucketData(tableName, "536870912");
-    
+
     List<String> expectedRsBucket1 = Arrays.asList(
         "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t3\tyesterday",
         "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t4\ttoday",
@@ -344,7 +344,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Assert.assertEquals(expectedRsBucket0, rsBucket0);
       Assert.assertEquals(expectedRsBucket1, rsBucket1);
     } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we 
+      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
       // just check whether the bucket contents change during compaction.
       expectedRsBucket0 = rsBucket0;
       expectedRsBucket1 = rsBucket1;
@@ -396,11 +396,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
     String tablePath = table.getSd().getLocation();
-    verifyRowsInCorrectBucketFile(fs, new Path(new Path(tablePath, partitionToday), expectedBaseToday), 0);
-    verifyRowsInCorrectBucketFile(fs, new Path(new Path(tablePath, partitionToday), expectedBaseToday), 1);
-    verifyRowsInCorrectBucketFile(fs, new Path(new Path(tablePath, partitionTomorrow), expectedBaseTomorrow), 1);
-    verifyRowsInCorrectBucketFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 0);
-    verifyRowsInCorrectBucketFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 1);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionToday), expectedBaseToday), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionToday), expectedBaseToday), 1);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionTomorrow), expectedBaseTomorrow), 1);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 1);
   }
 
   @Test
@@ -599,7 +599,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
             .getBucketFileNames(fs, table, partitionToday, actualDeleteDeltasAfterCompPartToday.get(0)));
-    
+
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
@@ -1101,7 +1101,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       Assert.assertEquals("pre-compaction read", expectedRsBucket0PtnToday, rsBucket0PtnToday);
       Assert.assertEquals("pre-compaction read", expectedRsBucket1PtnToday, rsBucket1PtnToday);
     } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we 
+      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
       // just check whether the bucket contents change during compaction.
       expectedRsBucket0PtnToday = rsBucket0PtnToday;
       expectedRsBucket1PtnToday = rsBucket1PtnToday;
@@ -1236,14 +1236,16 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   /**
-   * Read file, and make sure that the bucket property in each row matches the file name.
-   * For example, if the bucketId is 0, we check file bucket_00000 to make sure that the third 
+   * Read file, and
+   * 1. make sure that the bucket property in each row matches the file name.
+   * For example, if the bucketId is 0, we check file bucket_00000 to make sure that the third
    * column contains only the value 536870912.
+   * 2. make sure that rowIds are in ascending order
    * @param fs file system
    * @param path where to look for the bucket file
    * @param bucketId bucket Id to check, e.g. 0.
    */
-  private void verifyRowsInCorrectBucketFile(FileSystem fs, Path path, int bucketId) throws IOException {
+  private void checkBucketIdAndRowIdInAcidFile(FileSystem fs, Path path, int bucketId) throws IOException {
     Path bucketFilePath = AcidUtils.createBucketFile(path, bucketId);
     Reader orcReader = OrcFile.createReader(bucketFilePath,
         OrcFile.readerOptions(fs.getConf()).filesystem(fs));
@@ -1251,10 +1253,27 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     try (RecordReader rows = orcReader.rows()) {
       VectorizedRowBatch batch = schema.createRowBatch();
       rows.nextBatch(batch);
-      long[] vector = ((LongColumnVector) batch.cols[2]).vector;
-
+      // check that bucket property in each row matches the bucket in the file name
+      long[] bucketIdVector = ((LongColumnVector) batch.cols[2]).vector;
       for (int i = 0; i < batch.count(); i++) {
-        Assert.assertEquals(bucketId, decodeBucketProperty(vector[i]));
+        Assert.assertEquals(bucketId, decodeBucketProperty(bucketIdVector[i]));
+      }
+      // check that writeIds, then rowIds are sorted in ascending order
+      long[] writeIdVector = ((LongColumnVector) batch.cols[1]).vector;
+      long[] rowIdVector = ((LongColumnVector) batch.cols[3]).vector;
+      long writeId = writeIdVector[0];
+      long rowId = 0;
+      for (int i = 0; i < batch.count(); i++) {
+        long currentWriteId = writeIdVector[i];
+        long currentRowId = rowIdVector[i];
+        if (writeId == writeIdVector[i]) {
+          Assert.assertTrue(rowId <= currentRowId);
+          rowId = currentRowId;
+        } else {
+          Assert.assertTrue(writeId < currentWriteId);
+          writeId = currentWriteId;
+          rowId = 0;
+        }
       }
     }
   }

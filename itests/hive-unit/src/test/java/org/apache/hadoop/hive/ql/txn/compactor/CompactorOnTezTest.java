@@ -275,7 +275,7 @@ public class CompactorOnTezTest {
 
     protected List<String> getBucketData(String tblName, String bucketId) throws Exception {
       return executeStatementOnDriverAndReturnResults(
-          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order" 
+          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order"
               + " by a, b", driver);
     }
 
