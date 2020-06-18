@@ -416,6 +416,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       case INNER:
       case LEFT:
       case SEMI:
+      case ANTI:
         infer(leftPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.LEFT ? rightFieldsBitSet
@@ -426,6 +427,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       case INNER:
       case RIGHT:
       case SEMI:
+      case ANTI:
         infer(rightPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.RIGHT ? leftFieldsBitSet
@@ -454,7 +456,8 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         }
       }
 
-      if ((joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI) && !nonFieldsPredicates.isEmpty()) {
+      if ((joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI || joinType == JoinRelType.ANTI) &&
+              !nonFieldsPredicates.isEmpty()) {
         // Predicates without field references can be pushed to both inputs
         final Set<String> leftPredsSet = new HashSet<String>(
                 Lists.transform(leftPreds, HiveCalciteUtil.REX_STR_FN));
@@ -477,6 +480,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         return RelOptPredicateList.of(rexBuilder,
           pulledUpPredicates, leftInferredPredicates, rightInferredPredicates);
       case SEMI:
+      case ANTI:
         return RelOptPredicateList.of(rexBuilder, Iterables.concat(leftPreds, leftInferredPredicates),
           leftInferredPredicates, rightInferredPredicates);
       case LEFT:

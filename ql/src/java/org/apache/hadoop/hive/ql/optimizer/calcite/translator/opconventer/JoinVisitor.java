@@ -87,7 +87,8 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     // 3. Virtual columns
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
-    if (joinRel instanceof HiveMultiJoin || !((joinRel instanceof Join) && ((Join) joinRel).isSemiJoin())) {
+    if (joinRel instanceof HiveMultiJoin || !((joinRel instanceof Join) &&
+            ((((Join) joinRel).isSemiJoin()) || (((Join) joinRel).getJoinType() == JoinRelType.ANTI)))) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -159,12 +160,24 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       noOuterJoin = !hmj.isOuterJoin();
     } else {
       joinCondns = new JoinCondDesc[1];
-      semiJoin = (join instanceof Join) && ((Join) join).isSemiJoin();
+      JoinRelType joinRelType = JoinRelType.INNER;
+      if (join instanceof Join) {
+        joinRelType = ((Join) join).getJoinType();
+      }
       JoinType joinType;
-      if (semiJoin) {
-        joinType = JoinType.LEFTSEMI;
-      } else {
-        joinType = transformJoinType(((Join)join).getJoinType());
+      switch (joinRelType) {
+        case SEMI:
+          joinType = JoinType.LEFTSEMI;
+          semiJoin = true;
+          break;
+        case ANTI:
+          joinType = JoinType.ANTI;
+          semiJoin = true;
+          break;
+        default:
+          assert join instanceof Join;
+          joinType = transformJoinType(((Join)join).getJoinType());
+          semiJoin = false;
       }
       joinCondns[0] = new JoinCondDesc(new JoinCond(0, 1, joinType));
       noOuterJoin = joinType != JoinType.FULLOUTER && joinType != JoinType.LEFTOUTER

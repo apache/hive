@@ -248,7 +248,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     // @todo: remove this. 8/28/14 hb
     // for now adding because RelOptUtil.classifyFilters has an assertion about
     // column counts that is not true for semiJoins.
-    if (joinRel.isSemiJoin()) {
+    if (joinRel.isSemiJoin() || joinRel.getJoinType() == JoinRelType.ANTI) {
       return null;
     }
 
@@ -355,7 +355,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
    */
   public static Pair<PKFKRelationInfo, RexNode> constraintsBasedAnalyzeJoinForPKFK(Join join, RelMetadataQuery mq) {
 
-    if (join.isSemiJoin()) {
+    if (join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI) {
       // TODO: Support semijoin
       return null;
     }
@@ -390,9 +390,9 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       return null;
     }
 
-    boolean leftIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.RIGHT)
+    boolean leftIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI || join.getJoinType() == JoinRelType.RIGHT)
         && leftInputResult.isPkFkJoin;
-    boolean rightIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.LEFT)
+    boolean rightIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI || join.getJoinType() == JoinRelType.LEFT)
         && rightInputResult.isPkFkJoin;
     if (!leftIsKey && !rightIsKey) {
       // Nothing to do here, bail out

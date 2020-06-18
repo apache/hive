@@ -89,7 +89,8 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     INNER_BIG_ONLY,
     LEFT_SEMI,
     OUTER,
-    FULL_OUTER
+    FULL_OUTER,
+    ANTI
   }
 
   private HashTableImplementationType hashTableImplementationType;

@@ -199,6 +199,7 @@ public class PredicateTransitivePropagate extends Transform {
       switch (cond.getType()) {
         case JoinDesc.INNER_JOIN:
         case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.ANTI_JOIN: //TODO : need to test
           vector.add(left, right);
           vector.add(right, left);
           break;

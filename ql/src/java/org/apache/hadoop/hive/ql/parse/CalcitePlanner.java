@@ -227,6 +227,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinConstraintsRule
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinWithFilterToAntiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
@@ -1913,6 +1914,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
           mdProvider.getMetadataProvider(), executorProvider);
 
+      if (conf.getBoolVar(ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
+        calcitePreCboPlan = hepPlan(calcitePreCboPlan, false, mdProvider.getMetadataProvider(),
+                null, HepMatchOrder.DEPTH_FIRST, HiveJoinWithFilterToAntiJoinRule.INSTANCE);
+      }
+
       // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
@@ -1946,7 +1952,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Plan After Join Reordering:\n"
             + RelOptUtil.toString(calciteOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
       }
-
       return calciteOptimizedPlan;
     }
 
@@ -2881,6 +2886,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteJoinType = JoinRelType.SEMI;
         leftSemiJoin = true;
         break;
+      case ANTI:
+      calciteJoinType = JoinRelType.ANTI;
+      leftSemiJoin = true;
+      break;
       case INNER:
       default:
         calciteJoinType = JoinRelType.INNER;
@@ -3018,6 +3027,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         break;
       case HiveParser.TOK_LEFTSEMIJOIN:
         hiveJoinType = JoinType.LEFTSEMI;
+        break;
+      case HiveParser.TOK_ANTIJOIN:
+        hiveJoinType = JoinType.ANTI;
         break;
       default:
         hiveJoinType = JoinType.INNER;
