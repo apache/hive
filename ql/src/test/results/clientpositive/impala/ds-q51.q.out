@@ -96,7 +96,7 @@ POSTHOOK: Input: default@impala_tpcds_web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  ImpalaProjectRel(item_sk=[$6], d_date=[$7], web_sales=[$2], store_sales=[$5], max_window_0=[max($2) OVER (PARTITION BY $6 ORDER BY $7 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], max_window_1=[max($5) OVER (PARTITION BY $6 ORDER BY $7 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+  ImpalaProjectRel(item_sk=[$6], d_date=[$7], web_sales=[$2], store_sales=[$5], max_window_0=[max($2) OVER (PARTITION BY $6 ORDER BY $7 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], max_window_1=[max($5) OVER (PARTITION BY $6 ORDER BY $7 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[>($4, $5)])
     ImpalaProjectRel((tok_table_or_col ws_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[$2], (tok_table_or_col ss_item_sk)=[$3], (tok_table_or_col d_date)0=[$4], sum_window_00=[$5], $func_0=[CASE(IS NOT NULL($0), $0, $3)], $func_1=[CASE(IS NOT NULL($1), $1, $4)])
       ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[full])
         ImpalaProjectPassthroughRel((tok_table_or_col ws_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[sum($2) OVER (PARTITION BY $0 ORDER BY $1 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])

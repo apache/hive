@@ -72,7 +72,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$3], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=[ASC], dir2=[ASC], dir3=[ASC])
   ImpalaAggregateRel(group=[{1, 2, 3}], agg#0=[count($0)])
     ImpalaAggregateRel(group=[{1, 3, 4, 5}])
-      ImpalaProjectRel(ps_partkey=[$6], ps_suppkey=[$7], p_partkey=[$0], p_brand=[$1], p_type=[$2], p_size=[$3], c=[$4], ck=[$5], s_suppkey=[$8], literalTrue=[$9])
+      ImpalaProjectRel(ps_partkey=[$6], ps_suppkey=[$7], p_partkey=[$0], p_brand=[$1], p_type=[$2], p_size=[$3], c=[$4], ck=[$5], s_suppkey=[$8], literalTrue=[$9], condition=[AND(OR(IS NULL($9), =($6, 0)), OR(IS NOT NULL($1), =($6, 0), IS NOT NULL($9)), OR(>=($7, $6), =($6, 0), IS NOT NULL($9), IS NULL($1)))])
         ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaProjectPassthroughRel(p_partkey=[$0], p_brand=[$3], p_type=[$4], p_size=[$5])

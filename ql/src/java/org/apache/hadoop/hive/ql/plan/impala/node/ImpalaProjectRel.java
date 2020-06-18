@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.Pair;
@@ -118,5 +119,15 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
   public double estimateRowCount(RelMetadataQuery mq) {
     return filter != null ?
         mq.getRowCount(filter) : mq.getRowCount(project);
+  }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    RelWriter rw = super.explainTerms(pw);
+
+    if (filter != null) {
+      rw = rw.item("condition", filter.getCondition());
+    }
+    return rw;
   }
 }

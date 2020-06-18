@@ -120,7 +120,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC])
   ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
     ImpalaJoinRel(condition=[>($3, $4)], joinType=[inner])
-      ImpalaProjectRel(c_last_name=[$2], c_first_name=[$1], s_store_name=[$0], $f3=[$3])
+      ImpalaProjectRel(c_last_name=[$2], c_first_name=[$1], s_store_name=[$0], $f3=[$3], condition=[IS NOT NULL($3)])
         ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[sum($9)])
           ImpalaAggregateRel(group=[{8, 9, 10, 11, 13, 17, 18, 22, 23}], agg#0=[sum($4)])
             ImpalaJoinRel(condition=[AND(=($21, $12), <>($24, $15), =($1, $20))], joinType=[inner])

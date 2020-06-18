@@ -95,7 +95,7 @@ ImpalaProjectPassthroughRel(total_sum=[$0], s_state=[$1], s_county=[$2], lochier
                 ImpalaProjectPassthroughRel(s_store_sk=[$0], s_county=[$23], s_state=[$24])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($24), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(s_state=[$0])
-                ImpalaProjectRel((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+                ImpalaProjectRel((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[<=($1, 5)])
                   ImpalaAggregateRel(group=[{5}], agg#0=[sum($1)])
                     ImpalaJoinRel(condition=[=($4, $0)], joinType=[inner])
                       ImpalaJoinRel(condition=[=($3, $2)], joinType=[inner])
