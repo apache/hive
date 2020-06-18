@@ -377,7 +377,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     //Need shut down background thread gracefully, driver.close will inform background thread
     //a cancel request is sent.
-    if (shouldRunAsync() && state != OperationState.CANCELED && state != OperationState.TIMEDOUT) {
+    if (shouldRunAsync() && (state == OperationState.CANCELED || state == OperationState.TIMEDOUT)) {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
