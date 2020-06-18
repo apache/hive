@@ -367,12 +367,17 @@ public class Driver implements IDriver {
         driverContext.getTxnManager().getTableWriteId(t.getDbName(), t.getTableName());
       }
 
-      Table t = driverContext.getPlan().getAcidAnalyzeTable().getTable();
       DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
-      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId() && !AcidUtils.inReplication(t);
+      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
+      LOG.info(" acidDdlDesc : " + acidDdlDesc );
+      if ( acidDdlDesc != null )
+        LOG.info("  mayNeedWriteId : " + acidDdlDesc.mayNeedWriteId());
       if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
+         LOG.info("  fqTableName : " + fqTableName);
         final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
+        LOG.info("  TableName : " + tn);
+        LOG.info("  tn.getDb() : " + tn.getDb() + " tn.getTable() : " + tn.getTable());
         long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
         // This updates the latest validWriteIdList for the current table in the config, which latest will be sent
         // by HMS Client for all get_* requests.

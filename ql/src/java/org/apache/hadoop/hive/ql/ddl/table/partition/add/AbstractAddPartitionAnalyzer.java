@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.*;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -130,4 +130,21 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
 
   protected abstract void postProcess(TableName tableName, Table table, AlterTableAddPartitionDesc desc,
       Task<DDLWork> ddlTask) throws SemanticException;
+
+// Equivalent to acidSinks, but for DDL operations that change data.
+private DDLDesc.DDLDescWithWriteId ddlDescWithWriteId;
+
+
+protected void setAcidDdlDesc(DDLDesc.DDLDescWithWriteId descWithWriteId) {
+  if(this.ddlDescWithWriteId != null) {
+    throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
+  }
+  this.ddlDescWithWriteId = descWithWriteId;
+}
+
+@Override
+public DDLDesc.DDLDescWithWriteId getAcidDdlDesc() {
+  return ddlDescWithWriteId;
+}
+
 }

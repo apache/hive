@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.exchange;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -29,10 +29,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... EXCHANGE PARTITION ... WITH TABLE ... commands.
  */
 @Explain(displayName = "Exchange Partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableExchangePartitionsDesc implements DDLDesc {
+public class AlterTableExchangePartitionsDesc implements DDLDescWithWriteId {
   private final Table sourceTable;
   private final Table destinationTable;
   private final Map<String, String> partitionSpecs;
+  private Long writeId;
 
   public AlterTableExchangePartitionsDesc(Table sourceTable, Table destinationTable,
       Map<String, String> partitionSpecs) {
@@ -52,6 +53,21 @@ public class AlterTableExchangePartitionsDesc implements DDLDesc {
   @Explain(displayName = "partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpecs() {
     return partitionSpecs;
+  }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return null;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true;
   }
 
 }

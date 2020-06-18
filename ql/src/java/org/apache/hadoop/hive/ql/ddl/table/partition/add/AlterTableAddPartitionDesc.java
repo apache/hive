@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -227,7 +228,7 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
   @Override
   public String getFullTableName() {
-    return null;
+    return AcidUtils.getFullTableName(dbName,tableName);
   }
 
   @Override
