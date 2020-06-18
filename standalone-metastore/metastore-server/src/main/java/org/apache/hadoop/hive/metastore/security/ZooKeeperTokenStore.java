@@ -484,7 +484,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
       // try alternate config param
       zkConnectString = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE, null);
       if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
-        throw new IllegalArgumentException("Zookeeper connect string has to be specified through " + "either "
+        throw new IllegalArgumentException("Zookeeper connect string has to be specified through either "
             + MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR + " or "
             + MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE + WHEN_ZK_DSTORE_MSG);
       }
