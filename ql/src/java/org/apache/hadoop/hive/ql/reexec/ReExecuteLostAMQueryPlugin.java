@@ -45,6 +45,7 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
             }
         }
     }
+
     @Override
     public void initialize(Driver driver) {
         driver.getHookRunner().addOnFailureHook(new LocalHook());
