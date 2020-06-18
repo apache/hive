@@ -180,6 +180,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   }
 
   @Test
+  @Ignore("HIVE-23395")
   public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     String withClause = " WITH('" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
