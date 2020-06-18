@@ -652,7 +652,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000005_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000009", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 2L, 5L, null,
               1);

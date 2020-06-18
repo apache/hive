@@ -2787,7 +2787,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // Open a base txn which allocates write ID and then committed.
     long baseTxnId = txnMgr.openTxn(ctx, "u0");
     long baseWriteId = txnMgr.getTableWriteId("temp", "T7");
-    Assert.assertEquals(2, baseWriteId);
+    Assert.assertEquals(1, baseWriteId);
     txnMgr.commitTxn(); // committed baseTxnId
 
     // Open a txn with no writes.

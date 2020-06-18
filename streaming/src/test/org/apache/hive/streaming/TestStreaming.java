@@ -122,7 +122,7 @@ public class TestStreaming {
 
     static {
       try {
-        NAME = new URI("raw:///");
+        NAME = new URI("raw:/testNoBuckets//");
       } catch (URISyntaxException se) {
         throw new IllegalArgumentException("bad uri", se);
       }
@@ -390,15 +390,15 @@ public class TestStreaming {
     Assert.assertEquals("", 0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
-    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000002_0000002_0000/bucket_00000_0"));
-    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
+    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000002_0000002_0000/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/delta_0000003_0000004/bucket_00000"));
-    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/delta_0000003_0000004/bucket_00000"));
-    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
     Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/delta_0000003_0000004/bucket_00000"));
-    Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta7\tb8"));
+    Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\ta7\tb8"));
     Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/delta_0000003_0000004/bucket_00000"));
 
     queryTable(driver, "update default.streamingnobuckets set a=0, b=0 where a='a7'");
@@ -414,14 +414,14 @@ public class TestStreaming {
     runWorker(conf);
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
-    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
-    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
-    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
-    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000006_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000006_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000006_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000006_v0000025/bucket_00000"));
   }
 
   @Test
@@ -469,10 +469,10 @@ public class TestStreaming {
     connection.close();
 
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.keyvalue order by ROW__ID");
-    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("keyvalue/delta_0000002_0000003/bucket_00000"));
-    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("keyvalue/delta_0000002_0000003/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("keyvalue/delta_0000004_0000005/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("keyvalue/delta_0000004_0000005/bucket_00000"));
 
     rs = queryTable(driver, "SHOW TBLPROPERTIES default.keyvalue('_metamykey')");
     Assert.assertEquals(rs.get(0), "_metamykey\tmyvalue", rs.get(0));
@@ -617,12 +617,12 @@ public class TestStreaming {
     String expectedPrefixRow1 = "{\"writeid\":2,\"bucketid\":536870912," +
       "\"rowid\":0}\ttrue\t10\t100\t1000\t10000\t4.0\t20.0\t4.222\t1969-12-31 15:59:58.174\t1970-01-01\tstring" +
       "\thello\thello\t{\"k1\":\"v1\"}\t[100,200]\t{\"c1\":10,\"c2\":\"foo\"}";
-    String expectedSuffixRow1 = "alltypes/delta_0000001_0000002/bucket_00000";
+    String expectedSuffixRow1 = "alltypes/delta_0000002_0000003/bucket_00000";
     String gotRow2 = rs.get(1);
     String expectedPrefixRow2 = "{\"writeid\":2,\"bucketid\":536870912," +
       "\"rowid\":1}\tfalse\t20\t200\t2000\t20000\t8.0\t40.0\t2.222\t1970-12-31 15:59:58.174\t1971-01-01\tabcd" +
       "\tworld\tworld\t{\"k4\":\"v4\"}\t[200,300]\t{\"c1\":20,\"c2\":\"bar\"}";
-    String expectedSuffixRow2 = "alltypes/delta_0000001_0000002/bucket_00000";
+    String expectedSuffixRow2 = "alltypes/delta_0000002_0000003/bucket_00000";
     Assert.assertTrue(gotRow1, gotRow1.startsWith(expectedPrefixRow1));
     Assert.assertTrue(gotRow1, gotRow1.endsWith(expectedSuffixRow1));
     Assert.assertTrue(gotRow2, gotRow2.startsWith(expectedPrefixRow2));
@@ -668,15 +668,15 @@ public class TestStreaming {
       " INPUT__FILE__NAME from default.alltypes order by ROW__ID");
     Assert.assertEquals(2, rs.size());
     String gotRow1 = rs.get(0);
-    String expectedPrefixRow1 = "{\"writeid\":1,\"bucketid\":536870912," +
+    String expectedPrefixRow1 = "{\"writeid\":2,\"bucketid\":536870912," +
       "\"rowid\":0}\ttrue\t10\t100\t1000\t10000\t4.0\t20.0\t4.222\t1969-12-31 15:59:58.174\t1970-01-01\tstring" +
       "\thello\thello\t{\"k1\":\"v1\"}\t[100,200]\t{\"c1\":10,\"c2\":\"foo\"}";
-    String expectedSuffixRow1 = "alltypes/delta_0000001_0000002/bucket_00000";
+    String expectedSuffixRow1 = "alltypes/delta_0000002_0000003/bucket_00000";
     String gotRow2 = rs.get(1);
-    String expectedPrefixRow2 = "{\"writeid\":1,\"bucketid\":536870912," +
+    String expectedPrefixRow2 = "{\"writeid\":2,\"bucketid\":536870912," +
       "\"rowid\":1}\tfalse\t20\t200\t2000\t20000\t8.0\t40.0\t2.222\t1970-12-31 15:59:58.174\t1971-01-01\tabcd" +
       "\tworld\tworld\t{\"k4\":\"v4\"}\t[200,300]\t{\"c1\":20,\"c2\":\"bar\"}";
-    String expectedSuffixRow2 = "alltypes/delta_0000001_0000002/bucket_00000";
+    String expectedSuffixRow2 = "alltypes/delta_0000002_0000003/bucket_00000";
     Assert.assertTrue(gotRow1, gotRow1.startsWith(expectedPrefixRow1));
     Assert.assertTrue(gotRow1, gotRow1.endsWith(expectedSuffixRow1));
     Assert.assertTrue(gotRow2, gotRow2.startsWith(expectedPrefixRow2));
@@ -727,7 +727,7 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000002_0000002_0000/bucket_00000_0"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000002_0000002_0000/bucket_00000"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/delta_0000003_0000004/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
@@ -745,7 +745,6 @@ public class TestStreaming {
     Assert.assertTrue(rs.get(7), rs.get(7).endsWith("streamingnobuckets/delta_0000005_0000006/bucket_00000"));
     Assert.assertTrue(rs.get(8), rs.get(8).startsWith("{\"writeid\":6,\"bucketid\":536870912,\"rowid\":1}\ta15\tb16"));
     Assert.assertTrue(rs.get(8), rs.get(8).endsWith("streamingnobuckets/delta_0000005_0000006/bucket_00000"));
-
     queryTable(driver, "update default.streamingnobuckets set a=0, b=0 where a='a7'");
     queryTable(driver, "delete from default.streamingnobuckets where a='a1'");
     queryTable(driver, "update default.streamingnobuckets set a=0, b=0 where a='a15'");
@@ -765,17 +764,17 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
     Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":5,\"bucketid\":536870912,\"rowid\":1}\ta11\tb12"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
     Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":6,\"bucketid\":536870912,\"rowid\":0}\ta13\tb14"));
-    Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
     Assert.assertTrue(rs.get(5), rs.get(5).startsWith("{\"writeid\":7,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
-    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000010_v0000030/bucket_00000"));
+    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000010_v0000029/bucket_00000"));
   }
 
   /**
@@ -1504,7 +1503,7 @@ public class TestStreaming {
     connection.write("1,Hello streaming".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}");
 
     Assert.assertEquals(HiveStreamingConnection.TxnState.COMMITTED,
         connection.getCurrentTransactionState());
@@ -1516,11 +1515,11 @@ public class TestStreaming {
     connection.write("2,Welcome to streaming".getBytes());
 
     // data should not be visible
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}");
 
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}",
       "{2, Welcome to streaming}");
 
     connection.close();
@@ -1575,7 +1574,7 @@ public class TestStreaming {
     connection.write("1,Hello streaming".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}");
 
     Assert.assertEquals(HiveStreamingConnection.TxnState.COMMITTED,
         connection.getCurrentTransactionState());
@@ -1587,11 +1586,11 @@ public class TestStreaming {
     connection.write("2,Welcome to streaming".getBytes());
 
     // data should not be visible
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}");
 
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}",
       "{2, Welcome to streaming}");
 
     connection.close();
@@ -1677,7 +1676,7 @@ public class TestStreaming {
     connection.write(rec1.getBytes());
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}");
 
     Assert.assertEquals(HiveStreamingConnection.TxnState.COMMITTED,
         connection.getCurrentTransactionState());
@@ -1879,7 +1878,7 @@ public class TestStreaming {
     connection.write("2,Welcome to streaming".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
+    checkDataWritten(partLoc, 3, 12, 1, 1, "{1, Hello streaming}",
       "{2, Welcome to streaming}");
 
     connection.close();
@@ -1905,13 +1904,13 @@ public class TestStreaming {
     connection.write("1,Hello streaming".getBytes());
     connection.commitTransaction();
     String validationQuery = "select id, msg from " + dbName + "." + tblName + " order by id, msg";
-    checkDataWritten2(partLoc, 1, 10, 1, validationQuery, false, "1\tHello streaming");
+    checkDataWritten2(partLoc, 3, 12, 1, validationQuery, false, "1\tHello streaming");
 
     connection.beginTransaction();
     connection.write("2,Welcome to streaming".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten2(partLoc, 1, 10, 1, validationQuery, true, "1\tHello streaming",
+    checkDataWritten2(partLoc, 3, 12, 1, validationQuery, true, "1\tHello streaming",
       "2\tWelcome to streaming");
 
     connection.close();
@@ -1930,14 +1929,14 @@ public class TestStreaming {
     connection.write("3,Hello streaming - once again".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten2(partLoc, 1, 20, 2, validationQuery, false, "1\tHello streaming",
+    checkDataWritten2(partLoc, 3, 22, 2, validationQuery, false, "1\tHello streaming",
       "2\tWelcome to streaming", "3\tHello streaming - once again");
 
     connection.beginTransaction();
     connection.write("4,Welcome to streaming - once again".getBytes());
     connection.commitTransaction();
 
-    checkDataWritten2(partLoc, 1, 20, 2, validationQuery, true, "1\tHello streaming",
+    checkDataWritten2(partLoc, 3, 22, 2, validationQuery, true, "1\tHello streaming",
       "2\tWelcome to streaming", "3\tHello streaming - once again",
       "4\tWelcome to streaming - once again");
 
@@ -1990,7 +1989,7 @@ public class TestStreaming {
     connection2.commitTransaction();
 
     String validationQuery = "select id, msg from " + dbName + "." + tblName + " order by id, msg";
-    checkDataWritten2(partLoc, 11, 20, 1,
+    checkDataWritten2(partLoc, 13, 22, 1,
       validationQuery, true, "3\tHello streaming - once again");
 
     connection.commitTransaction();
@@ -2010,7 +2009,7 @@ public class TestStreaming {
         Assert.assertTrue("", logicalLength == actualLength);
       }
     }
-    checkDataWritten2(partLoc, 1, 20, 2,
+    checkDataWritten2(partLoc, 3, 22, 2,
       validationQuery, false, "1\tHello streaming", "3\tHello streaming - once again");
 
     connection.beginTransaction();
@@ -2035,19 +2034,19 @@ public class TestStreaming {
         Assert.assertTrue("", logicalLength <= actualLength);
       }
     }
-    checkDataWritten2(partLoc, 1, 20, 2,
+    checkDataWritten2(partLoc, 3, 22, 2,
       validationQuery, true, "1\tHello streaming", "3\tHello streaming - once again");
 
     connection.commitTransaction();
 
-    checkDataWritten2(partLoc, 1, 20, 2,
+    checkDataWritten2(partLoc, 3, 22, 2,
       validationQuery, false, "1\tHello streaming",
       "2\tWelcome to streaming",
       "3\tHello streaming - once again");
 
     connection2.commitTransaction();
 
-    checkDataWritten2(partLoc, 1, 20, 2,
+    checkDataWritten2(partLoc, 3, 22, 2,
       validationQuery, true, "1\tHello streaming",
       "2\tWelcome to streaming",
       "3\tHello streaming - once again",

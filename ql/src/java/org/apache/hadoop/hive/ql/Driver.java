@@ -367,9 +367,9 @@ public class Driver implements IDriver {
         driverContext.getTxnManager().getTableWriteId(t.getDbName(), t.getTableName());
       }
 
-
+      Table t = driverContext.getPlan().getAcidAnalyzeTable().getTable();
       DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
-      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
+      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId() && !AcidUtils.inReplication(t);
       if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
         final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);

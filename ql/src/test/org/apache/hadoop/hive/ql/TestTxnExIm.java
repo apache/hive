@@ -563,7 +563,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     Assert.assertEquals(3, rs.size());
     for (String s : rs) {
       if (existingTable) {
-        Assert.assertTrue(s, s.contains("/delta_0000002_0000002_0000/"));
+        Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
       } else {
         Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
       }
