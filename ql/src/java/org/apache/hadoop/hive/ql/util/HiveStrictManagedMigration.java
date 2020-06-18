@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.util;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,7 @@ public class HiveStrictManagedMigration {
     final boolean dryRun;
     final TableType tableType;
     final int tablePoolSize;
+    final String fsOperationUser;
 
     RunOptions(String dbRegex,
                String tableRegex,
@@ -117,7 +119,8 @@ public class HiveStrictManagedMigration {
                boolean shouldMoveExternal,
                boolean dryRun,
                TableType tableType,
-               int tablePoolSize) {
+               int tablePoolSize,
+               String fsOperationUser) {
       super();
       this.dbRegex = dbRegex;
       this.tableRegex = tableRegex;
@@ -131,6 +134,7 @@ public class HiveStrictManagedMigration {
       this.dryRun = dryRun;
       this.tableType = tableType;
       this.tablePoolSize = tablePoolSize;
+      this.fsOperationUser = fsOperationUser;
     }
 
     public void setShouldModifyManagedTableLocation(boolean shouldModifyManagedTableLocation) {
@@ -156,6 +160,7 @@ public class HiveStrictManagedMigration {
               ", dryRun=" + dryRun +
               ", tableType=" + tableType +
               ", tablePoolSize=" + tablePoolSize +
+              ", fsOperationUser=" + fsOperationUser +
               '}';
     }
   }
@@ -331,6 +336,15 @@ public class HiveStrictManagedMigration {
             .withArgName("table type")
             .create("tt"));
 
+    result.addOption(OptionBuilder
+        .withLongOpt("fsOperationUser")
+        .withDescription("If set, migration tool will impersonate this user to carry out write operations on file " +
+            "system. Useful e.g. if this tool is run as hive, but chown-ing is also a requirement." +
+            "If this is unset file operations will be run in the name of the user running this process (or kinit'ed " +
+            "user in Kerberos environments)")
+        .hasArg()
+        .create());
+
     return result;
   }
 
@@ -375,6 +389,8 @@ public class HiveStrictManagedMigration {
     }
     boolean dryRun = cli.hasOption("dryRun");
 
+    String fsOperationUser = cli.getOptionValue("fsOperationUser");
+
     String tableTypeText = cli.getOptionValue("tableType");
 
     int defaultPoolSize = Runtime.getRuntime().availableProcessors();
@@ -399,7 +415,8 @@ public class HiveStrictManagedMigration {
         shouldMoveExternal,
         dryRun,
         tableTypeText == null ? null : TableType.valueOf(tableTypeText),
-        tablePoolSize);
+        tablePoolSize,
+        fsOperationUser);
     return runOpts;
   }
 
@@ -424,6 +441,7 @@ public class HiveStrictManagedMigration {
   private final String groupName;
   private final FsPermission dirPerms;
   private final FsPermission filePerms;
+  private final UserGroupInformation fsOperationUser;
 
   private CloseableThreadLocal<HiveMetaStoreClient> hms;
   private ThreadLocal<Warehouse> wh;
@@ -453,6 +471,17 @@ public class HiveStrictManagedMigration {
       for (String propKey : runOptions.confProps.stringPropertyNames()) {
         this.conf.set(propKey, runOptions.confProps.getProperty(propKey));
       }
+    }
+
+    try {
+      if (runOptions.fsOperationUser != null) {
+        fsOperationUser = UserGroupInformation.createProxyUser(runOptions.fsOperationUser,
+            UserGroupInformation.getLoginUser());
+      } else {
+        fsOperationUser = UserGroupInformation.getLoginUser();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Error while setting up UGI for FS operations.");
     }
 
     this.hms = new CloseableThreadLocal<>(() -> {
@@ -643,7 +672,7 @@ public class HiveStrictManagedMigration {
 
         LOG.info("Changing location of database {} to {}", dbName, newDefaultDbLocation);
         if (!runOptions.dryRun) {
-          FileSystem fs = newDefaultDbLocation.getFileSystem(conf);
+          FileSystem fs = getFS(newDefaultDbLocation, conf, fsOperationUser);
           FileUtils.mkdir(fs, newDefaultDbLocation, conf);
           // Set appropriate owner/perms of the DB dir only, no need to recurse
           checkAndSetFileOwnerPermissions(fs, newDefaultDbLocation,
@@ -846,7 +875,7 @@ public class HiveStrictManagedMigration {
 
   void createExternalDbDir(Database dbObj) throws IOException, MetaException {
     Path externalTableDbPath = wh.get().getDefaultExternalDatabasePath(dbObj.getName());
-    FileSystem fs = externalTableDbPath.getFileSystem(conf);
+    FileSystem fs = getFS(externalTableDbPath, conf, fsOperationUser);
     if (!fs.exists(externalTableDbPath)) {
       String dbOwner = ownerName;
       String dbGroup = null;
@@ -865,6 +894,9 @@ public class HiveStrictManagedMigration {
         }
       }
 
+      if (dbOwner == null) {
+        dbOwner = conf.get("strict.managed.tables.migration.owner", "hive");
+      }
       LOG.info("Creating external table directory for database {} at {} with ownership {}/{}",
           dbObj.getName(), externalTableDbPath, dbOwner, dbGroup);
       if (!runOptions.dryRun) {
@@ -890,7 +922,7 @@ public class HiveStrictManagedMigration {
 
     // Move table directory.
     if (!runOptions.dryRun) {
-      FileSystem fs = newTablePath.getFileSystem(conf);
+      FileSystem fs = getFS(newTablePath, conf, fsOperationUser);
       if (fs.exists(oldTablePath)) {
         boolean movedData = fs.rename(oldTablePath, newTablePath);
         if (!movedData) {
@@ -1650,6 +1682,20 @@ public class HiveStrictManagedMigration {
       if (KUDU_LEGACY_STORAGE_HANDLER.equals(storageHandler)) {
         props.put(META_TABLE_STORAGE, KUDU_STORAGE_HANDLER);
       }
+    }
+  }
+
+  private static FileSystem getFS(Path path, Configuration conf, UserGroupInformation fsOperationUser)
+      throws IOException {
+    try {
+      return fsOperationUser.doAs(new PrivilegedExceptionAction<FileSystem>() {
+        @Override
+        public FileSystem run() throws Exception {
+          return path.getFileSystem(conf);
+        }
+      });
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
   }
 
