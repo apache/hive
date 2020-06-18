@@ -272,16 +272,16 @@ public class LoadTable {
     return new TableLocationTuple(path.toString(), false);
   }
 
-  private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,
-      Path fromURI) {
+  private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath, Path fromURI) {
     Path dataPath = fromURI;
     Path loadTmpDir = tgtPath;
+    boolean performOnlyMove = replicationSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
     if (replicationSpec.isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
-      loadFileType = LoadFileType.IGNORE;
+      loadFileType = performOnlyMove ? getLoadFileType(replicationSpec) : LoadFileType.IGNORE;
       if (event.replicationSpec().isMigratingToTxnTable()) {
         // Migrating to transactional tables in bootstrap load phase.
         // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
@@ -289,8 +289,7 @@ public class LoadTable {
         loadTmpDir = new Path(loadTmpDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
       }
     } else {
-      loadFileType = (replicationSpec.isReplace() || replicationSpec.isMigratingToTxnTable())
-              ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      loadFileType = getLoadFileType(replicationSpec);
       loadTmpDir = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
     }
 
@@ -302,7 +301,6 @@ public class LoadTable {
      * data is moved directly from Repl staging data dir of the partition to the partition's location on target
      * warehouse.
      */
-    boolean performOnlyMove = replicationSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
     Path moveSrcPath = performOnlyMove ? dataPath : loadTmpDir;
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
@@ -343,6 +341,11 @@ public class LoadTable {
             false, false);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;
+  }
+
+  private LoadFileType getLoadFileType(ReplicationSpec replicationSpec) {
+    return (replicationSpec.isReplace() || replicationSpec.isMigratingToTxnTable())
+            ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
   }
 
   private Task<?> dropTableTask(Table table) {

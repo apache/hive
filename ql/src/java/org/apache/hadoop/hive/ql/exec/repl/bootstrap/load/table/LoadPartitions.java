@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -269,12 +270,13 @@ public class LoadPartitions {
     }
 
     Path loadTmpDir = replicaWarehousePartitionLocation;
-
+    boolean performOnlyMove = event.replicationSpec().isInReplicationScope()
+            && Utils.onSameHDFSFileSystem(event.dataPath(), replicaWarehousePartitionLocation);
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
     if (event.replicationSpec().isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
-      loadFileType = LoadFileType.IGNORE;
+      loadFileType = performOnlyMove ? getLoadFileType(event.replicationSpec()) : LoadFileType.IGNORE;
       if (event.replicationSpec().isMigratingToTxnTable()) {
         // Migrating to transactional tables in bootstrap load phase.
         // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
@@ -282,10 +284,7 @@ public class LoadPartitions {
         loadTmpDir = new Path(loadTmpDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
       }
     } else {
-       loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
-          (event.replicationSpec().isMigratingToTxnTable()
-              ? LoadFileType.KEEP_EXISTING
-              : LoadFileType.OVERWRITE_EXISTING);
+       loadFileType = getLoadFileType(event.replicationSpec());
       loadTmpDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
     Path partDataSrc = new Path(event.dataPath(), getPartitionName(sourceWarehousePartitionLocation));
@@ -293,8 +292,7 @@ public class LoadPartitions {
      * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is hdfs,
      * data is moved directly from Repl staging data dir of partition to the partition's location on target warehouse.
      */
-    boolean performOnlyMove = event.replicationSpec().isInReplicationScope()
-            && Utils.onSameHDFSFileSystem(event.dataPath(), replicaWarehousePartitionLocation);
+
     Path moveSource = performOnlyMove ? partDataSrc : loadTmpDir;
     Task<?> movePartitionTask = null;
     if (loadFileType != LoadFileType.IGNORE) {
@@ -331,6 +329,13 @@ public class LoadPartitions {
     return ptnRootTask;
   }
 
+  private LoadFileType getLoadFileType(ReplicationSpec replicationSpec) {
+    return replicationSpec.isReplace()
+            ? LoadFileType.REPLACE_ALL
+            : (replicationSpec.isMigratingToTxnTable()
+                    ? LoadFileType.KEEP_EXISTING
+                    : LoadFileType.OVERWRITE_EXISTING);
+  }
   private String getPartitionName(Path partitionMetadataFullPath) {
     //Get partition name by removing the metadata base path.
     //Needed for getting the data path

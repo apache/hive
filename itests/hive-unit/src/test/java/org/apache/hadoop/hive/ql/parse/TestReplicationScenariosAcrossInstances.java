@@ -1427,27 +1427,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("use " + primaryDb)
             .run("drop table " + tbl);
-
-    //delete load ack to reuse the dump
-    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
-            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
-            + LOAD_ACKNOWLEDGEMENT.toString()), true);
-
-
-    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
-    try {
-      replica.loadFailure(replicatedDbName_CM, primaryDbName, withConfigs);
-    } finally {
-      InjectableBehaviourObjectStore.resetAddNotificationModifier();
-    }
-
-    callerVerifier.assertInjectionsPerformed(true, false);
-    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
-
-    replica.run("use " + replicatedDbName_CM)
-            .run("select country from " + tbl + " where country == 'india'")
-            .verifyResults(Arrays.asList("india"))
-            .run(" drop database if exists " + replicatedDbName_CM + " cascade");
   }
 
   // This requires the tables are loaded in a fixed sorted order.
