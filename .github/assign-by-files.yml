@@ -1,3 +1,5 @@
 ---
 '**/*.java':
   - HiveQA
+'**/*.q.out':
+  - dvoros
