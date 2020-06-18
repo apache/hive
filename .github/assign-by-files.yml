@@ -5,6 +5,7 @@
 # parser changes
 '*.g':
   - kgyrtkirk
+  - HiveQA
 # metastore database changes
 'package.jdo':
   - kgyrtkirk
