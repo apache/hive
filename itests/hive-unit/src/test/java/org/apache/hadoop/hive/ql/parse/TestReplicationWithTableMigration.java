@@ -119,6 +119,10 @@ public class TestReplicationWithTableMigration {
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
     hiveConfigs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
+    String fullyQualifiedReplicaExternalBase = miniDFSCluster.getFileSystem()
+            .getFileStatus(new Path("/")).getPath().toString();
+    primary.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    replica.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {

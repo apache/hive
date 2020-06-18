@@ -108,6 +108,7 @@ public class BaseReplicationScenariosAcidTables {
 
   private static void setReplicaExternalBase() throws IOException {
     FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
   }
 

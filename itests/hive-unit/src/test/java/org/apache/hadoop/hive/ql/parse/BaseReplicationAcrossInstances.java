@@ -48,7 +48,7 @@ public class BaseReplicationAcrossInstances {
   String primaryDbName, replicatedDbName;
   static HiveConf conf; // for primary
   static HiveConf replicaConf;
-  private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
   protected static String fullyQualifiedReplicaExternalBase;
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
@@ -111,6 +111,7 @@ public class BaseReplicationAcrossInstances {
 
   private static void setReplicaExternalBase() throws IOException {
     FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
   }
 

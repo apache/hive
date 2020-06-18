@@ -761,8 +761,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     URI basePathUri  = (baseDir == null) ? null : new Path(baseDir).toUri();
     if (basePathUri == null || basePathUri.getScheme() == null || basePathUri.getAuthority() == null) {
       throw new SemanticException(
-              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' %s is required",
-                      baseDir == null ? "" : "('" + baseDir + "')"));
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",
+                      baseDir == null ? "" : "- ('" + baseDir + "')"));
     }
     Path basePath = new Path(baseDir);
     for (Path sourcePath : sourceLocations) {
