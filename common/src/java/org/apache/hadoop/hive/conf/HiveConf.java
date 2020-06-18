@@ -3498,7 +3498,8 @@ public class HiveConf extends Configuration {
             "Whether to enable xframe\n"),
     HIVE_SERVER2_WEBUI_XFRAME_VALUE("hive.server2.webui.xframe.value", "SAMEORIGIN",
             "Configuration to allow the user to set the x_frame-options value\n"),
-
+    HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK("hive.server2.show.operation.drilldown.link", false,
+        "Whether to show the operation's drilldown link to thrift client.\n"),
 
     // Tez session settings
     HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE("hive.server2.active.passive.ha.enable", false,

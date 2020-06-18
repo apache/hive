@@ -452,4 +452,8 @@ public abstract class Operation {
   public String getQueryId() {
     return queryState.getQueryId();
   }
+
+  public boolean showOperationDrilldownLink() {
+    return false;
+  }
 }

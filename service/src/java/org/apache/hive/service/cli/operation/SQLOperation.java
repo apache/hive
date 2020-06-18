@@ -374,7 +374,6 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private synchronized void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
-
     //Need shut down background thread gracefully, driver.close will inform background thread
     //a cancel request is sent.
     if (shouldRunAsync() && state != OperationState.CANCELED && state != OperationState.TIMEDOUT) {
@@ -676,4 +675,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     return queryState.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
   }
 
+  @Override
+  public boolean showOperationDrilldownLink() {
+    return queryState.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK);
+  }
 }

@@ -664,6 +664,13 @@ public class HiveServer2 extends CompositeService {
     return thriftCLIService.getServerIPAddress().getHostName();
   }
 
+  public String getWebServerURI() {
+    if (webServer == null) {
+      return null;
+    }
+    return thriftCLIService.getServerIPAddress().getHostName() + ":" + webServer.getPort();
+  }
+
   @Override
   public synchronized void start() {
     super.start();
