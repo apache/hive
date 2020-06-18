@@ -1,22 +1,3 @@
 ---
-# thrift changes
-'*.thrift':
-  - kgyrtkirk
-# parser changes
-'*.g':
-  - kgyrtkirk
-  - HiveQA
-# metastore database changes
-'package.jdo':
-  - kgyrtkirk
-# these will match on various scheduled query
-'*schq*':
-  - kgyrtkirk
-'*Scheduled*java':
-  - kgyrtkirk
-# these will match sketches related stuff
-'*sketches*':
-  - kgyrtkirk
-'*Sketches*':
-  - kgyrtkirk
-
+'**/*.q.out':
+  - dvoros
