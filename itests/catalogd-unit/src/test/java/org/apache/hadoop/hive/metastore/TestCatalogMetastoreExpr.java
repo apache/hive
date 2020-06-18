@@ -1,6 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.metastore;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -8,37 +24,30 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.annotation.RemoteMetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.impala.catalog.CatalogMetastoreTestBase;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * This test is similar to TestMetastoreExpr but instead of using a embedded HMS it talks
  * to the HMS service exposed from Catalog at port {@code}
  */
-@Category(RemoteMetastoreUnitTest.class)
-public class TestRemoteMetastoreExprTest {
-
-  private static final String REMOTE_HMS_HOST = System
-      .getProperty("CATALOG_SERVICE_HOST", "localhost");
-  private static final int REMOTE_HMS_PORT = Integer
-      .parseInt(System.getProperty("CATALOG_HMS_SERVICE_PORT", "5899"));
-
+public class TestCatalogMetastoreExpr extends CatalogMetastoreTestBase {
   private static HiveMetaStoreClient client;
 
   @BeforeClass
   public static void createHMSClient() throws Exception {
-    HiveConf hiveConf = new HiveConf(TestRemoteMetastoreExprTest.class);
+    HiveConf hiveConf = new HiveConf(TestCatalogMetastoreExpr.class);
     hiveConf.set(ConfVars.METASTOREURIS.varname,
-        "thrift://" + REMOTE_HMS_HOST + ":" + REMOTE_HMS_PORT);
+        "thrift://" + CATALOGD_HOST + ":" + CATALOGD_PORT);
     //TODO remove this once we fix CDPD-13660
     hiveConf.set(ConfVars.METASTORE_EXECUTE_SET_UGI.varname, "false");
     client = new HiveMetaStoreClient(hiveConf);
@@ -157,7 +166,7 @@ public class TestRemoteMetastoreExprTest {
     List<Partition> parts = new ArrayList<Partition>();
     client.listPartitionsByExpr(dbName, tblName,
         SerializationUtilities.serializeExpressionToKryo(expr), null, (short) -1, parts);
-    assertEquals("Partition check failed: " + expr.getExprString(), numParts,
+    Assert.assertEquals("Partition check failed: " + expr.getExprString(), numParts,
         parts.size());
   }
 }
