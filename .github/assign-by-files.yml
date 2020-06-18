@@ -1,7 +1,3 @@
 ---
-# thrift changes
-'**/*.thrift':
-  - dvoros
-# parser changes
-'**/*.g':
+'**/*.java':
   - HiveQA
