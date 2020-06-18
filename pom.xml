@@ -113,7 +113,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.10.0</arrow.version>
     <atlas.client.version>2.0.0</atlas.client.version>
-    <avatica.version>1.15.0</avatica.version>
+    <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
