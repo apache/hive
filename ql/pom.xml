@@ -1094,7 +1094,7 @@
                   <include>com.zaxxer:HikariCP</include>
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
-                  <include>org.apache.calcite.avatica:*</include>
+                  <include>org.apache.calcite.avatica:avatica</include>
                   <include>io.netty:*</include>
                    <!-- some netty-based classes are included in arrow jars with original
                   io.netty package name (e.g. io.netty.buffer.ArrowBuf in arrow-memory)
@@ -1137,10 +1137,6 @@
                 <relocation>
                   <pattern>org.apache.datasketches</pattern>
                   <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.calcite</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.calcite</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>io.netty</pattern>
