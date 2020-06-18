@@ -497,6 +497,26 @@ SELECT DISTINCT
     HL.`HL_BLOCKEDBY_INT_ID`
 FROM SYS.`HIVE_LOCKS` AS HL;
 
+CREATE EXTERNAL TABLE IF NOT EXISTS `REPLICATION_METRICS` (
+    `SCHEDULED_EXECUTION_ID` bigint,
+    `POLICY_NAME` string,
+    `DUMP_EXECUTION_ID` bigint,
+    `METADATA` string,
+    `PROGRESS` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+    \"RM_SCHEDULED_EXECUTION_ID\",
+    \"RM_POLICY\",
+    \"RM_DUMP_EXECUTION_ID\",
+    \"RM_METADATA\",
+    \"RM_PROGRESS\"
+FROM \"REPLICATION_METRICS\""
+);
+
 DROP TABLE IF EXISTS `VERSION`;
 
 CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
@@ -774,5 +794,6 @@ WHERE
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
+
 
 SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 4.0.0';
