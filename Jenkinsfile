@@ -18,7 +18,7 @@
 
 properties([
     // max 5 build/branch/day
-//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
@@ -109,7 +109,7 @@ def hdbPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '800m',
+        resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
@@ -148,9 +148,7 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-    //lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
-    withEnv(["LOCKED_RESOURCE=T"]) {
-
+    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
         checkPrHead()
@@ -182,7 +180,6 @@ def loadWS() {
 jobWrappers {
 
   def splits
-	if(false)
   executorNode {
     container('hdb') {
       stage('Checkout') {
@@ -213,7 +210,7 @@ jobWrappers {
 
   stage('Testing') {
     def branches = [:]
-    for (def d in ['derby','postgres','mysql','oracle','mssql']) {
+    for (def d in ['derby','postgres','mysql','mssql']) {
       def dbType=d
       def splitName = "$dbType"
       branches[splitName] = {
@@ -221,7 +218,6 @@ jobWrappers {
           stage('Prepare') {
               loadWS();
           }
-	try {
           stage('init-metastore') {
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
@@ -242,15 +238,9 @@ time docker rm -f dev_$dbType || true
 mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
 """
           }
-       } finally {
-          stage('wait') {
-            sh 'sleep 86400'
-          }
-       }
         }
       }
     }
-    if(false)
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]
