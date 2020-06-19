@@ -231,7 +231,7 @@ sw hive-dev $PWD
 ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 reinit_metastore $dbType
-docker rm -f dev_$dbType
+docker rm -f dev_$dbType || true
 '''
             }
           }
