@@ -2832,6 +2832,8 @@ public interface IMetaStoreClient {
    */
   GetAllFunctionsResponse getAllFunctions() throws MetaException, TException;
 
+  GetOpenTxnsResponse getOpenTxns() throws TException ;
+
   /**
    * Get a structure that details valid transactions.
    * @return list of valid transactions

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -52,6 +54,11 @@ public class ValidReadTxnList implements ValidTxnList {
 
   public ValidReadTxnList(String value) {
     readFromString(value);
+  }
+
+  @Override
+  public void removeException(long txnId) {
+    exceptions = ArrayUtils.remove(exceptions, Arrays.binarySearch(exceptions, txnId));
   }
 
   @Override

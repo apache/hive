@@ -680,12 +680,19 @@ public class Driver implements IDriver {
           // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
           // and then, we acquire locks. If snapshot is still valid, we continue as usual.
           // But if snapshot is not valid, we recompile the query.
+          if (driverContext.isOutdatedTxn()) {
+            driverContext.getTxnManager().rollbackTxn();
+
+            String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+            driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
+            lockAndRespond();
+          }
           driverContext.setRetrial(true);
           driverContext.getBackupContext().addSubContext(context);
           driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
           context = driverContext.getBackupContext();
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-              driverContext.getTxnManager().getValidTxns().toString());
+            driverContext.getTxnManager().getValidTxns().toString());
           if (driverContext.getPlan().hasAcidResourcesInQuery()) {
             validTxnManager.recordValidWriteIds();
           }

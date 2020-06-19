@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -774,6 +775,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (isLockAcquired) {
         heartbeatTaskLock.unlock();
       }
+    }
+  }
+
+  @Override
+  public GetOpenTxnsResponse getOpenTxns() throws LockException {
+    try {
+      return getMS().getOpenTxns();
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
 

@@ -3021,6 +3021,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws TException {
+    return client.get_open_txns();
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
