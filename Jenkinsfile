@@ -148,7 +148,9 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
+    //lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
+    withEnv(["LOCKED_RESOURCE=T"]) {
+
       timestamps {
         echo env.LOCKED_RESOURCE
         checkPrHead()
