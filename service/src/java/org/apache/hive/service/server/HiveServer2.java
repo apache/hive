@@ -664,11 +664,14 @@ public class HiveServer2 extends CompositeService {
     return thriftCLIService.getServerIPAddress().getHostName();
   }
 
-  public String getWebServerURI() {
+  public String getWebServerUrl() {
     if (webServer == null) {
       return null;
     }
-    return thriftCLIService.getServerIPAddress().getHostName() + ":" + webServer.getPort();
+    boolean useSsl = getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL);
+    String schemeName = useSsl ? "https" : "http";
+    return schemeName + "://" + thriftCLIService.getServerIPAddress().getHostName() +
+        ":" + webServer.getPort();
   }
 
   @Override
