@@ -75,7 +75,7 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     public static void beforeTest() throws Exception {
         conf = defaultConf();
         conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
-        conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "reexecutelostam");
+        conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "reexecute_lost_am");
         MiniHS2.cleanupLocalDir();
         Class.forName(MiniHS2.getJdbcDriverName());
         miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);

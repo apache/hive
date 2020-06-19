@@ -65,7 +65,7 @@ public class DriverFactory {
     if (name.equals("reoptimize")) {
       return new ReOptimizePlugin();
     }
-    if(name.equals("reexecutelostam")) {
+    if(name.equals("reexecute_lost_am")) {
       return new ReExecuteLostAMQueryPlugin();
     }
     throw new RuntimeException(
