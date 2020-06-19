@@ -54,6 +54,10 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     protected static Connection hs2Conn = null;
     private static HiveConf conf;
 
+    private static class ExceptionHolder {
+        Throwable throwable;
+    }
+
     static HiveConf defaultConf() throws Exception {
         String confDir = "../../data/conf/llap/";
         if (confDir != null && !confDir.isEmpty()) {
@@ -134,6 +138,8 @@ public class TestReExecuteKilledTezAMQueryPlugin {
 
         final HiveStatement stmt = (HiveStatement)con1.createStatement();
         final StringBuffer stmtQueryId = new StringBuffer();
+        ExceptionHolder originalQExHolder = new ExceptionHolder();
+        originalQExHolder.throwable = null;
 
         // Thread executing the query
         Thread tExecute = new Thread(new Runnable() {
@@ -149,7 +155,7 @@ public class TestReExecuteKilledTezAMQueryPlugin {
                     stmtQueryId.append(stmt.getQueryId());
                     stmt.getUpdateCount();
                 } catch (SQLException e) {
-                    Assert.fail();
+                    originalQExHolder.throwable = e;
                 }
             }
         });
@@ -159,7 +165,6 @@ public class TestReExecuteKilledTezAMQueryPlugin {
         // wait for other thread to create the stmt handle
         int count = 0;
         while (++count <= 10) {
-            try {
                 Thread.sleep(2000);
                 String queryId;
                 if (stmtQueryId.length() != 0) {
@@ -170,13 +175,10 @@ public class TestReExecuteKilledTezAMQueryPlugin {
                 System.out.println("Killing query: " + queryId);
                 killAMForQueryId(queryId);
                 break;
-            } catch (HiveException e) {
-                LOG.warn("Exception when kill query", e);
-                Assert.fail();
-            }
         }
 
         tExecute.join();
+        Assert.assertEquals(originalQExHolder.throwable, null);
         try {
             stmt.close();
             con1.close();
