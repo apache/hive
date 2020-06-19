@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive;
+package org.apache.hadoop.hive.ql.reexec;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +42,7 @@ import java.sql.Statement;
 import java.util.List;
 
 
-public class TestKillTezAM {
+public class TestReExecuteKilledTezAMQueryPlugin {
     protected static final Logger LOG = LoggerFactory.getLogger(TestJdbcWithMiniLlapArrow.class);
 
     private static MiniHS2 miniHS2 = null;
