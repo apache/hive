@@ -207,7 +207,7 @@ jobWrappers {
 
   stage('Testing') {
     def branches = [:]
-    for (def d in ['derby','postgres']) {
+    for (def d in ['derby','postgres','mysql','oracle','mssql']) {
       def dbType=d
       def splitName = "init@$dbType"
       branches[splitName] = {
@@ -228,9 +228,13 @@ reinit_metastore $dbType
 '''
             }
           }
+          stage('wait') {
+            sh 'sleep 86400'
+          }
         }
       }
     }
+    if(false)
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]
