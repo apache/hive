@@ -172,6 +172,7 @@ def saveWS() {
 
 def loadWS() {
   sh '''#!/bin/bash -e
+    hostname
     rsync -rltD --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
     time tar -xf archive.tar
     rm archive.tar
@@ -232,7 +233,7 @@ ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 export DBNAME=metastore
 reinit_metastore $dbType
-docker rm -f dev_$dbType || true
+time docker rm -f dev_$dbType || true
 '''
             }
           }
