@@ -192,6 +192,7 @@ jobWrappers {
         ]
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
+	if(false)
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
       }
