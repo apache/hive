@@ -168,6 +168,18 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <version>1.3.3</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <version>${junit.jupiter.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+          <version>${junit.vintage.version}</version>
+          <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
@@ -209,6 +221,11 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${maven.exec.plugin.version}</version>
+                </plugin>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <version>${maven.surefire.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
