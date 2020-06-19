@@ -220,6 +220,7 @@ jobWrappers {
           stage('Prepare') {
               loadWS();
           }
+	try {
           stage('init-metastore') {
              withEnv(["dbType=$dbType"]) {
                sh '''#!/bin/bash -e
@@ -233,9 +234,11 @@ reinit_metastore $dbType
 '''
             }
           }
+       } finally {
           stage('wait') {
             sh 'sleep 86400'
           }
+       }
         }
       }
     }
