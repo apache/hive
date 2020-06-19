@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -1513,11 +1514,13 @@ public class TezCompiler extends TaskCompiler {
           // Currently supporting: LowestRatio policy
           // TODO: Add more policies and make the selection a conf property
           tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue());
-          LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
-              probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
-              tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
-          probeTsMap.getKey().setProbeDecodeContext(tsCntx);
-          probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
+          if (tsCntx != null) {
+            LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
+                    probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
+                    tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
+            probeTsMap.getKey().setProbeDecodeContext(tsCntx);
+            probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
+          }
         }
       }
     }
@@ -1566,11 +1569,38 @@ public class TezCompiler extends TaskCompiler {
 
       List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
       ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
-
-      tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
-          keyCol.getColumn(), selectedMJOpRatio);
+      String realTSColName = getOriginalTSColName(selectedMJOp, keyCol.getColumn());
+      if (realTSColName != null) {
+        tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
+                realTSColName, selectedMJOpRatio);
+      } else {
+        LOG.warn("ProbeDecode could not find TSColName for ColKey {} with MJ Schema {} ", keyCol, selectedMJOp.getSchema());
+      }
     }
     return tsProbeDecodeCtx;
+  }
+
+  private static String getOriginalTSColName(MapJoinOperator mjOp, String internalCoName) {
+    ColumnInfo keyColInfo = mjOp.getSchema().getColumnInfo(internalCoName);
+    if (keyColInfo != null) return keyColInfo.getAlias();
+    // Need to find columnName Mapping in Parent Expressions
+    Stack<Operator<?>> parentOps = new Stack<>();
+    parentOps.addAll(mjOp.getParentOperators());
+    while (!parentOps.isEmpty()) {
+        Operator<?> currentOp = parentOps.pop();
+        if (currentOp instanceof ReduceSinkOperator) {
+          // Dont want to follow that parent path
+          continue;
+        }
+        // Check if currOp has internalCoName as part of getColumnExprMap (out column name to input expression)
+        if (currentOp.getColumnExprMap().containsKey(internalCoName)) {
+          // Get colName alias
+          keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
+          if (keyColInfo != null) return keyColInfo.getAlias();
+        }
+        parentOps.addAll(currentOp.getParentOperators());
+    }
+    return null;
   }
 
   // Return the ratio of: (distinct) JOIN_probe_key_column_rows / (distinct) JOIN_TS_target_column_rows
