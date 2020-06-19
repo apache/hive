@@ -239,7 +239,7 @@ time docker rm -f dev_$dbType || true
           }
           stage('verify') {
             sh """#!/bin/bash -e
-mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -B -Ditest.jdbc.jars=/apps/lib/*
+mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
 """
           }
        } finally {
