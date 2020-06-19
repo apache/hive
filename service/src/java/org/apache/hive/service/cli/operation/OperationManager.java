@@ -455,4 +455,17 @@ public class OperationManager extends AbstractService {
     }
     return result;
   }
+
+  public boolean canShowDrilldownLink(OperationHandle operationHandle) {
+    try {
+      Operation operation = getOperation(operationHandle);
+      if (operation instanceof SQLOperation) {
+        HiveConf hiveConf = ((SQLOperation)operation).queryState.getConf();
+        return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK);
+      }
+    } catch (HiveSQLException e) {
+
+    }
+    return false;
+  }
 }

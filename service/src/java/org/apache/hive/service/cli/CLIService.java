@@ -149,10 +149,6 @@ public class CLIService extends CompositeService implements ICLIService {
     return this.httpUGI;
   }
 
-  public HiveServer2 getHiveServer2() {
-    return this.hiveServer2;
-  }
-
   @Override
   public synchronized void start() {
     super.start();

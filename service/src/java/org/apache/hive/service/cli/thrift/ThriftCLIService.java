@@ -569,11 +569,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               queryTimeout) : cliService.executeStatement(sessionHandle, statement, confOverlay,
               queryTimeout);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
-      Operation operation = cliService.getSessionManager().getOperationManager()
-          .getOperation(operationHandle);
-      if (operation.showOperationDrilldownLink() && cliService.getHiveServer2().getWebServerUrl() != null) {
+      SessionManager sessionManager = cliService.getSessionManager();
+      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle) &&
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBSERVER_URL) != null) {
         StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
-            .append(cliService.getHiveServer2().getWebServerUrl())
+            .append(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBSERVER_URL))
             .append("/query_page?operationId=")
             .append(operationHandle.getHandleIdentifier().toString());
         TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
