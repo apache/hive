@@ -173,7 +173,9 @@ def saveWS() {
 def loadWS() {
   sh '''#!/bin/bash -e
     rsync -rltD --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
-    tar -xf archive.tar'''
+    time tar -xf archive.tar
+    rm archive.tar
+'''
 }
 
 jobWrappers {
