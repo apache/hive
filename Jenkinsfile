@@ -214,7 +214,7 @@ jobWrappers {
     def branches = [:]
     for (def d in ['derby','postgres','mysql','oracle','mssql']) {
       def dbType=d
-      def splitName = "init@$dbType"
+      def splitName = "$dbType"
       branches[splitName] = {
         executorNode {
           stage('Prepare') {
@@ -231,8 +231,12 @@ sw hive-dev $PWD
 ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 reinit_metastore $dbType
+docker rm -f dev_$dbType
 '''
             }
+          }
+          stage('verify') {
+            sh "mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -B"
           }
        } finally {
           stage('wait') {
