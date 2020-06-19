@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute(int executionNum) {
+  public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
     return retryPossible;
   }
 

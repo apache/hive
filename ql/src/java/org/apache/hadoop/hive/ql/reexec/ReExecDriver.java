@@ -170,7 +170,7 @@ public class ReExecDriver implements IDriver {
       afterExecute(oldPlanMapper, cpr != null);
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
-      shouldReExecute |= cpr == null && shouldReExecute();
+      shouldReExecute |= cpr == null && shouldReExecute(cpe);
 
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
         if (cpr != null) {
@@ -214,10 +214,10 @@ public class ReExecDriver implements IDriver {
     return ret;
   }
 
-  private boolean shouldReExecute() {
+  private boolean shouldReExecute(CommandProcessorException ex) {
     boolean ret = false;
     for (IReExecutionPlugin p : plugins) {
-      boolean shouldReExecute = p.shouldReExecute(executionIndex);
+      boolean shouldReExecute = p.shouldReExecute(executionIndex, ex);
       LOG.debug("{}.shouldReExecute = {}", p, shouldReExecute);
       ret |= shouldReExecute;
     }

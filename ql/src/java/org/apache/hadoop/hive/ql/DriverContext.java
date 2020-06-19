@@ -59,7 +59,6 @@ public class DriverContext {
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager txnManager;
   private TxnType txnType = TxnType.DEFAULT;
-  private boolean outdatedTxn;
   private StatsSource statsSource;
 
   // Boolean to store information about whether valid txn list was generated
@@ -154,14 +153,6 @@ public class DriverContext {
 
   public TxnType getTxnType() {
     return txnType;
-  }
-
-  public void setOutdatedTxn(boolean outdated) {
-    this.outdatedTxn = outdated;
-  }
-
-  public boolean isOutdatedTxn() {
-    return outdatedTxn;
   }
 
   public void setTxnType(TxnType txnType) {
