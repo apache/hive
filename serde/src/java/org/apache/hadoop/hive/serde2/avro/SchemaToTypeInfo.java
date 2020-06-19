@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Convert an Avro Schema to a Hive TypeInfo
  */
@@ -212,11 +214,9 @@ class SchemaToTypeInfo {
 
   private static TypeInfo generateRecordTypeInfo(Schema schema,
       Set<Schema> seenSchemas) throws AvroSerdeException {
-    assert schema.getType().equals(Schema.Type.RECORD);
+    Preconditions.checkArgument(schema.getType().equals(Schema.Type.RECORD));
 
-    if (seenSchemas == null) {
-        seenSchemas = Collections.newSetFromMap(new IdentityHashMap<Schema, Boolean>());
-    } else if (seenSchemas.contains(schema)) {
+    if (seenSchemas.contains(schema)) {
       throw new AvroSerdeException(
           "Recursive schemas are not supported. Recursive schema was " + schema
               .getFullName());
@@ -259,7 +259,7 @@ class SchemaToTypeInfo {
 
   private static TypeInfo generateUnionTypeInfo(Schema schema,
       Set<Schema> seenSchemas) throws AvroSerdeException {
-    assert schema.getType().equals(Schema.Type.UNION);
+    Preconditions.checkArgument(schema.getType().equals(Schema.Type.UNION));
     List<Schema> types = schema.getTypes();
 
 

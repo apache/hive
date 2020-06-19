@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,47 +27,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Cache for objects whose creation only depends on some other set of objects and therefore can be
- * used against other equivalent versions of those objects. Essentially memoizes instance creation.
+ * Cache for objects whose creation only depends on some other set of objects
+ * and therefore can be used against other equivalent versions of those objects.
+ * Essentially memoizes instance creation.
  *
- * @param <SeedObject> Object that determines the instance. The cache uses this object as a key for
- *          its hash which is why it is imperative to have appropriate equals and hashcode
- *          implementation for this object for the cache to work properly
+ * @param <SeedObject> Object that determines the instance. The cache uses this
+ *          object as a key for its hash which is why it is imperative to have
+ *          appropriate equals and hashcode implementation for this object for
+ *          the cache to work properly
  * @param <Instance> Instance that will be created from SeedObject.
  */
 public abstract class InstanceCache<SeedObject, Instance> {
   private static final Logger LOG = LoggerFactory.getLogger(InstanceCache.class);
   Map<SeedObject, Instance> cache = new ConcurrentHashMap<>();
-  
-  public InstanceCache() {}
+
+  public InstanceCache() {
+  }
 
   /**
-   * Retrieve (or create if it doesn't exist) the correct Instance for this
-   * SeedObject
+   * Retrieve (or create if it does not exist) the correct Instance for this
+   * SeedObject.
    */
-  public Instance retrieve(SeedObject hv) throws AvroSerdeException {
+  public Instance retrieve(final SeedObject hv) throws AvroSerdeException {
     return retrieve(hv, null);
   }
 
   /**
    * Retrieve (or create if it doesn't exist) the correct Instance for this
-   * SeedObject using 'seenSchemas' to resolve circular references
+   * SeedObject using 'seenSchemas' to resolve circular references.
    */
-  public Instance retrieve(SeedObject hv, Set<SeedObject> seenSchemas)
-    throws AvroSerdeException {
-    if(LOG.isDebugEnabled()) LOG.debug("Checking for hv: " + hv.toString());
+  public Instance retrieve(final SeedObject hv, Set<SeedObject> seenSchemas) throws AvroSerdeException {
+    LOG.debug("Checking for hv: {}", hv);
 
-    if(cache.containsKey(hv)) {
-      if(LOG.isDebugEnabled()) LOG.debug("Returning cache result.");
+    if (cache.containsKey(hv)) {
+      LOG.debug("Returning cache result");
       return cache.get(hv);
     } else {
-      if(LOG.isDebugEnabled()) LOG.debug("Creating new instance and storing in cache");
+      if (seenSchemas == null) {
+        seenSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
+      }
+      LOG.debug("Creating new instance and storing in cache");
       Instance newInstance = makeInstance(hv, seenSchemas);
       Instance cachedInstance = cache.putIfAbsent(hv, newInstance);
       return cachedInstance == null ? newInstance : cachedInstance;
     }
   }
 
-  protected abstract Instance makeInstance(SeedObject hv,
-      Set<SeedObject> seenSchemas) throws AvroSerdeException;
+  protected abstract Instance makeInstance(SeedObject hv, Set<SeedObject> seenSchemas) throws AvroSerdeException;
 }

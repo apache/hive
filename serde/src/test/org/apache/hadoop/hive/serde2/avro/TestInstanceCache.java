@@ -63,12 +63,12 @@ public class TestInstanceCache {
     };
     Foo f1 = new Foo();
 
-    Wrapper fc = ic.retrieve(f1, null);
+    Wrapper fc = ic.retrieve(f1);
     assertSame(f1, fc.wrapped); // Our original foo should be in the wrapper
 
     Foo f2 = new Foo(); // Different instance, same value
 
-    Wrapper fc2 = ic.retrieve(f2, null);
+    Wrapper fc2 = ic.retrieve(f2);
     assertSame(fc2,fc); // Since equiv f, should get back first container
     assertSame(fc2.wrapped, f1);
   }
@@ -83,13 +83,13 @@ public class TestInstanceCache {
       }
     };
 
-    Wrapper<String> one = ic.retrieve("one", null);
-    Wrapper<String> two = ic.retrieve("two", null);
+    Wrapper<String> one = ic.retrieve("one");
+    Wrapper<String> two = ic.retrieve("two");
 
-    Wrapper<String> anotherOne = ic.retrieve("one", null);
+    Wrapper<String> anotherOne = ic.retrieve("one");
     assertSame(one, anotherOne);
 
-    Wrapper<String> anotherTwo = ic.retrieve("two", null);
+    Wrapper<String> anotherTwo = ic.retrieve("two");
     assertSame(two, anotherTwo);
   }
 }
