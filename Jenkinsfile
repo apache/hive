@@ -167,12 +167,12 @@ def saveWS() {
   sh '''#!/bin/bash -e
     tar --exclude=archive.tar -cf archive.tar .
     ls -l archive.tar
-    rsync -rltDq --stats archive.tar rsync://rsync/data/$LOCKED_RESOURCE'''
+    rsync -rltD --stats archive.tar rsync://rsync/data/$LOCKED_RESOURCE'''
 }
 
 def loadWS() {
   sh '''#!/bin/bash -e
-    rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
+    rsync -rltD --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
     tar -xf archive.tar'''
 }
 
