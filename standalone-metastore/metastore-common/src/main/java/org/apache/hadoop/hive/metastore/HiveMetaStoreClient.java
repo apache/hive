@@ -4267,8 +4267,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void setValidWriteIdList(String txnWriteIdListStr) {
-    this.txnWriteIdList = (txnWriteIdListStr == null ? null : new ValidTxnWriteIdList(txnWriteIdListStr));
+  public void setValidWriteIdList(String validWriteIdList) {
+    this.txnWriteIdList = (validWriteIdList == null ? null : new ValidTxnWriteIdList(validWriteIdList));
   }
 
   @Override public void clearValidWriteIdList() {

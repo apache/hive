@@ -2376,7 +2376,8 @@ public class AcidUtils {
     txnTables.add(fullTableName);
     ValidTxnWriteIdList txnWriteIds;
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
-      txnWriteIds = new ValidTxnWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+      txnWriteIds = new ValidTxnWriteIdList(conf.get(
+          ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     } else {
       String txnString;
       if (conf.get(ValidTxnList.VALID_TXNS_KEY) != null) {
@@ -2631,11 +2632,11 @@ public class AcidUtils {
   public static List<FileStatus> getAcidFilesForStats(
       Table table, Path dir, Configuration jc, FileSystem fs) throws IOException {
     List<FileStatus> fileList = new ArrayList<>();
-    ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
+    org.apache.hadoop.hive.common.ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
     if (idList == null) {
       LOG.warn("Cannot get ACID state for " + table.getDbName() + "." + table.getTableName()
-          + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+          + " from " + jc.get(org.apache.hadoop.hive.common.ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       return null;
     }
     Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false);
@@ -3180,11 +3181,8 @@ public class AcidUtils {
    * @return true, if the table is enabled for replication. False, otherwise.
    */
   public static boolean inReplication(Table tbl) {
-    if (tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return ( tbl != null && tbl.getParameters() != null &&
+     tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null);
   }
 
   /**

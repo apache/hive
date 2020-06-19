@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
@@ -369,17 +370,11 @@ public class Driver implements IDriver {
 
       DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
       boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
-      LOG.info(" acidDdlDesc : " + acidDdlDesc );
-      if ( acidDdlDesc != null )
-        LOG.info("  mayNeedWriteId : " + acidDdlDesc.mayNeedWriteId());
       if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
-         LOG.info("  fqTableName : " + fqTableName);
         final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
-        LOG.info("  TableName : " + tn);
-        LOG.info("  tn.getDb() : " + tn.getDb() + " tn.getTable() : " + tn.getTable());
         long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
-        // This updates the latest validWriteIdList for the current table in the config, which latest will be sent
+        // This updates the latest validWriteIdList for the current table in the config, which later will be sent
         // by HMS Client for all get_* requests.
         // This is done as part of HIVE-21637 ( subtask : HIVE-23573 ) to provide cache consistency.
         AcidUtils.updateValidWriteIdList(getConf(), AcidUtils.getFullTableName(tn.getDb(), tn.getTable()));
@@ -474,6 +469,18 @@ public class Driver implements IDriver {
       context.setHiveLocks(null);
     }
 
+    // Unset all the keys
+    for (String key : new String[] { ValidTxnList.VALID_TXNS_KEY, ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY,
+        ValidTxnList.COMPACTOR_VALID_TXNS_ID_KEY, ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY }) {
+      driverContext.getConf().unset(key);
+      SessionState.get().getConf().unset(key);
+    }
+
+    try {
+      Hive.get().clearValidWriteIdList();
+    } catch (HiveException e) {
+      LOG.error("Error clear ValidWriteIdList, this shall never happen:" + e);
+    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 

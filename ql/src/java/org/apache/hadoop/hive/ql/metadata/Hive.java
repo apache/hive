@@ -178,14 +178,12 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -195,7 +193,6 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
@@ -806,8 +803,7 @@ public class Hive {
       // Take a table snapshot and set it to newTbl.
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-
-        if (inReplication(newTbl) && replWriteId > 0) {
+        if (replWriteId > 0) {
           // We need a valid writeId list for a transactional table modification. During
           // replication we do not have a valid writeId list which was used to modify the table
           // on the source. But we know for sure that the writeId associated with it was valid
@@ -836,7 +832,6 @@ public class Hive {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
-    } finally {
     }
   }
 
@@ -888,7 +883,6 @@ public class Hive {
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
-
     try {
       if (catName == null) {
         catName = getDefaultCatalog(conf);
@@ -902,10 +896,8 @@ public class Hive {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
-
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-
         tableSnapshot = AcidUtils.getTableSnapshot(conf, newPart.getTable(), true);
         if (tableSnapshot != null) {
           newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
@@ -921,7 +913,6 @@ public class Hive {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
-    } finally {
     }
   }
 
@@ -949,14 +940,12 @@ public class Hive {
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
-
     String[] names = Utilities.getDbTableName(tblName);
     List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
       new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-
         tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable(), true);
       }
       // Remove the DDL time so that it gets refreshed
@@ -978,7 +967,6 @@ public class Hive {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
-    } finally {
     }
   }
   /**
@@ -1017,9 +1005,8 @@ public class Hive {
       }
       String validWriteIds = null;
       if (AcidUtils.isTransactionalTable(tbl)) {
-
         TableSnapshot tableSnapshot;
-        if (inReplication(tbl)) {
+        if (replWriteId > 0) {
           // We need a valid writeId list for a transactional table modification. During
           // replication we do not have a valid writeId list which was used to modify the table
           // on the source. But we know for sure that the writeId associated with it was valid
@@ -1049,7 +1036,6 @@ public class Hive {
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
-    } finally {
     }
   }
 
@@ -1109,7 +1095,6 @@ public class Hive {
     List<SQLDefaultConstraint> defaultConstraints,
     List<SQLCheckConstraint> checkConstraints)
             throws HiveException {
-
     try {
       if (org.apache.commons.lang3.StringUtils.isBlank(tbl.getDbName())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
@@ -1134,7 +1119,6 @@ public class Hive {
           tTbl.setPrivileges(principalPrivs);
         }
       }
-
       // Set table snapshot to api.Table to make it persistent. A transactional table being
       // replicated may have a valid write Id copied from the source. Use that instead of
       // crafting one on the replica.
@@ -1160,7 +1144,6 @@ public class Hive {
       }
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
@@ -1255,14 +1238,7 @@ public class Hive {
    */
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
-
     try {
-      Table tbl = null;
-      try {
-        tbl = getTable(dbName, tableName);
-      } catch (InvalidTableException e) {
-      }
-
       getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
@@ -1270,7 +1246,6 @@ public class Hive {
       }
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
@@ -1284,13 +1259,10 @@ public class Hive {
    * @throws HiveException
    */
   public void truncateTable(String dbDotTableName, Map<String, String> partSpec, Long writeId) throws HiveException {
-
     try {
       Table table = getTable(dbDotTableName, true);
-
       AcidUtils.TableSnapshot snapshot = null;
       if (AcidUtils.isTransactionalTable(table)) {
-
         if (writeId <= 0) {
           snapshot = AcidUtils.getTableSnapshot(conf, table, true);
         } else {
@@ -3574,10 +3546,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tableName,
       List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
-
     try {
       Table table = getTable(dbName, tableName);
-
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
           partitionExpressions, dropOptions);
       return convertFromMetastore(table, partitions);
@@ -3585,7 +3555,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
-    } finally {
     }
   }
 
@@ -5122,10 +5091,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> exchangeTablePartitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws HiveException {
-
     try {
-      Table srcTbl = getTable(sourceDb, sourceTable);
-
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions =
         getMSC().exchange_partitions(partitionSpecs, sourceDb, sourceTable, destDb,
         destinationTableName);
@@ -5134,7 +5100,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception ex) {
       LOG.error(StringUtils.stringifyException(ex));
       throw new HiveException(ex);
-    } finally {
     }
   }
 
@@ -5630,16 +5595,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropConstraint(String dbName, String tableName, String constraintName)
     throws HiveException, NoSuchObjectException {
-
     try {
-      Table tbl = getTable(dbName, tableName);
-
       getMSC().dropConstraint(dbName, tableName, constraintName);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
@@ -5966,73 +5927,54 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
     throws HiveException, NoSuchObjectException {
     try {
-      Table tbl = getTable(primaryKeyCols.get(0).getTable_db(), primaryKeyCols.get(0).getTable_name());
-
       getMSC().addPrimaryKey(primaryKeyCols);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
   public void addForeignKey(List<SQLForeignKey> foreignKeyCols)
     throws HiveException, NoSuchObjectException {
     try {
-      Table tbl = getTable(foreignKeyCols.get(0).getFktable_db(), foreignKeyCols.get(0).getFktable_name());
-
       getMSC().addForeignKey(foreignKeyCols);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
   public void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols)
     throws HiveException, NoSuchObjectException {
     try {
-      Table tbl = getTable(uniqueConstraintCols.get(0).getTable_db(), uniqueConstraintCols.get(0).getTable_name());
-
       getMSC().addUniqueConstraint(uniqueConstraintCols);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
   public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols)
     throws HiveException, NoSuchObjectException {
     try {
-      Table tbl = getTable(notNullConstraintCols.get(0).getTable_db(), notNullConstraintCols.get(0).getTable_name());
-
       getMSC().addNotNullConstraint(notNullConstraintCols);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
   public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints)
       throws HiveException, NoSuchObjectException {
     try {
-      Table tbl = getTable(defaultConstraints.get(0).getTable_db(), defaultConstraints.get(0).getTable_name());
-
       getMSC().addDefaultConstraint(defaultConstraints);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
   public void addCheckConstraint(List<SQLCheckConstraint> checkConstraints)
       throws HiveException, NoSuchObjectException {
-
     try {
-      Table tbl = getTable(checkConstraints.get(0).getTable_db(), checkConstraints.get(0).getTable_name());
-
       getMSC().addCheckConstraint(checkConstraints);
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
     }
   }
 
@@ -6245,18 +6187,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * Clears the ValidWriteIdList in HMS Client
+   */
   public void clearValidWriteIdList() {
     if (metaStoreClient != null) {
       metaStoreClient.clearValidWriteIdList();
     }
   }
-
-  boolean inReplication(Table tbl) {
-    if (tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 }
-

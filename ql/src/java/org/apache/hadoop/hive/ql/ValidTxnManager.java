@@ -205,19 +205,9 @@ class ValidTxnManager {
 
   private ValidTxnWriteIdList getTxnWriteIds(String txnString) throws LockException {
 
-  List<String> txnTables = getTransactionalTables(getTables(true, true));
-  ValidTxnWriteIdList txnWriteIds = null;
+   List<String> txnTables = getTransactionalTables(getTables(true, true));
+   ValidTxnWriteIdList txnWriteIds = null;
 
-   // If we have collected all required table writeid (in SemanticAnalyzer), skip fetch again
-   if (driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
-      txnWriteIds = new ValidTxnWriteIdList(driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-      for (String txnTable : txnTables) {
-        if (txnWriteIds.getTableValidWriteIdList(txnTable) == null) {
-          txnWriteIds = null;
-          break;
-        }
-      }
-    }
    if (txnWriteIds == null) {
     if (driverContext.getCompactionWriteIds() != null) {
       // This is kludgy: here we need to read with Compactor's snapshot/txn rather than the snapshot of the current
@@ -230,7 +220,19 @@ class ValidTxnManager {
       txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
       txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
     } else {
-      txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
+      // If we have collected all required table writeid (in SemanticAnalyzer), skip fetch again
+      if (driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
+        txnWriteIds =
+            new ValidTxnWriteIdList(driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+        for (String txnTable : txnTables) {
+          if (txnWriteIds.getTableValidWriteIdList(txnTable) == null) {
+            txnWriteIds = null;
+            break;
+          }
+        }
+      } else {
+        txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
+      }
     }
    }
     if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false, true).isEmpty()) {

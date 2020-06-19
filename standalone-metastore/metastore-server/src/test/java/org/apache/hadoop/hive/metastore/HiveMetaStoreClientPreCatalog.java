@@ -3798,7 +3798,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void setValidWriteIdList(String txnWriteIdList) {
+  public void setValidWriteIdList(String validWriteIdList) {
     throw new UnsupportedOperationException();
   }
 
