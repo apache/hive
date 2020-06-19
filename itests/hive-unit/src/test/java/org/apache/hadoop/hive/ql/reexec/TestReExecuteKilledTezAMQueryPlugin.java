@@ -39,7 +39,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class TestReExecuteKilledTezAMQueryPlugin {
@@ -71,10 +73,14 @@ public class TestReExecuteKilledTezAMQueryPlugin {
         conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
         conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "reexecutelostam");
         MiniHS2.cleanupLocalDir();
-        miniHS2 = BaseJdbcWithMiniLlap.beforeTest(conf);
+        Class.forName(MiniHS2.getJdbcDriverName());
+        miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
         dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+        Map<String, String> confOverlay = new HashMap<String, String>();
+        miniHS2.start(confOverlay);
+        miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
-        Connection conDefault = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(),
+        Connection conDefault = getConnection(miniHS2.getJdbcURL(),
                 System.getProperty("user.name"), "bar");
         Statement stmt = conDefault.createStatement();
         String tblName = testDbName + "." + tableName;
