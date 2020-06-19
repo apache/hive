@@ -49,7 +49,7 @@ Supported databases for testing:
 -Dit.test=ITestMysql
 -Dit.test=ITestOracle
 -Dit.test=ITestPostgres
--Dit.test=ITestSqlServer
+-Dit.test=ITestMssql
 
 By adding -Dverbose.schematool the Schema Tool output becomes more detailed.
 
