@@ -68,7 +68,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Test
   public void externalTableReplicationWithRemoteStaging() throws Throwable {
     List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
-    withClauseOptions.addAll(externalTableBasePathWithClause());
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -124,7 +123,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Test
   public void externalTableReplicationWithLocalStaging() throws Throwable {
     List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
-    withClauseOptions.addAll(externalTableBasePathWithClause());
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -181,10 +179,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     List<String> confList = new ArrayList<>();
     confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");
     return confList;
-  }
-
-  private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    return ReplicationTestUtils.externalTableBasePathWithClause(fullyQualifiedReplicaExternalBase, replica);
   }
 
   private void assertExternalFileInfo(List<String> expected, String dumplocation, boolean isIncremental,

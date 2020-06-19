@@ -110,6 +110,8 @@ public class BaseReplicationScenariosAcidTables {
     FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
     fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
+    conf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    replica.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @AfterClass

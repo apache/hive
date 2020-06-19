@@ -88,6 +88,7 @@ public class TestReplicationWithTableMigration {
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     final DistributedFileSystem fs = miniDFSCluster.getFileSystem();
+    String extTableBase = fs.getFileStatus(new Path("/")).getPath().toString();
     HashMap<String, String> hiveConfigs = new HashMap<String, String>() {{
       put("fs.defaultFS", fs.getUri().toString());
       put("hive.support.concurrency", "true");
@@ -99,6 +100,7 @@ public class TestReplicationWithTableMigration {
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.strict.managed.tables", "true");
+      put("hive.repl.replica.external.table.base.dir", extTableBase);
     }};
 
     HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
@@ -114,6 +116,7 @@ public class TestReplicationWithTableMigration {
       put("hive.strict.managed.tables", "false");
       put("hive.stats.autogather", "true");
       put("hive.stats.column.autogather", "true");
+      put("hive.repl.replica.external.table.base.dir", extTableBase);
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
