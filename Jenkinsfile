@@ -230,6 +230,7 @@ echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 sw hive-dev $PWD
 ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
+export DBNAME=metastore
 reinit_metastore $dbType
 docker rm -f dev_$dbType || true
 '''
