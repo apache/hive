@@ -1581,24 +1581,22 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static String getOriginalTSColName(MapJoinOperator mjOp, String internalCoName) {
-    ColumnInfo keyColInfo = mjOp.getSchema().getColumnInfo(internalCoName);
-    if (keyColInfo != null) return keyColInfo.getAlias();
-    // Need to find columnName Mapping in Parent Expressions
+    // Look for internalCoName alias in current OR Parent RowSchemas
     Stack<Operator<?>> parentOps = new Stack<>();
-    parentOps.addAll(mjOp.getParentOperators());
+    ColumnInfo keyColInfo = null;
+    parentOps.add(mjOp);
     while (!parentOps.isEmpty()) {
-        Operator<?> currentOp = parentOps.pop();
-        if (currentOp instanceof ReduceSinkOperator) {
-          // Dont want to follow that parent path
-          continue;
-        }
-        // Check if currOp has internalCoName as part of getColumnExprMap (out column name to input expression)
-        if (currentOp.getColumnExprMap().containsKey(internalCoName)) {
-          // Get colName alias
-          keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
-          if (keyColInfo != null) return keyColInfo.getAlias();
-        }
-        parentOps.addAll(currentOp.getParentOperators());
+      Operator<?> currentOp = parentOps.pop();
+      if (currentOp instanceof ReduceSinkOperator) {
+        // Dont want to follow that parent path
+       continue;
+      }
+      keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
+      if (keyColInfo != null) {
+        // Get original colName alias (or fallback to internal colName)
+        return keyColInfo.getAlias() != null ? keyColInfo.getAlias() : keyColInfo.getInternalName();
+      }
+      parentOps.addAll(currentOp.getParentOperators());
     }
     return null;
   }
