@@ -63,11 +63,11 @@ public class BaseReplicationAcrossInstances {
       put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     }};
     localOverrides.putAll(overrides);
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), localOverrides);
     primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     replicaConf = conf;
-    setReplicaExternalBase();
   }
 
   static void internalBeforeClassSetupExclusiveReplica(Map<String, String> primaryOverrides,
@@ -86,6 +86,7 @@ public class BaseReplicationAcrossInstances {
       }
     };
     localOverrides.putAll(primaryOverrides);
+    setReplicaExternalBase(miniPrimaryDFSCluster.getFileSystem(), primaryOverrides);
     primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
@@ -99,8 +100,8 @@ public class BaseReplicationAcrossInstances {
     localOverrides.putAll(replicaOverrides);
     localOverrides.put("fs.defaultFS", miniReplicaDFSCluster.getFileSystem().getUri().toString());
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    setReplicaExternalBase(miniReplicaDFSCluster.getFileSystem(), localOverrides);
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
-    setReplicaExternalBase();
   }
 
   @AfterClass
@@ -109,12 +110,17 @@ public class BaseReplicationAcrossInstances {
     replica.close();
   }
 
-  private static void setReplicaExternalBase() throws IOException {
+  private static void setReplicaExternalBase1() throws IOException {
     FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
     fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
     conf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
     replicaConf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+  }
+  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
+    confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @Before

@@ -92,6 +92,7 @@ public class BaseReplicationScenariosAcidTables {
 
     acidEnableConf.putAll(overrides);
 
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), acidEnableConf);
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
@@ -103,15 +104,12 @@ public class BaseReplicationScenariosAcidTables {
     }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
-    setReplicaExternalBase();
   }
 
-  private static void setReplicaExternalBase() throws IOException {
-    FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
+  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
     fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
-    conf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
-    replica.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @AfterClass
