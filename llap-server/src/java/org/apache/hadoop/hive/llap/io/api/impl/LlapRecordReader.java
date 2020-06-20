@@ -744,6 +744,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     @Override
+    public String[] getOriginalColumnNames(TypeDescription fileSchema) {
+      return OrcInputFormat.genIncludedColNames(
+              fileSchema, filePhysicalColumnIds, acidStructColumnId);
+    }
+
+    @Override
     public String getQueryId() {
       return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
     }
