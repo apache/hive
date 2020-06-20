@@ -648,8 +648,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           // Note: columnIds below makes additional changes for ACID. Don't use this var directly.
       this.readerSchema = readerSchema;
       this.jobConf = jobConf;
+      this.includeAcidColumns = includeAcidColumns;
+
+      // Assume including everything means the VRB will have everything.
       if (tableIncludedCols == null) {
-        // Assume including everything means the VRB will have everything.
         // TODO: this is rather brittle, esp. in view of schema evolution (in abstract, not as 
         //       currently implemented in Hive). The compile should supply the columns it expects
         //       to see, which is not "all, of any schema". Is VRB row CVs the right mechanism
@@ -659,43 +661,39 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           tableIncludedCols.add(i);
         }
       }
-      LOG.debug("Logical table includes: {}", tableIncludedCols);
+
       this.readerLogicalColumnIds = tableIncludedCols;
+      LOG.debug("Logical table includes: {}", readerLogicalColumnIds);
+
       // Note: schema evolution currently does not support column index changes.
       //       So, the indices should line up... to be fixed in SE v2?
-      List<Integer> filePhysicalColumnIds = readerLogicalColumnIds;
       if (isAcidScan) {
         int rootCol = OrcInputFormat.getRootColumn(false);
-        filePhysicalColumnIds = new ArrayList<>(filePhysicalColumnIds.size() + rootCol);
+        this.filePhysicalColumnIds = new ArrayList<>(filePhysicalColumnIds.size() + rootCol);
         this.acidStructColumnId = rootCol - 1; // OrcRecordUpdater.ROW. This is somewhat fragile...
-        // Note: this guarantees that physical column IDs are in order.
-        for (int i = 0; i < rootCol; ++i) {
-          // We don't want to include the root struct in ACID case; it would cause the whole
-          // struct to get read without projection.
-          if (acidStructColumnId == i) continue;
-          if(!includeAcidColumns) {
-            /*
-              if not including acid columns, we still want to number the
-              physical columns as if acid columns are included becase
-              {@link #generateFileIncludes(TypeDescription)} takes the file
-              schema as input
-              (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
-             */
-            continue;
+        if (includeAcidColumns) {
+          // Up to acidStructColumnId: as we don't want to include the root struct in ACID case;
+          // it would cause the whole struct to get read without projection.
+          for (int i = 0; i < acidStructColumnId; ++i) {
+            // Note: this guarantees that physical column IDs are in order.
+            filePhysicalColumnIds.add(i);
           }
-          filePhysicalColumnIds.add(i);
         }
+        /**
+         * Even when NOT including acid columns, we still want to number the
+         * physical columns as if acid columns are included because
+         * {@link #generateFileIncludes(TypeDescription)} takes the file
+         * schema as input
+         * (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
+         */
         for (int tableColumnId : readerLogicalColumnIds) {
-          //but make sure to generate correct ids in type tree in-order
-          //walk order
+          // Make sure to generate correct ids in type tree in-order traversal
+          /* ok, so if filePhysicalColumnIds include acid column ids, we end up decoding the vectors*/
           filePhysicalColumnIds.add(rootCol + tableColumnId);
         }
-        /*ok, so if filePhysicalColumnIds include acid column ids, we end up
-         decoding the vectors*/
+      } else {
+        this.filePhysicalColumnIds = readerLogicalColumnIds;
       }
- 
-      this.filePhysicalColumnIds = filePhysicalColumnIds;
-      this.includeAcidColumns = includeAcidColumns;
     }
 
     @Override
