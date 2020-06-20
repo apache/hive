@@ -73,35 +73,39 @@ public class BaseReplicationAcrossInstances {
   static void internalBeforeClassSetupExclusiveReplica(Map<String, String> primaryOverrides,
                                                        Map<String, String> replicaOverrides, Class clazz)
           throws Exception {
-    conf = new HiveConf(clazz);
-    conf.set("dfs.client.use.datanode.hostname", "true");
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
-    String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
-    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
-    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    Map<String, String> localOverrides = new HashMap<String, String>() {
-      {
-        put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
-        put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
-      }
-    };
-    localOverrides.putAll(primaryOverrides);
-    setReplicaExternalBase(miniPrimaryDFSCluster.getFileSystem(), primaryOverrides);
-    primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
+    /**
+     * Setup replica cluster
+     */
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
-    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf = new HiveConf(clazz);
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniReplicaDFSCluster =
             new MiniDFSCluster.Builder(replicaConf).numDataNodes(1).format(true).build();
-    localOverrides.clear();
-    localOverrides.putAll(replicaOverrides);
+
+    Map<String, String> localOverrides = new HashMap<>();
     localOverrides.put("fs.defaultFS", miniReplicaDFSCluster.getFileSystem().getUri().toString());
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    localOverrides.putAll(replicaOverrides);
     setReplicaExternalBase(miniReplicaDFSCluster.getFileSystem(), localOverrides);
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
+
+    /**
+     * Setup primary cluster
+     */
+    String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
+    conf = new HiveConf(clazz);
+    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
+    conf.set("dfs.client.use.datanode.hostname", "true");
+    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    localOverrides.clear();
+    localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    localOverrides.put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
+    localOverrides.putAll(primaryOverrides);
+    primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
   }
 
   @AfterClass
@@ -110,13 +114,6 @@ public class BaseReplicationAcrossInstances {
     replica.close();
   }
 
-  private static void setReplicaExternalBase1() throws IOException {
-    FileSystem fs = REPLICA_EXTERNAL_BASE.getFileSystem(replica.getConf());
-    fs.mkdirs(REPLICA_EXTERNAL_BASE);
-    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
-    conf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
-    replicaConf.set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
-  }
   private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
     fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();

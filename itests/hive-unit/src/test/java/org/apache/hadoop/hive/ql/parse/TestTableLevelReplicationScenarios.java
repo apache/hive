@@ -530,6 +530,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Enable external tables replication and bootstrap in incremental phase.
     String[] incrementalReplicatedTables = new String[] {"a2", "b2"};
+    dumpWithClause = ReplicationTestUtils.externalTableClause(true);
     dumpWithClause.add("'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .dump(replPolicy, dumpWithClause);
