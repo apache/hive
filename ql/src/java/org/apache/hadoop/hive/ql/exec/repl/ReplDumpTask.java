@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -758,7 +759,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     // this is done to remove any scheme related information that will be present in the base path
     // specifically when we are replicating to cloud storage
-    URI basePathUri  = (baseDir == null) ? null : new Path(baseDir).toUri();
+    URI basePathUri  = StringUtils.isEmpty(baseDir) ? null : new Path(baseDir).toUri();
     if (basePathUri == null || basePathUri.getScheme() == null || basePathUri.getAuthority() == null) {
       throw new SemanticException(
               String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",

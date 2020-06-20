@@ -64,6 +64,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestReplicationWithTableMigration {
   private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
+  private static String fullyQualifiedReplicaExternalBase;
 
   @Rule
   public final TestName testName = new TestName();
@@ -88,7 +89,6 @@ public class TestReplicationWithTableMigration {
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     final DistributedFileSystem fs = miniDFSCluster.getFileSystem();
-    String extTableBase = fs.getFileStatus(new Path("/")).getPath().toString();
     HashMap<String, String> hiveConfigs = new HashMap<String, String>() {{
       put("fs.defaultFS", fs.getUri().toString());
       put("hive.support.concurrency", "true");
@@ -100,7 +100,6 @@ public class TestReplicationWithTableMigration {
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.strict.managed.tables", "true");
-      put("hive.repl.replica.external.table.base.dir", extTableBase);
     }};
 
     HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
@@ -116,16 +115,13 @@ public class TestReplicationWithTableMigration {
       put("hive.strict.managed.tables", "false");
       put("hive.stats.autogather", "true");
       put("hive.stats.column.autogather", "true");
-      put("hive.repl.replica.external.table.base.dir", extTableBase);
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
     hiveConfigs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
-    String fullyQualifiedReplicaExternalBase = miniDFSCluster.getFileSystem()
-            .getFileStatus(new Path("/")).getPath().toString();
-    primary.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
-    replica.getConf().set(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    fullyQualifiedReplicaExternalBase = miniDFSCluster.getFileSystem().getFileStatus(
+            new Path("/")).getPath().toString();
   }
 
   private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
@@ -564,6 +560,7 @@ public class TestReplicationWithTableMigration {
     withConfigs.add("'hive.repl.bootstrap.acid.tables'='true'");
     withConfigs.add("'hive.repl.dump.include.acid.tables'='true'");
     withConfigs.add("'hive.repl.include.external.tables'='true'");
+    withConfigs.add("'hive.repl.replica.external.table.base.dir' = '" + fullyQualifiedReplicaExternalBase + "'");
     withConfigs.add("'hive.distcp.privileged.doAs' = '" + UserGroupInformation.getCurrentUser().getUserName() + "'");
     tuple = primary.dump(primaryDbName, withConfigs);
     replica.load(replicatedDbName, primaryDbName, withConfigs);

@@ -991,6 +991,49 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyReplTargetProperty(replicatedDbName);
   }
 
+  @Test
+  public void testExternalTableBaseDirMandatory() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.externalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='/extTablebase'");
+    WarehouseInstance.Tuple tuple = null;
+    try {
+      primary.run("use " + primaryDbName)
+              .run("create external table t1 (id int)")
+              .run("insert into table t1 values(1)")
+              .dump(primaryDbName, withClause);
+    } catch (SemanticException ex) {
+      assertTrue(ex.getMessage().contains(
+              "Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required"));
+    }
+    withClause = ReplicationTestUtils.externalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
+            + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+    tuple = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, withClause);
+
+    withClause = ReplicationTestUtils.externalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'=''");
+    try {
+      replica.load(replicatedDbName, primaryDbName, withClause);
+    } catch (SemanticException ex) {
+      assertEquals(ex.getMessage(), "Config 'hive.repl.replica.external.table.base.dir' is required");
+    }
+
+    withClause = ReplicationTestUtils.externalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
+            + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    replica.run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResults(new String[] {"t1"})
+            .run("select id from t1")
+            .verifyResults(new String[] {"1"})
+            .verifyReplTargetProperty(replicatedDbName);
+  }
 
   private void assertExternalFileInfo(List<String> expected, String dumplocation,
                                       boolean isIncremental) throws IOException {
