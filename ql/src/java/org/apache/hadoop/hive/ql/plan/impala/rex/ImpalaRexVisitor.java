@@ -52,17 +52,11 @@ import java.util.Set;
 public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   private final Analyzer analyzer;
-  private final List<TupleId> tupleIds;
 
   protected ImpalaRexVisitor(Analyzer analyzer) {
-    this(analyzer, null);
-  }
-
-  protected ImpalaRexVisitor(Analyzer analyzer, List<TupleId> tupleIds) {
     super(false);
     Preconditions.checkArgument(analyzer != null);
     this.analyzer = analyzer;
-    this.tupleIds = tupleIds;
   }
 
   @Override
@@ -78,7 +72,7 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
       for (RexNode operand : rexCall.getOperands()) {
         params.add(operand.accept(this));
       }
-      return ImpalaRexCall.getExpr(analyzer, rexCall, params, tupleIds);
+      return ImpalaRexCall.getExpr(analyzer, rexCall, params);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
@@ -159,12 +153,12 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
     private boolean hasNonPartitionCols;
 
     public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
-      this(analyzer, impalaPlanNodes, null, null);
+      this(analyzer, impalaPlanNodes, null);
     }
 
     public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes,
-        List<TupleId> tupleIds, Set<Integer> partitionColsIndexes) {
-      super(analyzer, tupleIds);
+        Set<Integer> partitionColsIndexes) {
+      super(analyzer);
       Preconditions.checkArgument(impalaPlanNodes != null);
       this.impalaPlanNodes = impalaPlanNodes;
       this.partitionColsIndexes = partitionColsIndexes;

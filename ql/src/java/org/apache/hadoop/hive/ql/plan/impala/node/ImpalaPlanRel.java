@@ -184,14 +184,8 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     return ImmutableMap.copyOf(exprs);
   }
 
-  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
-      List<TupleId> tupleIds) {
-    return getConjuncts(filter, analyzer, relNode, tupleIds,
-        null /* no partition cols indexes */, null, null);
-  }
-
   protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
-    return getConjuncts(filter, analyzer, relNode, null /* no tuple ids */,
+    return getConjuncts(filter, analyzer, relNode,
         null /* no partition cols indexes */, null, null);
   }
 
@@ -202,14 +196,13 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
    * and nonPartitionConjuncts.
    */
   protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
-      List<TupleId> tupleIds, Set<Integer> partitionColsIndexes,
-      List<Expr> partitionConjuncts, List<Expr> nonPartitionConjuncts) {
+      Set<Integer> partitionColsIndexes, List<Expr> partitionConjuncts, List<Expr> nonPartitionConjuncts) {
     List<Expr> conjuncts = Lists.newArrayList();
     if (filter == null) {
       return conjuncts;
     }
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(relNode), tupleIds, partitionColsIndexes);
+        analyzer, ImmutableList.of(relNode), partitionColsIndexes);
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       // reset the visitor's partition state because we want each conjunct's

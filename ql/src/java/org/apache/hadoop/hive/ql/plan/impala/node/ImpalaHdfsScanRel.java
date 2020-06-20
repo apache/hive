@@ -176,7 +176,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     if (hdfsTable.isPartitioned()) {
       Set<Integer> partitionColsIndexes = ((RelOptHiveTable) scan.getTable()).getPartColInfoMap().keySet();
       // get the list of partition and non-partition conjuncts from the filter
-      getConjuncts(filter, ctx.getRootAnalyzer(), this, null, partitionColsIndexes,
+      getConjuncts(filter, ctx.getRootAnalyzer(), this, partitionColsIndexes,
           partitionConjuncts, nonPartitionConjuncts);
       assignedConjuncts = nonPartitionConjuncts;
     } else {

@@ -37,9 +37,7 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCompoundExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTimestampArithmeticExpr;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
@@ -47,13 +45,11 @@ import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.TimeIntervalOpFunctionResolver;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
-import org.apache.impala.analysis.BoolLiteral;
 import org.apache.impala.analysis.CaseWhenClause;
 import org.apache.impala.analysis.CastExpr;
 import org.apache.impala.analysis.CompoundPredicate;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.NumericLiteral;
-import org.apache.impala.analysis.TupleId;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
@@ -61,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -74,7 +69,7 @@ public class ImpalaRexCall {
    * Returns the Impala Expr object for ImpalaRexCall.
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
-      List<Expr> params, List<TupleId> tupleIds) throws HiveException {
+      List<Expr> params) throws HiveException {
 
     Type calciteReturnType = ImpalaTypeConverter.createImpalaType(rexCall.getType());
 
@@ -116,21 +111,11 @@ public class ImpalaRexCall {
         break;
       case IS_NULL:
         Preconditions.checkState(params.size() == 1);
-        if (params.get(0) instanceof BoolLiteral && tupleIds != null && tupleIds.size() > 0) {
-          retExpr = createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
-              false, rexCall, tupleIds);
-        } else {
-          retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), false, impalaRetType);
-        }
+        retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), false, impalaRetType);
         break;
       case IS_NOT_NULL:
         Preconditions.checkState(params.size() == 1);
-        if (params.get(0) instanceof BoolLiteral && tupleIds != null && tupleIds.size() > 0) {
-          retExpr = createIfTupleIsNullPredicate(analyzer, fn, params.get(0), impalaRetType,
-              true, rexCall, tupleIds);
-        } else {
-          retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
-        }
+        retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
         break;
       case EXTRACT:
         // for specific extract functions (e.g.year, month), we ignore the first redundant
@@ -233,35 +218,6 @@ public class ImpalaRexCall {
     }
     Preconditions.checkNotNull(finalCondition);
     return finalCondition;
-  }
-
-  /**
-   * Returns a new conditional expr 'IF(TupleIsNull(tids), NULL, expr) IS [NOT] NULL' to
-   * make an input expr nullable.  This is especially useful in cases where the Hive
-   * planner generates a literal TRUE and later does a IS_NULL($x) or IS_NOT_NULL($x)
-   * check on this column - this happens for NOT IN, NOT EXISTS queries where the planner
-   * generates a Left Outer Join and checks the nullability of the column being output from
-   * the right side of the LOJ. Since the literal TRUE is a non-null value coming into the join
-   * but after the join becomes nullable, we add this function to ensure that happens. Without
-   * adding this function the direct translation would be 'TRUE IS NULL' which is incorrect.
-   */
-  private static Expr createIfTupleIsNullPredicate(Analyzer analyzer, Function fn, Expr expr,
-      Type retType, boolean isNotNull, RexCall rexCall, List<TupleId> tupleIds) throws HiveException {
-    List<Expr> tmpArgs = new ArrayList<>();
-    ImpalaTupleIsNullExpr tupleIsNullExpr = new ImpalaTupleIsNullExpr(tupleIds, analyzer);
-    tmpArgs.add(tupleIsNullExpr);
-    // null type needs to be cast to appropriate target type before thrift serialization
-    ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, Type.BOOLEAN);
-    tmpArgs.add(nullLiteral);
-    tmpArgs.add(expr);
-    List<Type> typeNames = ImmutableList.of(Type.BOOLEAN, Type.BOOLEAN, Type.BOOLEAN);
-    ScalarFunctionDetails conditionalFuncDetails =
-        ScalarFunctionDetails.get("if", typeNames, Type.BOOLEAN);
-    Preconditions.checkNotNull(conditionalFuncDetails);
-    Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
-    ImpalaFunctionCallExpr conditionalFuncExpr =
-        new ImpalaFunctionCallExpr(analyzer, conditionalFunc, tmpArgs, rexCall, retType);
-    return new ImpalaIsNullExpr(analyzer, fn, conditionalFuncExpr, isNotNull, retType);
   }
 
   private static Expr createCaseExpr(Analyzer analyzer, Function fn, List<Expr> params,

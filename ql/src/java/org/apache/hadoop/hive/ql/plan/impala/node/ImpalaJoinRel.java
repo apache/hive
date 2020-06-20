@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.apache.calcite.plan.RelOptCost;
@@ -39,12 +40,21 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.JoinOperator;
 import org.apache.impala.analysis.TupleId;
+import org.apache.impala.catalog.Function;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.JoinNode;
 import org.apache.impala.planner.PlanNode;
@@ -105,7 +115,12 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     // are coming from the child inputs.
     Map<Integer, Expr> exprMap = Maps.newHashMap();
     for (Map.Entry<Integer, Expr> e : leftInputRel.getOutputExprsMap().entrySet()) {
-      exprMap.put(e.getKey(), e.getValue());
+      Expr expr = e.getValue();
+      if ((joinOp == JoinOperator.RIGHT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
+          && Expr.IS_NON_NULL_LITERAL.apply(expr)) {
+        expr = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr, leftInputNode.getTupleIds());
+      }
+      exprMap.put(e.getKey(), expr);
     }
 
     // For (left) semi joins don't project the right input's output exprs
@@ -113,7 +128,12 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       int sizeLeft = leftInputRel.numOutputExprs();
       for (Map.Entry<Integer, Expr> e : rightInputRel.getOutputExprsMap().entrySet()) {
         int newKey = e.getKey() + sizeLeft;
-        exprMap.put(newKey, e.getValue());
+        Expr expr = e.getValue();
+        if ((joinOp == JoinOperator.LEFT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
+            && Expr.IS_NON_NULL_LITERAL.apply(expr)) {
+          expr = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr, rightInputNode.getTupleIds());
+        }
+        exprMap.put(newKey, expr);
       }
     }
 
@@ -154,22 +174,42 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
 
     joinNode.setId(ctx.getNextNodeId());
 
-    List<TupleId> tupleIds = new ArrayList<>();
-
-    if (joinOp == JoinOperator.LEFT_OUTER_JOIN) {
-      tupleIds.addAll(rightInputNode.getTupleIds());
-    } else if (joinOp == JoinOperator.RIGHT_OUTER_JOIN) {
-      tupleIds.addAll(leftInputNode.getTupleIds());
-    } else if (joinOp == JoinOperator.FULL_OUTER_JOIN) {
-      tupleIds.addAll(leftInputNode.getTupleIds());
-      tupleIds.addAll(rightInputNode.getTupleIds());
-    }
-
-    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this, tupleIds);
+    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
     nodeInfo.setAssignedConjuncts(assignedConjuncts);
     joinNode.init(ctx.getRootAnalyzer());
 
     return joinNode;
+  }
+
+  /**
+   * Returns a new conditional expr 'IF(TupleIsNull(tids), NULL, expr)' to
+   * make an input expr nullable.  This is especially useful in cases where the Hive
+   * planner generates a literal TRUE and later does a IS_NULL($x) or IS_NOT_NULL($x)
+   * check on this column - this happens for NOT IN, NOT EXISTS queries where the planner
+   * generates a Left Outer Join and checks the nullability of the column being output from
+   * the right side of the LOJ. Since the literal TRUE is a non-null value coming into the join
+   * but after the join becomes nullable, we add this function to ensure that happens. Without
+   * adding this function the direct translation would be 'TRUE IS NULL' which is incorrect.
+   */
+  private static Expr createIfTupleIsNullPredicate(Analyzer analyzer, Expr expr,
+      List<TupleId> tupleIds) throws HiveException {
+    List<Expr> tmpArgs = new ArrayList<>();
+    ImpalaTupleIsNullExpr tupleIsNullExpr = new ImpalaTupleIsNullExpr(
+        tupleIds, analyzer);
+    tmpArgs.add(tupleIsNullExpr);
+    // null type needs to be cast to appropriate target type before thrift serialization
+    ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, expr.getType());
+    tmpArgs.add(nullLiteral);
+    tmpArgs.add(expr);
+    List<Type> typeNames = ImmutableList.of(Type.BOOLEAN, expr.getType(), expr.getType());
+    ScalarFunctionDetails conditionalFuncDetails =
+        ScalarFunctionDetails.get("if", ImpalaTypeConverter.getRelDataTypes(typeNames),
+            ImpalaTypeConverter.getRelDataType(expr.getType()));
+    Preconditions.checkNotNull(conditionalFuncDetails,
+        "Could not create IF function for arg types %s and return type %s",
+        typeNames, expr.getType());
+    Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
+    return new ImpalaFunctionCallExpr(analyzer, conditionalFunc, tmpArgs, null, expr.getType());
   }
 
   private static class MinIndexVisitor extends RexVisitorImpl<Void> {
