@@ -46,6 +46,7 @@ To run just one test, do
 mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
 
 Supported databases for testing:
+-Dit.test=ITestDerby
 -Dit.test=ITestMysql
 -Dit.test=ITestOracle
 -Dit.test=ITestPostgres
