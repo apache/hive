@@ -669,7 +669,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       //       So, the indices should line up... to be fixed in SE v2?
       if (isAcidScan) {
         int rootCol = OrcInputFormat.getRootColumn(false);
-        this.filePhysicalColumnIds = new ArrayList<>(filePhysicalColumnIds.size() + rootCol);
+        this.filePhysicalColumnIds = new ArrayList<>(readerLogicalColumnIds.size() + rootCol);
         this.acidStructColumnId = rootCol - 1; // OrcRecordUpdater.ROW. This is somewhat fragile...
         if (includeAcidColumns) {
           // Up to acidStructColumnId: as we don't want to include the root struct in ACID case;
