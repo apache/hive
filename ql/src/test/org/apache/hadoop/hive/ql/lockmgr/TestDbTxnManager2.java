@@ -857,6 +857,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+    txnMgr.rollbackTxn();
     dropTable(new String[] {"tab_not_acid"});
   }
 
@@ -2918,6 +2919,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+    } else {
+      txnMgr2.rollbackTxn();
     }
     txnMgr3.rollbackTxn();
     dropTable(new String[]{"T7"});

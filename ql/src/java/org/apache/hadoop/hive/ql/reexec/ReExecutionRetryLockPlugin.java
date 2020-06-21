@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 
-public class ReExecutionLockAcquisitionPlugin implements IReExecutionPlugin {
+public class ReExecutionRetryLockPlugin implements IReExecutionPlugin {
 
   private Driver coreDriver;
 

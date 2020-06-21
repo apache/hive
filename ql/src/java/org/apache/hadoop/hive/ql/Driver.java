@@ -89,7 +89,7 @@ public class Driver implements IDriver {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
-  // Exception message that ReExecutionLockAcquisitionPlugin will recognize
+  // Exception message that ReExecutionRetryLockPlugin will recognize
   public static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
       "snapshot was outdated when locks were acquired";
   private Runnable shutdownRunner = null;
@@ -680,8 +680,12 @@ public class Driver implements IDriver {
         if (!validTxnManager.isValidTxnListState()) {
           LOG.info("Reexecuting after acquiring locks, since snapshot was outdated.");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
-          // txn list and retry
-          rollback(null);
+          // txn list and retry (see ReExecutionRetryLockPlugin)
+          try {
+            releaseLocksAndCommitOrRollback(false);
+          } catch (LockException e) {
+            handleHiveException(e, 12);
+          }
           throw handleHiveException(
               new HiveException(
                   "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + "."),
@@ -754,8 +758,6 @@ public class Driver implements IDriver {
   }
 
   private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
-
-    //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(false);
     } catch (LockException e) {
