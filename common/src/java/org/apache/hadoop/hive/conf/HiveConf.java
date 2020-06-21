@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
@@ -478,6 +479,9 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
+        "Indicates whether replication dump can skip copyTask and refer to  \n"
+            + " original path instead. This would retain all table and partition meta"),
     REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
             false,
             "Indicates whether external table replication dump only metadata information or data + metadata"),
@@ -1660,7 +1664,7 @@ public class HiveConf extends Configuration {
         "Note that this check currently does not consider data size, only the query pattern."),
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
-        "  Comparing bigints and strings.\n" +
+        "  Comparing bigints and strings/(var)chars.\n" +
         "  Comparing bigints and doubles."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
@@ -1716,6 +1720,11 @@ public class HiveConf extends Configuration {
         "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
             "the columns are independent. Setting this flag to true will cause the estimator to assume" +
             "the columns are correlated."),
+    HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR("hive.cardinality.preserving.join.optimization.factor", 1.0f,
+        "Original plan cost multiplier for rewriting when query has tables joined multiple time on primary/unique key and " +
+            "projected the majority of columns from these table. This optimization trims fields at root of tree and " +
+            "then joins back affected tables at top of tree to get rest of columns. " +
+            "Set this to 0.0 to disable this optimization or increase it for more agressive optimization."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
@@ -2247,6 +2256,10 @@ public class HiveConf extends Configuration {
         "This named is used by Tez to set the dag name. This name in turn will appear on \n" +
         "the Tez UI representing the work that was done. Used by Spark to set the query name, will show up in the\n" +
         "Spark UI."),
+    HIVETEZJOBNAME("tez.job.name", "HIVE-%s",
+        "This named is used by Tez to set the job name. This name in turn will appear on \n" +
+        "the Yarn UI representing the Yarn Application Name. And The job name may be a \n" +
+        "Java String.format() string, to which the session ID will be supplied as the single parameter."),
 
     SYSLOG_INPUT_FORMAT_FILE_PRUNING("hive.syslog.input.format.file.pruning", true,
       "Whether syslog input format should prune files based on timestamp (ts) column in sys.logs table."),
@@ -2495,19 +2508,22 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.bi.rewrite.countdistinct.enabled",
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
-    HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
-        "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
+    HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH("hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
         new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
             + "Distinct counting can be done with: hll"),
     HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED("hive.optimize.bi.rewrite.percentile_disc.enabled",
         true,
         "Enables to rewrite PERCENTILE_DISC(X) queries to be rewritten to use sketch functions."),
-    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH(
-        "hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
+    HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH("hive.optimize.bi.rewrite.percentile_disc.sketch", "kll",
         new StringSet("kll"),
         "Defines which sketch type to use when rewriting PERCENTILE_DISC expressions. Options: kll"),
-
+    HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED("hive.optimize.bi.rewrite.cume_dist.enabled",
+        true,
+        "Enables to rewrite CUME_DIST(X) queries to be rewritten to use sketch functions."),
+    HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH("hive.optimize.bi.rewrite.cume_dist.sketch", "kll",
+        new StringSet("kll"),
+        "Defines which sketch type to use when rewriting CUME_DIST expressions. Options: kll"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
@@ -2784,7 +2800,8 @@ public class HiveConf extends Configuration {
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
         120, "Enable dir cache for ACID tables specified in minutes."
-        + "0 indicates cache is disabled. "),
+        + "0 indicates cache is used as read-only and no additional info would be "
+        + "populated. -1 means cache is disabled"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
@@ -5740,6 +5757,18 @@ public class HiveConf extends Configuration {
    * given HiveConf.
    */
   public ZooKeeperHiveHelper getZKConfig() {
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword =
+            ShimLoader.getHadoopShims().getPassword(this, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname);
+        trustStorePassword =
+            ShimLoader.getHadoopShims().getPassword(this, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname);
+      } catch (IOException ex) {
+        throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
+      }
+    }
     return ZooKeeperHiveHelper.builder()
       .quorum(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM))
       .clientPort(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT))
@@ -5753,9 +5782,9 @@ public class HiveConf extends Configuration {
       .maxRetries(getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
       .sslEnabled(getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
       .keyStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-      .keyStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
+      .keyStorePassword(keyStorePassword)
       .trustStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-      .trustStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD)).build();
+      .trustStorePassword(trustStorePassword).build();
   }
 
   public HiveConf() {

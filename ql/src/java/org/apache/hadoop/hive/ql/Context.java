@@ -678,6 +678,8 @@ public class Context {
         Path p = entry.getValue();
         if (p.toUri().getPath().contains(stagingDir) && subDirOf(p, fsScratchDirs.values())  ) {
           LOG.debug("Skip deleting stagingDir: " + p);
+          FileSystem fs = p.getFileSystem(conf);
+          fs.cancelDeleteOnExit(p);
           continue; // staging dir is deleted when deleting the scratch dir
         }
         if(resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {

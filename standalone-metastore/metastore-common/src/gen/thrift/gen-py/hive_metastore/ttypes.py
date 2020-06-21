@@ -15767,6 +15767,7 @@ class CompactionInfoStruct:
    - highestWriteId
    - errorMessage
    - hasoldabort
+   - enqueueTime
   """
 
   thrift_spec = (
@@ -15785,9 +15786,10 @@ class CompactionInfoStruct:
     (12, TType.I64, 'highestWriteId', None, None, ), # 12
     (13, TType.STRING, 'errorMessage', None, None, ), # 13
     (14, TType.BOOL, 'hasoldabort', None, None, ), # 14
+    (15, TType.I64, 'enqueueTime', None, None, ), # 15
   )
 
-  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None,):
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None,):
     self.id = id
     self.dbname = dbname
     self.tablename = tablename
@@ -15802,6 +15804,7 @@ class CompactionInfoStruct:
     self.highestWriteId = highestWriteId
     self.errorMessage = errorMessage
     self.hasoldabort = hasoldabort
+    self.enqueueTime = enqueueTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15882,6 +15885,11 @@ class CompactionInfoStruct:
           self.hasoldabort = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 15:
+        if ftype == TType.I64:
+          self.enqueueTime = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15948,6 +15956,10 @@ class CompactionInfoStruct:
       oprot.writeFieldBegin('hasoldabort', TType.BOOL, 14)
       oprot.writeBool(self.hasoldabort)
       oprot.writeFieldEnd()
+    if self.enqueueTime is not None:
+      oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
+      oprot.writeI64(self.enqueueTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15979,6 +15991,7 @@ class CompactionInfoStruct:
     value = (value * 31) ^ hash(self.highestWriteId)
     value = (value * 31) ^ hash(self.errorMessage)
     value = (value * 31) ^ hash(self.hasoldabort)
+    value = (value * 31) ^ hash(self.enqueueTime)
     return value
 
   def __repr__(self):
@@ -16218,6 +16231,7 @@ class ShowCompactResponseElement:
    - hadoopJobId
    - id
    - errorMessage
+   - enqueueTime
   """
 
   thrift_spec = (
@@ -16236,9 +16250,10 @@ class ShowCompactResponseElement:
     (12, TType.STRING, 'hadoopJobId', None, "None", ), # 12
     (13, TType.I64, 'id', None, None, ), # 13
     (14, TType.STRING, 'errorMessage', None, None, ), # 14
+    (15, TType.I64, 'enqueueTime', None, None, ), # 15
   )
 
-  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None, errorMessage=None,):
+  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None, errorMessage=None, enqueueTime=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partitionname = partitionname
@@ -16253,6 +16268,7 @@ class ShowCompactResponseElement:
     self.hadoopJobId = hadoopJobId
     self.id = id
     self.errorMessage = errorMessage
+    self.enqueueTime = enqueueTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16333,6 +16349,11 @@ class ShowCompactResponseElement:
           self.errorMessage = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 15:
+        if ftype == TType.I64:
+          self.enqueueTime = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -16399,6 +16420,10 @@ class ShowCompactResponseElement:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 14)
       oprot.writeString(self.errorMessage)
       oprot.writeFieldEnd()
+    if self.enqueueTime is not None:
+      oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
+      oprot.writeI64(self.enqueueTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -16430,6 +16455,7 @@ class ShowCompactResponseElement:
     value = (value * 31) ^ hash(self.hadoopJobId)
     value = (value * 31) ^ hash(self.id)
     value = (value * 31) ^ hash(self.errorMessage)
+    value = (value * 31) ^ hash(self.enqueueTime)
     return value
 
   def __repr__(self):
@@ -28140,6 +28166,296 @@ class GetPartitionsPsWithAuthResponse:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.partitions)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ReplicationMetrics:
+  """
+  Attributes:
+   - scheduledExecutionId
+   - policy
+   - dumpExecutionId
+   - metadata
+   - progress
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
+    (2, TType.STRING, 'policy', None, None, ), # 2
+    (3, TType.I64, 'dumpExecutionId', None, None, ), # 3
+    (4, TType.STRING, 'metadata', None, None, ), # 4
+    (5, TType.STRING, 'progress', None, None, ), # 5
+  )
+
+  def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None, metadata=None, progress=None,):
+    self.scheduledExecutionId = scheduledExecutionId
+    self.policy = policy
+    self.dumpExecutionId = dumpExecutionId
+    self.metadata = metadata
+    self.progress = progress
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.scheduledExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.policy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.dumpExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.metadata = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.progress = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ReplicationMetrics')
+    if self.scheduledExecutionId is not None:
+      oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
+      oprot.writeI64(self.scheduledExecutionId)
+      oprot.writeFieldEnd()
+    if self.policy is not None:
+      oprot.writeFieldBegin('policy', TType.STRING, 2)
+      oprot.writeString(self.policy)
+      oprot.writeFieldEnd()
+    if self.dumpExecutionId is not None:
+      oprot.writeFieldBegin('dumpExecutionId', TType.I64, 3)
+      oprot.writeI64(self.dumpExecutionId)
+      oprot.writeFieldEnd()
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.STRING, 4)
+      oprot.writeString(self.metadata)
+      oprot.writeFieldEnd()
+    if self.progress is not None:
+      oprot.writeFieldBegin('progress', TType.STRING, 5)
+      oprot.writeString(self.progress)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.scheduledExecutionId is None:
+      raise TProtocol.TProtocolException(message='Required field scheduledExecutionId is unset!')
+    if self.policy is None:
+      raise TProtocol.TProtocolException(message='Required field policy is unset!')
+    if self.dumpExecutionId is None:
+      raise TProtocol.TProtocolException(message='Required field dumpExecutionId is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scheduledExecutionId)
+    value = (value * 31) ^ hash(self.policy)
+    value = (value * 31) ^ hash(self.dumpExecutionId)
+    value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.progress)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ReplicationMetricList:
+  """
+  Attributes:
+   - replicationMetricList
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'replicationMetricList', (TType.STRUCT,(ReplicationMetrics, ReplicationMetrics.thrift_spec)), None, ), # 1
+  )
+
+  def __init__(self, replicationMetricList=None,):
+    self.replicationMetricList = replicationMetricList
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.replicationMetricList = []
+          (_etype1127, _size1124) = iprot.readListBegin()
+          for _i1128 in xrange(_size1124):
+            _elem1129 = ReplicationMetrics()
+            _elem1129.read(iprot)
+            self.replicationMetricList.append(_elem1129)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ReplicationMetricList')
+    if self.replicationMetricList is not None:
+      oprot.writeFieldBegin('replicationMetricList', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.replicationMetricList))
+      for iter1130 in self.replicationMetricList:
+        iter1130.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.replicationMetricList is None:
+      raise TProtocol.TProtocolException(message='Required field replicationMetricList is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.replicationMetricList)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetReplicationMetricsRequest:
+  """
+  Attributes:
+   - scheduledExecutionId
+   - policy
+   - dumpExecutionId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
+    (2, TType.STRING, 'policy', None, None, ), # 2
+    (3, TType.I64, 'dumpExecutionId', None, None, ), # 3
+  )
+
+  def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None,):
+    self.scheduledExecutionId = scheduledExecutionId
+    self.policy = policy
+    self.dumpExecutionId = dumpExecutionId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.scheduledExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.policy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.dumpExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetReplicationMetricsRequest')
+    if self.scheduledExecutionId is not None:
+      oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
+      oprot.writeI64(self.scheduledExecutionId)
+      oprot.writeFieldEnd()
+    if self.policy is not None:
+      oprot.writeFieldBegin('policy', TType.STRING, 2)
+      oprot.writeString(self.policy)
+      oprot.writeFieldEnd()
+    if self.dumpExecutionId is not None:
+      oprot.writeFieldBegin('dumpExecutionId', TType.I64, 3)
+      oprot.writeI64(self.dumpExecutionId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scheduledExecutionId)
+    value = (value * 31) ^ hash(self.policy)
+    value = (value * 31) ^ hash(self.dumpExecutionId)
     return value
 
   def __repr__(self):

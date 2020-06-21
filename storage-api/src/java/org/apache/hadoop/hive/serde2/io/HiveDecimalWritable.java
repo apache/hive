@@ -23,14 +23,13 @@ import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 import org.apache.hadoop.hive.common.type.FastHiveDecimalImpl;
-import org.apache.hadoop.hive.common.type.HiveDecimalVersionV2;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * A mutable decimal.
@@ -577,6 +576,7 @@ public final class HiveDecimalWritable extends FastHiveDecimal
    *
    */
   @HiveDecimalWritableVersionV2
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public byte[] bigIntegerBytesInternalScratchBuffer() {
     return internalScratchBuffer;
   }

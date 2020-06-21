@@ -32,9 +32,11 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -91,11 +93,22 @@ class ValidTxnManager {
       return true; // Nothing to check
     }
 
-    String currentTxnString = driverContext.getTxnManager().getValidTxns().toString();
+    GetOpenTxnsResponse openTxns = driverContext.getTxnManager().getOpenTxns();
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(openTxns, 0);
+    long txnId = driverContext.getTxnManager().getCurrentTxnId();
+
+    String currentTxnString;
+    if (validTxnList.isTxnRangeValid(txnId + 1, openTxns.getTxn_high_water_mark()) != ValidTxnList.RangeResponse.NONE) {
+      // If here, there was another txn opened & committed between current SNAPSHOT generation and locking.
+      validTxnList.removeException(txnId);
+      currentTxnString = validTxnList.toString();
+    } else {
+      currentTxnString = TxnCommonUtils.createValidReadTxnList(openTxns, txnId).toString();
+    }
+
     if (currentTxnString.equals(txnString)) {
       return true; // Still valid, nothing more to do
     }
-
     return checkWriteIds(currentTxnString, nonSharedLockedTables, txnWriteIdListString);
   }
 
@@ -142,9 +155,17 @@ class ValidTxnManager {
       if (nonSharedLockedTables.contains(fullQNameForLock)) {
         // Check if table is transactional
         if (AcidUtils.isTransactionalTable(tableInfo.getValue())) {
+          ValidWriteIdList writeIdList = txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey());
+          ValidWriteIdList currentWriteIdList = currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey());
+          // Check if there was a conflicting write between current SNAPSHOT generation and locking.
+          // If yes, mark current transaction as outdated.
+          if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
+              currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
+            driverContext.setOutdatedTxn(true);
+            return false;
+          }
           // Check that write id is still valid
-          if (!TxnIdUtils.checkEquivalentWriteIds(txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey()),
-              currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey()))) {
+          if (!TxnIdUtils.checkEquivalentWriteIds(writeIdList, currentWriteIdList)) {
             // Write id has changed, it is not valid anymore, we need to recompile
             return false;
           }

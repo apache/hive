@@ -2227,6 +2227,60 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
+  public void testInsertMergeInsertConcurrentSnapshotInvalidateNoDuplicates() throws Exception {
+    testConcurrentMergeInsertSnapshotInvalidate("insert into target values (5, 6)", false);
+  }
+  @Test
+  public void testInsertMergeInsertConcurrentSharedWriteSnapshotInvalidateNoDuplicates() throws Exception {
+    testConcurrentMergeInsertSnapshotInvalidate("insert into target values (5, 6)", true);
+  }
+  @Test
+  public void test2MergeInsertsConcurrentSnapshotInvalidateNoDuplicates() throws Exception {
+    testConcurrentMergeInsertSnapshotInvalidate("merge into target t using source s on t.a = s.a " +
+      "when not matched then insert values (s.a, s.b)", false);
+  }
+  @Test
+  public void test2MergeInsertsConcurrentSharedWriteSnapshotInvalidateNoDuplicates() throws Exception {
+    testConcurrentMergeInsertSnapshotInvalidate("merge into target t using source s on t.a = s.a " +
+      "when not matched then insert values (s.a, s.b)", true);
+  }
+  @Test
+  public void testMergeInsertNoSnapshotInvalidateNoDuplicates() throws Exception {
+    testConcurrentMergeInsertSnapshotInvalidate("insert into source values (3, 4)", false);
+  }
+
+  private void testConcurrentMergeInsertSnapshotInvalidate(String query, boolean sharedWrite) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    driver.compileAndRespond("merge into target t using source s on t.a = s.a " +
+      "when not matched then insert values (s.a, s.b)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.run(query);
+    driver2.run("select * from target");
+
+    swapTxnManager(txnMgr);
+    try {
+      driver.run();
+    } catch (Exception ex ){
+      Assert.assertTrue(ex.getCause().getMessage().contains("due to a write conflict"));
+    }
+
+    swapTxnManager(txnMgr2);
+    driver2.run("select * from target");
+    List res = new ArrayList();
+    driver2.getFetchTask().fetch(res);
+    Assert.assertEquals("Duplicate records found", 4, res.size());
+  }
+
+  @Test
   public void test2MergeInsertsConcurrentNoDuplicates() throws Exception {
     testConcurrentMergeInsertNoDuplicates("merge into target t using source s on t.a = s.a " +
         "when not matched then insert values (s.a, s.b)", false);

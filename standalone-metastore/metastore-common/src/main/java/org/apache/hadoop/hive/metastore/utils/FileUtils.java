@@ -243,7 +243,7 @@ public class FileUtils {
   }
 
   private static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {

@@ -112,19 +112,11 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-runner -->
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-runner</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
@@ -138,7 +130,7 @@
       The dist profile generates two full jars with dependencies - obe for HMSBenchmarks and
       another for HMSTool.
       -->
-      <id>dist</id>
+      <id>perf</id>
       <build>
         <plugins>
           <plugin>

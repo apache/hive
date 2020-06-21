@@ -3508,6 +3508,7 @@ class CompactionInfoStruct
   HIGHESTWRITEID = 12
   ERRORMESSAGE = 13
   HASOLDABORT = 14
+  ENQUEUETIME = 15
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3523,7 +3524,8 @@ class CompactionInfoStruct
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
     HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
-    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true}
+    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3611,6 +3613,7 @@ class ShowCompactResponseElement
   HADOOPJOBID = 12
   ID = 13
   ERRORMESSAGE = 14
+  ENQUEUETIME = 15
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3626,7 +3629,8 @@ class ShowCompactResponseElement
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
-    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6245,6 +6249,70 @@ class GetPartitionsPsWithAuthResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitions is unset!') unless @partitions
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ReplicationMetrics
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEDEXECUTIONID = 1
+  POLICY = 2
+  DUMPEXECUTIONID = 3
+  METADATA = 4
+  PROGRESS = 5
+
+  FIELDS = {
+    SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
+    POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy'},
+    DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId'},
+    METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :optional => true},
+    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduledExecutionId is unset!') unless @scheduledExecutionId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field policy is unset!') unless @policy
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dumpExecutionId is unset!') unless @dumpExecutionId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ReplicationMetricList
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REPLICATIONMETRICLIST = 1
+
+  FIELDS = {
+    REPLICATIONMETRICLIST => {:type => ::Thrift::Types::LIST, :name => 'replicationMetricList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ReplicationMetrics}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field replicationMetricList is unset!') unless @replicationMetricList
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetReplicationMetricsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEDEXECUTIONID = 1
+  POLICY = 2
+  DUMPEXECUTIONID = 3
+
+  FIELDS = {
+    SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId', :optional => true},
+    POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy', :optional => true},
+    DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

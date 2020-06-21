@@ -127,7 +127,8 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_ALTERTABLE_ADDPARTS:
     case HiveParser.TOK_ALTERTABLE_ADDCOLS:
     case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
-    case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+    case HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES:
+    case HiveParser.TOK_ALTERTABLE_UNSETSERDEPROPERTIES:
     case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
     case HiveParser.TOK_ALTERTABLE_DROPPARTS:
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
@@ -212,7 +213,8 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
           case HiveParser.TOK_ALTERTABLE_ADDPARTS:
           case HiveParser.TOK_ALTERTABLE_ADDCOLS:
           case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
-          case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+          case HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES:
+          case HiveParser.TOK_ALTERTABLE_UNSETSERDEPROPERTIES:
           case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
           case HiveParser.TOK_ALTERTABLE_DROPPARTS:
           case HiveParser.TOK_ALTERTABLE_PROPERTIES:

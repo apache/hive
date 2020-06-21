@@ -13,7 +13,7 @@ SHOW CREATE TABLE null_tab1;
 
 -- load null data from another table and verify that the null is stored in the expected format
 INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab;
-dfs -cat ${system:test.warehouse.dir}/null_tab1/*;
+dfs -cat ${system:test.local.warehouse.dir}/null_tab1/*;
 SELECT * FROM null_tab1;
 -- alter the null format and verify that the old null format is no longer in effect
 ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo');

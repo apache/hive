@@ -172,8 +172,10 @@ TOK_ALTERPARTITION_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
-TOK_ALTERTABLE_SERDEPROPERTIES;
-TOK_ALTERPARTITION_SERDEPROPERTIES;
+TOK_ALTERTABLE_SETSERDEPROPERTIES;
+TOK_ALTERPARTITION_SETSERDEPROPERTIES;
+TOK_ALTERTABLE_UNSETSERDEPROPERTIES;
+TOK_ALTERPARTITION_UNSETSERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERPARTITION_SERIALIZER;
 TOK_ALTERTABLE_UPDATECOLSTATS;
@@ -1452,14 +1454,17 @@ alterViewSuffixProperties
     ;
 
 alterStatementSuffixSerdeProperties[boolean partition]
-@init { pushMsg("alter serdes statement", state); }
+@init { pushMsg("alter serde statement", state); }
 @after { popMsg(state); }
     : KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
     -> {partition}? ^(TOK_ALTERPARTITION_SERIALIZER $serdeName tableProperties?)
     ->              ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
     | KW_SET KW_SERDEPROPERTIES tableProperties
-    -> {partition}? ^(TOK_ALTERPARTITION_SERDEPROPERTIES tableProperties)
-    ->              ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
+    -> {partition}? ^(TOK_ALTERPARTITION_SETSERDEPROPERTIES tableProperties)
+    ->              ^(TOK_ALTERTABLE_SETSERDEPROPERTIES tableProperties)
+    | KW_UNSET KW_SERDEPROPERTIES tableProperties
+    -> {partition}? ^(TOK_ALTERPARTITION_UNSETSERDEPROPERTIES tableProperties)
+    ->              ^(TOK_ALTERTABLE_UNSETSERDEPROPERTIES tableProperties)
     ;
 
 tablePartitionPrefix

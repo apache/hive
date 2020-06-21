@@ -357,7 +357,9 @@ UPDATE COMPLETED_TXN_COMPONENTS SET CTC_WRITEID = CTC_TXNID;
 
 -- HIVE-23211: Fix metastore schema differences between init scripts, and upgrade scripts
 -- Not updating possible NULL values, since if NULLs existing in this table, the upgrade should fail
+DROP INDEX TC_TXNID_INDEX ON TXN_COMPONENTS;
 ALTER TABLE TXN_COMPONENTS ALTER COLUMN TC_TXNID bigint NOT NULL;
+CREATE INDEX TC_TXNID_INDEX ON TXN_COMPONENTS (TC_TXNID);
 ALTER TABLE COMPLETED_TXN_COMPONENTS ALTER COLUMN CTC_TXNID bigint NOT NULL;
 
 -- These lines need to be last.  Insert any changes above.

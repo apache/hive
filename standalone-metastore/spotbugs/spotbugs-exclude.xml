@@ -21,4 +21,10 @@
     <Match>
         <Class name="~org.apache.hadoop.hive.metastore.api.*" />
     </Match>
+    <Match>
+        <Or>
+            <Class name="~org.apache.hadoop.hive.metastore.Metastore" />
+            <Class name="~org.apache.hadoop.hive.metastore.Metastore.*" />
+        </Or>
+    </Match>
 </FindBugsFilter>

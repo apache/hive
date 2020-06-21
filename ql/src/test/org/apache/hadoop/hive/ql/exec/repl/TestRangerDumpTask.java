@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,11 +64,15 @@ public class TestRangerDumpTask {
   @Mock
   private RangerDumpWork work;
 
+  @Mock
+  private ReplicationMetricCollector metricCollector;
+
   @Before
   public void setup() throws Exception {
     task = new RangerDumpTask(mockClient, conf, work);
     Mockito.when(mockClient.removeMultiResourcePolicies(Mockito.anyList())).thenCallRealMethod();
     Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test
