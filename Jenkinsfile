@@ -184,6 +184,7 @@ jobWrappers {
       }
       stage('Prechecks') {
         def spotbugsProjects = [
+            ":hive-common",
             ":hive-shims",
             ":hive-storage-api",
             ":hive-standalone-metastore-common"
