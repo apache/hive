@@ -195,7 +195,7 @@ public final class Op {
     // should be merge join
     else {
       Map<String, String> posToOpId = new LinkedHashMap<>();
-      if (vertex.mergeJoinDummyVertexs.size() == 0) {
+      if (vertex.mergeJoinDummyVertexs.isEmpty()) {
         for (Entry<String, String> entry : vertex.tagToInput.entrySet()) {
           Connection c = null;
           for (Connection connection : vertex.parentConnections) {

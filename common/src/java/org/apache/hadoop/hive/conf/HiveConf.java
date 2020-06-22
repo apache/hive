@@ -170,19 +170,18 @@ public class HiveConf extends Configuration {
         String nameInConf = "conf" + File.separator + name;
         result = checkConfigFile(new File(homePath, nameInConf));
         if (result == null) {
-          URI jarUri = null;
           try {
             // Handle both file:// and jar:<url>!{entry} in the case of shaded hive libs
             URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
-            jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            URI jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            // From the jar file, the parent is /lib folder
+            File parent = new File(jarUri).getParentFile();
+            if (parent != null) {
+              result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
+            }
           } catch (Throwable e) {
             LOG.info("Cannot get jar URI", e);
             System.err.println("Cannot get jar URI: " + e.getMessage());
-          }
-          // From the jar file, the parent is /lib folder
-          File parent = new File(jarUri).getParentFile();
-          if (parent != null) {
-            result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
           }
         }
       }
@@ -5368,9 +5367,9 @@ public class HiveConf extends Configuration {
       // When either name or value is null, the set method below will fail,
       // and throw IllegalArgumentException
       set(name, value);
-      if (isSparkRelatedConfig(name)) {
-        isSparkConfigUpdated = true;
-      }
+    }
+    if (!value.equals(oldValue) && isSparkRelatedConfig(name)) {
+      isSparkConfigUpdated = true;
     }
   }
 
