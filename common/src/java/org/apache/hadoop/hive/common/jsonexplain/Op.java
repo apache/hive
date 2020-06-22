@@ -280,7 +280,7 @@ public final class Op {
     if (operatorId != null) {
       sb.append(" [" + operatorId + "]");
     }
-    if (!DagJsonParserUtils.OperatorNoStats.contains(name) && attrs.containsKey("Statistics:")) {
+    if (!DagJsonParserUtils.operatorNoStats.contains(name) && attrs.containsKey("Statistics:")) {
       sb.append(" (" + attrs.get("Statistics:") + ")");
     }
     attrs.remove("Statistics:");

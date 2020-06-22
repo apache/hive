@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
+import java.util.Objects;
+
 public final class Connection implements Comparable<Connection>{
   public final String type;
   public final Vertex from;
@@ -26,6 +28,14 @@ public final class Connection implements Comparable<Connection>{
     super();
     this.type = type;
     this.from = from;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Connection that = (Connection) o;
+    return Objects.equals(from, that.from);
   }
 
   @Override

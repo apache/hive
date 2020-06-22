@@ -57,6 +57,7 @@ public class HiveTestUtils {
     return url.getPath();
   }
 
+  @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "Testing only")
   private static void executeCmd(String[] cmdArr, File dir) throws IOException, InterruptedException {
     final Process p1 = Runtime.getRuntime().exec(cmdArr, null, dir);
     new Thread(new Runnable() {
@@ -81,6 +82,7 @@ public class HiveTestUtils {
     return genLocalJarForTest(pathToClazzFile, clazzName, new HashMap<File, String>());
   }
 
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Testing only")
   public static File genLocalJarForTest(String pathToClazzFile, String clazzName, Map<File,String>extraContent)
       throws IOException, InterruptedException {
     String u = pathToClazzFile;

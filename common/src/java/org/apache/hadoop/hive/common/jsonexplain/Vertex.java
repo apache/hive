@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -306,6 +307,16 @@ public final class Vertex implements Comparable<Vertex>{
 
   public void setType(String type) {
     this.edgeType = this.parser.mapEdgeType(type);
+  }
+
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Vertex vertex = (Vertex) o;
+    return  numReduceOp == vertex.numReduceOp &&
+            Objects.equals(name, vertex.name);
   }
 
   // The following code should be gone after HIVE-11075 using topological order

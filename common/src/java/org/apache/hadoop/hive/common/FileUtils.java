@@ -926,8 +926,7 @@ public final class FileUtils {
    * delete a temporary file and remove it from delete-on-exit hook.
    */
   public static boolean deleteTmpFile(File tempFile) {
-    if (tempFile != null) {
-      tempFile.delete();
+    if (tempFile != null && tempFile.delete()) {
       ShutdownHookManager.cancelDeleteOnExit(tempFile);
       return true;
     }
