@@ -189,7 +189,7 @@ jobWrappers {
             ":hive-storage-api",
             ":hive-standalone-metastore-common"
         ]
-        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
+        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
