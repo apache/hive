@@ -331,7 +331,6 @@ public class TestCachedStoreUpdateUsingEvents {
     String foreignTblName = "ftbl";
     Table foreignTbl = createTestTbl(foreignDbName, foreignTblName, tblOwner, cols, ptnCols);
 
-
     SQLPrimaryKey key = new SQLPrimaryKey(dbName, tblName, col1.getName(), 1, "pk1",
             false, false, false);
     SQLUniqueConstraint uC = new SQLUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName,
@@ -341,7 +340,6 @@ public class TestCachedStoreUpdateUsingEvents {
     SQLForeignKey foreignKey = new SQLForeignKey(key.getTable_db(), key.getTable_name(), key.getColumn_name(),
             foreignDbName, foreignTblName, key.getColumn_name(), 2, 1,2,
             "fk1", key.getPk_name(), false, false, false);
-
 
     hmsHandler.create_table_with_constraints(tbl,
             Arrays.asList(key), null, Arrays.asList(uC), Arrays.asList(nN), null, null);
@@ -391,7 +389,6 @@ public class TestCachedStoreUpdateUsingEvents {
             null, null);
     Assert.assertEquals(fksRead.size(), 1);
 
-
     // Dropping the constraint
     DropConstraintRequest dropConstraintRequest = new DropConstraintRequest(foreignDbName, foreignTblName, foreignKey.getFk_name());
     hmsHandler.drop_constraint(dropConstraintRequest);
@@ -401,7 +398,6 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.drop_constraint(dropConstraintRequest);
     dropConstraintRequest = new DropConstraintRequest(dbName, tblName, uC.getUk_name());
     hmsHandler.drop_constraint(dropConstraintRequest);
-
 
     keys = sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName);
     nNs = sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
