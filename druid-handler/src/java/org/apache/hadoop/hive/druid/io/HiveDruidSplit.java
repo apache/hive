@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * Druid split. Its purpose is to trigger query execution in Druid.
@@ -39,6 +40,7 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
     super(null, 0, 0, (String[]) null);
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Using mutable obj for efficiency")
   public HiveDruidSplit(String druidQuery, Path dummyPath, String[] hosts) {
     super(dummyPath, 0, 0, hosts);
     this.druidQuery = druidQuery;
@@ -69,6 +71,7 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
     return druidQuery;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   @Override public String[] getLocations() throws IOException {
     return hosts;
   }

@@ -25,12 +25,11 @@ import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
  * DruidStorageHandlerInfo provides a runtime information for DruidStorageHandler.
  */
 public class DruidStorageHandlerInfo implements StorageHandlerInfo {
-
+  private static final long serialVersionUID = 1L;
   static final StorageHandlerInfo
       UNREACHABLE =
       (StorageHandlerInfo) () -> "Druid Overlord is Unreachable, Runtime Status : unknown";
-
-  private final KafkaSupervisorReport kafkaSupervisorReport;
+  private final transient KafkaSupervisorReport kafkaSupervisorReport;
 
   DruidStorageHandlerInfo(KafkaSupervisorReport kafkaSupervisorReport) {
     this.kafkaSupervisorReport = kafkaSupervisorReport;
