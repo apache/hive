@@ -51,10 +51,12 @@ public final class LlapHiveUtils {
   }
 
   /**
-   * Takes path and a map of partition descs, returns the entry associated with the given path.
-   * @param path the path to look for
+   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path->PartitionDesc entries.
+   * If it is not found (e.g. Path denotes a partition path, but map contains table level instances only) we will try
+   * to do the same with the parent of this path, traversing up until there's a match, if any.
+   * @param path the absolute path used for the look up
    * @param partitionDescMap the map
-   * @return PartitionDesc instance if found, null if not found
+   * @return the PartitionDesc instance if found, null if not found
    */
   public static PartitionDesc partitionDescForPath(Path path, Map<Path, PartitionDesc> partitionDescMap) {
     assert(partitionDescMap != null);
