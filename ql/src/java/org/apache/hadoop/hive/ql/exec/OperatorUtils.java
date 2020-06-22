@@ -632,4 +632,33 @@ public class OperatorUtils {
     }
     return ret;
   }
+
+  /**
+   * Given an operator and an internalColName look for the original Table column
+   * that this internal col maps to, by looking at operators and its parents schemas.
+   *
+   * @param start
+   * @param internalCoName
+   * @return the original column name or null if not found
+   */
+  public static String findTableColNameOf(Operator<?> start, String internalCoName) {
+    // Look for internalCoName alias in current OR Parent RowSchemas
+    Stack<Operator<?>> parentOps = new Stack<>();
+    ColumnInfo keyColInfo = null;
+    parentOps.add(start);
+    while (!parentOps.isEmpty()) {
+      Operator<?> currentOp = parentOps.pop();
+      if (currentOp instanceof ReduceSinkOperator) {
+        // Dont want to follow that parent path
+        continue;
+      }
+      keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
+      if (keyColInfo != null) {
+        // Get original colName alias (or fallback to internal colName)
+        return keyColInfo.getAlias() != null ? keyColInfo.getAlias() : keyColInfo.getInternalName();
+      }
+      parentOps.addAll(currentOp.getParentOperators());
+    }
+    return null;
+  }
 }

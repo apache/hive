@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -1569,36 +1568,15 @@ public class TezCompiler extends TaskCompiler {
 
       List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
       ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
-      String realTSColName = getOriginalTSColName(selectedMJOp, keyCol.getColumn());
+      String realTSColName = OperatorUtils.findTableColNameOf(selectedMJOp, keyCol.getColumn());
       if (realTSColName != null) {
         tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
                 realTSColName, selectedMJOpRatio);
       } else {
-        LOG.warn("ProbeDecode could not find TSColName for ColKey {} with MJ Schema {} ", keyCol, selectedMJOp.getSchema());
+        throw new RuntimeException("ProbeDecode could not find TSColName for ColKey " + keyCol + "with MJ Schema "+ selectedMJOp.getSchema());
       }
     }
     return tsProbeDecodeCtx;
-  }
-
-  private static String getOriginalTSColName(MapJoinOperator mjOp, String internalCoName) {
-    // Look for internalCoName alias in current OR Parent RowSchemas
-    Stack<Operator<?>> parentOps = new Stack<>();
-    ColumnInfo keyColInfo = null;
-    parentOps.add(mjOp);
-    while (!parentOps.isEmpty()) {
-      Operator<?> currentOp = parentOps.pop();
-      if (currentOp instanceof ReduceSinkOperator) {
-        // Dont want to follow that parent path
-       continue;
-      }
-      keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
-      if (keyColInfo != null) {
-        // Get original colName alias (or fallback to internal colName)
-        return keyColInfo.getAlias() != null ? keyColInfo.getAlias() : keyColInfo.getInternalName();
-      }
-      parentOps.addAll(currentOp.getParentOperators());
-    }
-    return null;
   }
 
   // Return the ratio of: (distinct) JOIN_probe_key_column_rows / (distinct) JOIN_TS_target_column_rows
