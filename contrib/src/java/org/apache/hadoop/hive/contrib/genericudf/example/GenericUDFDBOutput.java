@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -80,6 +81,7 @@ public class GenericUDFDBOutput extends GenericUDF {
    *          PreparedStatement object
    */
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentTypeException {
     argumentOI = arguments;
@@ -129,9 +131,9 @@ public class GenericUDFDBOutput extends GenericUDF {
     }
 
     if (connection != null) {
+      PreparedStatement ps = null;
       try {
-
-        PreparedStatement ps = connection
+        ps = connection
             .prepareStatement(((StringObjectInspector) argumentOI[3])
             .getPrimitiveJavaObject(arguments[3].get()));
         for (int i = 4; i < arguments.length; ++i) {
@@ -146,6 +148,7 @@ public class GenericUDFDBOutput extends GenericUDF {
         result.set(1);
       } finally {
         try {
+          if (ps != null) ps.close();
           connection.close();
         } catch (Exception ex) {
           LOG.error("Underlying SQL exception during close", ex);

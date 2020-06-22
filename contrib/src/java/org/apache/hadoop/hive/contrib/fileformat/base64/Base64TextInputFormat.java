@@ -138,7 +138,6 @@ public class Base64TextInputFormat implements
   }
 
   TextInputFormat format;
-  JobConf job;
 
   public Base64TextInputFormat() {
     format = new TextInputFormat();
@@ -146,7 +145,6 @@ public class Base64TextInputFormat implements
 
   @Override
   public void configure(JobConf job) {
-    this.job = job;
     format.configure(job);
   }
 

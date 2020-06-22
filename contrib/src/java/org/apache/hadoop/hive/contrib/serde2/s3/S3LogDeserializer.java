@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -43,6 +44,7 @@ import org.apache.hadoop.io.Writable;
  * S3LogDeserializer.
  *
  */
+@SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "Intended")
 public class S3LogDeserializer extends AbstractDeserializer {
 
   public static final Logger LOG = LoggerFactory.getLogger(S3LogDeserializer.class

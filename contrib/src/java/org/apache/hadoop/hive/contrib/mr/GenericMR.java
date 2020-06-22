@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -51,7 +52,7 @@ import java.util.NoSuchElementException;
 public final class GenericMR {
   public void map(final InputStream in, final OutputStream out,
       final Mapper mapper) throws Exception {
-    map(new InputStreamReader(in), new OutputStreamWriter(out), mapper);
+    map(new InputStreamReader(in, StandardCharsets.UTF_8), new OutputStreamWriter(out, StandardCharsets.UTF_8), mapper);
   }
 
   public void map(final Reader in, final Writer out, final Mapper mapper) throws Exception {
@@ -65,7 +66,7 @@ public final class GenericMR {
 
   public void reduce(final InputStream in, final OutputStream out,
       final Reducer reducer) throws Exception {
-    reduce(new InputStreamReader(in), new OutputStreamWriter(out), reducer);
+    reduce(new InputStreamReader(in, StandardCharsets.UTF_8), new OutputStreamWriter(out, StandardCharsets.UTF_8), reducer);
   }
 
   public void reduce(final Reader in, final Writer out, final Reducer reducer) throws Exception {
@@ -134,7 +135,7 @@ public final class GenericMR {
     private String[] next;
 
     private RecordReader(final InputStream in) {
-      this(new InputStreamReader(in));
+      this(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
 
     private RecordReader(final Reader in) {
@@ -177,7 +178,7 @@ public final class GenericMR {
     private final PrintWriter out;
 
     private OutputStreamOutput(final OutputStream out) {
-      this(new OutputStreamWriter(out));
+      this(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
 
     private OutputStreamOutput(final Writer out) {

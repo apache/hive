@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -378,6 +379,7 @@ public class TypedBytesSerDe extends AbstractSerDe {
       // convert to Text and write it
       t.set(s);
       tbOut.write(t);
+      return;
     }
     default: {
       throw new RuntimeException("Unrecognized type: " + oi.getCategory());
