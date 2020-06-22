@@ -186,6 +186,7 @@ jobWrappers {
         def spotbugsProjects = [
             ":hive-common",
             ":hive-shims",
+            ":hive-cli",
             ":hive-storage-api",
             ":hive-standalone-metastore-common",
             ":hive-service-rpc"

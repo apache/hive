@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +99,8 @@ import sun.misc.SignalHandler;
  */
 public class CliDriver {
 
-  public static String prompt = null;
-  public static String prompt2 = null; // when ';' is not yet seen
+  static String prompt = null;
+  static String prompt2 = null; // when ';' is not yet seen
   public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
   public static final int DELIMITED_CANDIDATE_THRESHOLD = 10;
 
@@ -132,6 +133,7 @@ public class CliDriver {
     }
   }
 
+  @SuppressFBWarnings(value = "DM_EXIT", justification = "Expected")
   public CommandProcessorResponse processCmd1(String cmd) throws CommandProcessorException {
     CliSessionState ss = (CliSessionState) SessionState.get();
 
@@ -377,6 +379,7 @@ public class CliDriver {
         private boolean interruptRequested;
 
         @Override
+        @SuppressFBWarnings(value = "DM_EXIT", justification = "Expected")
         public void handle(Signal signal) {
           boolean initialRequest = !interruptRequested;
           interruptRequested = true;
@@ -721,6 +724,7 @@ public class CliDriver {
     System.exit(ret);
   }
 
+  @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Intended to modify static fields")
   public int run(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();

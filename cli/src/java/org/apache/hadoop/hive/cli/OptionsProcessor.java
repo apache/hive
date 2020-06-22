@@ -146,8 +146,6 @@ public class OptionsProcessor {
   }
 
   public boolean process_stage2(CliSessionState ss) {
-    ss.getConf();
-
     if (commandLine.hasOption('H')) {
       printUsage();
       return false;

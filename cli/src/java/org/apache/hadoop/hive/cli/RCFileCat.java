@@ -24,10 +24,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -193,7 +195,7 @@ public class RCFileCat implements Tool{
         System.err.println("Read " + recordCount/1024 + "k records");
         System.err.println("Read " + ((recordReader.getPos() / (1024L*1024L)))
                                                                       + "MB");
-        System.err.printf("Input scan rate %.2f MB/s\n",
+        System.err.printf("Input scan rate %.2f MB/s%n",
                   (recordReader.getPos() * 1.0 / (now - startT)) / 1024.0);
       }
       if (buf.length() > STRING_BUFFER_FLUSH_SIZE) {
@@ -262,7 +264,7 @@ public class RCFileCat implements Tool{
     }
   }
 
-  private void setupBufferedOutput() {
+  private void setupBufferedOutput() throws UnsupportedEncodingException {
     OutputStream pdataOut;
     if (test) {
       pdataOut = System.out;
@@ -272,7 +274,7 @@ public class RCFileCat implements Tool{
     BufferedOutputStream bos =
         new BufferedOutputStream(pdataOut, STDOUT_BUFFER_SIZE);
     PrintStream ps =
-        new PrintStream(bos, false);
+        new PrintStream(bos, false, "UTF-8");
     System.setOut(ps);
   }
 
