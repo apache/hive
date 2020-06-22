@@ -208,7 +208,6 @@ class ValidTxnManager {
    List<String> txnTables = getTransactionalTables(getTables(true, true));
    ValidTxnWriteIdList txnWriteIds = null;
 
-   if (txnWriteIds == null) {
     if (driverContext.getCompactionWriteIds() != null) {
       // This is kludgy: here we need to read with Compactor's snapshot/txn rather than the snapshot of the current
       // {@code txnMgr}, in effect simulating a "flashback query" but can't actually share compactor's txn since it
@@ -220,21 +219,9 @@ class ValidTxnManager {
       txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
       txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
     } else {
-      // If we have collected all required table writeid (in SemanticAnalyzer), skip fetch again
-      if (driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
-        txnWriteIds =
-            new ValidTxnWriteIdList(driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        for (String txnTable : txnTables) {
-          if (txnWriteIds.getTableValidWriteIdList(txnTable) == null) {
-            txnWriteIds = null;
-            break;
-          }
-        }
-      } else {
         txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
-      }
     }
-   }
+
     if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false, true).isEmpty()) {
       throw new IllegalStateException(String.format(
           "Inferred transaction type '%s' doesn't conform to the actual query string '%s'",
