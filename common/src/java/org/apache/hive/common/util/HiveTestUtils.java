@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -63,7 +64,7 @@ public class HiveTestUtils {
     new Thread(new Runnable() {
       @Override
       public void run() {
-        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
+        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream(), StandardCharsets.UTF_8));
         String line;
         try {
           while ((line = input.readLine()) != null) {
@@ -102,7 +103,7 @@ public class HiveTestUtils {
 
     for (Entry<File, String> entry : extraContent.entrySet()) {
       zos.putNextEntry(new ZipEntry(entry.getKey().toString()));
-      zos.write(entry.getValue().getBytes());
+      zos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
       zos.closeEntry();
     }
     zos.close();
