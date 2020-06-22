@@ -379,15 +379,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>${spotbugs.version}</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
   <build>
     <pluginManagement>
       <plugins>
