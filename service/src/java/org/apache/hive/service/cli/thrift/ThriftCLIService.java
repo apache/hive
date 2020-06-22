@@ -570,8 +570,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               queryTimeout);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       SessionManager sessionManager = cliService.getSessionManager();
-      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle) &&
-          hiveConf.isWebUiEnabled()) {
+      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
         StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
             .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
             .append("://")

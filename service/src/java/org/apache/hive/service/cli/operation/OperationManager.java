@@ -457,6 +457,9 @@ public class OperationManager extends AbstractService {
 
   public boolean canShowDrilldownLink(OperationHandle operationHandle) {
     try {
+      if (!getHiveConf().isWebUiEnabled()) {
+        return false;
+      }
       Operation operation = getOperation(operationHandle);
       if (operation instanceof SQLOperation) {
         HiveConf hiveConf = ((SQLOperation)operation).queryState.getConf();
