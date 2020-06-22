@@ -244,10 +244,8 @@ public final class Op {
           }
         }
         // inline merge join operator in a self-join
-        if (this.vertex != null) {
-          for (Vertex v : this.vertex.mergeJoinDummyVertexs) {
+        for (Vertex v : this.vertex.mergeJoinDummyVertexs) {
             parser.addInline(this, new Connection(null, v));
-          }
         }
       }
       // update the attrs
@@ -280,7 +278,7 @@ public final class Op {
     if (operatorId != null) {
       sb.append(" [" + operatorId + "]");
     }
-    if (!DagJsonParserUtils.operatorNoStats.contains(name) && attrs.containsKey("Statistics:")) {
+    if (!DagJsonParserUtils.getOperatorNoStats().contains(name) && attrs.containsKey("Statistics:")) {
       sb.append(" (" + attrs.get("Statistics:") + ")");
     }
     attrs.remove("Statistics:");

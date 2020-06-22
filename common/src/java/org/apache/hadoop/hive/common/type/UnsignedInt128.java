@@ -2517,7 +2517,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
      * @param signum
      * @return
      */
-  @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "Intentional fall through")
+  @SuppressFBWarnings(value = {"SF_SWITCH_FALLTHROUGH", "SF_SWITCH_NO_DEFAULT"}, justification = "Intentional fall through")
   public int fastSerializeForHiveDecimal(Decimal128FastBuffer scratch, byte signum) {
     int bufferUsed = this.count;
     ByteBuffer buf = scratch.getByteBuffer(bufferUsed);
@@ -2656,6 +2656,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
      * @param pos
      * @return
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "Intentional fall through")
     private int fastUpdateIntFromInternalStorage(byte[] internalStorage,
             byte signum, int pos, int length) {
       // due to the way we use the allocation-free cast from HiveDecimalWriter to decimal128,

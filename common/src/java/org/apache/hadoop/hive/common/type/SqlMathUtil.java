@@ -27,6 +27,7 @@ import java.util.Arrays;
  *
  * Misc utilities used in this package.
  */
+@SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "Intended exposure of fields")
 public final class SqlMathUtil {
 
   /** Mask to convert a long to a negative long. */
