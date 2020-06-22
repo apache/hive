@@ -483,12 +483,6 @@ public final class FileUtils {
       String userName, FsAction action, boolean recurse) throws Exception {
     boolean isDir = fileStatus.isDir();
 
-    FsAction dirActionNeeded = action;
-    if (isDir) {
-      // for dirs user needs execute privileges as well
-      dirActionNeeded.and(FsAction.EXECUTE);
-    }
-
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
       subDirsToCheck = new ArrayList<FileStatus>();

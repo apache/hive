@@ -352,7 +352,7 @@ public class CopyOnFirstWriteProperties extends Properties {
     if (p != null) {
       this.interned = INTERNER.intern(p);
     } else {
-      this.interned = p;
+      this.interned = null;
     }
   }
 
