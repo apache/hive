@@ -240,7 +240,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: string)
-                      null sort order: zz
+                      null sort order: za
                       sort order: +-
                       Statistics: Num rows: 20 Data size: 3540 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -256,7 +256,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: string)
-                      null sort order: zz
+                      null sort order: za
                       sort order: +-
                       Statistics: Num rows: 20 Data size: 3540 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap

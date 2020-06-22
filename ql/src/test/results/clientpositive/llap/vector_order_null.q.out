@@ -243,7 +243,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: zz
+                      null sort order: az
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -273,7 +273,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -318,12 +318,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
+NULL	NULL
 3	NULL
 2	A
 2	B
 2	NULL
 1	A
-NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc, a asc nulls last
 PREHOOK: type: QUERY
@@ -495,7 +495,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
-                      null sort order: zz
+                      null sort order: az
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -525,7 +525,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -570,12 +570,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
-2	B
-1	A
-2	A
 2	NULL
 3	NULL
 NULL	NULL
+2	B
+1	A
+2	A
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls first, b asc
 PREHOOK: type: QUERY
@@ -1125,7 +1125,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: zz
+                      null sort order: za
                       sort order: +-
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -1155,7 +1155,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: za
                 reduceColumnSortOrder: +-
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1201,9 +1201,9 @@ POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
 1	A
+2	NULL
 2	B
 2	A
-2	NULL
 3	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
