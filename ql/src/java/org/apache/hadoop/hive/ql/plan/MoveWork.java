@@ -41,6 +41,7 @@ public class MoveWork implements Serializable {
   private boolean checkFileFormat;
   private boolean srcLocal;
   private boolean needCleanTarget;
+  private boolean performOnlyMove;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -96,6 +97,7 @@ public class MoveWork implements Serializable {
     inputs = o.getInputs();
     outputs = o.getOutputs();
     needCleanTarget = o.needCleanTarget;
+    setPerformOnlyMove(o.isPerformOnlyMove());
   }
 
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -171,5 +173,13 @@ public class MoveWork implements Serializable {
 
   public boolean getIsInReplicationScope() {
     return this.isInReplicationScope;
+  }
+
+  public boolean isPerformOnlyMove() {
+    return performOnlyMove;
+  }
+
+  public void setPerformOnlyMove(boolean performOnlyMove) {
+    this.performOnlyMove = performOnlyMove;
   }
 }

@@ -4428,7 +4428,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
   public static boolean moveFile(final HiveConf conf, Path srcf, final Path destf, boolean replace,
-                                 boolean isSrcLocal, boolean isManaged) throws HiveException {
+                                 boolean isSrcLocal, boolean isManaged, boolean replOnlyMoveOp) throws HiveException {
     final FileSystem srcFs, destFs;
     try {
       destFs = destf.getFileSystem(conf);
@@ -4462,7 +4462,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           //if replace is false, rename (mv) actually move the src under dest dir
           //if destf is an existing file, rename is actually a replace, and do not need
           // to delete the file first
-          if (replace && !srcIsSubDirOfDest) {
+          if (replace && !(srcIsSubDirOfDest||replOnlyMoveOp)) {
             destFs.delete(destf, true);
             LOG.debug("The path " + destf.toString() + " is deleted");
           }
@@ -4483,7 +4483,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               replace, // overwrite destination
               conf);
         } else {
-          if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
+          if (srcIsSubDirOfDest || destIsSubDirOfSrc || replOnlyMoveOp) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
             List<Future<Void>> futures = new LinkedList<>();
@@ -4912,7 +4912,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // 2. srcs must be a list of files -- ensured by LoadSemanticAnalyzer
       // in both cases, we move the file under destf
       if (srcs.length == 1 && srcs[0].isDirectory()) {
-        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal, isManaged)) {
+        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal, isManaged, false)) {
           throw new IOException("Error moving: " + srcf + " into: " + destf);
         }
 
@@ -4939,7 +4939,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                     public Boolean call() throws Exception {
                       SessionState.setCurrentSessionState(parentSession);
                       return moveFile(
-                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged);
+                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged, false);
                     }
                   }),
               destFile);

@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -447,16 +448,16 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     assert table != null;
     assert table.getParameters() != null;
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    Path destPath = null, loadPath = null;
+    Path destPath = null;
     LoadFileType lft;
     boolean isAutoPurge = false;
     boolean needRecycle = false;
     boolean copyToMigratedTxnTable = replicationSpec.isMigratingToTxnTable();
-
+    boolean performOnlyMove = replicationSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
     if (replicationSpec.isInReplicationScope() && (copyToMigratedTxnTable ||
             x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false))) {
-      lft = LoadFileType.IGNORE;
-      destPath = loadPath = tgtPath;
+      lft = performOnlyMove ? getLoadFileType(replicationSpec) : LoadFileType.IGNORE;
+      destPath = tgtPath;
       isAutoPurge = "true".equalsIgnoreCase(table.getProperty("auto.purge"));
       if (table.isTemporary()) {
         needRecycle = false;
@@ -478,10 +479,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
          * boolean, Long, int)}
          * skip the unnecessary file (rename) operation but it will perform other things.
          */
-        loadPath = tgtPath;
         lft = LoadFileType.KEEP_EXISTING;
       } else {
-        destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
+        destPath = x.getCtx().getExternalTmpPath(tgtPath);
         lft = replace ? LoadFileType.REPLACE_ALL :
                 replicationSpec.isMigratingToTxnTable() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
       }
@@ -498,6 +498,35 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       );
     }
 
+    MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false);
+    /**
+     * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is hdfs,
+     * data is moved directly from Repl staging data dir of the table to the table's location on target warehouse.
+     */
+    Path moveDataSrc = performOnlyMove ? dataPath : destPath;
+    if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table)) {
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+              Collections.singletonList(moveDataSrc),
+              Collections.singletonList(tgtPath),
+              true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
+      moveWork.setNeedCleanTarget(replace);
+    } else {
+      LoadTableDesc loadTableWork = new LoadTableDesc(
+              moveDataSrc, Utilities.getTableDesc(table), new TreeMap<>(), lft, writeId);
+      if (replicationSpec.isMigratingToTxnTable()) {
+        loadTableWork.setInsertOverwrite(replace);
+      }
+      loadTableWork.setStmtId(stmtId);
+      moveWork.setLoadTableWork(loadTableWork);
+    }
+    Task<?> loadTableTask = TaskFactory.get(moveWork, x.getConf());
+    if (performOnlyMove) {
+      moveWork.setPerformOnlyMove(true);
+      x.getTasks().add(loadTableTask);
+      return loadTableTask;
+    }
+
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf(),
@@ -505,30 +534,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, destPath, false));
     }
-
-    MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false);
-
-
-    if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table)) {
-      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-              Collections.singletonList(destPath),
-              Collections.singletonList(tgtPath),
-              true, null, null);
-      moveWork.setMultiFilesDesc(loadFilesWork);
-      moveWork.setNeedCleanTarget(replace);
-    } else {
-      LoadTableDesc loadTableWork = new LoadTableDesc(
-              loadPath, Utilities.getTableDesc(table), new TreeMap<>(), lft, writeId);
-      if (replicationSpec.isMigratingToTxnTable()) {
-        loadTableWork.setInsertOverwrite(replace);
-      }
-      loadTableWork.setStmtId(stmtId);
-      moveWork.setLoadTableWork(loadTableWork);
-    }
-
     //if Importing into existing table, FileFormat is checked by
     // ImportSemanticAnalzyer.checked checkTable()
-    Task<?> loadTableTask = TaskFactory.get(moveWork, x.getConf());
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;
@@ -591,6 +598,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return addPartTask;
     } else {
       String srcLocation = partSpec.getLocation();
+      boolean performOnlyMove = false;
       if (replicationSpec.isInReplicationScope()
           && !ReplicationSpec.Type.IMPORT.equals(replicationSpec.getReplSpecType())) {
         Path partLocation = new Path(partSpec.getLocation());
@@ -602,8 +610,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         String relativePartDataPath = EximUtil.DATA_PATH_NAME + File.separator + bucketDir;
         srcLocation =  new Path(dataDirBase, relativePartDataPath).toString();
+        /**
+         * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is
+         * hdfs, data is moved directly from Repl staging data dir of the partition to the partition's location on
+         * target warehouse.
+         */
       }
       fixLocationInPartSpec(tblDesc, table, wh, replicationSpec, partSpec, x);
+      performOnlyMove = Utils.onSameHDFSFileSystem(new Path(srcLocation), new Path(partSpec.getLocation()));
       x.getLOG().debug("adding dependent CopyWork/AddPart/MoveWork for partition "
               + partSpecToString(partSpec.getPartSpec())
               + " with source location: " + srcLocation);
@@ -613,7 +627,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Path destPath;
       if (replicationSpec.isInReplicationScope() && (copyToMigratedTxnTable ||
               x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false))) {
-        loadFileType = LoadFileType.IGNORE;
+        loadFileType = performOnlyMove ? getLoadFileType(replicationSpec) : LoadFileType.IGNORE;
         destPath = tgtLocation;
         isAutoPurge = "true".equalsIgnoreCase(table.getProperty("auto.purge"));
         if (table.isTemporary()) {
@@ -644,14 +658,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                 )
         );
       }
-
-      Task<?> copyTask = null;
-      if (replicationSpec.isInReplicationScope()) {
-        copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, new Path(srcLocation), destPath,
-                x.getConf(), isAutoPurge, needRecycle, copyToMigratedTxnTable, false);
-      } else {
-        copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation), destPath, false));
+      /**
+       * If the Repl staging directory ('hive.repl.rootdir') is on the target cluster itself and the FS scheme is hdfs,
+       * data is moved directly from Repl staging data dir for partition to the partition's location on target
+       * warehouse.
+       */
+      if (performOnlyMove) {
+        moveTaskSrc = new Path(srcLocation);
+      } else if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(tblDesc.getTblProps())) {
+        moveTaskSrc = destPath;
       }
+
 
       Task<?> addPartTask = null;
       if (x.getEventType() != DumpType.EVENT_COMMIT_TXN) {
@@ -661,7 +678,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         addPartTask = TaskFactory.get(
                 new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
       }
-
       MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(),
               null, null, false);
 
@@ -669,7 +685,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
       if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(tblDesc.getTblProps())) {
         LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-                Collections.singletonList(destPath),
+                Collections.singletonList(moveTaskSrc),
                 Collections.singletonList(tgtLocation),
                 true, null, null);
         moveWork.setMultiFilesDesc(loadFilesWork);
@@ -686,9 +702,26 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         loadTableWork.setInheritTableSpecs(false);
         moveWork.setLoadTableWork(loadTableWork);
       }
+      Task<?> loadPartTask = TaskFactory.get(moveWork, x.getConf());
+      if (performOnlyMove) {
+        moveWork.setPerformOnlyMove(true);
+        if (addPartTask != null) {
+          addPartTask.addDependentTask(loadPartTask);
+        }
+        x.getTasks().add(loadPartTask);
+        return addPartTask == null ? loadPartTask : addPartTask;
+      }
+
+      Task<?> copyTask = null;
+      if (replicationSpec.isInReplicationScope()) {
+        copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, new Path(srcLocation), destPath,
+                x.getConf(), isAutoPurge, needRecycle, copyToMigratedTxnTable, false);
+      } else {
+        copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation), destPath, false));
+      }
 
       if (loadFileType == LoadFileType.IGNORE) {
-        // if file is coped directly to the target location, then no need of move task in case the operation getting
+        // if file is copied directly to the target location, then no need of move task in case the operation getting
         // replayed is add partition. As add partition will add the event for create partition. Even the statics are
         // updated properly in create partition flow as the copy is done directly to the partition location. For insert
         // operations, add partition task is anyways a no-op as alter partition operation does just some statistics
@@ -702,7 +735,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         return copyTask;
       }
-      Task<?> loadPartTask = TaskFactory.get(moveWork, x.getConf());
       copyTask.addDependentTask(loadPartTask);
       if (addPartTask != null) {
         addPartTask.addDependentTask(loadPartTask);
@@ -711,6 +743,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       return copyTask;
     }
+  }
+
+  private static LoadFileType getLoadFileType(ReplicationSpec replicationSpec) {
+    return (replicationSpec.isReplace()
+            ? LoadFileType.REPLACE_ALL
+            : replicationSpec.isMigratingToTxnTable()
+              ? LoadFileType.KEEP_EXISTING
+              : LoadFileType.OVERWRITE_EXISTING);
   }
 
   /**
