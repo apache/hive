@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import org.apache.impala.analysis.SlotDescriptor;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -90,13 +93,13 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
     // createOutputExprs also marks the slot materialized, so call this before calling
     // materializeRequiredSlots because the latter checks for the isMaterialized flag
-    this.outputExprs = createOutputExprs(sortInfo.getSortTupleDescriptor().getSlots());
+    this.outputExprs = createMappedOutputExprs(sortInfo);
 
     sortInfo.materializeRequiredSlots(ctx.getRootAnalyzer(), new ExprSubstitutionMap());
 
     SortNode sortNode = SingleNodePlanner.createSortNode(ctx, ctx.getRootAnalyzer(),
         sortInputNode, sortInfo, limit, offset, limit != -1,
-        false /* don't disable outermost topN */); 
+        false /* don't disable outermost topN */);
 
     retNode = sortNode;
 
@@ -148,4 +151,27 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     return filter != null ?
         mq.getRowCount(filter) : mq.getRowCount(sortLimit);
   }
+
+  /**
+   * Create the output expressions for the SortRel.
+   * Impala can change the order in their SortInfo object. So the SlotDescriptors
+   * do not necessarily line up with the indexes.   So we need to walk through the
+   * expressions of the input node and match them up with the corresponding SlotRef.
+   */
+  public ImmutableMap<Integer, Expr> createMappedOutputExprs(SortInfo sortInfo) {
+    Map<Integer, Expr> childOutputExprsMap = getImpalaRelInput(0).getOutputExprsMap();
+    Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
+
+    for (Map.Entry<Integer, Expr> e : childOutputExprsMap.entrySet()) {
+      Expr slotRefExpr = sortInfo.getOutputSmap().get(e.getValue());
+      Preconditions.checkNotNull(slotRefExpr);
+      exprs.put(e.getKey(), slotRefExpr);
+    }
+    for (SlotDescriptor slotDesc : sortInfo.getSortTupleDescriptor().getSlots()) {
+      slotDesc.setIsMaterialized(true);
+    }
+    return ImmutableMap.copyOf(exprs);
+  }
+
+
 }

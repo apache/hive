@@ -164,7 +164,7 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END, CAST(2 AS INT), w_warehouse_sk, i_item_sk, $f4, w_warehouse_sk, _impala_builtins.casttoint(_impala_builtins.add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), i_item_sk, $f4
+  |  output exprs: w_warehouse_sk, i_item_sk, CAST(2 AS INT), $f4, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END, w_warehouse_sk, i_item_sk, _impala_builtins.casttoint(_impala_builtins.add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), $f4, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
