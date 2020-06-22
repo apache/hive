@@ -6474,17 +6474,17 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = StringUtils.EMPTY;
+    StringBuffer result = new StringBuffer();
     for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
       if ("mr".equals(s)) {
         continue;
       }
-      if (!result.isEmpty()) {
-        result += ", ";
+      if (result.length() != 0) {
+        result.append(", ");
       }
-      result += s;
+      result.append(s);
     }
-    return result;
+    return result.toString();
   }
 
   public static String generateMrDeprecationWarning() {

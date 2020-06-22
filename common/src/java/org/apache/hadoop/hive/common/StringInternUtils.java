@@ -135,10 +135,10 @@ public class StringInternUtils {
 
   public static <K> Map<K, String> internValuesInMap(Map<K, String> map) {
     if (map != null) {
-      for (K key : map.keySet()) {
-        String value = map.get(key);
+      for (Map.Entry<K, String> entry : map.entrySet()) {
+        String value = entry.getValue();
         if (value != null) {
-          map.put(key, value.intern());
+          map.put(entry.getKey(), value.intern());
         }
       }
     }
