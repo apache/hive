@@ -25,6 +25,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import org.apache.hive.common.util.Decimal128FastBuffer;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -2697,10 +2698,6 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
       }
       return value;
     }
-
-  public int[] getV() {
-    return v;
-  }
 
   /**
    * This setter is only for de-serialization, should not be used otherwise.
