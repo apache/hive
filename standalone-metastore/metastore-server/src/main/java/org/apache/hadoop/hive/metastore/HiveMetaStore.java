@@ -3189,7 +3189,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-        boolean isAutopurge = (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+        boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
         Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
 
         // This is not transactional
@@ -3201,7 +3201,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
             FileStatus targetStatus = fs.getFileStatus(location);
             String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-            wh.deleteDir(location, true, isAutopurge, ReplChangeManager.shouldEnableCm(db, tbl));
+            wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
             fs.mkdirs(location);
             HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
           } else {
@@ -3210,7 +3210,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               continue;
             }
             for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, isAutopurge, ReplChangeManager.shouldEnableCm(db, tbl));
+              wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
             }
           }
         }
@@ -4795,9 +4795,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       //    3.1. User has specified PURGE from the commandline, and if not,
       //    3.2. User has set the table to auto-purge.
       return ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-          || (tbl.isSetParameters() && MetaStoreUtils.isPropertyTrue(tbl.getParameters(), "auto.purge"))
-          || (tbl.isSetParameters() && MetaStoreUtils.isPropertyTrue(tbl.getParameters(), "skip.trash"));
-
+          || MetaStoreUtils.isSkipTrash(tbl.getParameters());
     }
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
             throws IOException, MetaException {

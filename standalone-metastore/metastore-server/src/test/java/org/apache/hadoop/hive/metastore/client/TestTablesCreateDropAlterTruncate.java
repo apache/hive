@@ -635,8 +635,6 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Assert.assertFalse("Table path should not be in trash",
         metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
 
-    newTable.getParameters().remove("external.table.purge");
-    newTable.getParameters().put("external.table.autodelete", "true");
     newTable.getParameters().put("skip.trash", "true");
 
     client.createTable(newTable);

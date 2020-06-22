@@ -105,7 +105,6 @@ public class MetaStoreUtils {
   public static final String DB_EMPTY_MARKER = "!";
 
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
-  public static final String EXTERNAL_TABLE_AUTODELETE = "external.table.autodelete";
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -247,7 +246,7 @@ public class MetaStoreUtils {
       return false;
     }
 
-    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE) || isPropertyTrue(params, EXTERNAL_TABLE_AUTODELETE);
+    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE);
   }
 
   public static boolean isExternal(Map<String, String> tableParams){
@@ -258,6 +257,20 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
+  /**
+   * Determines whether an table needs to be deleted completely or moved to trash directory.
+   *
+   * @param tableParams parameters of the table
+   *
+   * @return true if the table needs to be deleted rather than moved to trash directory
+   */
+  public static boolean isSkipTrash(Map<String, String> tableParams) {
+    if (tableParams == null) {
+      return false;
+    }
+    return isPropertyTrue(tableParams, "skip.trash")
+        || isPropertyTrue(tableParams, "auto.purge");
+  }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
