@@ -1480,6 +1480,7 @@
       <exclude>**/patchprocess/**</exclude>
       <exclude>**/metastore_db/**</exclude>
       <exclude>**/test/resources/**/*.ldif</exclude>
+      <exclude>.vscode/**</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
