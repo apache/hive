@@ -3498,8 +3498,6 @@ public class HiveConf extends Configuration {
             "Whether to enable xframe\n"),
     HIVE_SERVER2_WEBUI_XFRAME_VALUE("hive.server2.webui.xframe.value", "SAMEORIGIN",
             "Configuration to allow the user to set the x_frame-options value\n"),
-    HIVE_SERVER2_WEBSERVER_URL("hive.server2.webserver.url", null,
-        "The url of the web server running on HiveServer2.\n"),
     HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK("hive.server2.show.operation.drilldown.link", false,
         "Whether to show the operation's drilldown link to thrift client.\n"),
 

@@ -349,8 +349,7 @@ public class HiveServer2 extends CompositeService {
             cliService.getSessionManager());
           hiveConf.set("startcode",
             String.valueOf(System.currentTimeMillis()));
-          boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL);
-          if (useSsl) {
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
             String keyStorePath = hiveConf.getVar(
               ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
             if (Strings.isBlank(keyStorePath)) {
@@ -428,10 +427,6 @@ public class HiveServer2 extends CompositeService {
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
-          String schemeName = useSsl ? "https" : "http";
-          String webServerUrl = schemeName + "://" + thriftCLIService.getServerIPAddress().getHostName() +
-              ":" + webUIPort;
-          hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_WEBSERVER_URL.varname, webServerUrl);
         }
       }
     } catch (IOException ie) {
