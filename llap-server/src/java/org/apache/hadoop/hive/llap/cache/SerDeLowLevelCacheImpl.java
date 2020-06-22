@@ -541,7 +541,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         public FileData apply(Void input) {
           return data; // If we don't have a file cache, we will add this one as is.
         }
-      });
+      }, tag);
       cached = subCache.getCache();
     } finally {
       if (data != cached) {
