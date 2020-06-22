@@ -165,7 +165,7 @@ for (HiveSession hiveSession: hiveSessions) {
         <td><%= new Date(operation.getBeginTime()) %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>
         <td><%= operation.getRuntime() == null ? "Not finished" : operation.getRuntime()/1000 %></td>
-        <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
+        <% String link = "/query_page.html?operationId=" + operation.getOperationId(); %>
         <td>  <a href= <%= link %>>Drilldown</a> </td>
     </tr>
 
@@ -209,7 +209,7 @@ for (HiveSession hiveSession: hiveSessions) {
         <td><%= operation.getElapsedTime()/1000 %></td>
         <td><%= operation.getEndTime() == null ? "In Progress" : new Date(operation.getEndTime()) %></td>
         <td><%= operation.getRuntime() == null ? "n/a" : operation.getRuntime()/1000 %></td>
-        <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
+        <% String link = "/query_page.html?operationId=" + operation.getOperationId(); %>
         <td>  <a href= <%= link %>>Drilldown</a> </td>
     </tr>
 

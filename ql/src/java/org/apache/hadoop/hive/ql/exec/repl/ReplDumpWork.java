@@ -27,12 +27,14 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,6 +58,7 @@ public class ReplDumpWork implements Serializable {
   private Path currentDumpPath;
   private List<String> resultValues;
   private boolean shouldOverwrite;
+  private transient ReplicationMetricCollector metricCollector;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -162,6 +165,9 @@ public class ReplDumpWork implements Serializable {
   }
 
   public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
     List<Task<?>> tasks = new ArrayList<>();
     while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
       DirCopyWork dirCopyWork = dirCopyIterator.next();
@@ -174,6 +180,9 @@ public class ReplDumpWork implements Serializable {
   }
 
   public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
     List<Task<?>> tasks = new ArrayList<>();
     while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
       EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
@@ -189,5 +198,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setShouldOverwrite(boolean shouldOverwrite) {
     this.shouldOverwrite = shouldOverwrite;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public void setMetricCollector(ReplicationMetricCollector metricCollector) {
+    this.metricCollector = metricCollector;
   }
 }

@@ -2304,6 +2304,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws TException {
+    return client.get_open_txns();
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
@@ -3779,6 +3784,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
     client.scheduled_query_progress(info);
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                         replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
   }
 
   @Override

@@ -27,6 +27,23 @@ properties([
     ])
 ])
 
+this.prHead = null;
+def checkPrHead() {
+  if(env.CHANGE_ID) {
+    println("checkPrHead - prHead:" + prHead)
+    println("checkPrHead - prHead2:" + pullRequest.head)
+    if (prHead == null) {
+      prHead = pullRequest.head;
+    } else {
+      if(prHead != pullRequest.head) {
+        currentBuild.result = 'ABORTED'
+        error('Found new changes on PR; aborting current build')
+      }
+    }
+  }
+}
+checkPrHead()
+
 def setPrLabel(String prLabel) {
   if (env.CHANGE_ID) {
    def mapping=[
@@ -50,10 +67,12 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
+    timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
           run()
         }
+      }
     }
   }
 }
@@ -68,15 +87,18 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
-OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -Pitests,qsplits"
+cp $SETTINGS .git/settings.xml
+OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
+OPTS+=" -Pitests,qsplits,dist"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
+OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
+git config extra.mavenOpts "$OPTS"
+OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
+df -h
 '''
     }
   }
@@ -85,13 +107,23 @@ du -h --max-depth=1
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
+    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
-        resourceLimitCpu: '3000m',
+        resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
-        resourceLimitMemory: '12000Mi'
+        resourceLimitMemory: '12000Mi',
+        envVars: [
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+        ]
     ),
+    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+        alwaysPullImage: true,
+        privileged: true,
+    ),
+  ],
+  volumes: [
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
   ], yaml:'''
 spec:
   securityContext:
@@ -119,6 +151,7 @@ def jobWrappers(closure) {
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
+        checkPrHead()
         closure()
       }
     }
@@ -149,23 +182,55 @@ jobWrappers {
       stage('Checkout') {
         checkout scm
       }
+      stage('Prechecks') {
+        def spotbugsProjects = [
+            ":hive-shims",
+            ":hive-storage-api",
+            ":hive-standalone-metastore-common"
+        ]
+        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
+      }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
+      }
+      checkPrHead()
+      stage('Upload') {
+        saveWS()
         sh '''#!/bin/bash -e
             # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
             find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
         '''
-      }
-      stage('Upload') {
-        saveWS()
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
       }
     }
   }
 
   stage('Testing') {
-
     def branches = [:]
+    for (def d in ['derby','postgres']) {
+      def dbType=d
+      def splitName = "init@$dbType"
+      branches[splitName] = {
+        executorNode {
+          stage('Prepare') {
+              loadWS();
+          }
+          stage('init-metastore') {
+             withEnv(["dbType=$dbType"]) {
+               sh '''#!/bin/bash -e
+set -x
+echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
+. /etc/profile.d/confs.sh
+sw hive-dev $PWD
+ping -c2 dev_$dbType
+export DOCKER_NETWORK=host
+reinit_metastore $dbType
+'''
+            }
+          }
+        }
+      }
+    }
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]
@@ -180,7 +245,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("install -q")
+              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
             stage('Archive') {

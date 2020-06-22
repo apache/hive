@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -54,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Map;
@@ -173,6 +175,37 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
+  }
+
+  @Test
+  /**
+   * Testcase for getting immutable dataset dump, and its corresponding repl load.
+   */
+  public void testAcidTablesBootstrapWithMetadataAlone() throws Throwable {
+    List<String> withClauseOptions = new LinkedList<>();
+    withClauseOptions.add("'hive.repl.dump.skip.immutable.data.copy'='true'");
+
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, withClauseOptions);
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions);
+    verifyAcidTableLoadWithoutData(replicatedDbName);
+
+    Path hiveDumpDir = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path loadAck = new Path(hiveDumpDir, ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertFalse("For immutable dataset, load ack should not be there", fs.exists(loadAck));
+  }
+
+  private void verifyAcidTableLoadWithoutData(String replicatedDbName) throws Throwable {
+    replica.run("use " + replicatedDbName)
+        // no data should be there.
+        .run("select id from t1 order by id")
+        .verifyResults(new String[] {})
+        // all 4 partitions should be there
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=france", "country=india", "country=italy", "country=us"})
+        // no data should be there.
+        .run("select place from t2")
+        .verifyResults(new String[] {});
   }
 
   @Test

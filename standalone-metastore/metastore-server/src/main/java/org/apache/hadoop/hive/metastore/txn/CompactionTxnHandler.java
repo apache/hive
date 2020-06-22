@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
  * methods are not available through the thrift interface.
@@ -109,7 +110,7 @@ class CompactionTxnHandler extends TxnHandler {
         final String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\","
             + "MIN(\"TXN_STARTED\"), COUNT(*)"
             + "FROM \"TXNS\", \"TXN_COMPONENTS\" "
-            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = '" + TXN_ABORTED + "' "
+            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " "
             + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\""
             + (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
@@ -337,7 +338,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\" "
+            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+            + "\"CQ_ENQUEUE_TIME\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
@@ -361,8 +363,8 @@ class CompactionTxnHandler extends TxnHandler {
         pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
             + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
             + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
-            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\")"
-            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
+            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\")"
+            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)");
         info.state = SUCCEEDED_STATE;
         CompactionInfo.insertIntoCompletedCompactions(pStmt, info, getDbTime(dbConn));
         updCount = pStmt.executeUpdate();
@@ -400,7 +402,7 @@ class CompactionTxnHandler extends TxnHandler {
          * See {@link ql.txn.compactor.Cleaner.removeFiles()}
          */
         s = "SELECT DISTINCT \"TXN_ID\" FROM \"TXNS\", \"TXN_COMPONENTS\" WHERE \"TXN_ID\" = \"TC_TXNID\" "
-            + "AND \"TXN_STATE\" = '" + TXN_ABORTED + "' AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
+            + "AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
         if (info.highestWriteId != 0) s += " AND \"TC_WRITEID\" <= ?";
         if (info.partName != null) s += " AND \"TC_PARTITION\" = ?";
 
@@ -513,8 +515,8 @@ class CompactionTxnHandler extends TxnHandler {
             "UNION " +
             "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
             "UNION " +
-            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_ABORTED) +
-            " OR \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
+            " OR \"TXN_STATE\" = " + TxnStatus.OPEN +
             ") \"RES\"";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -576,7 +578,7 @@ class CompactionTxnHandler extends TxnHandler {
 
         String s = "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE " +
             "\"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") AND " +
-            " (\"TXN_STATE\" = '" + TXN_ABORTED + "' OR \"TXN_STATE\" = '" + TXN_COMMITTED + "')  AND "
+            " (\"TXN_STATE\" = " + TxnStatus.ABORTED + " OR \"TXN_STATE\" = " + TxnStatus.COMMITTED + ")  AND "
             + " \"TXN_ID\" < " + lowWaterMark;
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -811,7 +813,7 @@ class CompactionTxnHandler extends TxnHandler {
             quoteString(ci.tableName) + "," +
             (ci.partName == null ? "" : quoteString(ci.partName) + ",") +
             ci.highestWriteId + ", " +
-            quoteChar(OperationType.COMPACT.getSqlConst()) + ")";
+            OperationType.COMPACT + ")";
         if(LOG.isDebugEnabled()) {
           LOG.debug("About to execute: " + sqlText);
         }
@@ -1045,7 +1047,8 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\" "
+            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+            + "\"CQ_ENQUEUE_TIME\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
@@ -1083,8 +1086,9 @@ class CompactionTxnHandler extends TxnHandler {
         pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
             + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
             + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
-            + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\") "
-            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
+            + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
+            + "\"CC_ENQUEUE_TIME\") "
+            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)");
         if (errorMessage != null) {
           ci.errorMessage = errorMessage;
         }
@@ -1147,7 +1151,7 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String query = "SELECT COUNT(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
+        String query = "SELECT COUNT(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN;
         LOG.debug("Going to execute query <" + query + ">");
         rs = stmt.executeQuery(query);
         if (!rs.next()) {
@@ -1156,7 +1160,7 @@ class CompactionTxnHandler extends TxnHandler {
         long numOpenTxns = rs.getLong(1);
         if (numOpenTxns > 0) {
           query = "SELECT MIN(\"RES\".\"ID\") FROM (" +
-              "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+              "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
               " UNION " +
               "SELECT MAX(\"CQ_NEXT_TXN_ID\") AS \"ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = "
               + quoteChar(READY_FOR_CLEANING) +

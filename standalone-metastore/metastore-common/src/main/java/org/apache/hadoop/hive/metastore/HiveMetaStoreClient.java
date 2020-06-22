@@ -795,7 +795,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   public static void setProcessorCapabilities(final String[] capabilities) {
-    processorCapabilities = capabilities;
+    processorCapabilities = capabilities != null ? Arrays.copyOf(capabilities, capabilities.length) : null;
   }
 
   public static void setProcessorIdentifier(final String id) {
@@ -803,7 +803,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   public static String[] getProcessorCapabilities() {
-    return processorCapabilities;
+    return processorCapabilities != null ? Arrays.copyOf(processorCapabilities, processorCapabilities.length) : null;
   }
 
   public static String getProcessorIdentifier() {
@@ -885,7 +885,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (new_parts == null || new_parts.contains(null)) {
       throw new MetaException("Partitions cannot be null.");
     }
-    if (new_parts != null && !new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
+    if (!new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
       final String defaultCat = getDefaultCatalog(conf);
       new_parts.forEach(p -> p.setCatName(defaultCat));
     }
@@ -1754,8 +1754,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     Map<String, Type> fromClient = client.get_type_all(name);
     if (fromClient != null) {
       result = new LinkedHashMap<>();
-      for (String key : fromClient.keySet()) {
-        result.put(key, deepCopy(fromClient.get(key)));
+      for (Map.Entry<String, Type> entry: fromClient.entrySet()) {
+        result.put(entry.getKey(), deepCopy(entry.getValue()));
       }
     }
     return result;
@@ -2013,7 +2013,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (catalogName != null)
       request.setCatalogName(catalogName);
     if (processorCapabilities != null) {
-      request.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+      request.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
     }
     if (processorIdentifier != null) {
       request.setProcessorIdentifier(processorIdentifier);
@@ -3218,6 +3218,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws TException {
+    return client.get_open_txns();
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
@@ -3539,7 +3544,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
     NotificationEventResponse rsp = client.get_next_notification(rqst);
-    LOG.debug("Got back {} events", rsp.getEventsSize());
+    LOG.debug("Got back {} events", rsp!= null ? rsp.getEventsSize() : 0);
     NotificationEventResponse filtered = new NotificationEventResponse();
     if (rsp != null && rsp.getEvents() != null) {
       long nextEventId = lastEventId + 1;
@@ -4270,6 +4275,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.scheduled_query_maintenance(request);
   }
 
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                         replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
   /**
   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
   */
@@ -4316,7 +4332,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     public static final String KEY_CAPABILITIES = "OBJCAPABILITIES";
 
     public TableCapabilityBuilder() {
-      capabilitiesString = new String();
+      capabilitiesString = "";
     }
 
     public TableCapabilityBuilder add(String skill) {
