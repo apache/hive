@@ -363,8 +363,8 @@ public class Initiator extends MetaStoreCompactorThread {
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       boolean multiBase = dir.getObsolete().stream()
-              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).count() >= 1;
-      if ((deltaSize == 0  && dir.getObsolete().size() > 0) && multiBase) {
+              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).findAny().isPresent();
+      if (deltaSize == 0  && multiBase) {
         try {
           txnHandler.requestCleanup(ci);
           return null;
