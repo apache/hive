@@ -120,7 +120,6 @@ STAGE PLANS:
                     sort order: +-
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 5 Data size: 470 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

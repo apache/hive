@@ -91,7 +91,6 @@ STAGE PLANS:
                     null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

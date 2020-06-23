@@ -305,7 +305,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -360,7 +359,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1296,7 +1294,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1351,7 +1348,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2359,7 +2355,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2414,7 +2409,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2978,7 +2972,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -3033,7 +3026,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -3969,7 +3961,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -4024,7 +4015,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -5032,7 +5022,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -5087,7 +5076,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
