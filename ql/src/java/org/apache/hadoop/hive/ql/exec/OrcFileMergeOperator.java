@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.orc.CompressionKind;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileKeyWrapper;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileValueWrapper;
@@ -54,7 +57,7 @@ public class OrcFileMergeOperator extends
   private TypeDescription fileSchema;
   private int rowIndexStride = 0;
 
-  private Writer outWriter;
+  private Map<Integer, Writer> outWriters = new HashMap<>();
   private Path prevPath;
   private Reader reader;
   private FSDataInputStream fdis;
@@ -113,7 +116,11 @@ public class OrcFileMergeOperator extends
 
       // store the orc configuration from the first file. All other files should
       // match this configuration before merging else will not be merged
-      if (outWriter == null) {
+      int bucketId = 0;
+      if (conf.getIsCompactionTable()) {
+        bucketId = AcidUtils.parseBucketId(new Path(filePath));
+      }
+      if (outWriters.get(bucketId) == null) {
         compression = k.getCompression();
         compressBuffSize = k.getCompressBufferSize();
         fileVersion = k.getFileVersion();
@@ -134,7 +141,10 @@ public class OrcFileMergeOperator extends
         }
 
         Path outPath = getOutPath();
-        outWriter = OrcFile.createWriter(outPath, options);
+        if (conf.getIsCompactionTable()) {
+          outPath = getOutPath(bucketId);
+        }
+        outWriters.put(bucketId, OrcFile.createWriter(outPath, options));
         if (LOG.isDebugEnabled()) {
           LOG.info("ORC merge file output path: " + outPath);
         }
@@ -157,7 +167,7 @@ public class OrcFileMergeOperator extends
           (int) v.getStripeInformation().getLength());
 
       // append the stripe buffer to the new ORC file
-      outWriter.appendStripe(buffer, 0, buffer.length, v.getStripeInformation(),
+      outWriters.get(bucketId).appendStripe(buffer, 0, buffer.length, v.getStripeInformation(),
           v.getStripeStatistics());
 
       if (LOG.isInfoEnabled()) {
@@ -169,7 +179,7 @@ public class OrcFileMergeOperator extends
 
       // add user metadata to footer in case of any
       if (v.isLastStripeInFile()) {
-        outWriter.appendUserMetadata(v.getUserMetadata());
+        outWriters.get(bucketId).appendUserMetadata(v.getUserMetadata());
       }
     } catch (Throwable e) {
       exception = true;
@@ -252,9 +262,12 @@ public class OrcFileMergeOperator extends
         fdis = null;
       }
 
-      if (outWriter != null) {
-        outWriter.close();
-        outWriter = null;
+      if (outWriters != null) {
+        for (Map.Entry<Integer, Writer> outWriterEntry : outWriters.entrySet()) {
+          Writer outWriter = outWriterEntry.getValue();
+          outWriter.close();
+          outWriter = null;
+        }
       }
     } catch (Exception e) {
       throw new HiveException("Unable to close OrcFileMergeOperator", e);

@@ -46,7 +46,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriver;
 
 /**
- * Test functionality of MmMinorQueryCompactor,.
+ * Test functionality of MmMinorQueryCompactor.
  */
 public class TestMmCompactorOnTez extends CompactorOnTezTest {
 

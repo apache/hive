@@ -52,6 +52,7 @@ public class CompactorOnTezTest {
   protected HiveConf conf;
   protected IMetaStoreClient msClient;
   protected IDriver driver;
+  protected boolean runsOnTez = true;
 
   @Before
   // Note: we create a new conf and driver object before every test
@@ -275,7 +276,8 @@ public class CompactorOnTezTest {
 
     protected List<String> getBucketData(String tblName, String bucketId) throws Exception {
       return executeStatementOnDriverAndReturnResults(
-          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order by ROW__ID", driver);
+          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order"
+              + " by a, b", driver);
     }
 
     protected void dropTable(String tblName) throws Exception {

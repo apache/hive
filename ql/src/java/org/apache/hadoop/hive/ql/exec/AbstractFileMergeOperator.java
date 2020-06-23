@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
@@ -116,6 +117,10 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       taskTmpPath = null;
       // Make sure we don't collide with the source.
       outPath = finalPath = new Path(tmpPath, taskId + ".merged");
+    } else if (conf.getIsCompactionTable()) {
+      taskTmpPath = ttp; // _task_tmp
+      finalPath = tp; // _tmp
+      outPath = ttp; // also _task_tmp
     } else {
       taskTmpPath = ttp;
       finalPath = new Path(tp, taskId);
@@ -371,6 +376,12 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
   protected final Path getOutPath() {
     return outPath;
+  }
+
+  protected final Path getOutPath(int bucketId) {
+    String fileName = AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId);
+    Path out = new Path(outPath, fileName);
+    return out;
   }
 
   protected final void addIncompatibleFile(Path path) {
