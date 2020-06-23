@@ -112,13 +112,13 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
       "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][]{
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000002_0000002_0000/000000_0"}};
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "load data inpath");
     runStatementOnDriver("update T set b = 17 where a = 1");
     String[][] expected2 = new String[][]{
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t17", "t/delta_0000003_0000003_0000/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t17", "t/delta_0000002_0000002_0000/bucket_00000"}
     };
     checkResult(expected2, testQuery, isVectorized, "update");
 
@@ -210,10 +210,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected1 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/delta_0000001_0000002_v0000025/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/delta_0000001_0000002_v0000025/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000002_v0000025/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000002_v0000025/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/delta_0000001_0000002_v0000025/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/delta_0000001_0000002_v0000025/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000002_v0000025/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000002_v0000025/bucket_00000"}
     };
     checkResult(expected1, testQuery, isVectorized, "load data inpath (minor)");
 
@@ -222,11 +222,11 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000004_v0000030/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000004_v0000030/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000004_v0000030/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000004_v0000030/bucket_00000"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000004_v0000030/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000004_v0000030/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000004_v0000030/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000004_v0000030/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000004_v0000030/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000004_v0000030/bucket_00000"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath (major)");
 
@@ -362,12 +362,12 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
 
     List<String> rs = runStatementOnDriver("select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID");
     String[][] expected = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2", "t/p=0/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4", "t/p=0/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t1\t2", "t/p=1/delta_0000003_0000003_0000/000000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t4", "t/p=1/delta_0000003_0000003_0000/000000_0"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t2", "t/p=1/delta_0000004_0000004_0000/000000_0"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4", "t/p=1/delta_0000004_0000004_0000/000000_0"}};
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2", "t/p=0/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4", "t/p=0/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t1\t2", "t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t4", "t/p=1/delta_0000002_0000002_0000/000000_0"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t2", "t/p=1/delta_0000003_0000003_0000/000000_0"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4", "t/p=1/delta_0000003_0000003_0000/000000_0"}};
     checkExpected(rs, expected, "load data inpath partitioned");
 
 
@@ -376,10 +376,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("truncate table Tstage");
     runStatementOnDriver("load data inpath '" + getWarehouseDir() + "/4/data' overwrite into table T partition(p=1)");
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2", "t/p=0/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4", "t/p=0/delta_0000002_0000002_0000/000000_0"},
-        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t1\t5\t2", "t/p=1/base_0000005/000000_0"},
-        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":1}\t1\t5\t4", "t/p=1/base_0000005/000000_0"}};
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2", "t/p=0/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t0\t4", "t/p=0/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t1\t5\t2", "t/p=1/base_0000004/000000_0"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t1\t5\t4", "t/p=1/base_0000004/000000_0"}};
     rs = runStatementOnDriver("select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID");
     checkExpected(rs, expected2, "load data inpath partitioned overwrite");
   }
@@ -483,8 +483,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
       "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/bucket_00000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/bucket_00000_0"}
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/bucket_00000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/bucket_00000_0"}
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
   }
