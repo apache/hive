@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -121,9 +122,10 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     }
 
     List<FeFsPartition> feFsPartitions = Lists.newArrayList();
-    if (hdfsTable.isPartitioned()) {
-      // propagate Hive's statically pruned partition list to Impala
-      PrunedPartitionList prunedPartList = ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
+    // propagate Hive's statically pruned partition list to Impala
+    PrunedPartitionList prunedPartList = ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
+    // This can be null if the table is not partitioned OR there is no filter on the partition column(s)
+    if (hdfsTable.isPartitioned() && prunedPartList != null) {
       List<String> partitionNames = new ArrayList<>();
       for (Partition p : prunedPartList.getPartitions()) {
         // Impala's getPartitionsForNames() expects a terminating '/' in the partition name
