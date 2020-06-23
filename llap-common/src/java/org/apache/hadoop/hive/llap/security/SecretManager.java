@@ -179,7 +179,8 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
       throw new RuntimeException(e);
     }
     zkConf.set(ZK_DTSM_ZK_KERBEROS_KEYTAB, llapKeytab);
-    String zkPath = "zkdtsm_" + clusterId;
+    String prefix = HiveConf.getVar(conf,ConfVars.LLAP_SECRETMANAGER_TOKENPATH_PREFIX,"zkdtsm_");
+    String zkPath = prefix + clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
     zkConf.set(ZK_DTSM_ZNODE_WORKING_PATH, zkPath);
     // Hardcode SASL here. ZKDTSM only supports none or sasl and we never want none.

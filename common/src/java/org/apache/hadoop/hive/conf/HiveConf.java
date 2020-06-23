@@ -4463,7 +4463,8 @@ public class HiveConf extends Configuration {
         "True by default; can be disabled to allow CLI to get tokens from LLAP in a secure\n" +
         "cluster by setting it to true or 'except_llap_owner' (the latter returns such tokens\n" +
         "to everyone except the user LLAP cluster is authenticating under)."),
-
+    LLAP_SECRETMANAGER_TOKENPATH_PREFIX("hive.llap.secretmanger.tokenpath.prefix", "zkdtsm_",
+            "LLAP delegation token lifetime, in seconds if specified without a unit."),
     // Hadoop DelegationTokenManager default is 1 week.
     LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
          new TimeValidator(TimeUnit.SECONDS),
