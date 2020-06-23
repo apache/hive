@@ -453,7 +453,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isAutoPurge = false;
     boolean needRecycle = false;
     boolean copyToMigratedTxnTable = replicationSpec.isMigratingToTxnTable();
-    boolean performOnlyMove = replicationSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
+    boolean performOnlyMove = performOnlyMoveOperation(replicationSpec, dataPath, tgtPath);
+    x.getLOG().debug("Perform only move operation:" + performOnlyMove);
     if (replicationSpec.isInReplicationScope() && (copyToMigratedTxnTable ||
             x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false))) {
       lft = performOnlyMove ? getLoadFileType(replicationSpec) : LoadFileType.IGNORE;
@@ -541,6 +542,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return loadTableTask;
   }
 
+  private static boolean performOnlyMoveOperation(ReplicationSpec replSpec, Path dataPath, Path tgtPath) {
+    boolean exIm = ReplicationSpec.Type.IMPORT.equals(replSpec.getReplSpecType());
+    return !exIm && replSpec.isInReplicationScope() && Utils.onSameHDFSFileSystem(dataPath, tgtPath);
+  }
+
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x) {
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf());
   }
@@ -617,7 +623,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
          */
       }
       fixLocationInPartSpec(tblDesc, table, wh, replicationSpec, partSpec, x);
-      performOnlyMove = Utils.onSameHDFSFileSystem(new Path(srcLocation), new Path(partSpec.getLocation()));
+      performOnlyMove = performOnlyMoveOperation(replicationSpec, new Path(srcLocation),
+              new Path(partSpec.getLocation()));
+      x.getLOG().debug("Perform only move operation:" + performOnlyMove);
       x.getLOG().debug("adding dependent CopyWork/AddPart/MoveWork for partition "
               + partSpecToString(partSpec.getPartSpec())
               + " with source location: " + srcLocation);
