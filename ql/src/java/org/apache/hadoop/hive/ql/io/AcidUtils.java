@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -101,6 +102,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.concurrent.Immutable;
 import java.nio.charset.Charset;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -2840,17 +2842,20 @@ public class AcidUtils {
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
     boolean isMerge = operation == Context.Operation.MERGE;
 
+    // We don't want to acquire read locks during update or delete as we'll be acquiring write
+    // locks instead. Also, there's no need to lock temp tables since they're session wide
+    List<ReadEntity> readEntities = inputs.stream()
+      .filter(input -> !input.isDummy()
+        && input.needsLock()
+        && !input.isUpdateOrDelete()
+        && AcidUtils.needsLock(input)
+        && !skipReadLock)
+      .collect(Collectors.toList());
+
+    Set<Table> fullTableLock = getFullTableLock(readEntities, conf);
+
     // For each source to read, get a shared_read lock
-    for (ReadEntity input : inputs) {
-      if (input.isDummy()
-          || !input.needsLock()
-          || input.isUpdateOrDelete()
-          || !AcidUtils.needsLock(input)
-          || skipReadLock) {
-        // We don't want to acquire read locks during update or delete as we'll be acquiring write
-        // locks instead. Also, there's no need to lock temp tables since they're session wide
-        continue;
-      }
+    for (ReadEntity input : readEntities) {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setSharedRead();
       compBuilder.setOperationType(DataOperationType.SELECT);
@@ -2863,6 +2868,9 @@ public class AcidUtils {
 
         case TABLE:
           t = input.getTable();
+          if (!fullTableLock.contains(t)) {
+            continue;
+          }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2871,6 +2879,9 @@ public class AcidUtils {
         case DUMMYPARTITION:
           compBuilder.setPartitionName(input.getPartition().getName());
           t = input.getPartition().getTable();
+          if (fullTableLock.contains(t)) {
+            continue;
+          }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2994,12 +3005,13 @@ public class AcidUtils {
         break;
       case DDL_SHARED:
         compBuilder.setSharedRead();
-        if (!output.isTxnAnalyze()) {
+        if (output.isTxnAnalyze()) {
           // Analyze needs txn components to be present, otherwise an aborted analyze write ID
           // might be rolled under the watermark by compactor while stats written by it are
           // still present.
-          compBuilder.setOperationType(DataOperationType.NO_TXN);
+          continue;
         }
+        compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
 
       case UPDATE:
@@ -3030,6 +3042,22 @@ public class AcidUtils {
       lockComponents.add(comp);
     }
     return lockComponents;
+  }
+
+  private static Set<Table> getFullTableLock(List<ReadEntity> readEntities, HiveConf conf) {
+    int partLocksThreshold = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD);
+
+    Map<Table, Long> partLocksPerTable = readEntities.stream()
+      .filter(input -> input.getType() == Entity.Type.PARTITION)
+      .map(Entity::getPartition)
+      .collect(Collectors.groupingBy(Partition::getTable, Collectors.counting()));
+
+    return readEntities.stream()
+      .filter(input -> input.getType() == Entity.Type.TABLE)
+      .map(Entity::getTable)
+      .filter(t -> !partLocksPerTable.containsKey(t)
+        || (partLocksThreshold > 0 && partLocksThreshold <= partLocksPerTable.get(t)))
+      .collect(Collectors.toSet());
   }
 
   /**
