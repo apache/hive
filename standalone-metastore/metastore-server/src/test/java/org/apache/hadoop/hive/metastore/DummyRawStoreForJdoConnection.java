@@ -1322,6 +1322,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) {
     throw new RuntimeException("unimplemented");
   }
