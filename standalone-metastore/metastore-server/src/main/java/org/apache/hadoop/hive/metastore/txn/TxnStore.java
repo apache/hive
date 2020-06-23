@@ -526,13 +526,4 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   long findMinOpenTxnIdForCleaner() throws MetaException;
-
-  /**
-   * Request explicit cleanup in case there n base
-   * files available without delta.
-   * @param ci
-   * @throws MetaException
-   */
-  @RetrySemantics.Idempotent
-  void requestCleanup(CompactionInfo ci) throws MetaException;
 }
