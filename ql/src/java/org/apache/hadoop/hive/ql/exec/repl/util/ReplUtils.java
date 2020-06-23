@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -136,6 +137,13 @@ public class ReplUtils {
     LOAD_NEW, LOAD_SKIP, LOAD_REPLACE
   }
 
+  /**
+   * Replication Metrics.
+   */
+  public enum MetricName {
+    TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
+  }
+
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
           Table table, List<Map<String, String>> partitions) throws SemanticException {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs = new HashMap<>();
@@ -169,10 +177,12 @@ public class ReplUtils {
     return partSpecs;
   }
 
-  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf)
+  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
+                                            ReplicationMetricCollector metricCollector)
           throws SemanticException {
     TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, tableDesc.getTableName(), tableType);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
+        tableDesc.getTableName(), tableType);
     return TaskFactory.get(replLogWork, conf);
   }
 

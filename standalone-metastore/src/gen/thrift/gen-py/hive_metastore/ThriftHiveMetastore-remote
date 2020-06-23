@@ -256,6 +256,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request)')
   print('  void scheduled_query_progress(ScheduledQueryProgressInfo info)')
   print('  ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey)')
+  print('  void add_replication_metrics(ReplicationMetricList replicationMetricList)')
+  print('  ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest rqst)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1716,6 +1718,18 @@ elif cmd == 'get_scheduled_query':
     print('get_scheduled_query requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_scheduled_query(eval(args[0]),))
+
+elif cmd == 'add_replication_metrics':
+  if len(args) != 1:
+    print('add_replication_metrics requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_replication_metrics(eval(args[0]),))
+
+elif cmd == 'get_replication_metrics':
+  if len(args) != 1:
+    print('get_replication_metrics requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_replication_metrics(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

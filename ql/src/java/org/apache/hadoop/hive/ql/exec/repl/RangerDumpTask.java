@@ -33,13 +33,16 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * RangerDumpTask.
@@ -77,6 +80,11 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       long exportCount = 0;
       Path filePath = null;
       LOG.info("Exporting Ranger Metadata");
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.POLICIES.name(), 0L);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
+      replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
+      replLogger.startLog();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
@@ -91,8 +99,6 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
         throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
-      replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
-      replLogger.startLog();
       RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,
               work.getDbName(), rangerHiveServiceName);
       List<RangerPolicy> rangerPolicies = rangerExportPolicyList.getPolicies();
@@ -109,15 +115,22 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
         if (filePath != null) {
           LOG.info("Ranger policy export finished successfully");
           exportCount = rangerExportPolicyList.getListSize();
+          work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), exportCount);
         }
       }
       replLogger.endLog(exportCount);
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       LOG.debug("Ranger policy export filePath:" + filePath);
       LOG.info("Number of ranger policies exported {}", exportCount);
       return 0;
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }

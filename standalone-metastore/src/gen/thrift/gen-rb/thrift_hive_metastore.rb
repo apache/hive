@@ -3863,6 +3863,37 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_scheduled_query failed: unknown result')
     end
 
+    def add_replication_metrics(replicationMetricList)
+      send_add_replication_metrics(replicationMetricList)
+      recv_add_replication_metrics()
+    end
+
+    def send_add_replication_metrics(replicationMetricList)
+      send_message('add_replication_metrics', Add_replication_metrics_args, :replicationMetricList => replicationMetricList)
+    end
+
+    def recv_add_replication_metrics()
+      result = receive_message(Add_replication_metrics_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_replication_metrics(rqst)
+      send_get_replication_metrics(rqst)
+      return recv_get_replication_metrics()
+    end
+
+    def send_get_replication_metrics(rqst)
+      send_message('get_replication_metrics', Get_replication_metrics_args, :rqst => rqst)
+    end
+
+    def recv_get_replication_metrics()
+      result = receive_message(Get_replication_metrics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_replication_metrics failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -6754,6 +6785,28 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_scheduled_query', seqid)
+    end
+
+    def process_add_replication_metrics(seqid, iprot, oprot)
+      args = read_args(iprot, Add_replication_metrics_args)
+      result = Add_replication_metrics_result.new()
+      begin
+        @handler.add_replication_metrics(args.replicationMetricList)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'add_replication_metrics', seqid)
+    end
+
+    def process_get_replication_metrics(seqid, iprot, oprot)
+      args = read_args(iprot, Get_replication_metrics_args)
+      result = Get_replication_metrics_result.new()
+      begin
+        result.success = @handler.get_replication_metrics(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_replication_metrics', seqid)
     end
 
   end
@@ -15287,6 +15340,72 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ScheduledQuery},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_replication_metrics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REPLICATIONMETRICLIST = 1
+
+    FIELDS = {
+      REPLICATIONMETRICLIST => {:type => ::Thrift::Types::STRUCT, :name => 'replicationMetricList', :class => ::ReplicationMetricList}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_replication_metrics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_replication_metrics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetReplicationMetricsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_replication_metrics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ReplicationMetricList},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

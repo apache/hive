@@ -3897,6 +3897,15 @@ public interface IMetaStoreClient {
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
 
   /**
+   * Adds replication metrics for the replication policies.
+   * @param replicationMetricList
+   * @throws MetaException
+   */
+  void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException;
+
+  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                replicationMetricsRequest) throws MetaException, TException;
+  /**
    * Generic Partition request API, providing different ways of filtering and controlling output.
    *
    * The API entry point is getPartitionsWithSpecs(), which is based on a single

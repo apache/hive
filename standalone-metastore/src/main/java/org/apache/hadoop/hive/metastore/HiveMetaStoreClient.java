@@ -4016,6 +4016,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.scheduled_query_maintenance(request);
   }
 
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                       replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+
   /**
   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
   */

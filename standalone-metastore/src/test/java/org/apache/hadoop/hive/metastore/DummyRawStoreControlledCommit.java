@@ -71,6 +71,8 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -1312,6 +1314,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException, MetaException {
     objectStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    objectStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return objectStore.getReplicationMetrics(replicationMetricsRequest);
   }
 
   @Override

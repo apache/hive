@@ -25987,6 +25987,296 @@ class GetPartitionsRequest:
   def __ne__(self, other):
     return not (self == other)
 
+class ReplicationMetrics:
+  """
+  Attributes:
+   - scheduledExecutionId
+   - policy
+   - dumpExecutionId
+   - metadata
+   - progress
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
+    (2, TType.STRING, 'policy', None, None, ), # 2
+    (3, TType.I64, 'dumpExecutionId', None, None, ), # 3
+    (4, TType.STRING, 'metadata', None, None, ), # 4
+    (5, TType.STRING, 'progress', None, None, ), # 5
+  )
+
+  def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None, metadata=None, progress=None,):
+    self.scheduledExecutionId = scheduledExecutionId
+    self.policy = policy
+    self.dumpExecutionId = dumpExecutionId
+    self.metadata = metadata
+    self.progress = progress
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.scheduledExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.policy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.dumpExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.metadata = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.progress = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ReplicationMetrics')
+    if self.scheduledExecutionId is not None:
+      oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
+      oprot.writeI64(self.scheduledExecutionId)
+      oprot.writeFieldEnd()
+    if self.policy is not None:
+      oprot.writeFieldBegin('policy', TType.STRING, 2)
+      oprot.writeString(self.policy)
+      oprot.writeFieldEnd()
+    if self.dumpExecutionId is not None:
+      oprot.writeFieldBegin('dumpExecutionId', TType.I64, 3)
+      oprot.writeI64(self.dumpExecutionId)
+      oprot.writeFieldEnd()
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.STRING, 4)
+      oprot.writeString(self.metadata)
+      oprot.writeFieldEnd()
+    if self.progress is not None:
+      oprot.writeFieldBegin('progress', TType.STRING, 5)
+      oprot.writeString(self.progress)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.scheduledExecutionId is None:
+      raise TProtocol.TProtocolException(message='Required field scheduledExecutionId is unset!')
+    if self.policy is None:
+      raise TProtocol.TProtocolException(message='Required field policy is unset!')
+    if self.dumpExecutionId is None:
+      raise TProtocol.TProtocolException(message='Required field dumpExecutionId is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scheduledExecutionId)
+    value = (value * 31) ^ hash(self.policy)
+    value = (value * 31) ^ hash(self.dumpExecutionId)
+    value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.progress)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ReplicationMetricList:
+  """
+  Attributes:
+   - replicationMetricList
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'replicationMetricList', (TType.STRUCT,(ReplicationMetrics, ReplicationMetrics.thrift_spec)), None, ), # 1
+  )
+
+  def __init__(self, replicationMetricList=None,):
+    self.replicationMetricList = replicationMetricList
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.replicationMetricList = []
+          (_etype1050, _size1047) = iprot.readListBegin()
+          for _i1051 in xrange(_size1047):
+            _elem1052 = ReplicationMetrics()
+            _elem1052.read(iprot)
+            self.replicationMetricList.append(_elem1052)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ReplicationMetricList')
+    if self.replicationMetricList is not None:
+      oprot.writeFieldBegin('replicationMetricList', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.replicationMetricList))
+      for iter1053 in self.replicationMetricList:
+        iter1053.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.replicationMetricList is None:
+      raise TProtocol.TProtocolException(message='Required field replicationMetricList is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.replicationMetricList)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetReplicationMetricsRequest:
+  """
+  Attributes:
+   - scheduledExecutionId
+   - policy
+   - dumpExecutionId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
+    (2, TType.STRING, 'policy', None, None, ), # 2
+    (3, TType.I64, 'dumpExecutionId', None, None, ), # 3
+  )
+
+  def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None,):
+    self.scheduledExecutionId = scheduledExecutionId
+    self.policy = policy
+    self.dumpExecutionId = dumpExecutionId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.scheduledExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.policy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.dumpExecutionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetReplicationMetricsRequest')
+    if self.scheduledExecutionId is not None:
+      oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
+      oprot.writeI64(self.scheduledExecutionId)
+      oprot.writeFieldEnd()
+    if self.policy is not None:
+      oprot.writeFieldBegin('policy', TType.STRING, 2)
+      oprot.writeString(self.policy)
+      oprot.writeFieldEnd()
+    if self.dumpExecutionId is not None:
+      oprot.writeFieldBegin('dumpExecutionId', TType.I64, 3)
+      oprot.writeI64(self.dumpExecutionId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scheduledExecutionId)
+    value = (value * 31) ^ hash(self.policy)
+    value = (value * 31) ^ hash(self.dumpExecutionId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class MetaException(TException):
   """
   Attributes:

@@ -22,7 +22,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClient;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,40 +46,53 @@ import org.slf4j.LoggerFactory;
 public class TestAtlasDumpTask {
 
   @Mock
+  private AtlasRestClient atlasRestClient;
+
   private AtlasDumpTask atlasDumpTask;
 
   @Mock
   private HiveConf conf;
 
+  @Mock
+  private AtlasDumpWork work;
+
+  @Mock
+  private ReplicationMetricCollector metricCollector;
+
   @Test
   public void testAtlasDumpMetrics() throws Exception {
-    AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:21000/atlas", "srcDB",
-            "tgtDb", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), conf);
-    atlasReplInfo.setSrcFsUri("hdfs://srcFsUri:8020");
-    atlasReplInfo.setTgtFsUri("hdfs:tgtFsUri:8020");
-    Mockito.when(atlasDumpTask.createAtlasReplInfo()).thenReturn(atlasReplInfo);
-    Mockito.when(atlasDumpTask.lastStoredTimeStamp()).thenReturn(0L);
-    Mockito.when(atlasDumpTask.dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class),
-      Mockito.any(AtlasReplInfo.class)))
-            .thenReturn(0L);
+    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
+    Mockito.when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
+    Mockito.when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
+    Mockito.when(work.getSrcDB()).thenReturn("srcDB");
+    Mockito.when(work.isBootstrap()).thenReturn(true);
+    atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work);
+    AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
     Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
     Logger logger = Mockito.mock(Logger.class);
     Whitebox.setInternalState(ReplState.class, logger);
-    Mockito.when(atlasDumpTask.execute()).thenCallRealMethod();
-    int status = atlasDumpTask.execute();
+    Mockito.doReturn(0L).when(atlasDumpTaskSpy)
+      .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
+    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
+      Mockito.any(Long.class));
+    int status = atlasDumpTaskSpy.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
     ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
     Mockito.verify(logger,
-            Mockito.times(2)).info(replStateCaptor.capture(),
-            eventCaptor.capture(), eventDetailsCaptor.capture());
+        Mockito.times(2)).info(replStateCaptor.capture(),
+        eventCaptor.capture(), eventDetailsCaptor.capture());
     Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
     Assert.assertEquals("ATLAS_DUMP_START", eventCaptor.getAllValues().get(0));
     Assert.assertEquals("ATLAS_DUMP_END", eventCaptor.getAllValues().get(1));
     Assert.assertTrue(eventDetailsCaptor.getAllValues().get(1).toString(), eventDetailsCaptor.getAllValues().get(0)
-            .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
+        .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
     Assert.assertTrue(eventDetailsCaptor
-            .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+        .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
   }
 }

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
@@ -74,9 +76,12 @@ public class IncrementalLoadTasksBuilder {
   private final ReplLogger replLogger;
   private static long numIteration;
   private final Long eventTo;
+  private final ReplicationMetricCollector metricCollector;
 
   public IncrementalLoadTasksBuilder(String dbName, String loadPath,
-                                     IncrementalLoadEventsIterator iterator, HiveConf conf, Long eventTo) {
+                                     IncrementalLoadEventsIterator iterator, HiveConf conf,
+                                     Long eventTo,
+                                     ReplicationMetricCollector metricCollector) throws SemanticException {
     this.dbName = dbName;
     this.iterator = iterator;
     inputs = new HashSet<>();
@@ -86,7 +91,11 @@ public class IncrementalLoadTasksBuilder {
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
     replLogger.startLog();
     this.eventTo = eventTo;
-    numIteration = 0;
+    setNumIteration(0);
+    this.metricCollector = metricCollector;
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
+    this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
   }
 
   public Task<?> build(Context context, Hive hive, Logger log,
@@ -97,7 +106,6 @@ public class IncrementalLoadTasksBuilder {
     this.log = log;
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
-
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
       String location = dir.getPath().toUri().toString();
@@ -136,7 +144,7 @@ public class IncrementalLoadTasksBuilder {
       List<Task<?>> evTasks = analyzeEventLoad(mhContext);
 
       if ((evTasks != null) && (!evTasks.isEmpty())) {
-        ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
+        ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, metricCollector,
                 dir.getPath().getName(),
                 eventDmd.getDumpType().toString());
         Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
@@ -158,7 +166,7 @@ public class IncrementalLoadTasksBuilder {
 
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
-      ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
+      ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps, metricCollector);
       Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
       taskChainTail.addDependentTask(barrierTask);
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
@@ -363,6 +371,10 @@ public class IncrementalLoadTasksBuilder {
 
     // At least one task would have been added to update the repl state
     return tasks;
+  }
+
+  private static void setNumIteration(int count) {
+    numIteration = count;
   }
 
   public Long eventTo() {

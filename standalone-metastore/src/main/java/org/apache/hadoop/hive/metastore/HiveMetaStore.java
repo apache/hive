@@ -10043,6 +10043,37 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_scheduled_query", ex == null, ex);
       }
     }
+
+    @Override
+    public void add_replication_metrics(ReplicationMetricList replicationMetricList) throws MetaException{
+      startFunction("add_replication_metrics");
+      Exception ex = null;
+      try {
+        getMS().addReplicationMetrics(replicationMetricList);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("add_replication_metrics", ex == null, ex);
+      }
+    }
+
+    @Override
+    public ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest
+                                                               getReplicationMetricsRequest) throws MetaException{
+      startFunction("get_replication_metrics");
+      Exception ex = null;
+      try {
+        return getMS().getReplicationMetrics(getReplicationMetricsRequest);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_replication_metrics", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)

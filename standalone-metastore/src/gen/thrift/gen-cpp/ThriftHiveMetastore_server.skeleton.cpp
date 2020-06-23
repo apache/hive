@@ -1182,6 +1182,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_scheduled_query\n");
   }
 
+  void add_replication_metrics(const ReplicationMetricList& replicationMetricList) {
+    // Your implementation goes here
+    printf("add_replication_metrics\n");
+  }
+
+  void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst) {
+    // Your implementation goes here
+    printf("get_replication_metrics\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

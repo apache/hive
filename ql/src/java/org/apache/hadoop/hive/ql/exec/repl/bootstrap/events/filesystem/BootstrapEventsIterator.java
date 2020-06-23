@@ -26,11 +26,14 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -77,9 +80,12 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
   private final HiveConf hiveConf;
   private final boolean needLogger;
   private ReplLogger replLogger;
+  private final transient ReplicationMetricCollector metricCollector;
 
-  public BootstrapEventsIterator(String dumpDirectory, String dbNameToLoadIn, boolean needLogger, HiveConf hiveConf)
+  public BootstrapEventsIterator(String dumpDirectory, String dbNameToLoadIn, boolean needLogger, HiveConf hiveConf,
+                                 ReplicationMetricCollector metricCollector)
           throws IOException {
+    this.metricCollector = metricCollector;
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
     if (!fileSystem.exists(path)) {
@@ -124,6 +130,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
           if (needLogger) {
             initReplLogger();
           }
+          initMetricCollector();
         } else {
           return false;
         }
@@ -162,22 +169,48 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     return replLogger;
   }
 
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
   private void initReplLogger() {
     try {
       Path dbDumpPath = currentDatabaseIterator.dbLevelPath();
       FileSystem fs = dbDumpPath.getFileSystem(hiveConf);
-
-      long numTables = getSubDirs(fs, dbDumpPath).length;
-      long numFunctions = 0;
-      Path funcPath = new Path(dbDumpPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
-      if (fs.exists(funcPath)) {
-        numFunctions = getSubDirs(fs, funcPath).length;
-      }
+      long numTables = getNumTables(dbDumpPath, fs);
+      long numFunctions = getNumFunctions(dbDumpPath, fs);
       String dbName = StringUtils.isBlank(dbNameToLoadIn) ? dbDumpPath.getName() : dbNameToLoadIn;
       replLogger = new BootstrapLoadLogger(dbName, dumpDirectory, numTables, numFunctions);
       replLogger.startLog();
     } catch (IOException e) {
       // Ignore the exception
+    }
+  }
+
+  private long getNumFunctions(Path dbDumpPath, FileSystem fs) throws IOException {
+    Path funcPath = new Path(dbDumpPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+    if (fs.exists(funcPath)) {
+      return getSubDirs(fs, funcPath).length;
+    }
+    return 0;
+  }
+
+  private long getNumTables(Path dbDumpPath, FileSystem fs) throws IOException {
+    return getSubDirs(fs, dbDumpPath).length;
+  }
+
+  private void initMetricCollector() {
+    try {
+      Path dbDumpPath = currentDatabaseIterator.dbLevelPath();
+      FileSystem fs = dbDumpPath.getFileSystem(hiveConf);
+      long numTables = getNumTables(dbDumpPath, fs);
+      long numFunctions = getNumFunctions(dbDumpPath, fs);
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.TABLES.name(), numTables);
+      metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), numFunctions);
+      metricCollector.reportStageStart("REPL_LOAD", metricMap);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to collect Metrics ", e);
     }
   }
 

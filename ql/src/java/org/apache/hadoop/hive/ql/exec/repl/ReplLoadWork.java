@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIter
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -45,6 +47,8 @@ public class ReplLoadWork implements Serializable {
   final String dumpDirectory;
   private boolean lastReplIDUpdated;
   private String sourceDbName;
+  private Long dumpExecutionId;
+  private final transient ReplicationMetricCollector metricCollector;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -62,12 +66,17 @@ public class ReplLoadWork implements Serializable {
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
                       String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
-                      LineageState lineageState, boolean isIncrementalDump, Long eventTo) throws IOException {
+                      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+                      Long dumpExecutionId,
+                      ReplicationMetricCollector metricCollector) throws IOException, SemanticException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.currentReplScope = currentReplScope;
     this.sourceDbName = sourceDbName;
+    this.dumpExecutionId = dumpExecutionId;
+    this.metricCollector = metricCollector;
+
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
     if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
@@ -77,7 +86,7 @@ public class ReplLoadWork implements Serializable {
     rootTask = null;
     if (isIncrementalDump) {
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo);
+                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
@@ -87,7 +96,8 @@ public class ReplLoadWork implements Serializable {
       FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
         this.bootstrapIterator = new BootstrapEventsIterator(
-                new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true, hiveConf);
+                new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
+          hiveConf, metricCollector);
         this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       } else {
         this.bootstrapIterator = null;
@@ -95,7 +105,7 @@ public class ReplLoadWork implements Serializable {
       }
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
-              .toString(), dbNameToLoadIn, true, hiveConf);
+              .toString(), dbNameToLoadIn, true, hiveConf, metricCollector);
       this.constraintsIterator = new ConstraintEventsIterator(
               new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME).toString(), hiveConf);
       incrementalLoadTasksBuilder = null;
@@ -157,5 +167,13 @@ public class ReplLoadWork implements Serializable {
 
   public String getSourceDbName() {
     return sourceDbName;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public Long getDumpExecutionId() {
+    return dumpExecutionId;
   }
 }

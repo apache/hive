@@ -89,6 +89,8 @@ import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
@@ -3155,6 +3157,16 @@ public class CachedStore implements RawStore, Configurable {
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info)
       throws MetaException, NoSuchObjectException, InvalidOperationException {
     rawStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    rawStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return rawStore.getReplicationMetrics(replicationMetricsRequest);
   }
 
   @Override

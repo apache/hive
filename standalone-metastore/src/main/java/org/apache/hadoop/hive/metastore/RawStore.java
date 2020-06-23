@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
@@ -108,7 +110,6 @@ import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
-
   /***
    * Annotation to skip retries
    */
@@ -1630,7 +1631,7 @@ public interface RawStore extends Configurable {
   List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
   /**
-   * Add default values to a table definition
+   * Add default values to a table definition.
    * @param dv list of default values
    * @return constraint names
    * @throws InvalidObjectException the specification is malformed.
@@ -1640,7 +1641,7 @@ public interface RawStore extends Configurable {
       throws InvalidObjectException, MetaException;
 
   /**
-   * Add check constraints to a table
+   * Add check constraints to a table.
    * @param cc check constraints to add
    * @return list of constraint names
    * @throws InvalidObjectException the specification is malformed
@@ -1649,7 +1650,7 @@ public interface RawStore extends Configurable {
   List<String> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
 
   /**
-   * Gets the unique id of the backing datastore for the metadata
+   * Gets the unique id of the backing datastore for the metadata.
    * @return
    * @throws MetaException
    */
@@ -1720,7 +1721,7 @@ public interface RawStore extends Configurable {
       NoSuchObjectException;
 
   /**
-   * Alter an existing ISchema.  This assumes the caller has already checked that such a schema
+   * Alter an existing ISchema.  This assumes the caller has already checked that such a schema.
    * exists.
    * @param schemaName name of the schema
    * @param newSchema new schema object
@@ -1738,7 +1739,8 @@ public interface RawStore extends Configurable {
   ISchema getISchema(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Drop an ISchema.  This does not check whether there are valid versions of the schema in
+   * Drop an ISchema.
+   * This does not check whether there are valid versions of the schema in
    * existence, it assumes the caller has already done that.
    * @param schemaName schema descriptor
    * @throws NoSuchObjectException no schema of this name exists
@@ -1759,7 +1761,8 @@ public interface RawStore extends Configurable {
       throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
 
   /**
-   * Alter a schema version.  Note that the Thrift interface only supports changing the serde
+   * Alter a schema version.
+   * Note that the Thrift interface only supports changing the serde
    * mapping and states.  This method does not guarantee it will check anymore than that.  This
    * method does not understand the state transitions and just assumes that the new state it is
    * passed is reasonable.
@@ -1788,7 +1791,7 @@ public interface RawStore extends Configurable {
   SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Get all of the versions of a schema
+   * Get all of the versions of a schema.
    * @param schemaName name of the schema
    * @return all versions of the schema
    * @throws MetaException general database exception
@@ -1796,7 +1799,8 @@ public interface RawStore extends Configurable {
   List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
+   * Find all SchemaVersion objects that match a query.
+   * The query will select all SchemaVersions
    * that are equal to all of the non-null passed in arguments.  That is, if arguments
    * colName='name', colNamespace=null, type='string' are passed in, then all schemas that have
    * a column with colName 'name' and type 'string' will be returned.
@@ -1823,7 +1827,7 @@ public interface RawStore extends Configurable {
   void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
 
   /**
-   * Get serde information
+   * Get serde information.
    * @param serDeName name of the SerDe
    * @return the SerDe, or null if there is no such serde
    * @throws NoSuchObjectException no serde with this name exists
@@ -1832,7 +1836,7 @@ public interface RawStore extends Configurable {
   SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException;
 
   /**
-   * Add a serde
+   * Add a serde.
    * @param serde serde to add
    * @throws AlreadyExistsException a serde of this name already exists
    * @throws MetaException general database exception
@@ -1894,6 +1898,18 @@ public interface RawStore extends Configurable {
    */
   void scheduledQueryProgress(ScheduledQueryProgressInfo info)
       throws MetaException, NoSuchObjectException, InvalidOperationException;
+
+  /**
+   * Add the replication metrics and progress info.
+   * @param replicationMetricList
+   */
+  void addReplicationMetrics(ReplicationMetricList replicationMetricList);
+
+  /**
+   * Gets the replication metrics and progress info.
+   * @param replicationMetricsRequest
+   */
+  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
   int deleteScheduledExecutions(int maxRetainSecs);
 

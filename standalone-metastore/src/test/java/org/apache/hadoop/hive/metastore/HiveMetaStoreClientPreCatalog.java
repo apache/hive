@@ -3679,6 +3679,18 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                       replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+
+  @Override
   public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
       throws TException {
     throw new UnsupportedOperationException();

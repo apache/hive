@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -65,6 +66,9 @@ public class TestReplDumpTask {
 
   @Mock
   private QueryState queryState;
+
+  @Mock
+  ReplicationMetricCollector metricCollector;
 
   class StubReplDumpTask extends ReplDumpTask {
 
@@ -142,7 +146,10 @@ public class TestReplDumpTask {
     };
 
     task.initialize(queryState, null, null, null);
-    task.setWork(new ReplDumpWork(replScope, null, "", ""));
+    ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
+      null, "", "");
+    replDumpWork.setMetricCollector(metricCollector);
+    task.setWork(replDumpWork);
 
     try {
       task.bootStrapDump(new Path("mock"), null, mock(Path.class), hive);

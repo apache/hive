@@ -69,6 +69,9 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -432,8 +435,17 @@ public class TestReplicationScenarios {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    ReplicationMetricCollector metricCollector;
+    if (isIncrementalDump) {
+      metricCollector = new IncrementalLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
+        confTemp);
+    } else {
+      metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
+        confTemp);
+    }
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
-            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId));
+            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
+        0L, metricCollector);
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new TaskQueue(driver.getContext()), driver.getContext());
     replLoadTask.executeTask(null);

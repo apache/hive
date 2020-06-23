@@ -1255,9 +1255,23 @@ CREATE TABLE IF NOT EXISTS `CDH_VERSION` (
   PRIMARY KEY (`VER_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO CDH_VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000.7.1.1.0-Update1', 'Hive release version 3.1.3000 for CDH 7.1.1.0-Update1');
+--Create table replication metrics
+CREATE TABLE REPLICATION_METRICS (
+  RM_SCHEDULED_EXECUTION_ID bigint NOT NULL,
+  RM_POLICY varchar(256) NOT NULL,
+  RM_DUMP_EXECUTION_ID bigint NOT NULL,
+  RM_METADATA varchar(4000),
+  RM_PROGRESS varchar(4000),
+  PRIMARY KEY(RM_SCHEDULED_EXECUTION_ID)
+);
 
-SELECT 'Initialized metastore schema to 3.1.3000.7.1.1.0-Update1';
+--Create indexes for the replication metrics table
+CREATE INDEX POLICY_IDX ON REPLICATION_METRICS (RM_POLICY);
+CREATE INDEX DUMP_IDX ON REPLICATION_METRICS (RM_DUMP_EXECUTION_ID);
+
+INSERT INTO CDH_VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000.7.2.1.0-Update1', 'Hive release version 3.1.3000 for CDH 7.2.1.0-Update1');
+
+SELECT 'Initialized metastore schema to 3.1.3000.7.2.1.0-Update1';
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

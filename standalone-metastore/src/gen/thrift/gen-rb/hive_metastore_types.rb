@@ -5814,6 +5814,70 @@ class GetPartitionsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class ReplicationMetrics
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEDEXECUTIONID = 1
+  POLICY = 2
+  DUMPEXECUTIONID = 3
+  METADATA = 4
+  PROGRESS = 5
+
+  FIELDS = {
+    SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
+    POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy'},
+    DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId'},
+    METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :optional => true},
+    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduledExecutionId is unset!') unless @scheduledExecutionId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field policy is unset!') unless @policy
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dumpExecutionId is unset!') unless @dumpExecutionId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ReplicationMetricList
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REPLICATIONMETRICLIST = 1
+
+  FIELDS = {
+    REPLICATIONMETRICLIST => {:type => ::Thrift::Types::LIST, :name => 'replicationMetricList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ReplicationMetrics}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field replicationMetricList is unset!') unless @replicationMetricList
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetReplicationMetricsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEDEXECUTIONID = 1
+  POLICY = 2
+  DUMPEXECUTIONID = 3
+
+  FIELDS = {
+    SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId', :optional => true},
+    POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy', :optional => true},
+    DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

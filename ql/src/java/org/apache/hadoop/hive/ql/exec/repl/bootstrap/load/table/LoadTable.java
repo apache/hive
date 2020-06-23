@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -73,14 +74,16 @@ public class LoadTable {
   private final TableContext tableContext;
   private final TaskTracker tracker;
   private final TableEvent event;
+  private final ReplicationMetricCollector metricCollector;
 
   public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
-      TableContext tableContext, TaskTracker limiter) {
+      TableContext tableContext, TaskTracker limiter, ReplicationMetricCollector metricCollector) {
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
     this.tableContext = tableContext;
     this.tracker = new TaskTracker(limiter);
+    this.metricCollector = metricCollector;
   }
 
   public TaskTracker tasks(boolean isBootstrapDuringInc) throws Exception {
@@ -151,7 +154,7 @@ public class LoadTable {
     );
     if (!isPartitioned(tableDesc)) {
       Task<? extends Serializable> replLogTask
-              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
+              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector);
       ckptTask.addDependentTask(replLogTask);
     }
     tracker.addDependentTask(ckptTask);

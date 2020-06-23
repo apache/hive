@@ -254,6 +254,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request) = 0;
   virtual void scheduled_query_progress(const ScheduledQueryProgressInfo& info) = 0;
   virtual void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey) = 0;
+  virtual void add_replication_metrics(const ReplicationMetricList& replicationMetricList) = 0;
+  virtual void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1005,6 +1007,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_scheduled_query(ScheduledQuery& /* _return */, const ScheduledQueryKey& /* scheduleKey */) {
+    return;
+  }
+  void add_replication_metrics(const ReplicationMetricList& /* replicationMetricList */) {
+    return;
+  }
+  void get_replication_metrics(ReplicationMetricList& /* _return */, const GetReplicationMetricsRequest& /* rqst */) {
     return;
   }
 };
@@ -29152,6 +29160,222 @@ class ThriftHiveMetastore_get_scheduled_query_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_replication_metrics_args__isset {
+  _ThriftHiveMetastore_add_replication_metrics_args__isset() : replicationMetricList(false) {}
+  bool replicationMetricList :1;
+} _ThriftHiveMetastore_add_replication_metrics_args__isset;
+
+class ThriftHiveMetastore_add_replication_metrics_args {
+ public:
+
+  ThriftHiveMetastore_add_replication_metrics_args(const ThriftHiveMetastore_add_replication_metrics_args&);
+  ThriftHiveMetastore_add_replication_metrics_args& operator=(const ThriftHiveMetastore_add_replication_metrics_args&);
+  ThriftHiveMetastore_add_replication_metrics_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_replication_metrics_args() throw();
+  ReplicationMetricList replicationMetricList;
+
+  _ThriftHiveMetastore_add_replication_metrics_args__isset __isset;
+
+  void __set_replicationMetricList(const ReplicationMetricList& val);
+
+  bool operator == (const ThriftHiveMetastore_add_replication_metrics_args & rhs) const
+  {
+    if (!(replicationMetricList == rhs.replicationMetricList))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_replication_metrics_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_replication_metrics_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_replication_metrics_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_replication_metrics_pargs() throw();
+  const ReplicationMetricList* replicationMetricList;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_replication_metrics_result__isset {
+  _ThriftHiveMetastore_add_replication_metrics_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_replication_metrics_result__isset;
+
+class ThriftHiveMetastore_add_replication_metrics_result {
+ public:
+
+  ThriftHiveMetastore_add_replication_metrics_result(const ThriftHiveMetastore_add_replication_metrics_result&);
+  ThriftHiveMetastore_add_replication_metrics_result& operator=(const ThriftHiveMetastore_add_replication_metrics_result&);
+  ThriftHiveMetastore_add_replication_metrics_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_replication_metrics_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_replication_metrics_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_replication_metrics_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_replication_metrics_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_replication_metrics_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_replication_metrics_presult__isset {
+  _ThriftHiveMetastore_add_replication_metrics_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_replication_metrics_presult__isset;
+
+class ThriftHiveMetastore_add_replication_metrics_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_replication_metrics_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_replication_metrics_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_replication_metrics_args__isset {
+  _ThriftHiveMetastore_get_replication_metrics_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_replication_metrics_args__isset;
+
+class ThriftHiveMetastore_get_replication_metrics_args {
+ public:
+
+  ThriftHiveMetastore_get_replication_metrics_args(const ThriftHiveMetastore_get_replication_metrics_args&);
+  ThriftHiveMetastore_get_replication_metrics_args& operator=(const ThriftHiveMetastore_get_replication_metrics_args&);
+  ThriftHiveMetastore_get_replication_metrics_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_replication_metrics_args() throw();
+  GetReplicationMetricsRequest rqst;
+
+  _ThriftHiveMetastore_get_replication_metrics_args__isset __isset;
+
+  void __set_rqst(const GetReplicationMetricsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_replication_metrics_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_replication_metrics_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_replication_metrics_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_replication_metrics_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_replication_metrics_pargs() throw();
+  const GetReplicationMetricsRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_replication_metrics_result__isset {
+  _ThriftHiveMetastore_get_replication_metrics_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_replication_metrics_result__isset;
+
+class ThriftHiveMetastore_get_replication_metrics_result {
+ public:
+
+  ThriftHiveMetastore_get_replication_metrics_result(const ThriftHiveMetastore_get_replication_metrics_result&);
+  ThriftHiveMetastore_get_replication_metrics_result& operator=(const ThriftHiveMetastore_get_replication_metrics_result&);
+  ThriftHiveMetastore_get_replication_metrics_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_replication_metrics_result() throw();
+  ReplicationMetricList success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_replication_metrics_result__isset __isset;
+
+  void __set_success(const ReplicationMetricList& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_replication_metrics_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_replication_metrics_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_replication_metrics_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_replication_metrics_presult__isset {
+  _ThriftHiveMetastore_get_replication_metrics_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_replication_metrics_presult__isset;
+
+class ThriftHiveMetastore_get_replication_metrics_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_replication_metrics_presult() throw();
+  ReplicationMetricList* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_replication_metrics_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -29859,6 +30083,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey);
   void send_get_scheduled_query(const ScheduledQueryKey& scheduleKey);
   void recv_get_scheduled_query(ScheduledQuery& _return);
+  void add_replication_metrics(const ReplicationMetricList& replicationMetricList);
+  void send_add_replication_metrics(const ReplicationMetricList& replicationMetricList);
+  void recv_add_replication_metrics();
+  void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst);
+  void send_get_replication_metrics(const GetReplicationMetricsRequest& rqst);
+  void recv_get_replication_metrics(ReplicationMetricList& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -30101,6 +30331,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_scheduled_query_maintenance(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_scheduled_query_progress(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_scheduled_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_replication_metrics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_replication_metrics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -30337,6 +30569,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["scheduled_query_maintenance"] = &ThriftHiveMetastoreProcessor::process_scheduled_query_maintenance;
     processMap_["scheduled_query_progress"] = &ThriftHiveMetastoreProcessor::process_scheduled_query_progress;
     processMap_["get_scheduled_query"] = &ThriftHiveMetastoreProcessor::process_get_scheduled_query;
+    processMap_["add_replication_metrics"] = &ThriftHiveMetastoreProcessor::process_add_replication_metrics;
+    processMap_["get_replication_metrics"] = &ThriftHiveMetastoreProcessor::process_get_replication_metrics;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -32601,6 +32835,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void add_replication_metrics(const ReplicationMetricList& replicationMetricList) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_replication_metrics(replicationMetricList);
+    }
+    ifaces_[i]->add_replication_metrics(replicationMetricList);
+  }
+
+  void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_replication_metrics(_return, rqst);
+    }
+    ifaces_[i]->get_replication_metrics(_return, rqst);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -33313,6 +33566,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey);
   int32_t send_get_scheduled_query(const ScheduledQueryKey& scheduleKey);
   void recv_get_scheduled_query(ScheduledQuery& _return, const int32_t seqid);
+  void add_replication_metrics(const ReplicationMetricList& replicationMetricList);
+  int32_t send_add_replication_metrics(const ReplicationMetricList& replicationMetricList);
+  void recv_add_replication_metrics(const int32_t seqid);
+  void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst);
+  int32_t send_get_replication_metrics(const GetReplicationMetricsRequest& rqst);
+  void recv_get_replication_metrics(ReplicationMetricList& _return, const int32_t seqid);
 };
 
 #ifdef _WIN32

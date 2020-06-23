@@ -54,12 +54,13 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
@@ -120,10 +121,20 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
     } catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
+      try {
+        work.getMetricCollector().reportEnd(Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       throw e;
     } catch (Exception e) {
       LOG.error("replication failed", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportEnd(Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
@@ -136,7 +147,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       Path rangerLoadRoot = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
       LOG.info("Adding Import Ranger Metadata Task from {} ", rangerLoadRoot);
-      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn);
+      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn,
+          work.getMetricCollector());
       Task<RangerLoadWork> rangerLoadTask = TaskFactory.get(rangerLoadWork, conf);
       if (childTasks == null) {
         childTasks = new ArrayList<>();
@@ -151,7 +163,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private void addAtlasLoadTask() throws HiveException {
     Path atlasDumpDir = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
     LOG.info("Adding task to load Atlas metadata from {} ", atlasDumpDir);
-    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), work.dbNameToLoadIn, atlasDumpDir);
+    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), work.dbNameToLoadIn, atlasDumpDir,
+        work.getMetricCollector());
     Task<?> atlasLoadTask = TaskFactory.get(atlasLoadWork, conf);
     if (childTasks == null) {
       childTasks = new ArrayList<>();
@@ -228,7 +241,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.dbNameToLoadIn, conf));
         } else {
           LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(), tableContext,
-              loadTaskTracker);
+              loadTaskTracker, work.getMetricCollector());
           tableTracker = loadTable.tasks(work.isIncrementalLoad());
         }
 
@@ -254,7 +267,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
               new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
-                  work.dbNameToLoadIn, tableContext);
+                  work.dbNameToLoadIn, tableContext, work.getMetricCollector());
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
@@ -321,7 +334,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
     LoadPartitions loadPartitions =
         new LoadPartitions(loadContext, iterator.replLogger(), tableContext, loadTaskTracker,
-        event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
+        event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), work.getMetricCollector());
         /*
              the tableTracker here should be a new instance and not an existing one as this can
              only happen when we break in between loading partitions.
@@ -348,7 +361,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private TaskTracker addLoadFunctionTasks(Context loadContext, BootstrapEventsIterator iterator, BootstrapEvent next,
                                     TaskTracker dbTracker, Scope scope) throws IOException, SemanticException {
     LoadFunction loadFunction = new LoadFunction(loadContext, iterator.replLogger(),
-        (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
+        (FunctionEvent) next, work.dbNameToLoadIn, dbTracker, work.getMetricCollector());
     TaskTracker functionsTracker = loadFunction.tasks();
     if (!scope.database) {
       scope.rootTasks.addAll(functionsTracker.tasks());
@@ -442,7 +455,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
       dbProps = dbInMetadata.getParameters();
     }
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps, work.getMetricCollector());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);

@@ -782,6 +782,12 @@ class GetPartitionsResponse;
 
 class GetPartitionsRequest;
 
+class ReplicationMetrics;
+
+class ReplicationMetricList;
+
+class GetReplicationMetricsRequest;
+
 class MetaException;
 
 class UnknownTableException;
@@ -15747,6 +15753,181 @@ class GetPartitionsRequest {
 void swap(GetPartitionsRequest &a, GetPartitionsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetPartitionsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ReplicationMetrics__isset {
+  _ReplicationMetrics__isset() : metadata(false), progress(false) {}
+  bool metadata :1;
+  bool progress :1;
+} _ReplicationMetrics__isset;
+
+class ReplicationMetrics {
+ public:
+
+  ReplicationMetrics(const ReplicationMetrics&);
+  ReplicationMetrics& operator=(const ReplicationMetrics&);
+  ReplicationMetrics() : scheduledExecutionId(0), policy(), dumpExecutionId(0), metadata(), progress() {
+  }
+
+  virtual ~ReplicationMetrics() throw();
+  int64_t scheduledExecutionId;
+  std::string policy;
+  int64_t dumpExecutionId;
+  std::string metadata;
+  std::string progress;
+
+  _ReplicationMetrics__isset __isset;
+
+  void __set_scheduledExecutionId(const int64_t val);
+
+  void __set_policy(const std::string& val);
+
+  void __set_dumpExecutionId(const int64_t val);
+
+  void __set_metadata(const std::string& val);
+
+  void __set_progress(const std::string& val);
+
+  bool operator == (const ReplicationMetrics & rhs) const
+  {
+    if (!(scheduledExecutionId == rhs.scheduledExecutionId))
+      return false;
+    if (!(policy == rhs.policy))
+      return false;
+    if (!(dumpExecutionId == rhs.dumpExecutionId))
+      return false;
+    if (__isset.metadata != rhs.__isset.metadata)
+      return false;
+    else if (__isset.metadata && !(metadata == rhs.metadata))
+      return false;
+    if (__isset.progress != rhs.__isset.progress)
+      return false;
+    else if (__isset.progress && !(progress == rhs.progress))
+      return false;
+    return true;
+  }
+  bool operator != (const ReplicationMetrics &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ReplicationMetrics & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ReplicationMetrics &a, ReplicationMetrics &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ReplicationMetrics& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ReplicationMetricList {
+ public:
+
+  ReplicationMetricList(const ReplicationMetricList&);
+  ReplicationMetricList& operator=(const ReplicationMetricList&);
+  ReplicationMetricList() {
+  }
+
+  virtual ~ReplicationMetricList() throw();
+  std::vector<ReplicationMetrics>  replicationMetricList;
+
+  void __set_replicationMetricList(const std::vector<ReplicationMetrics> & val);
+
+  bool operator == (const ReplicationMetricList & rhs) const
+  {
+    if (!(replicationMetricList == rhs.replicationMetricList))
+      return false;
+    return true;
+  }
+  bool operator != (const ReplicationMetricList &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ReplicationMetricList & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ReplicationMetricList &a, ReplicationMetricList &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ReplicationMetricList& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetReplicationMetricsRequest__isset {
+  _GetReplicationMetricsRequest__isset() : scheduledExecutionId(false), policy(false), dumpExecutionId(false) {}
+  bool scheduledExecutionId :1;
+  bool policy :1;
+  bool dumpExecutionId :1;
+} _GetReplicationMetricsRequest__isset;
+
+class GetReplicationMetricsRequest {
+ public:
+
+  GetReplicationMetricsRequest(const GetReplicationMetricsRequest&);
+  GetReplicationMetricsRequest& operator=(const GetReplicationMetricsRequest&);
+  GetReplicationMetricsRequest() : scheduledExecutionId(0), policy(), dumpExecutionId(0) {
+  }
+
+  virtual ~GetReplicationMetricsRequest() throw();
+  int64_t scheduledExecutionId;
+  std::string policy;
+  int64_t dumpExecutionId;
+
+  _GetReplicationMetricsRequest__isset __isset;
+
+  void __set_scheduledExecutionId(const int64_t val);
+
+  void __set_policy(const std::string& val);
+
+  void __set_dumpExecutionId(const int64_t val);
+
+  bool operator == (const GetReplicationMetricsRequest & rhs) const
+  {
+    if (__isset.scheduledExecutionId != rhs.__isset.scheduledExecutionId)
+      return false;
+    else if (__isset.scheduledExecutionId && !(scheduledExecutionId == rhs.scheduledExecutionId))
+      return false;
+    if (__isset.policy != rhs.__isset.policy)
+      return false;
+    else if (__isset.policy && !(policy == rhs.policy))
+      return false;
+    if (__isset.dumpExecutionId != rhs.__isset.dumpExecutionId)
+      return false;
+    else if (__isset.dumpExecutionId && !(dumpExecutionId == rhs.dumpExecutionId))
+      return false;
+    return true;
+  }
+  bool operator != (const GetReplicationMetricsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetReplicationMetricsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetReplicationMetricsRequest &a, GetReplicationMetricsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetReplicationMetricsRequest& obj)
 {
   obj.printTo(out);
   return out;

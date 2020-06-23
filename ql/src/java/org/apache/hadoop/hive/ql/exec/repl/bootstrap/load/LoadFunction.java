@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,19 +56,21 @@ public class LoadFunction {
   private final FunctionEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
+  private final ReplicationMetricCollector metricCollector;
 
   public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
-                      String dbNameToLoadIn, TaskTracker existingTracker) {
+                      String dbNameToLoadIn, TaskTracker existingTracker, ReplicationMetricCollector metricCollector) {
     this.context = context;
     this.replLogger = replLogger;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
+    this.metricCollector = metricCollector;
   }
 
   private void createFunctionReplLogTask(List<Task<? extends Serializable>> functionTasks,
                                          String functionName) {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName, metricCollector);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     DAGTraversal.traverse(functionTasks, new AddDependencyToLeaves(replLogTask));
   }

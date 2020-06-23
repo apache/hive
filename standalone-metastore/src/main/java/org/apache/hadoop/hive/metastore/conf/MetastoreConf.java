@@ -888,6 +888,17 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_METRICS_CACHE_MAXSIZE("metastore.repl.metrics.cache.maxsize",
+      "hive.repl.metrics.cache.maxsize", 10000 /*10000 rows */,
+      "Maximum in memory cache size to collect replication metrics. The metrics will be pushed to persistent"
+        + " storage at a frequency defined by config hive.repl.metrics.update.frequency. Till metrics are persisted to"
+        + " db, it will be stored in this cache. So set this property based on number of concurrent policies running "
+        + " and the frequency of persisting the metrics to persistent storage. "
+      ),
+    REPL_METRICS_UPDATE_FREQUENCY("metastore.repl.metrics.update.frequency",
+      "hive.repl.metrics.update.frequency", 1 /*1 minute */,
+      "Frequency at which replication Metrics will be stored in persistent storage. "
+    ),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.CDHMetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"

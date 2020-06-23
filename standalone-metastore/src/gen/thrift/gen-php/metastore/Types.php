@@ -36902,6 +36902,397 @@ class GetPartitionsRequest {
 
 }
 
+class ReplicationMetrics {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $scheduledExecutionId = null;
+  /**
+   * @var string
+   */
+  public $policy = null;
+  /**
+   * @var int
+   */
+  public $dumpExecutionId = null;
+  /**
+   * @var string
+   */
+  public $metadata = null;
+  /**
+   * @var string
+   */
+  public $progress = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'scheduledExecutionId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'policy',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'dumpExecutionId',
+          'type' => TType::I64,
+          ),
+        4 => array(
+          'var' => 'metadata',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'progress',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['scheduledExecutionId'])) {
+        $this->scheduledExecutionId = $vals['scheduledExecutionId'];
+      }
+      if (isset($vals['policy'])) {
+        $this->policy = $vals['policy'];
+      }
+      if (isset($vals['dumpExecutionId'])) {
+        $this->dumpExecutionId = $vals['dumpExecutionId'];
+      }
+      if (isset($vals['metadata'])) {
+        $this->metadata = $vals['metadata'];
+      }
+      if (isset($vals['progress'])) {
+        $this->progress = $vals['progress'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ReplicationMetrics';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->scheduledExecutionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->policy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->dumpExecutionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->metadata);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->progress);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ReplicationMetrics');
+    if ($this->scheduledExecutionId !== null) {
+      $xfer += $output->writeFieldBegin('scheduledExecutionId', TType::I64, 1);
+      $xfer += $output->writeI64($this->scheduledExecutionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->policy !== null) {
+      $xfer += $output->writeFieldBegin('policy', TType::STRING, 2);
+      $xfer += $output->writeString($this->policy);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dumpExecutionId !== null) {
+      $xfer += $output->writeFieldBegin('dumpExecutionId', TType::I64, 3);
+      $xfer += $output->writeI64($this->dumpExecutionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->metadata !== null) {
+      $xfer += $output->writeFieldBegin('metadata', TType::STRING, 4);
+      $xfer += $output->writeString($this->metadata);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->progress !== null) {
+      $xfer += $output->writeFieldBegin('progress', TType::STRING, 5);
+      $xfer += $output->writeString($this->progress);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ReplicationMetricList {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ReplicationMetrics[]
+   */
+  public $replicationMetricList = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'replicationMetricList',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ReplicationMetrics',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['replicationMetricList'])) {
+        $this->replicationMetricList = $vals['replicationMetricList'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ReplicationMetricList';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->replicationMetricList = array();
+            $_size1050 = 0;
+            $_etype1053 = 0;
+            $xfer += $input->readListBegin($_etype1053, $_size1050);
+            for ($_i1054 = 0; $_i1054 < $_size1050; ++$_i1054)
+            {
+              $elem1055 = null;
+              $elem1055 = new \metastore\ReplicationMetrics();
+              $xfer += $elem1055->read($input);
+              $this->replicationMetricList []= $elem1055;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ReplicationMetricList');
+    if ($this->replicationMetricList !== null) {
+      if (!is_array($this->replicationMetricList)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('replicationMetricList', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->replicationMetricList));
+        {
+          foreach ($this->replicationMetricList as $iter1056)
+          {
+            $xfer += $iter1056->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetReplicationMetricsRequest {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $scheduledExecutionId = null;
+  /**
+   * @var string
+   */
+  public $policy = null;
+  /**
+   * @var int
+   */
+  public $dumpExecutionId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'scheduledExecutionId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'policy',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'dumpExecutionId',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['scheduledExecutionId'])) {
+        $this->scheduledExecutionId = $vals['scheduledExecutionId'];
+      }
+      if (isset($vals['policy'])) {
+        $this->policy = $vals['policy'];
+      }
+      if (isset($vals['dumpExecutionId'])) {
+        $this->dumpExecutionId = $vals['dumpExecutionId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetReplicationMetricsRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->scheduledExecutionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->policy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->dumpExecutionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetReplicationMetricsRequest');
+    if ($this->scheduledExecutionId !== null) {
+      $xfer += $output->writeFieldBegin('scheduledExecutionId', TType::I64, 1);
+      $xfer += $output->writeI64($this->scheduledExecutionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->policy !== null) {
+      $xfer += $output->writeFieldBegin('policy', TType::STRING, 2);
+      $xfer += $output->writeString($this->policy);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dumpExecutionId !== null) {
+      $xfer += $output->writeFieldBegin('dumpExecutionId', TType::I64, 3);
+      $xfer += $output->writeI64($this->dumpExecutionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 
