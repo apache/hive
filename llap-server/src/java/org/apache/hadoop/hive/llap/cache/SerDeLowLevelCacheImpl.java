@@ -749,7 +749,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       try {
         FileData fd = e.getValue().getCache();
         int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
-        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes; ");
         for (StripeData stripe : fd.stripes) {
           if (stripe.data == null) continue;
           for (int i = 0; i < stripe.data.length; ++i) {
@@ -786,7 +785,8 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
         allEvicted += fileEvicted;
         allMoving += fileMoving;
         sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
-            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
+            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved; ");
+        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes");
       } finally {
         e.getValue().decRef();
       }
