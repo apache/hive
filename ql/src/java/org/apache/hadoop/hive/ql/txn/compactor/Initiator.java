@@ -290,7 +290,6 @@ public class Initiator extends MetaStoreCompactorThread {
     }
 
     if (runJobAsSelf(runAs)) {
-      ci.runAs = runAs;
       return determineCompactionType(ci, writeIds, sd, tblproperties);
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
@@ -363,27 +362,24 @@ public class Initiator extends MetaStoreCompactorThread {
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       boolean multiBase = dir.getObsolete().stream()
-              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).count() >= 1;
-      if ((deltaSize == 0  && dir.getObsolete().size() > 0) && multiBase) {
-        try {
-          txnHandler.requestCleanup(ci);
-          return null;
-        } catch (MetaException e) {
-          LOG.error("Unable to request Clean up for "+ci.getFullTableName());
-        }
-      }
+              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).findAny().isPresent();
+
       if (LOG.isDebugEnabled()) {
         StringBuilder msg = new StringBuilder("delta size: ");
         msg.append(deltaSize);
         msg.append(" base size: ");
         msg.append(baseSize);
+        msg.append(" multiBase ");
+        msg.append(multiBase);
+        msg.append(" deltaSize ");
+        msg.append(deltaSize);
         msg.append(" threshold: ");
         msg.append(deltaPctThreshold);
         msg.append(" will major compact: ");
-        msg.append(bigEnough);
+        msg.append(bigEnough || (deltaSize == 0  && multiBase));
         LOG.debug(msg.toString());
       }
-      if (bigEnough) return CompactionType.MAJOR;
+      if (bigEnough || (deltaSize == 0  && multiBase)) return CompactionType.MAJOR;
     }
 
     String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +

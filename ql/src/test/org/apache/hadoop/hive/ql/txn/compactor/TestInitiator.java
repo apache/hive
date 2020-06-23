@@ -1056,7 +1056,7 @@ public class TestInitiator extends CompactorTest {
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertTrue(rsp.getCompacts().get(0).getState().equals("ready for cleaning"));
+    Assert.assertEquals("initiated",rsp.getCompacts().get(0).getState());
   }
 
   @Override
