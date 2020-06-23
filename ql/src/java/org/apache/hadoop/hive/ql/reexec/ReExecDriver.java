@@ -148,6 +148,8 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
+    // The plugins should check for execution limit in shouldReexecute
+    // But just in case, we don't want an infinite loop
     int maxExecutions = getMaxExecutions();
 
     while (true) {
