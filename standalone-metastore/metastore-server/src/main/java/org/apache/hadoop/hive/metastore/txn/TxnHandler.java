@@ -43,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -3180,11 +3181,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long id = generateCompactionQueueId(stmt);
 
         List<String> params = new ArrayList<>();
-        StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
-          append(" \"CQ_STATE\" IN(").append(quoteChar(INITIATED_STATE)).
-            append(",").append(quoteChar(WORKING_STATE)).
-          append(") AND \"CQ_DATABASE\"=?").
-          append(" AND \"CQ_TABLE\"=?").append(" AND ");
+        StringBuilder sb = getQueryBuilder(quoteChar(INITIATED_STATE),quoteChar(WORKING_STATE));
         params.add(rqst.getDbname());
         params.add(rqst.getTablename());
         if(rqst.getPartitionname() == null) {
@@ -3208,8 +3205,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs);
         closeStmt(pst);
         params.clear();
-        StringBuilder buf = new StringBuilder("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", " +
-          "\"CQ_TABLE\", ");
+        StringBuilder buf = insertCQQueryBuilder();
         String partName = rqst.getPartitionname();
         if (partName != null) buf.append("\"CQ_PARTITION\", ");
         buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\"");
@@ -5238,8 +5234,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void requestCleanup(CompactionInfo ci) throws MetaException {
     try {
       Connection dbConn = null;
-      Statement stmt = null;
-      PreparedStatement pst = null;
       TxnStore.MutexAPI.LockHandle handle = null;
       try {
         lockInternal();
@@ -5249,84 +5243,85 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * compactions for any resource.
          */
         handle = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name());
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
+        long id = 0;
+         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+          try (Statement stmt = dbConn.createStatement()) {
 
-        long id = generateCompactionQueueId(stmt);
+            id = generateCompactionQueueId(stmt);
+          }
 
-        List<String> params = new ArrayList<>();
-        StringBuilder sb = new StringBuilder("select cq_id, cq_state from COMPACTION_QUEUE where").
-                append(" cq_state IN(").append(quoteChar(INITIATED_STATE)).
-                append(",").append(quoteChar(WORKING_STATE)).
-                append(") AND cq_database=?").
-                append(" AND cq_table=?").append(" AND ");
-        params.add(ci.dbname);
-        params.add(ci.tableName);
-        if(ci.partName == null) {
-          sb.append("cq_partition is null");
-        } else {
-          sb.append("cq_partition=?");
-          params.add(ci.partName);
-        }
+          List<String> params = new ArrayList<>();
+          StringBuilder sb = getQueryBuilder(quoteChar(INITIATED_STATE), quoteChar(WORKING_STATE),
+                  quoteChar(READY_FOR_CLEANING));
+          params.add(ci.dbname);
+          params.add(ci.tableName);
+          if (ci.partName == null) {
+            sb.append("cq_partition is null");
+          } else {
+            sb.append("cq_partition=?");
+            params.add(ci.partName);
+          }
 
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
-        LOG.debug("Going to execute query <" + sb.toString() + ">");
-        ResultSet rs = pst.executeQuery();
-        if(rs.next()) {
-          long enqueuedId = rs.getLong(1);
-          String state = compactorStateToResponse(rs.getString(2).charAt(0));
-          LOG.info("Ignoring request to clean up for " + ci.dbname + "/" + ci.tableName +
-                  "/" + ci.partName + " since it is already " + quoteString(state) +
-                  " with id=" + enqueuedId);
-        }
-        close(rs);
-        closeStmt(pst);
-        params.clear();
-        StringBuilder buf = new StringBuilder("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
-                "cq_table, ");
-        String partName = ci.partName;
-        if (partName != null) {
-          buf.append("cq_partition, ");
-        }
-        buf.append("cq_state, cq_type");
-        if (ci.properties != null) {
-          buf.append(", cq_tblproperties");
-        }
-        if (ci.runAs != null) {
-          buf.append(", cq_run_as");
-        }
-        buf.append(") values (");
-        buf.append(id);
-        buf.append(", ?");
-        buf.append(", ?");
-        buf.append(", ");
-        params.add(ci.dbname);
-        params.add(ci.tableName);
-        if (partName != null) {
-          buf.append("?, '");
-          params.add(partName);
-        } else {
+          try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params)) {
+            LOG.debug("Going to execute query <" + sb.toString() + ">");
+            try (ResultSet rs = pst.executeQuery()) {
+              if (rs.next()) {
+                long enqueuedId = rs.getLong(1);
+                String state = compactorStateToResponse(rs.getString(2).charAt(0));
+                LOG.debug("Ignoring request to clean up for " + ci.dbname + "/" + ci.tableName +
+                        "/" + ci.partName + " since it is already " + quoteString(state) +
+                        " with id=" + enqueuedId);
+                return;
+              }
+            }
+          }
+          params.clear();
+          StringBuilder buf = insertCQQueryBuilder();
+          String partName = ci.partName;
+          if (partName != null) {
+            buf.append("cq_partition, ");
+          }
+          buf.append("cq_state, cq_type");
+          if (ci.properties != null) {
+            buf.append(", cq_tblproperties");
+          }
+          if (ci.runAs != null) {
+            buf.append(", cq_run_as");
+          }
+          buf.append(") values (");
+          buf.append(id);
+          buf.append(", ?");
+          buf.append(", ?");
+          buf.append(", ");
+          params.add(ci.dbname);
+          params.add(ci.tableName);
+          if (partName != null) {
+            buf.append("?, '");
+            params.add(partName);
+          } else {
+            buf.append("'");
+          }
+          buf.append(READY_FOR_CLEANING);
+          buf.append("', '");
+          buf.append(MAJOR_TYPE);
           buf.append("'");
-        }
-        buf.append(READY_FOR_CLEANING);
-        buf.append("', '");
-        buf.append(MAJOR_TYPE);
-        buf.append("'");
-        if (ci.properties != null) {
-          buf.append(", ?");
-          params.add(ci.properties);
-        }
-        if (ci.runAs != null) {
-          buf.append(", ?");
-          params.add(ci.runAs);
-        }
-        buf.append(")");
-        String s = buf.toString();
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-        LOG.debug("Going to execute update <" + s + ">");
-        pst.executeUpdate();
-        LOG.debug("Going to commit");
-        dbConn.commit();
+          if (ci.properties != null) {
+            buf.append(", ?");
+            params.add(ci.properties);
+          }
+          if (ci.runAs != null) {
+            buf.append(", ?");
+            params.add(ci.runAs);
+          }
+          buf.append(")");
+          String s = buf.toString();
+          try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params)) {
+            LOG.debug("Going to execute update <" + s + ">");
+            pst.executeUpdate();
+          }
+          LOG.debug("Going to commit");
+          dbConn.commit();
+
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -5334,8 +5329,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to select from transaction database " +
                 StringUtils.stringifyException(e));
       } finally {
-        closeStmt(pst);
-        closeStmt(stmt);
         closeDbConn(dbConn);
         if(handle != null) {
           handle.releaseLocks();
@@ -5345,6 +5338,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     } catch (RetryException e) {
       requestCleanup(ci);
     }
+  }
+
+  public StringBuilder insertCQQueryBuilder() {
+    return new StringBuilder("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", " +
+            "\"CQ_TABLE\", ");
+  }
+
+  public StringBuilder getQueryBuilder(String ... states) {
+    StringJoiner inStates = new StringJoiner(",");
+    for (String state : states) {
+      inStates.add(state);
+    }
+    return new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
+            append(" \"CQ_STATE\" IN(").append(inStates.toString()).
+            append(") AND \"CQ_DATABASE\"=?").
+            append(" AND \"CQ_TABLE\"=?").append(" AND ");
   }
 
   private static final class LockHandleImpl implements LockHandle {
