@@ -50,6 +50,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private boolean alwaysCollectStats;
 
+  private int maxExecutions = 1;
+
   class LocalHook implements ExecuteWithHookContext {
 
     @Override
@@ -81,6 +83,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
     alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
     statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
 
     coreDriver.setStatsSource(StatsSources.getStatsSource(driver.getConf()));
@@ -88,7 +91,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
-    return retryPossible;
+    return (executionNum < maxExecutions) && retryPossible;
   }
 
   @Override

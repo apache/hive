@@ -148,8 +148,7 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
-    int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
-
+    int maxExecutions = getMaxExecutions();
 
     while (true) {
       executionIndex++;
@@ -172,7 +171,7 @@ public class ReExecDriver implements IDriver {
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr == null && shouldReExecute(cpe);
 
-      if (executionIndex >= maxExecutuions || !shouldReExecute) {
+      if (executionIndex >= maxExecutions || !shouldReExecute) {
         if (cpr != null) {
           return cpr;
         } else {
@@ -196,6 +195,13 @@ public class ReExecDriver implements IDriver {
         return cpr;
       }
     }
+  }
+
+  private int getMaxExecutions() {
+    int maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
+    int maxRetryLockExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT);
+    maxExecutions = Math.max(maxExecutions, maxRetryLockExecutions);
+    return maxExecutions;
   }
 
   private void afterExecute(PlanMapper planMapper, boolean success) {

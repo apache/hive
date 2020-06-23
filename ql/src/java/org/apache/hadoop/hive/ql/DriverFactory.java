@@ -54,6 +54,8 @@ public class DriverFactory {
       }
       plugins.add(buildReExecPlugin(string));
     }
+    // The retrylock plugin is always enabled
+    plugins.add(new ReExecutionRetryLockPlugin());
 
     return new ReExecDriver(queryState, queryInfo, plugins);
   }
@@ -64,9 +66,6 @@ public class DriverFactory {
     }
     if (name.equals("reoptimize")) {
       return new ReOptimizePlugin();
-    }
-    if (name.endsWith("retrylock")) {
-      return new ReExecutionRetryLockPlugin();
     }
     throw new RuntimeException(
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");

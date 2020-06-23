@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -25,10 +26,12 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 public class ReExecutionRetryLockPlugin implements IReExecutionPlugin {
 
   private Driver coreDriver;
+  private int maxRetryLockExecutions = 1;
 
   @Override
   public void initialize(Driver driver) {
     coreDriver = driver;
+    maxRetryLockExecutions = 1 + coreDriver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT);
   }
 
   @Override
@@ -37,7 +40,8 @@ public class ReExecutionRetryLockPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
-    return ex != null && ex.getMessage().contains(Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED);
+    return executionNum < maxRetryLockExecutions && ex != null &&
+        ex.getMessage().contains(Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED);
   }
 
   @Override
@@ -46,7 +50,7 @@ public class ReExecutionRetryLockPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    return executionNum == 1;
+    return executionNum < maxRetryLockExecutions;
   }
 
   @Override

@@ -4979,11 +4979,11 @@ public class HiveConf extends Configuration {
 
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
-    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize,retrylock",
+    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
-            + "  retrylock: recompiles the query if snapshot becomes outdated before lock acquisition"),
+            + "  The retrylock strategy is always enabled: recompiles the query if snapshot becomes outdated before lock acquisition"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -4994,6 +4994,8 @@ public class HiveConf extends Configuration {
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),
+    HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT("hive.query.reexecution.retrylock.max.count", 5,
+        "Maximum number of re-executions with retrylock strategy for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_BATCH_SIZE("hive.query.reexecution.stats.cache.batch.size", -1,
