@@ -102,6 +102,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: cint is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cint, smallTablePos:1, keyRatio:3.3333333333333335
                   Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -208,6 +209,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: cvarchar is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cvarchar, smallTablePos:1, keyRatio:3.3333333333333335
                   Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cvarchar is not null (type: boolean)
@@ -502,6 +504,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: cdouble is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cdouble, smallTablePos:1, keyRatio:2.0
                   Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cdouble is not null (type: boolean)

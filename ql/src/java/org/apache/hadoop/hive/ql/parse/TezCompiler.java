@@ -1512,7 +1512,8 @@ public class TezCompiler extends TaskCompiler {
           TableScanOperator.ProbeDecodeContext tsCntx = null;
           // Currently supporting: LowestRatio policy
           // TODO: Add more policies and make the selection a conf property
-          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue());
+          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue(),
+                  procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST));
           if (tsCntx != null) {
             LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
                     probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
@@ -1526,7 +1527,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static TableScanOperator.ProbeDecodeContext selectLowestRatioProbeDecodeMapJoin(TableScanOperator tsOp,
-      List<MapJoinOperator> mjOps){
+      List<MapJoinOperator> mjOps, boolean inTestMode){
     MapJoinOperator selectedMJOp = null;
     double selectedMJOpRatio = 0;
     for (MapJoinOperator currMJOp : mjOps) {
@@ -1572,8 +1573,9 @@ public class TezCompiler extends TaskCompiler {
       if (realTSColName != null) {
         tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
                 realTSColName, selectedMJOpRatio);
-      } else {
-        throw new RuntimeException("ProbeDecode could not find TSColName for ColKey " + keyCol + "with MJ Schema "+ selectedMJOp.getSchema());
+      } else if (inTestMode){
+        throw new RuntimeException("ProbeDecode could not find TSColName for ColKey: " + keyCol + " with MJ Schema: " +
+                selectedMJOp.getSchema());
       }
     }
     return tsProbeDecodeCtx;
