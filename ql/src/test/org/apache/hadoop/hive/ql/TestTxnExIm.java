@@ -326,12 +326,12 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     String[][] expected;
     if (existingTarget) {
       expected = new String[][] {
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-              "t/delta_0000002_0000002_0000/000000_0"},
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-              "t/delta_0000002_0000002_0000/000000_0"},
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-              "t/delta_0000002_0000002_0000/000000_0"}};
+          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+              "t/delta_0000001_0000001_0000/000000_0"},
+          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+              "t/delta_0000001_0000001_0000/000000_0"},
+          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
+              "t/delta_0000001_0000001_0000/000000_0"}};
     } else {
       expected = new String[][] {
               {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
@@ -359,8 +359,8 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
                       "t/delta_0000001_0000001_0000/000000_0"},
               {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
                       "t/delta_0000001_0000001_0000/000000_0"},
-              {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-                      "t/delta_0000002_0000002_0000/bucket_00000"}};
+              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
+                      "t/delta_0000001_0000001_0000/bucket_00000"}};
     }
     checkResult(expected2, testQuery, isVectorized, "update imported table");
 
