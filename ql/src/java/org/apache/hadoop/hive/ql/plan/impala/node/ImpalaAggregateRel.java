@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelWriter;
@@ -49,6 +51,8 @@ import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.FunctionParams;
 import org.apache.impala.analysis.MultiAggregateInfo;
+import org.apache.impala.analysis.SlotDescriptor;
+import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
@@ -136,7 +140,8 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     AggregateInfo aggInfo = multiAggInfo.hasTransposePhase() ?
         multiAggInfo.getTransposeAggInfo() : multiAggInfo.getAggClasses().get(0);
 
-    this.outputExprs = createOutputExprs(aggInfo.getResultTupleDesc().getSlots());
+    this.outputExprs = createMappedOutputExprs(multiAggInfo, groupingExprs, aggExprs,
+        aggInfo.getResultTupleDesc().getSlots());
     // This is the only way to shove in the "having" filter into the aggregate node.
     // In the init clause, the aggregate node calls into the analyzer to get all remaining
     // unassigned conjuncts.
@@ -315,5 +320,40 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
   public double estimateRowCount(RelMetadataQuery mq) {
     return filter != null ?
         mq.getRowCount(filter) : mq.getRowCount(aggregate);
+  }
+
+  /**
+   * Create the output expressions for the ImpalaAggregateRel.
+   * Impala can change the order in their MultiAggInfo object. So the SlotDescriptors
+   * do not necessarily line up with the indexes.   So we need to walk through the
+   * grouping expressions and the aggExprs of the agg node and match them up with the
+   * corresponding SlotRef. If there is a groupingId column, that slot will be at the end.
+   */
+  public ImmutableMap<Integer, Expr> createMappedOutputExprs(MultiAggregateInfo multiAggInfo,
+      List<Expr> groupingExprs, List<FunctionCallExpr> aggExprs, List<SlotDescriptor> slotDescs) {
+    Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
+
+    int numSlots = groupingExprs.size() + aggExprs.size() + (generateGroupingId ? 1 : 0);
+    Preconditions.checkState(slotDescs.size() == numSlots);
+
+    int index = 0;
+
+    for (Expr e : groupingExprs) {
+      Expr slotRefExpr = multiAggInfo.getOutputSmap().get(e);
+      Preconditions.checkNotNull(slotRefExpr);
+      exprs.put(index++, slotRefExpr);
+    }
+
+    for (FunctionCallExpr e : aggExprs) {
+      Expr slotRefExpr = multiAggInfo.getOutputSmap().get(e);
+      Preconditions.checkNotNull(slotRefExpr);
+      exprs.put(index++, slotRefExpr);
+    }
+
+    if (generateGroupingId) {
+      exprs.put(index, new SlotRef(slotDescs.get(slotDescs.size() - 1)));
+    }
+
+    return ImmutableMap.copyOf(exprs);
   }
 }
