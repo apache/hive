@@ -242,7 +242,7 @@ POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-  HiveProject($f00=[$0], c_first_name=[$2], c_last_name=[$3], c_birth_country=[$4])
+  HiveProject(customer_id=[$0], customer_first_name=[$2], customer_last_name=[$3], customer_birth_country=[$4])
     HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[CommonJoin], cost=[not available])
       HiveProject($f00=[$2])
         HiveJoin(condition=[AND(=($2, $12), CASE($14, CASE($11, >(/($8, $10), /($1, $13)), false), false))], joinType=[inner], algorithm=[CommonJoin], cost=[not available])

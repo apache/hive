@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,9 +39,11 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.rex.RexVisitor;
+import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -112,34 +114,45 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       RexBuilder rexBuilder = relBuilder.getRexBuilder();
       RelNode rootInput = root.getInput(0);
 
-      // Build the list of projected fields from root's input RowType
+      // Build the list of RexInputRef from root input RowType
       List<RexInputRef> rootFieldList = new ArrayList<>(rootInput.getRowType().getFieldCount());
+      List<String> newColumnNames = new ArrayList<>();
       for (int i = 0; i < rootInput.getRowType().getFieldList().size(); ++i) {
         RelDataTypeField relDataTypeField = rootInput.getRowType().getFieldList().get(i);
         rootFieldList.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
+        newColumnNames.add(relDataTypeField.getName());
       }
 
-      List<ProjectedFields> lineages = getExpressionLineageOf(rootFieldList, rootInput);
+      List<JoinedBackFields> lineages = getExpressionLineageOf(rootFieldList, rootInput);
       if (lineages == null) {
         LOG.debug("Some projected field lineage can not be determined");
         return root;
       }
 
-      // 1. Collect candidate tables for join back
-      // 2. Collect all used fields from original plan
+      // 1. Collect candidate tables for join back and map RexNodes coming from those tables to their index in the
+      // rootInput row type
+      // Collect all used fields from original plan
       ImmutableBitSet fieldsUsed = ImmutableBitSet.of();
-      List<TableToJoinBack> tableToJoinBackList = new ArrayList<>();
-      for (ProjectedFields projectedFields : lineages) {
-        Optional<ImmutableBitSet> projectedKeys = projectedFields.relOptHiveTable.getNonNullableKeys().stream()
-            .filter(projectedFields.fieldsInSourceTable::contains)
+      List<TableToJoinBack> tableToJoinBackList = new ArrayList<>(lineages.size());
+      Map<Integer, RexNode> rexNodesToShuttle = new HashMap<>(rootInput.getRowType().getFieldCount());
+
+      for (JoinedBackFields joinedBackFields : lineages) {
+        Optional<ImmutableBitSet> projectedKeys = joinedBackFields.relOptHiveTable.getNonNullableKeys().stream()
+            .filter(joinedBackFields.fieldsInSourceTable::contains)
             .findFirst();
 
         if (projectedKeys.isPresent()) {
-          TableToJoinBack tableToJoinBack = new TableToJoinBack(projectedKeys.get(), projectedFields);
+          TableToJoinBack tableToJoinBack = new TableToJoinBack(projectedKeys.get(), joinedBackFields);
           tableToJoinBackList.add(tableToJoinBack);
-          fieldsUsed = fieldsUsed.union(projectedFields.getSource(projectedKeys.get()));
+          fieldsUsed = fieldsUsed.union(joinedBackFields.getSource(projectedKeys.get()));
+
+          for (TableInputRefHolder mapping : joinedBackFields.mapping) {
+            if (!fieldsUsed.get(mapping.indexInOriginalRowType)) {
+              rexNodesToShuttle.put(mapping.indexInOriginalRowType, mapping.rexNode);
+            }
+          }
         } else {
-          fieldsUsed = fieldsUsed.union(projectedFields.fieldsInRootProject);
+          fieldsUsed = fieldsUsed.union(joinedBackFields.fieldsInOriginalRowType);
         }
       }
 
@@ -148,7 +161,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         return root;
       }
 
-      // 3. Trim out non-key fields of joined back tables
+      // 2. Trim out non-key fields of joined back tables
       Set<RelDataTypeField> extraFields = Collections.emptySet();
       TrimResult trimResult = dispatchTrimFields(rootInput, fieldsUsed, extraFields);
       RelNode newInput = trimResult.left;
@@ -157,62 +170,70 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         return root;
       }
 
-      // 4. Collect fields for new Project on the top of Join backs
+      // 3. Join back tables to the top of original plan
       Mapping newInputMapping = trimResult.right;
-      RexNode[] newProjects = new RexNode[rootFieldList.size()];
-      String[] newColumnNames = new String[rootFieldList.size()];
-      projectsFromOriginalPlan(rexBuilder, newInput.getRowType().getFieldCount(), newInput, newInputMapping,
-          newProjects, newColumnNames);
+      Map<RexTableInputRef, Integer> tableInputRefMapping = new HashMap<>();
 
-      // 5. Join back tables to the top of original plan
       for (TableToJoinBack tableToJoinBack : tableToJoinBackList) {
-        LOG.debug("Joining back table " + tableToJoinBack.projectedFields.relOptHiveTable.getName());
+        LOG.debug("Joining back table " + tableToJoinBack.joinedBackFields.relOptHiveTable.getName());
 
-        // 5.1 Create new TableScan of tables to join back
-        RelOptHiveTable relOptTable = tableToJoinBack.projectedFields.relOptHiveTable;
+        // 3.1. Create new TableScan of tables to join back
+        RelOptHiveTable relOptTable = tableToJoinBack.joinedBackFields.relOptHiveTable;
         RelOptCluster cluster = relBuilder.getCluster();
         HiveTableScan tableScan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             relOptTable, relOptTable.getHiveTableMD().getTableName(), null, false, false);
-        // 5.2 Project only required fields from this table
+        // 3.2. Create Project with the required fields from this table
         RelNode projectTableAccessRel = tableScan.project(
-            tableToJoinBack.projectedFields.fieldsInSourceTable, new HashSet<>(0), REL_BUILDER.get());
+            tableToJoinBack.joinedBackFields.fieldsInSourceTable, new HashSet<>(0), REL_BUILDER.get());
 
-        Mapping keyMapping = Mappings.create(MappingType.INVERSE_SURJECTION,
-            tableScan.getRowType().getFieldCount(), tableToJoinBack.keys.cardinality());
+        // 3.3. Create mapping between the Project and TableScan
+        Mapping projectMapping = Mappings.create(MappingType.INVERSE_SURJECTION,
+            tableScan.getRowType().getFieldCount(),
+            tableToJoinBack.joinedBackFields.fieldsInSourceTable.cardinality());
         int projectIndex = 0;
-        int offset = newInput.getRowType().getFieldCount();
-
-        for (int source : tableToJoinBack.projectedFields.fieldsInSourceTable) {
-          if (tableToJoinBack.keys.get(source)) {
-            // 5.3 Map key field to it's index in the Project on the TableScan
-            keyMapping.set(source, projectIndex);
-          } else {
-            // 5.4 if this is not a key field then we need it in the new Project on the top of Join backs
-            ProjectMapping currentProjectMapping =
-                tableToJoinBack.projectedFields.mapping.stream()
-                    .filter(projectMapping -> projectMapping.indexInSourceTable == source)
-                    .findFirst().get();
-            addToProject(projectTableAccessRel, projectIndex, rexBuilder,
-                offset + projectIndex,
-                currentProjectMapping.indexInRootProject,
-                newProjects, newColumnNames);
-          }
+        for (int i : tableToJoinBack.joinedBackFields.fieldsInSourceTable) {
+          projectMapping.set(i, projectIndex);
           ++projectIndex;
         }
 
-        // 5.5 Create Join
+        int offset = newInput.getRowType().getFieldCount();
+
+        // 3.4. Map rexTableInputRef to the index where it can be found in the new Input row type
+        for (TableInputRefHolder mapping : tableToJoinBack.joinedBackFields.mapping) {
+          int indexInSourceTable = mapping.tableInputRef.getIndex();
+          if (!tableToJoinBack.keys.get(indexInSourceTable)) {
+            // 3.5. if this is not a key field it is shifted by the left input field count
+            tableInputRefMapping.put(mapping.tableInputRef, offset + projectMapping.getTarget(indexInSourceTable));
+          }
+        }
+
+        // 3.7. Create Join
         relBuilder.push(newInput);
         relBuilder.push(projectTableAccessRel);
 
         RexNode joinCondition = joinCondition(
-            newInput, newInputMapping, tableToJoinBack, projectTableAccessRel, keyMapping, rexBuilder);
+            newInput, newInputMapping, tableToJoinBack, projectTableAccessRel, projectMapping, rexBuilder);
 
         newInput = relBuilder.join(JoinRelType.INNER, joinCondition).build();
       }
 
-      // 6 Create Project on top of all Join backs
+      // 4. Collect rexNodes for Project
+      TableInputRefMapper mapper = new TableInputRefMapper(tableInputRefMapping, rexBuilder, newInput);
+      List<RexNode> rexNodeList = new ArrayList<>(rootInput.getRowType().getFieldCount());
+      for (int i = 0; i < rootInput.getRowType().getFieldCount(); i++) {
+        RexNode rexNode = rexNodesToShuttle.get(i);
+        if (rexNode != null) {
+          rexNodeList.add(mapper.apply(rexNode));
+        } else {
+          int target = newInputMapping.getTarget(i);
+          rexNodeList.add(
+              rexBuilder.makeInputRef(newInput.getRowType().getFieldList().get(target).getType(), target));
+        }
+      }
+
+      // 5. Create Project on top of all Join backs
       relBuilder.push(newInput);
-      relBuilder.project(asList(newProjects), asList(newColumnNames));
+      relBuilder.project(rexNodeList, newColumnNames);
 
       return root.copy(root.getTraitSet(), singletonList(relBuilder.build()));
     } finally {
@@ -220,32 +241,28 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     }
   }
 
-  private List<ProjectedFields> getExpressionLineageOf(
+  private List<JoinedBackFields> getExpressionLineageOf(
       List<RexInputRef> projectExpressions, RelNode projectInput) {
     RelMetadataQuery relMetadataQuery = RelMetadataQuery.instance();
-    Map<RexTableInputRef.RelTableRef, ProjectedFieldsBuilder> fieldMappingBuilders = new HashMap<>();
+    Map<RexTableInputRef.RelTableRef, JoinedBackFieldsBuilder> fieldMappingBuilders = new HashMap<>();
     List<RexTableInputRef.RelTableRef> tablesOrdered = new ArrayList<>(); // use this list to keep the order of tables
     for (RexInputRef expr : projectExpressions) {
       Set<RexNode> expressionLineage = relMetadataQuery.getExpressionLineage(projectInput, expr);
       if (expressionLineage == null || expressionLineage.size() != 1) {
-        LOG.debug("Lineage can not be determined of expression: " + expr);
+        LOG.debug("Lineage of expression can not be determined: " + expr);
         return null;
       }
 
       RexNode rexNode = expressionLineage.iterator().next();
-      RexTableInputRef rexTableInputRef = rexTableInputRef(rexNode);
-      if (rexTableInputRef == null) {
-        LOG.debug("Unable determine expression lineage " + rexNode);
-        return null;
+      for (RexTableInputRef rexTableInputRef : rexTableInputRef(rexNode)) {
+        RexTableInputRef.RelTableRef tableRef = rexTableInputRef.getTableRef();
+        JoinedBackFieldsBuilder joinedBackFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
+            tableRef, k -> {
+              tablesOrdered.add(tableRef);
+              return new JoinedBackFieldsBuilder(tableRef);
+            });
+        joinedBackFieldsBuilder.add(expr, rexNode, rexTableInputRef);
       }
-
-      RexTableInputRef.RelTableRef tableRef = rexTableInputRef.getTableRef();
-      ProjectedFieldsBuilder projectedFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
-          tableRef, k -> {
-            tablesOrdered.add(tableRef);
-            return new ProjectedFieldsBuilder(tableRef);
-          });
-      projectedFieldsBuilder.add(expr, rexTableInputRef);
     }
 
     return tablesOrdered.stream()
@@ -253,31 +270,18 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         .collect(Collectors.toList());
   }
 
-  public RexTableInputRef rexTableInputRef(RexNode rexNode) {
-    if (rexNode.getKind() == SqlKind.TABLE_INPUT_REF) {
-      return (RexTableInputRef) rexNode;
-    }
-    LOG.debug("Unable determine expression lineage " + rexNode);
-    return null;
-  }
+  public List<RexTableInputRef> rexTableInputRef(RexNode rexNode) {
+    List<RexTableInputRef> rexTableInputRefList = new ArrayList<>();
+    RexVisitor<RexTableInputRef> visitor = new RexVisitorImpl<RexTableInputRef>(true) {
+      @Override
+      public RexTableInputRef visitTableInputRef(RexTableInputRef ref) {
+        rexTableInputRefList.add(ref);
+        return ref;
+      }
+    };
 
-  private void projectsFromOriginalPlan(RexBuilder rexBuilder, int count, RelNode newInput, Mapping newInputMapping,
-                                        RexNode[] newProjects, String[] newColumnNames) {
-    for (int newProjectIndex = 0; newProjectIndex < count; ++newProjectIndex) {
-      addToProject(newInput, newProjectIndex, rexBuilder, newProjectIndex, newInputMapping.getSource(newProjectIndex),
-          newProjects, newColumnNames);
-    }
-  }
-
-  private void addToProject(RelNode relNode, int projectSourceIndex, RexBuilder rexBuilder,
-                             int targetIndex, int index,
-                             RexNode[] newProjects, String[] newColumnNames) {
-    RelDataTypeField relDataTypeField =
-        relNode.getRowType().getFieldList().get(projectSourceIndex);
-    newProjects[index] = rexBuilder.makeInputRef(
-        relDataTypeField.getType(),
-        targetIndex);
-    newColumnNames[index] = relDataTypeField.getName();
+    rexNode.accept(visitor);
+    return rexTableInputRefList;
   }
 
   private RexNode joinCondition(
@@ -286,14 +290,14 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       RexBuilder rexBuilder) {
 
     List<RexNode> equalsConditions = new ArrayList<>(tableToJoinBack.keys.size());
-    for (ProjectMapping projectMapping : tableToJoinBack.projectedFields.mapping) {
-      if (!tableToJoinBack.keys.get(projectMapping.indexInSourceTable)) {
+    for (TableInputRefHolder tableInputRefHolder : tableToJoinBack.joinedBackFields.mapping) {
+      if (!tableToJoinBack.keys.get(tableInputRefHolder.tableInputRef.getIndex())) {
         continue;
       }
 
-      int leftKeyIndex = leftInputMapping.getTarget(projectMapping.indexInRootProject);
+      int leftKeyIndex = leftInputMapping.getTarget(tableInputRefHolder.indexInOriginalRowType);
       RelDataTypeField leftKeyField = leftInput.getRowType().getFieldList().get(leftKeyIndex);
-      int rightKeyIndex = rightInputKeyMapping.getTarget(projectMapping.indexInSourceTable);
+      int rightKeyIndex = rightInputKeyMapping.getTarget(tableInputRefHolder.tableInputRef.getIndex());
       RelDataTypeField rightKeyField = rightInput.getRowType().getFieldList().get(rightKeyIndex);
 
       equalsConditions.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
@@ -304,73 +308,93 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     return RexUtil.composeConjunction(rexBuilder, equalsConditions);
   }
 
-  private static final class ProjectMapping {
-    private final int indexInRootProject;
-    private final int indexInSourceTable;
+  private static final class TableInputRefHolder {
+    private final RexTableInputRef tableInputRef;
+    private final RexNode rexNode;
+    private final int indexInOriginalRowType;
 
-    private ProjectMapping(int indexInRootProject, RexTableInputRef rexTableInputRef) {
-      this.indexInRootProject = indexInRootProject;
-      this.indexInSourceTable = rexTableInputRef.getIndex();
+    private TableInputRefHolder(RexInputRef inputRef, RexNode rexNode, RexTableInputRef sourceTableRef) {
+      this.indexInOriginalRowType = inputRef.getIndex();
+      this.rexNode = rexNode;
+      this.tableInputRef = sourceTableRef;
     }
   }
 
-  private static final class ProjectedFields {
+  private static final class JoinedBackFields {
     private final RelOptHiveTable relOptHiveTable;
-    private final ImmutableBitSet fieldsInRootProject;
+    private final ImmutableBitSet fieldsInOriginalRowType;
     private final ImmutableBitSet fieldsInSourceTable;
-    private final List<ProjectMapping> mapping;
+    private final List<TableInputRefHolder> mapping;
 
-    private ProjectedFields(RexTableInputRef.RelTableRef relTableRef,
-                            ImmutableBitSet fieldsInRootProject, ImmutableBitSet fieldsInSourceTable,
-                            List<ProjectMapping> mapping) {
+    private JoinedBackFields(RexTableInputRef.RelTableRef relTableRef,
+                             ImmutableBitSet fieldsInOriginalRowType, ImmutableBitSet fieldsInSourceTable,
+                             List<TableInputRefHolder> mapping) {
       this.relOptHiveTable = (RelOptHiveTable) relTableRef.getTable();
-      this.fieldsInRootProject = fieldsInRootProject;
+      this.fieldsInOriginalRowType = fieldsInOriginalRowType;
       this.fieldsInSourceTable = fieldsInSourceTable;
       this.mapping = mapping;
     }
 
     public ImmutableBitSet getSource(ImmutableBitSet fields) {
       ImmutableBitSet.Builder targetFieldsBuilder = ImmutableBitSet.builder();
-      for (ProjectMapping fieldMapping : mapping) {
-        if (fields.get(fieldMapping.indexInSourceTable)) {
-          targetFieldsBuilder.set(fieldMapping.indexInRootProject);
+      for (TableInputRefHolder fieldMapping : mapping) {
+        if (fields.get(fieldMapping.tableInputRef.getIndex())) {
+          targetFieldsBuilder.set(fieldMapping.indexInOriginalRowType);
         }
       }
       return targetFieldsBuilder.build();
     }
   }
 
-  private static class ProjectedFieldsBuilder {
+  private static class JoinedBackFieldsBuilder {
     private final RexTableInputRef.RelTableRef relTableRef;
-    private final ImmutableBitSet.Builder fieldsInRootProjectBuilder = ImmutableBitSet.builder();
+    private final ImmutableBitSet.Builder fieldsInOriginalRowTypeBuilder = ImmutableBitSet.builder();
     private final ImmutableBitSet.Builder fieldsInSourceTableBuilder = ImmutableBitSet.builder();
-    private final List<ProjectMapping> mapping = new ArrayList<>();
+    private final List<TableInputRefHolder> mapping = new ArrayList<>();
 
-    private ProjectedFieldsBuilder(RexTableInputRef.RelTableRef relTableRef) {
+    private JoinedBackFieldsBuilder(RexTableInputRef.RelTableRef relTableRef) {
       this.relTableRef = relTableRef;
     }
 
-    public void add(RexInputRef rexInputRef, RexTableInputRef sourceTableInputRef) {
-      fieldsInRootProjectBuilder.set(rexInputRef.getIndex());
+    public void add(RexInputRef rexInputRef, RexNode rexNode, RexTableInputRef sourceTableInputRef) {
+      fieldsInOriginalRowTypeBuilder.set(rexInputRef.getIndex());
       fieldsInSourceTableBuilder.set(sourceTableInputRef.getIndex());
-      mapping.add(new ProjectMapping(rexInputRef.getIndex(), sourceTableInputRef));
+      mapping.add(new TableInputRefHolder(rexInputRef, rexNode, sourceTableInputRef));
     }
 
-    public ProjectedFields build() {
-      return new ProjectedFields(relTableRef,
-          fieldsInRootProjectBuilder.build(),
+    public JoinedBackFields build() {
+      return new JoinedBackFields(relTableRef,
+          fieldsInOriginalRowTypeBuilder.build(),
           fieldsInSourceTableBuilder.build(),
           mapping);
     }
   }
 
   private static final class TableToJoinBack {
-    private final ProjectedFields projectedFields;
+    private final JoinedBackFields joinedBackFields;
     private final ImmutableBitSet keys;
 
-    private TableToJoinBack(ImmutableBitSet keys, ProjectedFields projectedFields) {
-      this.projectedFields = projectedFields;
+    private TableToJoinBack(ImmutableBitSet keys, JoinedBackFields joinedBackFields) {
+      this.joinedBackFields = joinedBackFields;
       this.keys = keys;
+    }
+  }
+
+  private static final class TableInputRefMapper extends RexShuttle {
+    private final Map<RexTableInputRef, Integer> tableInputRefMapping;
+    private final RexBuilder rexBuilder;
+    private final RelNode newInput;
+
+    private TableInputRefMapper(Map<RexTableInputRef, Integer> tableInputRefMapping, RexBuilder rexBuilder, RelNode newInput) {
+      this.tableInputRefMapping = tableInputRefMapping;
+      this.rexBuilder = rexBuilder;
+      this.newInput = newInput;
+    }
+
+    @Override
+    public RexNode visitTableInputRef(RexTableInputRef ref) {
+      int source = tableInputRefMapping.get(ref);
+      return rexBuilder.makeInputRef(newInput.getRowType().getFieldList().get(source).getType(), source);
     }
   }
 }

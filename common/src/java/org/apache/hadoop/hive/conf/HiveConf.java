@@ -1784,6 +1784,10 @@ public class HiveConf extends Configuration {
         "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
             "the columns are independent. Setting this flag to true will cause the estimator to assume" +
             "the columns are correlated."),
+    HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION("hive.cardinality.preserving.join.optimization", true,
+        "Enables query plan rewriting when query has tables joined multiple time on primary/unique key and projected" +
+            " the majority of columns from these table. This optimization trims fields at root of tree and " +
+            "then joins back affected tables at top of tree to get rest of columns."),
     HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR("hive.cardinality.preserving.join.optimization.factor", 1.0f,
         "Original plan cost multiplier for rewriting when query has tables joined multiple time on primary/unique key and " +
             "projected the majority of columns from these table. This optimization trims fields at root of tree and " +
