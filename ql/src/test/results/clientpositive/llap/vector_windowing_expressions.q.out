@@ -486,7 +486,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: t (type: tinyint), bo (type: boolean), s (type: string), si (type: smallint), f (type: float)
-                    null sort order: azzzz
+                    null sort order: azzza
                     sort order: ++++-
                     Map-reduce partition columns: t (type: tinyint)
                     Reduce Sink Vectorization:
@@ -534,7 +534,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col6 ASC NULLS LAST, _col7 ASC NULLS LAST, _col1 ASC NULLS LAST, _col4 DESC NULLS LAST
+                        order by: _col6 ASC NULLS LAST, _col7 ASC NULLS LAST, _col1 ASC NULLS LAST, _col4 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:

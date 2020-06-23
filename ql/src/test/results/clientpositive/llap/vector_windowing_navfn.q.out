@@ -500,7 +500,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bin (type: binary), d (type: double), i (type: int)
-                    null sort order: azz
+                    null sort order: aza
                     sort order: ++-
                     Map-reduce partition columns: bin (type: binary)
                     Reduce Sink Vectorization:
@@ -550,7 +550,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS LAST, _col2 DESC NULLS LAST
+                        order by: _col5 ASC NULLS LAST, _col2 DESC NULLS FIRST
                         partition by: _col10
                         raw input shape:
                         window functions:
@@ -1830,7 +1830,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
-                    null sort order: az
+                    null sort order: aa
                     sort order: +-
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:
@@ -1878,7 +1878,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS LAST
+                        order by: _col1 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1949,11 +1949,11 @@ a	b	first_value_window_0	first_value_window_1	first_value_window_2	first_value_w
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
-2	3	3	3	3	3
-2	2	3	3	3	3
-2	1	2	2	3	3
-2	NULL	1	1	3	3
-2	NULL	NULL	NULL	3	3
+2	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	3	NULL	3
+2	3	NULL	3	NULL	3
+2	2	3	3	NULL	3
+2	1	2	2	NULL	3
 3	5	5	5	5	5
 3	4	5	5	5	5
 3	3	4	4	5	5
@@ -2182,7 +2182,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
-                    null sort order: az
+                    null sort order: aa
                     sort order: +-
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:
@@ -2230,7 +2230,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS LAST
+                        order by: _col1 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -2301,11 +2301,11 @@ a	b	last_value_window_0	last_value_window_1	last_value_window_2	last_value_windo
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	NULL	NULL
+2	NULL	3	3	3	3
 2	3	2	2	2	2
 2	2	1	1	1	1
-2	1	NULL	1	NULL	1
-2	NULL	NULL	1	NULL	1
-2	NULL	NULL	NULL	NULL	1
+2	1	1	1	1	1
 3	5	4	4	4	4
 3	4	3	3	3	3
 3	3	2	2	2	2

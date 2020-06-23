@@ -220,8 +220,8 @@ POSTHOOK: query: SELECT a, count(b) FROM t_test GROUP BY a ORDER BY a DESC LIMIT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
+NULL	0
 7	3
-6	1
 PREHOOK: query: SELECT a, count(b) FROM t_test GROUP BY a ORDER BY a DESC LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test
@@ -230,8 +230,8 @@ POSTHOOK: query: SELECT a, count(b) FROM t_test GROUP BY a ORDER BY a DESC LIMIT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
+NULL	0
 7	3
-6	1
 PREHOOK: query: SELECT a, count(b) FROM t_test GROUP BY a ORDER BY a DESC NULLS FIRST LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test

@@ -84,7 +84,7 @@ Stage-0
                 Top N Key Operator [TNK_81] (rows=3060 width=302)
                   keys:(grouping(_col3, 1L) + grouping(_col3, 0L)), CASE WHEN (((grouping(_col3, 1L) + grouping(_col3, 0L)) = 0L)) THEN (_col0) ELSE (null) END, rank_window_0,top n:100
                   PTF Operator [PTF_80] (rows=3060 width=302)
-                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col2 DESC NULLS LAST","partition by:":"(grouping(_col3, 1L) + grouping(_col3, 0L)), CASE WHEN ((grouping(_col3, 0L) = UDFToLong(0))) THEN (_col0) ELSE (CAST( null AS STRING)) END"}]
+                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col2 DESC NULLS FIRST","partition by:":"(grouping(_col3, 1L) + grouping(_col3, 0L)), CASE WHEN ((grouping(_col3, 0L) = UDFToLong(0))) THEN (_col0) ELSE (CAST( null AS STRING)) END"}]
                     Select Operator [SEL_79] (rows=3060 width=302)
                       Output:["_col0","_col1","_col2","_col3"]
                     <-Reducer 4 [SIMPLE_EDGE] vectorized

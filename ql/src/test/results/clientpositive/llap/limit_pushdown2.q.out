@@ -152,7 +152,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +-
                     keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    null sort order: za
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 20
                     Select Operator
@@ -168,7 +168,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: zz
+                          null sort order: za
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -272,7 +272,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -+
                     keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    null sort order: az
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 20
                     Select Operator
@@ -288,7 +288,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: zz
+                          null sort order: az
                           sort order: -+
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -512,7 +512,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -+
                     keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    null sort order: az
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 20
                     Select Operator
@@ -528,7 +528,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: zz
+                          null sort order: az
                           sort order: -+
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -632,7 +632,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -+
                     keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    null sort order: az
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 20
                     Select Operator
@@ -648,7 +648,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: zz
+                          null sort order: az
                           sort order: -+
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -889,7 +889,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -+
                     keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    null sort order: az
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 20
                     Select Operator
@@ -905,7 +905,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: zz
+                          null sort order: az
                           sort order: -+
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -925,12 +925,12 @@ STAGE PLANS:
                 Top N Key Operator
                   sort order: -++
                   keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: zzz
+                  null sort order: azz
                   Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 20
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                    null sort order: zzz
+                    null sort order: azz
                     sort order: -++
                     Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.3
@@ -1054,7 +1054,7 @@ STAGE PLANS:
                 Top N Key Operator
                   sort order: +-
                   keys: (_col1 / _col2) (type: double), _col0 (type: string)
-                  null sort order: zz
+                  null sort order: za
                   Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 20
                   Select Operator
@@ -1063,7 +1063,7 @@ STAGE PLANS:
                     Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: double), _col0 (type: string)
-                      null sort order: zz
+                      null sort order: za
                       sort order: +-
                       Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3

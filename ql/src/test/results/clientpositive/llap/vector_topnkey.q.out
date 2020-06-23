@@ -263,9 +263,9 @@ POSTHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
+NULL	NULL
 8	9
 7	8
-6	2
 PREHOOK: query: SELECT cint1, cdouble FROM t_test GROUP BY cint1, cdouble ORDER BY cint1, cdouble LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test
