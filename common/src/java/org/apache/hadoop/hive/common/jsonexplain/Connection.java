@@ -31,16 +31,17 @@ public final class Connection implements Comparable<Connection>{
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(from);
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Connection that = (Connection) o;
-    return Objects.equals(from, that.from);
+    return Objects.equals(type, that.type) &&
+            Objects.equals(from, that.from);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(type, from);
   }
 
   @Override

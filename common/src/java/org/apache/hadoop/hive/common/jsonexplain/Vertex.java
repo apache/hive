@@ -309,19 +309,14 @@ public final class Vertex implements Comparable<Vertex>{
     this.edgeType = this.parser.mapEdgeType(type);
   }
 
-
   @Override
-  public int hashCode() {
-    return Objects.hash(name, numReduceOp);
+  public boolean equals(Object o) {
+    return  super.equals(o);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Vertex vertex = (Vertex) o;
-    return  numReduceOp == vertex.numReduceOp &&
-            Objects.equals(name, vertex.name);
+  public int hashCode() {
+    return super.hashCode();
   }
 
   // The following code should be gone after HIVE-11075 using topological order
