@@ -531,16 +531,16 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F24:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=72.00KB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=68.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(38,39,40) WHEN 38 THEN channel WHEN 39 THEN channel WHEN 40 THEN NULL END, CASE valid_tid(38,39,40) WHEN 38 THEN id WHEN 39 THEN NULL WHEN 40 THEN NULL END, CASE valid_tid(38,39,40) WHEN 38 THEN 38 WHEN 39 THEN 39 WHEN 40 THEN 40 END, aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(sales) WHEN 39 THEN sum(sales) WHEN 40 THEN sum(sales) END), aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(returns) WHEN 39 THEN sum(returns) WHEN 40 THEN sum(returns) END), aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(profit) WHEN 39 THEN sum(profit) WHEN 40 THEN sum(profit) END)
+  |  output exprs: CASE valid_tid(38,39,40) WHEN 38 THEN channel WHEN 39 THEN channel WHEN 40 THEN NULL END, CASE valid_tid(38,39,40) WHEN 38 THEN id WHEN 39 THEN NULL WHEN 40 THEN NULL END, aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(sales) WHEN 39 THEN sum(sales) WHEN 40 THEN sum(sales) END), aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(returns) WHEN 39 THEN sum(returns) WHEN 40 THEN sum(returns) END), aggif(valid_tid(38,39,40) IN (38, 39, 40), CASE valid_tid(38,39,40) WHEN 38 THEN _impala_builtins.sum(profit) WHEN 39 THEN sum(profit) WHEN 40 THEN sum(profit) END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   66:MERGING-EXCHANGE [UNPARTITIONED]
      order by: CASE valid_tid(38,39,40) WHEN 38 THEN channel WHEN 39 THEN channel WHEN 40 THEN NULL END ASC NULLS LAST, CASE valid_tid(38,39,40) WHEN 38 THEN id WHEN 39 THEN NULL WHEN 40 THEN NULL END ASC NULLS LAST
      limit: 100
-     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=42 row-size=68B cardinality=0
+     mem-estimate=68.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=42 row-size=64B cardinality=0
      in pipelines: 38(GETNEXT)
 
 F23:PLAN FRAGMENT [HASH(CASE valid_tid(38,39,40) WHEN 38 THEN murmur_hash(channel) WHEN 39 THEN murmur_hash(channel) WHEN 40 THEN murmur_hash(NULL) END,CASE valid_tid(38,39,40) WHEN 38 THEN murmur_hash(id) WHEN 39 THEN murmur_hash(NULL) WHEN 40 THEN murmur_hash(NULL) END)] hosts=1 instances=1
@@ -550,7 +550,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   38:TOP-N [LIMIT=100]
   |  order by: CASE valid_tid(38,39,40) WHEN 38 THEN channel WHEN 39 THEN channel WHEN 40 THEN NULL END ASC NULLS LAST, CASE valid_tid(38,39,40) WHEN 38 THEN id WHEN 39 THEN NULL WHEN 40 THEN NULL END ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=42 row-size=68B cardinality=0
+  |  tuple-ids=42 row-size=64B cardinality=0
   |  in pipelines: 38(GETNEXT), 37(OPEN)
   |
   37:AGGREGATE [FINALIZE]

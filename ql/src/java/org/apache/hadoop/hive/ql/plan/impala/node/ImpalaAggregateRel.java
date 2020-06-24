@@ -334,7 +334,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
 
     int numSlots = groupingExprs.size() + aggExprs.size() + (generateGroupingId ? 1 : 0);
-    Preconditions.checkState(slotDescs.size() == numSlots);
+    Preconditions.checkState(slotDescs.size() >= numSlots);
 
     int index = 0;
 

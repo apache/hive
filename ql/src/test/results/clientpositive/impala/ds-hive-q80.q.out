@@ -524,9 +524,9 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |
   38:AGGREGATE [FINALIZE]
   |  output: aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(sales) WHEN CAST(40 AS INT) THEN sum(sales) WHEN CAST(41 AS INT) THEN sum(sales) END), aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(returns) WHEN CAST(40 AS INT) THEN sum(returns) WHEN CAST(41 AS INT) THEN sum(returns) END), aggif(valid_tid(39,40,41) IN (CAST(39 AS INT), CAST(40 AS INT), CAST(41 AS INT)), CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN _impala_builtins.sum(profit) WHEN CAST(40 AS INT) THEN sum(profit) WHEN CAST(41 AS INT) THEN sum(profit) END)
-  |  group by: CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN channel WHEN CAST(40 AS INT) THEN channel WHEN CAST(41 AS INT) THEN NULL END, CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN id WHEN CAST(40 AS INT) THEN NULL WHEN CAST(41 AS INT) THEN NULL END
+  |  group by: CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN channel WHEN CAST(40 AS INT) THEN channel WHEN CAST(41 AS INT) THEN NULL END, CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN id WHEN CAST(40 AS INT) THEN NULL WHEN CAST(41 AS INT) THEN NULL END, CASE valid_tid(39,40,41) WHEN CAST(39 AS INT) THEN CAST(39 AS INT) WHEN CAST(40 AS INT) THEN CAST(40 AS INT) WHEN CAST(41 AS INT) THEN CAST(41 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=42 row-size=72B cardinality=0
+  |  tuple-ids=42 row-size=76B cardinality=0
   |  in pipelines: 38(GETNEXT), 62(OPEN)
   |
   62:AGGREGATE [FINALIZE]
