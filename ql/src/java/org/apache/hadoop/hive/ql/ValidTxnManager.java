@@ -204,10 +204,8 @@ class ValidTxnManager {
   }
 
   private ValidTxnWriteIdList getTxnWriteIds(String txnString) throws LockException {
-
-   List<String> txnTables = getTransactionalTables(getTables(true, true));
-   ValidTxnWriteIdList txnWriteIds = null;
-
+    List<String> txnTables = getTransactionalTables(getTables(true, true));
+    ValidTxnWriteIdList txnWriteIds = null;
     if (driverContext.getCompactionWriteIds() != null) {
       // This is kludgy: here we need to read with Compactor's snapshot/txn rather than the snapshot of the current
       // {@code txnMgr}, in effect simulating a "flashback query" but can't actually share compactor's txn since it
@@ -219,9 +217,8 @@ class ValidTxnManager {
       txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
       txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
     } else {
-        txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
+      txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
     }
-
     if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false, true).isEmpty()) {
       throw new IllegalStateException(String.format(
           "Inferred transaction type '%s' doesn't conform to the actual query string '%s'",
