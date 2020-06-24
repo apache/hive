@@ -323,67 +323,34 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
 
     String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
         "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
-    String[][] expected;
-    if (existingTarget) {
-      expected = new String[][] {
-          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-              "t/delta_0000001_0000001_0000/000000_0"},
-          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-              "t/delta_0000001_0000001_0000/000000_0"},
-          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-              "t/delta_0000001_0000001_0000/000000_0"}};
-    } else {
-      expected = new String[][] {
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-                      "t/delta_0000001_0000001_0000/000000_0"},
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-                      "t/delta_0000001_0000001_0000/000000_0"},
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-                      "t/delta_0000001_0000001_0000/000000_0"}};
-    }
+    String[][] expected = new String[][] {
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+            "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+            "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
+            "t/delta_0000001_0000001_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "import existing table");
 
     runStatementOnDriver("update T set a = 0 where b = 6");
-    String[][] expected2;
-    if (existingTarget) {
-      expected2 = new String[][] {
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-              "t/delta_0000002_0000002_0000/000000_0"},
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-              "t/delta_0000002_0000002_0000/000000_0"},
-          {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-              "t/delta_0000003_0000003_0000/bucket_00000"}};
-    } else {
-      expected2 = new String[][] {
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-                      "t/delta_0000001_0000001_0000/000000_0"},
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-                      "t/delta_0000001_0000001_0000/000000_0"},
-              {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-                      "t/delta_0000001_0000001_0000/bucket_00000"}};
-    }
+    String[][] expected2 = new String[][] {
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+            "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+            "t/delta_0000001_0000001_0000/000000_0"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
+            "t/delta_0000002_0000002_0000/bucket_00000"}};
     checkResult(expected2, testQuery, isVectorized, "update imported table");
 
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
-    String[][] expected3;
-    if (existingTarget) {
-      expected3 = new String[][] {
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-              ".*t/delta_0000002_0000003_v000002[5-6]/bucket_00000"},
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-              ".*t/delta_0000002_0000003_v000002[5-6]/bucket_00000"},
-          {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-              ".*t/delta_0000002_0000003_v000002[5-6]/bucket_00000"}};
-    } else {
-      expected3 = new String[][] {
-          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-                  ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
-          {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-                  ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
-          {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-                  ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"}};
-    }
+    String[][] expected3 = new String[][] {
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
+            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"}};
     checkResult(expected3, testQuery, isVectorized, "minor compact imported table");
 
   }
@@ -562,11 +529,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     rs = runStatementOnDriver("select INPUT__FILE__NAME from T order by INPUT__FILE__NAME");
     Assert.assertEquals(3, rs.size());
     for (String s : rs) {
-      if (existingTable) {
-        Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
-      } else {
-        Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
-      }
+      Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
       Assert.assertTrue(s, s.endsWith("/000000_0"));
     }
   }

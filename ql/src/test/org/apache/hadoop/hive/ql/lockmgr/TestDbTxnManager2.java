@@ -2270,6 +2270,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     try {
       driver.run();
     } catch (Exception ex ){
+      Assert.assertEquals("expected: due to a write conflict", " actual : " + ex.getCause().getMessage());
       Assert.assertTrue(ex.getCause().getMessage().contains("due to a write conflict"));
     }
 

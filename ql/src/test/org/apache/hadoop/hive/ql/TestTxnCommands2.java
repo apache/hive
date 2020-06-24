@@ -1240,8 +1240,8 @@ public class TestTxnCommands2 {
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName.toLowerCase()),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     Set<String> expectedDeltas = new HashSet<>();
-    expectedDeltas.add("delete_delta_0000002_0000003_v0000019");
-    expectedDeltas.add("delta_0000002_0000003_v0000019");
+    expectedDeltas.add("delete_delta_0000001_0000002_v0000019");
+    expectedDeltas.add("delta_0000001_0000002_v0000019");
     Set<String> actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
