@@ -4993,9 +4993,11 @@ public class HiveConf extends Configuration {
 
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
-        "Maximum number of re-executions for a single query."),
+        "Maximum number of re-executions for a single query."
+            + " The maximum re-execution retry is limited at 10"),
     HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT("hive.query.reexecution.retrylock.max.count", 5,
-        "Maximum number of re-executions with retrylock strategy for a single query."),
+        "Maximum number of re-executions with retrylock strategy for a single query."
+            + " The maximum re-execution retry is limited at 10"),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_BATCH_SIZE("hive.query.reexecution.stats.cache.batch.size", -1,

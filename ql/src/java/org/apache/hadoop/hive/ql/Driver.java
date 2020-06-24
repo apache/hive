@@ -678,7 +678,7 @@ public class Driver implements IDriver {
 
       try {
         if (!validTxnManager.isValidTxnListState()) {
-          LOG.info("Reexecuting after acquiring locks, since snapshot was outdated.");
+          LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry (see ReExecutionRetryLockPlugin)
           try {

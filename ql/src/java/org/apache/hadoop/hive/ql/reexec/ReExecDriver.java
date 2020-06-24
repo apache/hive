@@ -57,6 +57,10 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class ReExecDriver implements IDriver {
 
+  // Every plugin should check for execution limit in shouldReexecute
+  // But just in case, we don't want an infinite loop
+  private final static int MAX_EXECUTION = 10;
+
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
 
     @Override
@@ -148,9 +152,6 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
-    // The plugins should check for execution limit in shouldReexecute
-    // But just in case, we don't want an infinite loop
-    int maxExecutions = getMaxExecutions();
 
     while (true) {
       executionIndex++;
@@ -173,7 +174,7 @@ public class ReExecDriver implements IDriver {
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr == null && shouldReExecute(cpe);
 
-      if (executionIndex >= maxExecutions || !shouldReExecute) {
+      if (executionIndex >= MAX_EXECUTION || !shouldReExecute) {
         if (cpr != null) {
           return cpr;
         } else {
@@ -197,13 +198,6 @@ public class ReExecDriver implements IDriver {
         return cpr;
       }
     }
-  }
-
-  private int getMaxExecutions() {
-    int maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
-    int maxRetryLockExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT);
-    maxExecutions = Math.max(maxExecutions, maxRetryLockExecutions);
-    return maxExecutions;
   }
 
   private void afterExecute(PlanMapper planMapper, boolean success) {
