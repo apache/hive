@@ -91,6 +91,7 @@
     <!-- Determines the log level of the console logger, hive.log is independent of this-->
     <test.console.log.level>INFO</test.console.log.level>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.local.warehouse.dir>${project.build.directory}/localfs/warehouse</test.local.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
@@ -99,7 +100,6 @@
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
@@ -216,6 +216,7 @@
     <json-path.version>2.4.0</json-path.version>
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.0.0-incubating</datasketches.version>
+    <spotbugs.version>4.0.3</spotbugs.version>
   </properties>
 
   <repositories>
@@ -1107,6 +1108,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -1161,18 +1168,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.datanucleus</groupId>
-          <artifactId>datanucleus-maven-plugin</artifactId>
-          <version>${datanucleus.maven.plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.datanucleus</groupId>
-              <artifactId>datanucleus-core</artifactId>
-              <version>${datanucleus-core.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
@@ -1418,6 +1413,7 @@
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables></test.src.tables>
@@ -1457,6 +1453,10 @@
       <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
+	    <exclude>**/.factorypath</exclude>
+	    <exclude>**/.classpath</exclude>
+	    <exclude>**/.project</exclude>
+	    <exclude>**/.settings/**</exclude>
 	    <exclude>**/*.arcconfig</exclude>
 	    <exclude>**/package-info.java</exclude>
 	    <exclude>**/*.properties</exclude>
@@ -1465,6 +1465,7 @@
 	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
 	    <exclude>**/gen/**</exclude>
+	    <exclude>**/target/**</exclude>
 	    <exclude>**/scripts/**</exclude>
 	    <exclude>**/resources/**</exclude>
 	    <exclude>**/*.rc</exclude>
@@ -1617,7 +1618,7 @@
               <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs</artifactId>
-                <version>4.0.3</version>
+                <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
             <configuration>

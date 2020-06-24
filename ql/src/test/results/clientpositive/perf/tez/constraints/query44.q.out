@@ -193,7 +193,7 @@ Stage-0
                                 Filter Operator [FIL_141] (rows=6951 width=116)
                                   predicate:(rank_window_0 < 11)
                                   PTF Operator [PTF_140] (rows=20854 width=116)
-                                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS LAST","partition by:":"0"}]
+                                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS FIRST","partition by:":"0"}]
                                     Select Operator [SEL_139] (rows=20854 width=116)
                                       Output:["_col0","_col1"]
                                     <-Reducer 3 [SIMPLE_EDGE]

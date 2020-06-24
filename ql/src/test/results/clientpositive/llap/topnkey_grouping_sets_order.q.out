@@ -316,7 +316,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -+
                     keys: a (type: int), b (type: int)
-                    null sort order: zz
+                    null sort order: az
                     Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 7
                     Select Operator
@@ -331,7 +331,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                          null sort order: zzz
+                          null sort order: azz
                           sort order: -++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                           Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
@@ -349,7 +349,7 @@ STAGE PLANS:
                 pruneGroupingSetId: true
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
-                  null sort order: zz
+                  null sort order: az
                   sort order: -+
                   Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
@@ -385,13 +385,13 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-10	11
-10	NULL
-7	8
-7	NULL
-6	2
-6	NULL
-5	1
+NULL	1
+NULL	2
+NULL	8
+NULL	11
+NULL	NULL
+NULL	NULL
+NULL	NULL
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -400,13 +400,13 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-10	11
-10	NULL
-7	8
-7	NULL
-6	2
-6	NULL
-5	1
+NULL	1
+NULL	2
+NULL	8
+NULL	11
+NULL	NULL
+NULL	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC NULLS FIRST, b ASC NULLS FIRST LIMIT 7
 PREHOOK: type: QUERY

@@ -20,12 +20,17 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.filter.MutableFilterContext;
+
+import java.util.Arrays;
 
 /**
  * Unlike VRB, doesn't have some fields, and doesn't have all columns
  * (non-selected, partition cols, cols for downstream ops, etc.)
+ * It does, however, hold the FilterContext of the VRB.
  */
 public class ColumnVectorBatch {
+  public MutableFilterContext filterContext;
   public ColumnVector[] cols;
   public int size;
 
@@ -34,6 +39,7 @@ public class ColumnVectorBatch {
   }
 
   public ColumnVectorBatch(int columnCount, int batchSize) {
+    this.filterContext = new VectorizedRowBatch(0);
     this.cols = new ColumnVector[columnCount];
     this.size = batchSize;
   }
@@ -51,6 +57,15 @@ public class ColumnVectorBatch {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("FilterContext used: ");
+    b.append(filterContext.isSelectedInUse());
+    b.append(", size: ");
+    b.append(filterContext.getSelectedSize());
+    b.append('\n');
+    b.append("Selected: ");
+    b.append(filterContext.isSelectedInUse() ? Arrays.toString(filterContext.getSelected()) : "[]");
+    b.append('\n');
+
     b.append("Column vector types: ");
     for (int k = 0; k < cols.length; k++) {
       ColumnVector cv = cols[k];

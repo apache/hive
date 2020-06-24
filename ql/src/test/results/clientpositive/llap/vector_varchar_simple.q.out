@@ -214,7 +214,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: key (type: varchar(10))
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 500 Data size: 94248 Basic stats: COMPLETE Column stats: NONE
                     top n: 5
                     Select Operator
@@ -223,7 +223,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 94248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(10))
-                        null sort order: z
+                        null sort order: a
                         sort order: -
                         Statistics: Num rows: 500 Data size: 94248 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1

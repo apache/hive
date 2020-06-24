@@ -60,7 +60,7 @@ public abstract class Retry<T> {
         if (MAX_RETRIES == tries) {
           throw e;
         } else {
-          Thread.sleep(DELAY * tries);
+          Thread.sleep((long) DELAY * tries);
           return runWithDelay();
         }
       } else {

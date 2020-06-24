@@ -22714,6 +22714,10 @@ class CompactionInfoStruct {
    * @var bool
    */
   public $hasoldabort = null;
+  /**
+   * @var int
+   */
+  public $enqueueTime = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22774,6 +22778,10 @@ class CompactionInfoStruct {
           'var' => 'hasoldabort',
           'type' => TType::BOOL,
           ),
+        15 => array(
+          'var' => 'enqueueTime',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22818,6 +22826,9 @@ class CompactionInfoStruct {
       }
       if (isset($vals['hasoldabort'])) {
         $this->hasoldabort = $vals['hasoldabort'];
+      }
+      if (isset($vals['enqueueTime'])) {
+        $this->enqueueTime = $vals['enqueueTime'];
       }
     }
   }
@@ -22939,6 +22950,13 @@ class CompactionInfoStruct {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 15:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->enqueueTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -23020,6 +23038,11 @@ class CompactionInfoStruct {
     if ($this->hasoldabort !== null) {
       $xfer += $output->writeFieldBegin('hasoldabort', TType::BOOL, 14);
       $xfer += $output->writeBool($this->hasoldabort);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->enqueueTime !== null) {
+      $xfer += $output->writeFieldBegin('enqueueTime', TType::I64, 15);
+      $xfer += $output->writeI64($this->enqueueTime);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -23339,6 +23362,10 @@ class ShowCompactResponseElement {
    * @var string
    */
   public $errorMessage = null;
+  /**
+   * @var int
+   */
+  public $enqueueTime = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -23399,6 +23426,10 @@ class ShowCompactResponseElement {
           'var' => 'errorMessage',
           'type' => TType::STRING,
           ),
+        15 => array(
+          'var' => 'enqueueTime',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -23443,6 +23474,9 @@ class ShowCompactResponseElement {
       }
       if (isset($vals['errorMessage'])) {
         $this->errorMessage = $vals['errorMessage'];
+      }
+      if (isset($vals['enqueueTime'])) {
+        $this->enqueueTime = $vals['enqueueTime'];
       }
     }
   }
@@ -23564,6 +23598,13 @@ class ShowCompactResponseElement {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 15:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->enqueueTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -23645,6 +23686,11 @@ class ShowCompactResponseElement {
     if ($this->errorMessage !== null) {
       $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 14);
       $xfer += $output->writeString($this->errorMessage);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->enqueueTime !== null) {
+      $xfer += $output->writeFieldBegin('enqueueTime', TType::I64, 15);
+      $xfer += $output->writeI64($this->enqueueTime);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

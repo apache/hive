@@ -37,6 +37,8 @@ import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES;
+
 /**
  * Covers utility functions that are used by LLAP code and depend on Hive constructs e.g. ql code.
  */
@@ -48,18 +50,29 @@ public final class LlapHiveUtils {
     // Not to be used;
   }
 
-  public static CacheTag getDbAndTableNameForMetrics(Path path, boolean includeParts,
-        Map<Path, PartitionDesc> parts) {
-
-    assert(parts != null);
+  /**
+   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path->PartitionDesc entries.
+   * If it is not found (e.g. Path denotes a partition path, but map contains table level instances only) we will try
+   * to do the same with the parent of this path, traversing up until there's a match, if any.
+   * @param path the absolute path used for the look up
+   * @param partitionDescMap the map
+   * @return the PartitionDesc instance if found, null if not found
+   */
+  public static PartitionDesc partitionDescForPath(Path path, Map<Path, PartitionDesc> partitionDescMap) {
+    assert(partitionDescMap != null);
 
     // Look for PartitionDesc instance matching our Path
     Path parentPath = path;
-    PartitionDesc part = parts.get(parentPath);
+    PartitionDesc part = partitionDescMap.get(parentPath);
     while (!parentPath.isRoot() && part == null) {
       parentPath = parentPath.getParent();
-      part = parts.get(parentPath);
+      part = partitionDescMap.get(parentPath);
     }
+    return part;
+  }
+
+  public static CacheTag getDbAndTableNameForMetrics(Path path, boolean includeParts,
+      PartitionDesc part) {
 
     // Fallback to legacy cache tag creation logic.
     if (part == null) {
@@ -70,6 +83,19 @@ public final class LlapHiveUtils {
       return CacheTag.build(part.getTableName());
     } else {
       return CacheTag.build(part.getTableName(), part.getPartSpec());
+    }
+  }
+
+  public static int getSchemaHash(PartitionDesc part) {
+    if (part == null) {
+      return SchemaAwareCacheKey.NO_SCHEMA_HASH;
+    } else {
+      Object columnTypes = part.getProperties().get(META_TABLE_COLUMN_TYPES);
+      if (columnTypes != null) {
+        return columnTypes.toString().hashCode();
+      } else {
+        return SchemaAwareCacheKey.NO_SCHEMA_HASH;
+      }
     }
   }
 

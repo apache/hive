@@ -74,21 +74,21 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
   public void authenticateGivenBlankPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", "");
+    auth.authenticate("user", "");
   }
 
   @Test
   public void authenticateGivenStringWithNullCharacterForPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", "\0");
+    auth.authenticate("user", "\0");
   }
 
   @Test
   public void authenticateGivenNullForPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", null);
+    auth.authenticate("user", null);
   }
 
   @Test
@@ -104,7 +104,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(factory.getInstance(conf, "cn=user1,ou=Users,dc=mycorp,dc=com", "Blah")).thenThrow(AuthenticationException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(2)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, atLeastOnce()).close();
@@ -282,7 +282,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(true);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, times(1)).findGroupDn(anyString());
@@ -304,7 +304,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(false);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
   }
 
   @Test
@@ -327,7 +327,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", "cn=HIVE-USERS2,ou=Groups,ou=branch1,dc=mycorp,dc=com")).thenReturn(true);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, times(2)).findGroupDn(anyString());
@@ -352,7 +352,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(bindUser), eq(bindPass));
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authFullUser), eq(authPass));
@@ -370,7 +370,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authUser), eq(authPass));
   }
@@ -388,7 +388,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(bindUser), eq(bindPass));
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authFullUser), eq(authPass));
@@ -411,7 +411,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   @Test
@@ -428,7 +428,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenThrow(NamingException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   @Test
@@ -444,7 +444,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(factory.getInstance(any(Configuration.class), eq(bindUser), eq(bindPass))).thenThrow(AuthenticationException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   private void expectAuthenticationExceptionForInvalidPassword() {
@@ -455,7 +455,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
   private void authenticateUserAndCheckSearchIsClosed(String user) throws IOException {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
     try {
-      auth.Authenticate(user, "password doesn't matter");
+      auth.authenticate(user, "password doesn't matter");
     } finally {
       verify(search, atLeastOnce()).close();
     }
