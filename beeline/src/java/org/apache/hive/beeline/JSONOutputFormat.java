@@ -25,7 +25,7 @@ package org.apache.hive.beeline;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
 
 /**
  * OutputFormat for standard JSON format.
@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 public class JSONOutputFormat extends AbstractOutputFormat {
   private final BeeLine beeLine;
   private int[] columnTypes;
+  private JsonStringEncoder jse = JsonStringEncoder.getInstance();
 
   /**
    * @param beeLine
@@ -89,7 +90,7 @@ public class JSONOutputFormat extends AbstractOutputFormat {
       buf.append(value.equalsIgnoreCase("TRUE"));
       return;
     }
-    buf.append("\"" + StringEscapeUtils.escapeJava(value) + "\"");
+    buf.append("\"" + new String(jse.quoteAsString(value)) + "\"");
   }
 
   private void initColumnTypes(Rows rows, Rows.Row header) {
