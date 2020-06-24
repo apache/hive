@@ -6511,4 +6511,13 @@ public class HiveConf extends Configuration {
     }
     return ret;
   }
+
+  // sync all configs from given conf
+  public void syncFromConf(HiveConf conf) {
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
+    while (iter.hasNext()) {
+      Map.Entry<String, String> e = iter.next();
+      set(e.getKey(), e.getValue());
+    }
+  }
 }

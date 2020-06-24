@@ -143,6 +143,7 @@ public class SessionState implements ISessionAuthState{
 
   // Prepared statement plans
   private final Map<String, QueryPlan> preparePlanMap = new ConcurrentHashMap<>();
+  private final Map<String, HiveConf> queryConfigMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -1953,6 +1954,10 @@ public class SessionState implements ISessionAuthState{
 
   public Map<String, QueryPlan> getPreparePlans() {
     return preparePlanMap;
+  }
+
+  public Map<String, HiveConf> getQueryConfig() {
+    return queryConfigMap;
   }
 
   public Map<String, TempTable> getTempPartitions() {

@@ -373,6 +373,12 @@ public class Compiler {
           //TODO: this will create empty schema, need to figure out a way to create proper schema
           // from cached plan
           setSchema(sem);
+
+          // reset config
+          HiveConf originalConf = ss.getQueryConfig().get(queryName);
+          assert(originalConf != null);
+          driverContext.getConf().syncFromConf(originalConf);
+
           return planCopy;
         } else {
           //TODO: throw an error
@@ -412,6 +418,8 @@ public class Compiler {
       SessionState ss = SessionState.get();
       if (ss != null) {
         ss.getPreparePlans().put(PreparePlanUtils.getPrepareStatementName(tree), plan);
+        ss.getQueryConfig().put(PreparePlanUtils.getPrepareStatementName(tree),
+            driverContext.getConf());
       }
     }
   }
