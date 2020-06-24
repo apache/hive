@@ -3,22 +3,25 @@
 
 set hive.explain.user=false;
 --explain select * from src where key > '0' limit 10;
+set hive.vectorized.execution.enabled=false;
 
+
+explain extended prepare pcount as select count(*) from src where key > $1;
+prepare pcount as select count(*) from src where key > $1;
+execute pcount (1,200);
+select count(*) from src where key > '200';
 
 -- single param
-explain prepare p1 as select * from src where key > $1 limit 10;
-prepare p1 as select * from src where key > $1 limit 10;
+explain extended prepare p1 as select * from src where key > $1 order by key limit 10;
+explain extended select * from src where key > '200' order by key limit 10;
+prepare p1 as select * from src where key > $1 order by key limit 10;
 
-execute p1 (1,'200');
-select * from src where key > '200' limit 10;
+execute p1 (1,200);
+select * from src where key > '200' order by key limit 10;
 
 -- same query, different param
-execute p1 (1, '0');
-select * from src where key > '0' limit 10;
-
--- different param type
 execute p1 (1,0);
-select * from src where key > 0 limit 10;
+select * from src where key > '0' order by key limit 10;
 
 -- multiple parameters
 explain prepare p2 as select min(ctinyint), max(cbigint) from alltypesorc where cint > ($1 + $2 + $3) group by ctinyint;
