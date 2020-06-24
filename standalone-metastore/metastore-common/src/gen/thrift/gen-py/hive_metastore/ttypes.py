@@ -13454,8 +13454,8 @@ class CommitTxnRequest:
    - txnid
    - replPolicy
    - writeEventInfos
-   - keyValue
    - replLastIdInfo
+   - keyValue
   """
 
   thrift_spec = (
@@ -13463,16 +13463,16 @@ class CommitTxnRequest:
     (1, TType.I64, 'txnid', None, None, ), # 1
     (2, TType.STRING, 'replPolicy', None, None, ), # 2
     (3, TType.LIST, 'writeEventInfos', (TType.STRUCT,(WriteEventInfo, WriteEventInfo.thrift_spec)), None, ), # 3
-    (4, TType.STRUCT, 'keyValue', (CommitTxnKeyValue, CommitTxnKeyValue.thrift_spec), None, ), # 4
-    (5, TType.STRUCT, 'replLastIdInfo', (ReplLastIdInfo, ReplLastIdInfo.thrift_spec), None, ), # 5
+    (4, TType.STRUCT, 'replLastIdInfo', (ReplLastIdInfo, ReplLastIdInfo.thrift_spec), None, ), # 4
+    (5, TType.STRUCT, 'keyValue', (CommitTxnKeyValue, CommitTxnKeyValue.thrift_spec), None, ), # 5
   )
 
-  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, keyValue=None, replLastIdInfo=None,):
+  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None,):
     self.txnid = txnid
     self.replPolicy = replPolicy
     self.writeEventInfos = writeEventInfos
-    self.keyValue = keyValue
     self.replLastIdInfo = replLastIdInfo
+    self.keyValue = keyValue
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -13506,14 +13506,14 @@ class CommitTxnRequest:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRUCT:
-          self.keyValue = CommitTxnKeyValue()
-          self.keyValue.read(iprot)
+          self.replLastIdInfo = ReplLastIdInfo()
+          self.replLastIdInfo.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.STRUCT:
-          self.replLastIdInfo = ReplLastIdInfo()
-          self.replLastIdInfo.read(iprot)
+          self.keyValue = CommitTxnKeyValue()
+          self.keyValue.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -13541,13 +13541,13 @@ class CommitTxnRequest:
         iter592.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.keyValue is not None:
-      oprot.writeFieldBegin('keyValue', TType.STRUCT, 4)
-      self.keyValue.write(oprot)
-      oprot.writeFieldEnd()
     if self.replLastIdInfo is not None:
-      oprot.writeFieldBegin('replLastIdInfo', TType.STRUCT, 5)
+      oprot.writeFieldBegin('replLastIdInfo', TType.STRUCT, 4)
       self.replLastIdInfo.write(oprot)
+      oprot.writeFieldEnd()
+    if self.keyValue is not None:
+      oprot.writeFieldBegin('keyValue', TType.STRUCT, 5)
+      self.keyValue.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -13563,8 +13563,8 @@ class CommitTxnRequest:
     value = (value * 31) ^ hash(self.txnid)
     value = (value * 31) ^ hash(self.replPolicy)
     value = (value * 31) ^ hash(self.writeEventInfos)
-    value = (value * 31) ^ hash(self.keyValue)
     value = (value * 31) ^ hash(self.replLastIdInfo)
+    value = (value * 31) ^ hash(self.keyValue)
     return value
 
   def __repr__(self):
