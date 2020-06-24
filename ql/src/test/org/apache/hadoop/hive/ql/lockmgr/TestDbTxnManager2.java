@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -2982,6 +2984,50 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr3.commitTxn();
 
     driver.run("drop database if exists temp cascade");
+  }
+
+  @Test
+  public void testValidTxnList() throws Exception {
+    long readTxnId = txnMgr.openTxn(ctx, "u0", TxnType.READ_ONLY);
+    HiveTxnManager txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnManager1.openTxn(ctx, "u0");
+    //Excludes open read only txns by default
+    ValidTxnList validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open repl created only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.REPL_CREATED));
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(readTxnId, validTxns.getInvalidTransactions()[0]);
+    txnManager1.commitTxn();
+    txnMgr.commitTxn();
+
+    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED);
+    txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnManager1.openTxn(ctx, "u0");
+    //Excludes open read only txns by default
+    validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
+
+    //Exclude open repl created only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.REPL_CREATED));
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open read only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
+    txnMgr.commitTxn();
+
+    //Transaction is committed. So no open txn
+    validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open read only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+    txnManager1.commitTxn();
   }
 
   @Rule
