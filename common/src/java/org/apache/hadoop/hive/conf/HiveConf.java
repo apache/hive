@@ -2783,6 +2783,8 @@ public class HiveConf extends Configuration {
     HIVE_TXN_READ_LOCKS("hive.txn.read.locks", true,
         "Flag to turn off the read locks, when set to false. Although its not recommended, \n" +
         "but in performance critical scenarios this option may be exercised."),
+    HIVE_LOCKS_PARTITION_THRESHOLD("hive.locks.max.partitions", -1,
+        "Locks the entire table if number of partition locks exceeds user-defined threshold. Disabled by default."),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
