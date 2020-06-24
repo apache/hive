@@ -47,7 +47,6 @@ public class TestReExecuteKilledTezAMQueryPlugin {
   private static final String tableName = "testKillTezAmTbl";
   private static String dataFileDir;
   private static final String testDbName = "testKillTezAmDb";
-  protected static Connection hs2Conn = null;
   private static HiveConf conf;
 
   private static class ExceptionHolder {
@@ -68,49 +67,44 @@ public class TestReExecuteKilledTezAMQueryPlugin {
   }
 
   @BeforeClass
-    public static void beforeTest() throws Exception {
-      conf = defaultConf();
-      conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
-      conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "reexecute_lost_am");
-      MiniHS2.cleanupLocalDir();
-      Class.forName(MiniHS2.getJdbcDriverName());
-      miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
-      dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
-      Map<String, String> confOverlay = new HashMap<String, String>();
-      miniHS2.start(confOverlay);
-      miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
+  public static void beforeTest() throws Exception {
+    conf = defaultConf();
+    conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
+    conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "reexecute_lost_am");
+    MiniHS2.cleanupLocalDir();
+    Class.forName(MiniHS2.getJdbcDriverName());
+    miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
+    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
-      Connection conDefault = getConnection(miniHS2.getJdbcURL(),
-      System.getProperty("user.name"), "bar");
-      Statement stmt = conDefault.createStatement();
-      String tblName = testDbName + "." + tableName;
-      Path dataFilePath = new Path(dataFileDir, "kv1.txt");
-      String udfName = TestJdbcWithMiniLlapArrow.SleepMsUDF.class.getName();
-      stmt.execute("drop database if exists " + testDbName + " cascade");
-      stmt.execute("create database " + testDbName);
-      stmt.execute("set role admin");
-      stmt.execute("dfs -put " + dataFilePath.toString() + " " + "kv1.txt");
-      stmt.execute("use " + testDbName);
-      stmt.execute("create table " + tblName + " (int_col int, value string) ");
-      stmt.execute("load data inpath 'kv1.txt' into table " + tblName);
-      stmt.execute("create function sleepMsUDF as '" + udfName + "'");
-      stmt.execute("grant select on table " + tblName + " to role public");
+    Connection conDefault = getConnection(miniHS2.getJdbcURL(),
+    System.getProperty("user.name"), "bar");
+    Statement stmt = conDefault.createStatement();
+    String tblName = testDbName + "." + tableName;
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+    String udfName = TestJdbcWithMiniLlapArrow.SleepMsUDF.class.getName();
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.execute("create database " + testDbName);
+    stmt.execute("set role admin");
+    stmt.execute("dfs -put " + dataFilePath.toString() + " " + "kv1.txt");
+    stmt.execute("use " + testDbName);
+    stmt.execute("create table " + tblName + " (int_col int, value string) ");
+    stmt.execute("load data inpath 'kv1.txt' into table " + tblName);
+    stmt.execute("create function sleepMsUDF as '" + udfName + "'");
+    stmt.execute("grant select on table " + tblName + " to role public");
 
-      stmt.close();
-      conDefault.close();
-    }
+    stmt.close();
+    conDefault.close();
+  }
 
   @AfterClass
-    public static void afterTest() {
-      if (miniHS2 != null && miniHS2.isStarted()) {
-        miniHS2.stop();
-      }
+  public static void afterTest() {
+    if (miniHS2 != null && miniHS2.isStarted()) {
+      miniHS2.stop();
     }
-
-  @Before
-    public void setUp() throws Exception {
-      hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
-    }
+  }
 
   public static Connection getConnection(String jdbcURL, String user, String pwd) throws SQLException {
     Connection conn = DriverManager.getConnection(jdbcURL, user, pwd);
@@ -118,63 +112,59 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     return conn;
   }
 
-  @After
-    public void tearDown() throws Exception {
-      hs2Conn.close();
-    }
+  @Test
+  public void testKillQueryById() throws Exception {
+    String user = System.getProperty("user.name");
+    Connection con1 = getConnection(miniHS2.getJdbcURL(testDbName), user, "bar");
 
-    @Test
-    public void testKillQueryById() throws Exception {
-      String user = System.getProperty("user.name");
-      Connection con1 = getConnection(miniHS2.getJdbcURL(testDbName), user, "bar");
+    final HiveStatement stmt = (HiveStatement)con1.createStatement();
+    final StringBuffer stmtQueryId = new StringBuffer();
+    ExceptionHolder originalQExHolder = new ExceptionHolder();
+    originalQExHolder.throwable = null;
 
-      final HiveStatement stmt = (HiveStatement)con1.createStatement();
-      final StringBuffer stmtQueryId = new StringBuffer();
-      ExceptionHolder originalQExHolder = new ExceptionHolder();
-      originalQExHolder.throwable = null;
+    // Thread executing the query
+    Thread tExecute = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("Executing query: ");
+          stmt.execute("set hive.llap.execution.mode = none");
 
-      // Thread executing the query
-      Thread tExecute = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            System.out.println("Executing query: ");
-            stmt.execute("set hive.llap.execution.mode = none");
-
-            // The test table has 500 rows, so total query time should be ~ 500*100ms
-            stmt.executeAsync("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
-            "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
-            stmtQueryId.append(stmt.getQueryId());
-            stmt.getUpdateCount();
-          } catch (SQLException e) {
-            originalQExHolder.throwable = e;
-          }
-        }
-      });
-
-      tExecute.start();
-
-      // wait for other thread to create the stmt handle
-      int count = 0;
-      while (++count <= 10) {
-        Thread.sleep(2000);
-        if (stmtQueryId.length() != 0) {
-          String queryId = stmtQueryId.toString();
-          System.out.println("Killing query: " + queryId);
-          killAMForQueryId(queryId);
-          break;
+          // The test table has 500 rows, so total query time should be ~ 500*100ms
+          stmt.executeAsync("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
+          "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
+          stmtQueryId.append(stmt.getQueryId());
+          stmt.getUpdateCount();
+        } catch (SQLException e) {
+          originalQExHolder.throwable = e;
         }
       }
+    });
 
-      tExecute.join();try {
-        stmt.close();
-        con1.close();
-      } catch (Exception e) {
-        // ignore error
-        LOG.warn("Exception when close stmt and con", e);
+    tExecute.start();
+
+    // wait for other thread to create the stmt handle
+    int count = 0;
+    while (++count <= 10) {
+      Thread.sleep(2000);
+      if (stmtQueryId.length() != 0) {
+        String queryId = stmtQueryId.toString();
+        System.out.println("Killing query: " + queryId);
+        killAMForQueryId(queryId);
+        break;
       }
-      Assert.assertEquals(originalQExHolder.throwable, null);
     }
+
+    tExecute.join();
+    try {
+      stmt.close();
+      con1.close();
+    } catch (Exception e) {
+      // ignore error
+      LOG.warn("Exception when close stmt and con", e);
+    }
+    Assert.assertEquals(originalQExHolder.throwable, null);
+  }
 
   private void killAMForQueryId(String queryId) throws Exception {
     YarnClient yarnClient = YarnClient.createYarnClient();
