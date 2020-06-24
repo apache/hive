@@ -735,11 +735,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 6, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
 
@@ -748,11 +746,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 7, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 5, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
@@ -765,11 +761,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 8, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 6, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
@@ -798,8 +792,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr1.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr1);
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
 
@@ -808,8 +801,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
@@ -819,8 +811,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 5, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
@@ -1111,7 +1102,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
     txnMgr.openTxn(ctx, "Long Running");
-    driver.compileAndRespond("select a from  TAB_PART where p = 'blah'", true);
+    driver.compileAndRespond("select a from TAB_PART where p = 'blah'", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
@@ -1189,9 +1180,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
-    /**
-     * The last transaction will always remain in the transaction table, so we will open an other one,
-     * wait for the timeout period to exceed, then start the initiator that will clean
+    /*
+      The last transaction will always remain in the transaction table, so we will open an other one,
+      wait for the timeout period to exceed, then start the initiator that will clean
      */
     txnMgr.openTxn(ctx, "Long Running");
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
@@ -1377,7 +1368,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate3
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1441,7 +1431,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1505,7 +1494,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1582,7 +1570,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //"Update tab2"
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1642,8 +1629,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("delete from tab1 where p='two' and b=2", true);
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 5, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
@@ -1657,10 +1643,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //"delete from tab1" txn
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(4).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", null, locks);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
     //completion of txnid:txnIdSelect
@@ -2720,8 +2704,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     //tries to get X lock on T7.p=1 and gets Waiting state
     ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
     List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
     long extLockId = checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks).getLockid();
@@ -2743,25 +2726,22 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         ex.getMessage());
     }
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 4 : 7), locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 3 : 5), locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
     if (!zeroWaitRead) {
-      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
     }
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
 
-    txnMgr.commitTxn(); //release locks from "select a from T7" - to unblock hte drop partition
-    //retest the the "drop partiton" X lock
-    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(zeroWaitRead ? 3 : 6).getLockid());
+    txnMgr.commitTxn(); //release locks from "select a from T7" - to unblock the drop partition
+    //re-test the "drop partiton" X lock
+    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(zeroWaitRead ? 2 : 4).getLockid());
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 1 : 4), locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 1 : 3), locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     if (!zeroWaitRead) {
-      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
 
@@ -2769,8 +2749,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       //re-test the locks
       ((DbLockManager) txnMgr2.getLockManager()).checkLock(locks.get(1).getLockid()); //S lock on T7
       locks = getLocks();
-      Assert.assertEquals("Unexpected lock count", 3, locks.size());
-      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
     }
@@ -2931,4 +2910,56 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
   }
+
+  @Test
+  public void testAnalyze() throws Exception {
+    dropTable(new String[] {"tab_acid", "tab_not_acid"});
+
+    driver.run("create table tab_not_acid (key string, value string) partitioned by (ds string, hr string) " +
+        "stored as textfile");
+    driver.run("insert into tab_not_acid partition (ds='2008-04-08', hr='11') values ('238', 'val_238')");
+    driver.run("analyze table tab_not_acid PARTITION (ds, hr) compute statistics");
+
+    driver.run("create table tab_acid (key string, value string) partitioned by (ds string, hr string) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid PARTITION (ds, hr) select * from tab_not_acid");
+    driver.run("analyze table tab_acid PARTITION (ds, hr) compute statistics");
+
+    driver.compileAndRespond("analyze table tab_not_acid PARTITION(ds, hr) compute statistics", true);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "ds=2008-04-08/hr=11", locks);
+    txnMgr.commitTxn();
+
+    driver.compileAndRespond("analyze table tab_acid PARTITION(ds, hr) compute statistics");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");
+
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "ds=2008-04-08/hr=11", locks);
+  }
+
+  @Test
+  public void testFullTableReadLock() throws Exception {
+    dropTable(new String[] {"tab_acid", "tab_not_acid"});
+    conf.setIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create table if not exists tab_not_acid (na int, nb int) partitioned by (np string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='false')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+    driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')");
+
+    driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+  }
+
 }
