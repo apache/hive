@@ -376,7 +376,7 @@ public class Initiator extends MetaStoreCompactorThread {
         msg.append(" threshold: ");
         msg.append(deltaPctThreshold);
         msg.append(" will major compact: ");
-        msg.append(bigEnough || (deltaSize == 0  && multiBase));
+        msg.append(bigEnough);
         LOG.debug(msg.toString());
       }
       if (bigEnough || (deltaSize == 0  && multiBase)) return CompactionType.MAJOR;
