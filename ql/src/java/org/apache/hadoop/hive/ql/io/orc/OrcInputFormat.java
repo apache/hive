@@ -494,6 +494,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // we go thru all the top level ORC file columns that are included, in order, they match
     // originalColumnNames. This way, we do not depend on names stored inside ORC for SARG leaf
     // column name resolution (see mapSargColumns method).
+    if (rootColumn > types.size() - 1) {
+      LOG.warn(
+          "possible schema mismatch, asked for column with index:{} but there is only {} types defined"
+              + " (isOriginal: {}, originalColumnNames.length: {}), cannot get sarg col names...",
+          rootColumn, types.size(), isOriginal, originalColumnNames.length);
+      return null;
+    }
     for(int columnId: types.get(rootColumn).getSubtypesList()) {
       if (includedColumns == null || includedColumns[columnId - rootColumn]) {
         // this is guaranteed to be positive because types only have children
