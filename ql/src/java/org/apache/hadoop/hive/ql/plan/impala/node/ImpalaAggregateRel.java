@@ -62,6 +62,7 @@ import org.apache.impala.planner.PlanNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -182,17 +183,16 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
 
     for (int i = 0; i < groupSets.size(); i++) {
       ImmutableBitSet presentGbFields = groupSets.get(i);
-      // identify which group-by expr is missing from this grouping set
-      ImmutableBitSet missingGbFields = groupSet.except(presentGbFields);
-      Map<Integer, Expr> oneGroupExprs = new HashMap<>();
-      for (int presentField : presentGbFields) {
-        oneGroupExprs.put(presentField, input.getExpr(presentField));
-      }
-      for (int missingField : missingGbFields) {
-        // fill missing slots with null with the appropriate data type
-        Type nullType = gbExprTypes.get(missingField);
-        ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, nullType);
-        oneGroupExprs.put(missingField, nullLiteral);
+      Map<Integer, Expr> oneGroupExprs = new LinkedHashMap<>();
+      for (int groupByField : groupSet) {
+        if (presentGbFields.get(groupByField)) {
+          oneGroupExprs.put(groupByField, input.getExpr(groupByField));
+        } else {
+          // fill missing slots with null with the appropriate data type
+          Type nullType = gbExprTypes.get(groupByField);
+          ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, nullType);
+          oneGroupExprs.put(groupByField, nullLiteral);
+        }
       }
       allGroupSetExprs.add(new ArrayList<>(oneGroupExprs.values()));
     }
