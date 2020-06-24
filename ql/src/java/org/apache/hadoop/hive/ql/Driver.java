@@ -440,8 +440,12 @@ public class Driver implements IDriver {
     }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
-    driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
-    driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    // Unset all the keys
+    for (String key : new String[] { ValidTxnList.VALID_TXNS_KEY, ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY,
+        ValidTxnList.COMPACTOR_VALID_TXNS_ID_KEY, ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY }) {
+      driverContext.getConf().unset(key);
+      SessionState.get().getConf().unset(key);
+    }
     if (!DriverUtils.checkConcurrency(driverContext)) {
       return;
     }
@@ -467,13 +471,6 @@ public class Driver implements IDriver {
     hiveLocks.clear();
     if (context != null) {
       context.setHiveLocks(null);
-    }
-
-    // Unset all the keys
-    for (String key : new String[] { ValidTxnList.VALID_TXNS_KEY, ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY,
-        ValidTxnList.COMPACTOR_VALID_TXNS_ID_KEY, ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY }) {
-      driverContext.getConf().unset(key);
-      SessionState.get().getConf().unset(key);
     }
 
     try {

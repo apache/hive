@@ -55,9 +55,6 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   private HiveLockManagerCtx lockManagerCtx;
 
-  private long txnId = 0;
-  private int numTxn = 0;
-
   @Override
   public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
     // No-op
@@ -76,11 +73,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean isTxnOpen() {
-    return numTxn != 0;
+    return false;
   }
   @Override
   public long getCurrentTxnId() {
-    return txnId;
+    return 0L;
   }
   @Override
   public int getStmtIdAndIncrement() {
@@ -239,7 +236,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void commitTxn() throws LockException {
-    numTxn--;
+    // No-op
   }
 
   @Override
@@ -249,7 +246,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void rollbackTxn() throws LockException {
-    numTxn--;
+    // No-op
   }
 
   @Override
