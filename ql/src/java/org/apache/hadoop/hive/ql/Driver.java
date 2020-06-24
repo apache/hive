@@ -444,7 +444,8 @@ public class Driver implements IDriver {
     for (String key : new String[] { ValidTxnList.VALID_TXNS_KEY, ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY,
         ValidTxnList.COMPACTOR_VALID_TXNS_ID_KEY, ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY }) {
       driverContext.getConf().unset(key);
-      SessionState.get().getConf().unset(key);
+      //TODO: Following line results in test failures, created HIVE-23761 to fix this.
+      //SessionState.get().getConf().unset(key);
     }
     if (!DriverUtils.checkConcurrency(driverContext)) {
       return;

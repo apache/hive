@@ -12305,7 +12305,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 5. Set write id for HMS client
-    if (getTxnMgr().supportsAcid() && conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
+    if (getTxnMgr() != null && getTxnMgr().supportsAcid() && conf != null
+        && conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
 
       ValidTxnWriteIdList txnWriteIds = null;
 
