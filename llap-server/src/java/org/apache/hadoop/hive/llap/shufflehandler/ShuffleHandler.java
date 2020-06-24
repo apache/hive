@@ -59,6 +59,8 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -612,6 +614,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       ChannelPipeline pipeline = Channels.pipeline();
       if (sslFactory != null) {
         pipeline.addLast("ssl", new SslHandler(sslFactory.createSSLEngine()));
+      }
+      if (LOG.isDebugEnabled()) {
+        pipeline.addLast("loggingHandler", new LoggingHandler(InternalLogLevel.INFO));
       }
       pipeline.addLast("decoder", new HttpRequestDecoder());
       pipeline.addLast("aggregator", new HttpChunkAggregator(1 << 16));
