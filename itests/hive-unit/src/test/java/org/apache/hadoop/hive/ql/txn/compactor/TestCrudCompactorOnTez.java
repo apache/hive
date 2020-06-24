@@ -146,7 +146,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tblName);
     FileSystem fs = FileSystem.get(conf);
     // Verify deltas (delta_0000001_0000001_0000, delta_0000002_0000002_0000) are present
-<<<<<<< HEAD
     Assert.assertEquals("Delta directories does not match before compaction",
         Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
