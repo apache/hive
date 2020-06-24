@@ -271,7 +271,7 @@ public class QBParseInfo {
   List<String> setDestSchemaForClause(String clause, List<String> columnList) {
     return nameToDestSchema.put(clause, columnList);
   }
-  List<String> getDestSchemaForClause(String clause) {
+  public List<String> getDestSchemaForClause(String clause) {
     return nameToDestSchema.get(clause);
   }
 

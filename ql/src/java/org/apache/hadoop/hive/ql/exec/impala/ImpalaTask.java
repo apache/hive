@@ -64,15 +64,17 @@ public class ImpalaTask extends Task<ImpalaWork> {
             }
 
             FetchTask fetch = work.getFetch();
-            FetchOperator fetchOp = fetch.getFetchOp();
-            if (fetchOp instanceof ImpalaStreamingFetchOperator) {
-                Preconditions.checkState(isStreaming);
-                ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetchOp;
-                impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle, work.getFetchSize()));
-            } else {
-              Preconditions.checkState(isStreaming == false);
-              // Will block until results are ready
-              session.fetch(opHandle, 1);
+            if(fetch != null) {
+              FetchOperator fetchOp = fetch.getFetchOp();
+              if (fetchOp instanceof ImpalaStreamingFetchOperator) {
+                  Preconditions.checkState(isStreaming);
+                  ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetchOp;
+                  impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle, work.getFetchSize()));
+              } else {
+                Preconditions.checkState(isStreaming == false);
+                // Will block until results are ready
+                session.fetch(opHandle, 1);
+              }
             }
 
         } catch (Throwable e) {

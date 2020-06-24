@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -26,14 +28,18 @@ import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
@@ -44,6 +50,7 @@ import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
 import org.apache.impala.planner.UnionNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,6 +67,7 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
   // there is no "from" clause on the "select".
   private enum NodeType {
     SCAN("scan"),
+    TABLEFUNCTION("tablefunction"),
     UNION("union");
     String type;
     private NodeType(String type) {
@@ -78,16 +86,34 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
 
   private final NodeType nodeType;
 
+  protected List<List<RexNode>> constExprLists_ = new ArrayList<>();
+
+  RelDataType constRowType_ = null;
+
   public ImpalaUnionRel(HiveTableScan scan) {
     super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
     this.relNode = scan;
     this.nodeType = NodeType.SCAN;
   }
 
+  public ImpalaUnionRel(HiveTableFunctionScan scan) {
+    super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
+    this.relNode = scan;
+    this.nodeType = NodeType.TABLEFUNCTION;
+  }
+
   public ImpalaUnionRel(HiveUnion union) {
     super(union.getCluster(), union.getTraitSet(), union.getInputs(), union.getRowType());
     this.relNode = union;
     this.nodeType = NodeType.UNION;
+  }
+
+  public void addConstExprList(List<RexNode> exprs) {
+    constExprLists_.add(exprs);
+  }
+
+  void setConstRowType(RelDataType constRowType) {
+    constRowType_ = constRowType;
   }
 
   @Override
@@ -101,11 +127,21 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     RelDataType rowType = (nodeType == NodeType.SCAN)
         ? ((HiveTableScan) relNode).getPrunedRowType()
         : relNode.getRowType();
+
+    int numInputs = getInputs().size();
+
+    if (constExprLists_.size() != 0) {
+      Preconditions.checkState(numInputs == 0);
+      Preconditions.checkState(rowType.getFieldList().size() == 0);
+      Preconditions.checkState(constRowType_ != null);
+      Preconditions.checkState(constRowType_.getFieldList().size() > 0);
+      rowType = constRowType_;
+    }
+
     TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer(), rowType);
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
 
-    int numInputs = getInputs().size();
     List<Pair<PlanNode, List<Expr>>> planNodeAndExprsList = Lists.newArrayList();
     for(int i = 0; i < numInputs; ++i) {
       ImpalaPlanRel unionInputRel = getImpalaRelInput(i);
@@ -124,7 +160,20 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     unionNode =
           new ImpalaUnionNode(nodeId, tupleDesc.getId(), nonConstOutputExprs, planNodeAndExprsList);
 
-    if (nodeType == NodeType.SCAN) {
+    // If this union has a list of literals, use that to init plan node
+    if (constExprLists_.size() > 0) {
+      ImpalaRexVisitor visitor =
+          new ImpalaInferMappingRexVisitor(ctx.getRootAnalyzer(),
+              ImmutableList.of(this), getCluster().getRexBuilder());
+      for (List<RexNode> exprList: constExprLists_) {
+        List<Expr> impalaExprs = new ArrayList<>();
+        for (RexNode rexNode : exprList) {
+          impalaExprs.add(rexNode.accept(visitor));
+        }
+        unionNode.addConstExprList(impalaExprs);
+      }
+    }
+    else if (nodeType == NodeType.SCAN) {
       unionNode.addConstExprList(getOutputExprs());
     }
 
@@ -150,6 +199,10 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     RelWriter retWriter = null;
     switch(nodeType) {
       case SCAN: {
+        retWriter = super.explainTerms(pw);
+      }
+      break;
+      case TABLEFUNCTION: {
         retWriter = super.explainTerms(pw);
       }
       break;

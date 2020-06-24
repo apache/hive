@@ -29,10 +29,13 @@ import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
+import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
+import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.THandleIdentifier;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
+import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRowSet;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
@@ -276,7 +279,27 @@ public class ImpalaSession {
                 (c) -> c.ExecutePlannedStatement(req2));
         checkThriftStatus(resp.getStatus());
         fetchEOF = false;
-        return resp.getOperationHandle();
+        TOperationHandle opHandle = resp.getOperationHandle();
+
+        TGetOperationStatusReq statusReq = new TGetOperationStatusReq(opHandle);
+
+        while(true) {
+          TGetOperationStatusResp statusResp = RetryRPC("ExecutePlannedStatement",
+                  (c) -> c.GetOperationStatus(statusReq));
+          if(statusResp.getOperationState() == TOperationState.FINISHED_STATE) {
+            break;
+          } else if(statusResp.getOperationState() == TOperationState.ERROR_STATE ||
+                    statusResp.getOperationState() == TOperationState.CANCELED_STATE) {
+            String errMsg = statusResp.getErrorMessage();
+            if (errMsg != null && !errMsg.isEmpty()) {
+              throw new HiveException("Query was cancelled: " + errMsg);
+            } else {
+              throw new HiveException("Query was cancelled");
+            }
+          }
+        }
+
+        return opHandle;
     }
 
     /* Executes a query string */

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaJoinRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectPassthroughRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaSortRel;
+import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaTableFunctionScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaUnionRel;
 
 import java.util.List;
@@ -97,6 +99,26 @@ public class HiveImpalaRules {
         // Only support HDFS for now.
         newRelNode = new ImpalaHdfsScanRel(scan, db);
       }
+
+      call.transformTo(newRelNode);
+    }
+  }
+
+  public static class ImpalaTableFunctionRule extends RelOptRule {
+
+    private Hive db;
+
+    public ImpalaTableFunctionRule(RelBuilderFactory relBuilderFactory, Hive db) {
+      super(operand(HiveTableFunctionScan.class, operand(ImpalaUnionRel.class, none())),
+          relBuilderFactory, null);
+      this.db = db;
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveTableFunctionScan scan = call.rel(0);
+
+      ImpalaTableFunctionScanRel newRelNode = new ImpalaTableFunctionScanRel(scan);
 
       call.transformTo(newRelNode);
     }

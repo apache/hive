@@ -8360,7 +8360,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
+    Map<String, ExprNodeDesc> columnExprMap =
+        (input.getConf() != null) ? input.getConf().getColumnExprMap() : null;
     if (columnExprMap != null) {
       for (ExprNodeDesc desc : columnExprMap.values()) {
         if (desc instanceof ExprNodeGenericFuncDesc) {

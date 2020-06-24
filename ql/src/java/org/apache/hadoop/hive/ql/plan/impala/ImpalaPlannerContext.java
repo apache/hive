@@ -18,8 +18,20 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.catalog.DataSourceTable;
+import org.apache.impala.catalog.Db;
+import org.apache.impala.catalog.FeTable;
+import org.apache.impala.catalog.HdfsFileFormat;
+import org.apache.impala.catalog.TableLoadingException;
 import org.apache.impala.planner.PlannerContext;
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TQueryCtx;
@@ -33,6 +45,8 @@ public class ImpalaPlannerContext extends PlannerContext {
   private TExecRequest execRequest;
   private List<Expr> resultExprs;
   private ImpalaTableLoader tableLoader;
+  private FeTable targetTable;
+  private Partition targetPartition;
 
   public ImpalaPlannerContext(TQueryCtx queryCtx, EventSequence timeline,
       ImpalaBasicAnalyzer analyzer) {
@@ -41,13 +55,31 @@ public class ImpalaPlannerContext extends PlannerContext {
     this.tableLoader = new ImpalaTableLoader();
   }
 
+  public void setTargetTable(FeTable targetTable) {
+    this.targetTable = targetTable;
+    analyzer.getDescTbl().setTargetTable(targetTable);
+  }
+
+  public FeTable getTargetTable() {
+    return targetTable;
+  }
+
+  public void setTargetPartition(Partition targetPartition) {
+    this.targetPartition = targetPartition;
+  }
+
+  public Partition getTargetPartition() {
+    return targetPartition;
+  }
+
   @Override
-  public Analyzer getRootAnalyzer() {return analyzer;}
+  public Analyzer getRootAnalyzer() {
+    return analyzer;
+  }
 
   @Override
   public boolean hasTableSink() {
-    // TODO: CDPD-13837: return true/false based on statement types
-    return false;
+    return targetTable != null;
   }
 
   public void setExecRequest(TExecRequest execRequest) {

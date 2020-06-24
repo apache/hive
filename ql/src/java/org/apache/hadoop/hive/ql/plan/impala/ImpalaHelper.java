@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaWindowingFixRule;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.InternalException;
@@ -47,6 +49,7 @@ import org.apache.impala.thrift.TExplainLevel;
 import org.apache.impala.thrift.TQueryOptions;
 import org.apache.impala.thrift.TReservedWordsVersion;
 import org.apache.impala.thrift.TRuntimeFilterMode;
+import org.apache.impala.thrift.TStmtType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +91,8 @@ public class ImpalaHelper {
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaTableFunctionRule(HiveRelFactories.HIVE_BUILDER, db));
+    programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaProjectRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaAggRule(HiveRelFactories.HIVE_BUILDER));
@@ -101,15 +106,17 @@ public class ImpalaHelper {
   }
 
   public ImpalaCompiledPlan compilePlan(HiveConf conf, Hive db, RelNode rootRelNode,
-      String dbName, String userName, Path resultPath,
-      boolean isExplain) throws HiveException {
+      String dbName, String userName, Path resultPath, boolean isExplain, QB qb,
+      CalcitePlanner.PreCboCtx.Type stmtType) throws HiveException {
     try {
-      Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel);
+      Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       TQueryOptions options = createQueryOptions(conf);
       ImpalaPlanner impalaPlanner =
-        new ImpalaPlanner(dbName, userName, options, resultPath);
+        new ImpalaPlanner(dbName, userName, options, resultPath, db, qb,
+          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType));
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
+      impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, impalaRelNode);
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);
@@ -117,6 +124,42 @@ public class ImpalaHelper {
       return new ImpalaCompiledPlan(execRequest);
     } catch (ImpalaException | MetaException e) {
       throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Top-level statement type being executed. There may be multiple ExecRequests
+   * with different statement types submitted under this top-level statement.
+   */
+  private TStmtType getImpalaStmtType(CalcitePlanner.PreCboCtx.Type stmtType) {
+    switch (stmtType) {
+      case NONE:
+        return TStmtType.QUERY;
+      case INSERT:
+        return TStmtType.DML;
+      case CTAS:
+      case VIEW:
+        return TStmtType.DDL;
+      default:
+        throw new RuntimeException("Unsupported statement type "+stmtType.toString());
+    }
+  }
+
+  /**
+   * Statement type for the current request being submitted to Impala.
+   */
+  private TStmtType getImpalaResultStmtType(CalcitePlanner.PreCboCtx.Type stmtType) {
+    switch (stmtType) {
+      case NONE:
+        return TStmtType.QUERY;
+      case INSERT:
+        return TStmtType.DML;
+      case CTAS:
+        return TStmtType.DML;
+      case VIEW:
+        return TStmtType.DDL;
+      default:
+        throw new RuntimeException("Unsupported statement type "+stmtType.toString());
     }
   }
 

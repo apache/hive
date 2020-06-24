@@ -574,7 +574,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               saveViewDefinition();
             }
             // 3. Create Impala operator
-            sinkOp = getImpalaSinkOperator(newPlan);
+            sinkOp = getImpalaSinkOperator(newPlan, cboCtx);
             // 4. Generate explain plan
             if (this.ctx.isExplainPlan()) {
               doExplainPlan(newPlan);
@@ -1366,8 +1366,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * The context that doPhase1 uses to populate information pertaining to CBO
    * (currently, this is used for CTAS and insert-as-select).
    */
-  static class PreCboCtx extends PlannerContext {
-    enum Type {
+  public static class PreCboCtx extends PlannerContext {
+    public enum Type {
       NONE, INSERT, MULTI_INSERT, CTAS, VIEW, UNEXPECTED
     }
 
@@ -1680,7 +1680,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Operator
    * @throws SemanticException
    */
-  Operator getImpalaSinkOperator(RelNode impalaRel) throws SemanticException {
+  Operator getImpalaSinkOperator(RelNode impalaRel, PreCboCtx cboCtx) throws SemanticException {
     try {
       Preconditions.checkNotNull(this.impalaHelper);
       final String dbname = SessionState.get().getCurrentDatabase();
@@ -1697,17 +1697,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       opParseCtx.put(tableScanOp, new OpParseContext(impalaRootRR));
 
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
-      if (getQB().getParseInfo().getDestSchemaForClause(dest) != null
-          && getQB().getTableDesc() == null) {
-        throw new RuntimeException("Insert operations not handled yet.");
-      }
       FileSinkOperator fso = (FileSinkOperator) genFileSinkPlan(dest, getQB(), tableScanOp);
       Path resultDir = null;
       if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
         resultDir = fso.getConf().getDirName();
       }
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          conf, getDb(), impalaRel, dbname, username, resultDir, ctx.isExplainPlan());
+          conf, getDb(), impalaRel, dbname, username, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type);
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);

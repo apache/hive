@@ -161,7 +161,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     }
     TableRef tblRef = new TableRef(impalaTblName.toPath(), alias);
     ImpalaBasicAnalyzer basicAnalyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
-    // save the mapping from table name to hdfsTable
+    // save the mapping from table name to impala Table
     basicAnalyzer.setTable(impalaTblName, hdfsTable);
     Path resolvedPath = ctx.getRootAnalyzer().resolvePath(tblRef.getPath(), Path.PathType.TABLE_REF);
 

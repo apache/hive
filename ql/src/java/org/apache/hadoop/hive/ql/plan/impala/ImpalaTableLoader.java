@@ -98,29 +98,33 @@ public class ImpalaTableLoader {
     loaded = true;
   }
 
+  public HdfsTable loadHdfsTable(Hive db, org.apache.hadoop.hive.metastore.api.Table msTbl) throws HiveException {
+    org.apache.hadoop.hive.metastore.api.Database msDb = dbMap.get(msTbl.getDbName());
+    if (msDb == null) {
+      // cache the Database object to avoid rpc to the metastore for future requests
+      msDb = db.getDatabase(msTbl.getDbName());
+      dbMap.put(msTbl.getDbName(), msDb);
+    }
+    HdfsTable hdfsTable = tableMap.get(msTbl);
+    if (hdfsTable == null) {
+      org.apache.impala.catalog.Db impalaDb = new Db(msTbl.getDbName(), msDb);
+      hdfsTable = new ImpalaHdfsTable(msTbl, impalaDb, msTbl.getTableName(), msTbl.getOwner());
+      tableMap.put(msTbl, hdfsTable);
+      tablePartitionMap.put(hdfsTable, new HashSet<>());
+    }
+    return hdfsTable;
+  }
+
   /**
    * Add the database and table to internal structures if not previously populated
    */
   public void addTableAndPartitions(Hive db, HiveTableScan scan) throws HiveException, CatalogException, MetaException {
-    String tableName = scan.getTable().getQualifiedName().get(1);
     Table table = ((RelOptHiveTable) scan.getTable()).getHiveTableMD();
 
     // get the corresponding metastore Table object
     org.apache.hadoop.hive.metastore.api.Table msTbl = table.getTTable();
-    org.apache.hadoop.hive.metastore.api.Database msDb = dbMap.get(table.getDbName());
-    if (msDb == null) {
-      // cache the Database object to avoid rpc to the metastore for future requests
-      msDb = db.getDatabase(table.getDbName());
-      dbMap.put(table.getDbName(), msDb);
-    }
 
-    HdfsTable hdfsTable = tableMap.get(msTbl);
-    if (hdfsTable == null) {
-      org.apache.impala.catalog.Db impalaDb = new Db(table.getDbName(), msDb);
-      hdfsTable = new ImpalaHdfsTable(msTbl, impalaDb, tableName, table.getOwner());
-      tableMap.put(msTbl, hdfsTable);
-      tablePartitionMap.put(hdfsTable, new HashSet<>());
-    }
+    HdfsTable hdfsTable = loadHdfsTable(db, msTbl);
 
     if (msTbl.getPartitionKeysSize() > 0) {
       // propagate Hive's statically pruned partition list to Impala
