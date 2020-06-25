@@ -3798,17 +3798,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void setValidWriteIdList(String validWriteIdList) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void clearValidWriteIdList() {
-    throw new UnsupportedOperationException();
-
-  }
-
-  @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
       throws MetaException, TException {
     return client.scheduled_query_poll(request);

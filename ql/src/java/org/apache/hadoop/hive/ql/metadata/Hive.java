@@ -5217,7 +5217,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
       }
     }
-    metaStoreClient.setValidWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     return metaStoreClient;
   }
 
@@ -6187,12 +6186,4 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  /**
-   * Clears the ValidWriteIdList in HMS Client
-   */
-  public void clearValidWriteIdList() {
-    if (metaStoreClient != null) {
-      metaStoreClient.clearValidWriteIdList();
-    }
-  }
 }

@@ -474,11 +474,6 @@ public class Driver implements IDriver {
       context.setHiveLocks(null);
     }
 
-    try {
-      Hive.get().clearValidWriteIdList();
-    } catch (HiveException e) {
-      LOG.error("Error clear ValidWriteIdList, this shall never happen:" + e);
-    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 

@@ -4265,15 +4265,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void setValidWriteIdList(String validWriteIdList) {
-    this.txnWriteIdList = (validWriteIdList == null ? null : new ValidTxnWriteIdList(validWriteIdList));
-  }
-
-  @Override public void clearValidWriteIdList() {
-    this.txnWriteIdList = null;
-  }
-
-  @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
       throws MetaException, TException {
     return client.scheduled_query_poll(request);
