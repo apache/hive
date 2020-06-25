@@ -43,7 +43,7 @@ public class ValidTxnWriteIdList {
 
   // Map of valid write ids list for all the tables read by the current txn
   // Key is full table name string of format <db_name>.<table_name>
-  final private Map<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
+  private final Map<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
   public ValidTxnWriteIdList(Long txnId) {
     this.txnId = txnId;
   }

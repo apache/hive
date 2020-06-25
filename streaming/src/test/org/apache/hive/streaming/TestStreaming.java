@@ -1019,7 +1019,7 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
-    Assert.assertEquals(minTxn + 1 , min);
+    Assert.assertEquals(minTxn + 1, min);
     Assert.assertEquals(maxTxn + 1, max);
     boolean isVectorizationEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (vectorize) {

@@ -118,5 +118,4 @@ public interface ValidWriteIdList {
    * @return smallest Open write Id in this set, {@code null} if there is none.
    */
   Long getMinOpenWriteId();
-
 }

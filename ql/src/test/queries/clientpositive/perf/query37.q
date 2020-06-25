@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query37.tpl and seed 301843662
 explain
 select  i_item_id

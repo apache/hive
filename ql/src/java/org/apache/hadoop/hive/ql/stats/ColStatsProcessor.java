@@ -190,9 +190,9 @@ public class ColStatsProcessor implements IStatsProcessor {
         ? SessionState.get().getTxnMgr() : null;
     if (txnMgr != null) {
       request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
-      ValidWriteIdList writeId = AcidUtils.getTableValidWriteIdList(conf,
-          AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
-      if( writeId != null) {
+      ValidWriteIdList writeId =
+          AcidUtils.getTableValidWriteIdList(conf, AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
+      if (writeId != null) {
         request.setValidWriteIdList(writeId.toString());
       }
     }

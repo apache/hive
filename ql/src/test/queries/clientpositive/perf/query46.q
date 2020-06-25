@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.materializedview.rewriting=false;
 -- start query 1 in stream 0 using template query46.tpl and seed 803547492
 explain
 select  c_last_name
