@@ -82,6 +82,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     case MERGEJOIN:
     case JOIN:
+    case MAPJOIN:
       pushDownThroughJoin(topNKey);
       break;
 
