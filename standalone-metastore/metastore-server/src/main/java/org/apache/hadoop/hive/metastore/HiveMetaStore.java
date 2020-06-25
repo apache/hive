@@ -562,9 +562,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
           MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(conf));
-      listeners.add(new AcidEventListener(conf));
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
           conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+      transactionalListeners.add(new AcidEventListener(conf));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
       }

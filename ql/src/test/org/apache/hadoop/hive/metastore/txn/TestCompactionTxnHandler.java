@@ -68,6 +68,7 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
     conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
