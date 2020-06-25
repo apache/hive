@@ -446,6 +446,10 @@ public class Driver implements IDriver {
       //TODO: Following line results in test failures, created HIVE-23761 to fix this.
       //SessionState.get().getConf().unset(key);
     }
+    
+    SessionState.get().getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    SessionState.get().getConf().unset(ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY);
+
     if (!DriverUtils.checkConcurrency(driverContext)) {
       return;
     }
