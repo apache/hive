@@ -2632,11 +2632,11 @@ public class AcidUtils {
   public static List<FileStatus> getAcidFilesForStats(
       Table table, Path dir, Configuration jc, FileSystem fs) throws IOException {
     List<FileStatus> fileList = new ArrayList<>();
-    org.apache.hadoop.hive.common.ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
+    ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
     if (idList == null) {
       LOG.warn("Cannot get ACID state for " + table.getDbName() + "." + table.getTableName()
-          + " from " + jc.get(org.apache.hadoop.hive.common.ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+          + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       return null;
     }
     Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false);
@@ -3173,16 +3173,6 @@ public class AcidUtils {
     if (dirCache != null) {
       LOG.debug("Cache entries: {}", Arrays.toString(dirCache.asMap().keySet().toArray()));
     }
-  }
-
-  /**
-   * Checks whether a given table is enabled for replication.
-   * @param tbl table
-   * @return true, if the table is enabled for replication. False, otherwise.
-   */
-  public static boolean inReplication(Table tbl) {
-    return ( tbl != null && tbl.getParameters() != null &&
-     tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString()) != null);
   }
 
   /**
