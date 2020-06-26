@@ -13224,6 +13224,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
+
+    //Add file format to ORC if table is ACID
+    if (retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL) &&
+        retValue.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL).equalsIgnoreCase("true") &&
+        (!retValue.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES) ||
+        !retValue.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES).equalsIgnoreCase("insert_only"))) {
+      storageFormat.processStorageFormat("ORC");
+      LOG.info("Add file format ORC for ACID table.");
+    }
+
+    // add default storage format if nothing is specified
+    storageFormat.fillDefaultStorageFormat(isExt, false);
     return retValue;
   }
 
@@ -13237,9 +13249,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Class.forName(storageFormat.getInputFormat());
       Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
           Class.forName(storageFormat.getOutputFormat());
-      if (inputFormatClass == null || outputFormatClass == null ||
-          !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
-          !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+      if ((inputFormatClass != null && !AcidInputFormat.class.isAssignableFrom(inputFormatClass)) ||
+          (outputFormatClass != null && !AcidOutputFormat.class.isAssignableFrom(outputFormatClass))) {
         return retValue;
       }
     } catch (ClassNotFoundException e) {
@@ -13496,7 +13507,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ConstraintsUtils.validateCheckConstraint(cols, checkConstraints, ctx.getConf());
     }
 
-    storageFormat.fillDefaultStorageFormat(isExt, false);
+    //storageFormat.fillDefaultStorageFormat(isExt, false);
 
     // check for existence of table
     if (ifNotExists) {
