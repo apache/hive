@@ -2255,6 +2255,8 @@ public class CachedStore implements RawStore, Configurable {
       if (colStatsMap.size() < 1) {
         LOG.debug("No stats data found for: dbName={} tblName= {} partNames= {} colNames= ", dbName, tblName, partNames,
             colNames);
+        // TODO: If we don't find any stats then most likely we should return null. Returning an empty object will not
+        // trigger the lookup in the raw store and we will end up with missing stats.
         return new MergedColumnStatsForPartitions(new ArrayList<ColumnStatisticsObj>(), 0);
       }
     }
