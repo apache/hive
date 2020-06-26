@@ -392,15 +392,7 @@ public class Hive {
       }
       db = create(c, doRegisterAllFns);
     }
-    if (c != null && db.conf != null && db.conf != c) {
-      if (db.conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
-        String validTxWriteIdList = db.conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-        LOG.debug("hiveconf: before writeids = " + c.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY)
-        + " after writeids = " + validTxWriteIdList);
-        c.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, validTxWriteIdList);
-      } else {
-        c.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-      }
+    if (c != null) {
       db.conf = c;
     }
     return db;
@@ -6185,5 +6177,4 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
-
 }
