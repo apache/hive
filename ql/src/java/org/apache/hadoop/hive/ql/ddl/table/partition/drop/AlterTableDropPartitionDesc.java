@@ -109,7 +109,7 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
 
   @Override
   public String getFullTableName() {
-    return null;
+    return getTableName();
   }
 
   @Override

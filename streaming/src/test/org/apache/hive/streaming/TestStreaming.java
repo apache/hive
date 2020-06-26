@@ -964,6 +964,7 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
+    // We are doing +1, as DDL operation will also advance the write Id now.
     Assert.assertEquals(minTxn + 1, min);
     Assert.assertEquals(maxTxn + 1, max);
 
@@ -1019,6 +1020,7 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
+    // We are doing +1, as DDL operation will also advance the write Id now.
     Assert.assertEquals(minTxn + 1, min);
     Assert.assertEquals(maxTxn + 1, max);
     boolean isVectorizationEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);

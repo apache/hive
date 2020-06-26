@@ -67,7 +67,7 @@ public class AlterTableExchangePartitionsDesc implements DDLDescWithWriteId {
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 
 }

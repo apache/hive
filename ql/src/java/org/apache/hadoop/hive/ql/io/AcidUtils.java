@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils.*;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -2351,7 +2352,6 @@ public class AcidUtils {
         }
       }
 
-
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
           && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
         return null;
@@ -2366,36 +2366,6 @@ public class AcidUtils {
     }
     return new TableSnapshot(writeId,
         validWriteIdList != null ? validWriteIdList.toString() : null);
-  }
-
-  /**
-   * This is called by Driver.java for all write operations (DDL). This updates the latest validWriteIdList in config,
-   * so that the same can be sent from HMS Client during invocation of get_* HMS APIs.
-   */
-  public static ValidWriteIdList updateValidWriteIdList(HiveConf conf, String fullTableName) throws LockException {
-
-    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
-    List<String> txnTables = new ArrayList<>();
-    txnTables.add(fullTableName);
-    ValidTxnWriteIdList txnWriteIds;
-    if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) != null) {
-      txnWriteIds = new ValidTxnWriteIdList(conf.get(
-          ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-    } else {
-      String txnString;
-      if (conf.get(ValidTxnList.VALID_TXNS_KEY) != null) {
-        txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-      } else {
-        ValidTxnList txnIds = txnMgr.getValidTxns();
-        txnString = txnIds.toString();
-      }
-      txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
-    }
-    ValidWriteIdList writeIds = txnWriteIds.getTableValidWriteIdList(fullTableName);
-    if (writeIds != null) {
-      conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
-    }
-    return writeIds;
   }
 
   /**

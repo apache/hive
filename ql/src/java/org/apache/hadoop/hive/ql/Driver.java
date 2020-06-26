@@ -373,10 +373,6 @@ public class Driver implements IDriver {
         String fqTableName = acidDdlDesc.getFullTableName();
         final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
         long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
-        // This updates the latest validWriteIdList for the current table in the config, which later will be sent
-        // by HMS Client for all get_* requests.
-        // This is done as part of HIVE-21637 ( subtask : HIVE-23573 ) to provide cache consistency.
-        AcidUtils.updateValidWriteIdList(getConf(), AcidUtils.getFullTableName(tn.getDb(), tn.getTable()));
         acidDdlDesc.setWriteId(writeId);
       }
 

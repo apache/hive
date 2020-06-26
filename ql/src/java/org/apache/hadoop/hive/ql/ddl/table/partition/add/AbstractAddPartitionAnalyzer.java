@@ -142,7 +142,8 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
     this.ddlDescWithWriteId = descWithWriteId;
   }
 
-  @Override public DDLDescWithWriteId getAcidDdlDesc() {
+  @Override
+  public DDLDescWithWriteId getAcidDdlDesc() {
     return ddlDescWithWriteId;
   }
 

@@ -78,11 +78,13 @@ public class AlterTableCompactDesc implements DDLDescWithWriteId {
     this.writeId = writeId;
   }
 
-  @Override public String getFullTableName() {
+  @Override
+  public String getFullTableName() {
     return tableName;
   }
 
-  @Override public boolean mayNeedWriteId() {
+  @Override
+  public boolean mayNeedWriteId() {
     return true;
   }
 }
