@@ -20,39 +20,18 @@ package org.apache.hadoop.hive.ql.reexec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 
-import java.util.regex.Pattern;
+public class ReExecutionRetryLockPlugin implements IReExecutionPlugin {
 
-public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
-  private boolean retryPossible;
-  private int maxExecutions = 1;
-
-  // Lost am container have exit code -100, due to node failures.
-  private Pattern lostAMContainerErrorPattern = Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
-
-  class LocalHook implements ExecuteWithHookContext {
-
-    @Override
-    public void run(HookContext hookContext) throws Exception {
-      if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
-        Throwable exception = hookContext.getException();
-
-        if (exception != null && exception.getMessage() != null
-            && lostAMContainerErrorPattern.matcher(exception.getMessage()).matches()) {
-          retryPossible = true;
-        }
-      }
-    }
-  }
+  private Driver coreDriver;
+  private int maxRetryLockExecutions = 1;
 
   @Override
   public void initialize(Driver driver) {
-    driver.getHookRunner().addOnFailureHook(new LocalHook());
-    maxExecutions = 1 + driver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
+    coreDriver = driver;
+    maxRetryLockExecutions = 1 + coreDriver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT);
   }
 
   @Override
@@ -61,7 +40,8 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
-    return (executionNum < maxExecutions) && retryPossible;
+    return executionNum < maxRetryLockExecutions && ex != null &&
+        ex.getMessage().contains(Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED);
   }
 
   @Override
@@ -70,7 +50,7 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    return retryPossible;
+    return executionNum < maxRetryLockExecutions;
   }
 
   @Override
