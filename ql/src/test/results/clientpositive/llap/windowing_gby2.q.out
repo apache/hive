@@ -332,7 +332,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col2 (type: double)
-                  null sort order: az
+                  null sort order: aa
                   sort order: +-
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -353,7 +353,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 DESC NULLS LAST
+                        order by: _col2 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:

@@ -219,8 +219,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
     orcReader = null;
+    PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
-        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
+        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = getFsSupplier(split.getPath(), jobConf);

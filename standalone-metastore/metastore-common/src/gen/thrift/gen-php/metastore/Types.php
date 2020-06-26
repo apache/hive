@@ -19361,13 +19361,13 @@ class CommitTxnRequest {
    */
   public $writeEventInfos = null;
   /**
-   * @var \metastore\CommitTxnKeyValue
-   */
-  public $keyValue = null;
-  /**
    * @var \metastore\ReplLastIdInfo
    */
   public $replLastIdInfo = null;
+  /**
+   * @var \metastore\CommitTxnKeyValue
+   */
+  public $keyValue = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -19390,14 +19390,14 @@ class CommitTxnRequest {
             ),
           ),
         4 => array(
-          'var' => 'keyValue',
-          'type' => TType::STRUCT,
-          'class' => '\metastore\CommitTxnKeyValue',
-          ),
-        5 => array(
           'var' => 'replLastIdInfo',
           'type' => TType::STRUCT,
           'class' => '\metastore\ReplLastIdInfo',
+          ),
+        5 => array(
+          'var' => 'keyValue',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\CommitTxnKeyValue',
           ),
         );
     }
@@ -19411,11 +19411,11 @@ class CommitTxnRequest {
       if (isset($vals['writeEventInfos'])) {
         $this->writeEventInfos = $vals['writeEventInfos'];
       }
-      if (isset($vals['keyValue'])) {
-        $this->keyValue = $vals['keyValue'];
-      }
       if (isset($vals['replLastIdInfo'])) {
         $this->replLastIdInfo = $vals['replLastIdInfo'];
+      }
+      if (isset($vals['keyValue'])) {
+        $this->keyValue = $vals['keyValue'];
       }
     }
   }
@@ -19473,16 +19473,16 @@ class CommitTxnRequest {
           break;
         case 4:
           if ($ftype == TType::STRUCT) {
-            $this->keyValue = new \metastore\CommitTxnKeyValue();
-            $xfer += $this->keyValue->read($input);
+            $this->replLastIdInfo = new \metastore\ReplLastIdInfo();
+            $xfer += $this->replLastIdInfo->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 5:
           if ($ftype == TType::STRUCT) {
-            $this->replLastIdInfo = new \metastore\ReplLastIdInfo();
-            $xfer += $this->replLastIdInfo->read($input);
+            $this->keyValue = new \metastore\CommitTxnKeyValue();
+            $xfer += $this->keyValue->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -19527,20 +19527,20 @@ class CommitTxnRequest {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->keyValue !== null) {
-      if (!is_object($this->keyValue)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('keyValue', TType::STRUCT, 4);
-      $xfer += $this->keyValue->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->replLastIdInfo !== null) {
       if (!is_object($this->replLastIdInfo)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('replLastIdInfo', TType::STRUCT, 5);
+      $xfer += $output->writeFieldBegin('replLastIdInfo', TType::STRUCT, 4);
       $xfer += $this->replLastIdInfo->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->keyValue !== null) {
+      if (!is_object($this->keyValue)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('keyValue', TType::STRUCT, 5);
+      $xfer += $this->keyValue->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

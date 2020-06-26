@@ -257,6 +257,20 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
+  /**
+   * Determines whether an table needs to be deleted completely or moved to trash directory.
+   *
+   * @param tableParams parameters of the table
+   *
+   * @return true if the table needs to be deleted rather than moved to trash directory
+   */
+  public static boolean isSkipTrash(Map<String, String> tableParams) {
+    if (tableParams == null) {
+      return false;
+    }
+    return isPropertyTrue(tableParams, "skip.trash")
+        || isPropertyTrue(tableParams, "auto.purge");
+  }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {

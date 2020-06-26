@@ -2900,6 +2900,11 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return rawStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
     return rawStore.getScheduledQuery(scheduleKey);
   }

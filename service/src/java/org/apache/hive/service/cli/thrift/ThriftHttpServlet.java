@@ -593,11 +593,10 @@ public class ThriftHttpServlet extends TServlet {
 
   private String[] getAuthHeaderTokens(HttpServletRequest request,
       String authType) throws HttpAuthenticationException {
-    String authHeaderBase64 = getAuthHeader(request, authType);
-    String authHeaderString = StringUtils.newStringUtf8(
-        Base64.decodeBase64(authHeaderBase64.getBytes()));
-    String[] creds = authHeaderString.split(":");
-    return creds;
+    String authHeaderBase64Str = getAuthHeader(request, authType);
+    String authHeaderString = StringUtils.newStringUtf8(Base64.decodeBase64(authHeaderBase64Str));
+
+    return authHeaderString.split(":");
   }
 
   /**
@@ -616,15 +615,13 @@ public class ThriftHttpServlet extends TServlet {
           "from the client is empty.");
     }
 
-    String authHeaderBase64String;
-    int beginIndex;
-    if (isKerberosAuthMode(authType)) {
-      beginIndex = (HttpAuthUtils.NEGOTIATE + " ").length();
-    }
-    else {
-      beginIndex = (HttpAuthUtils.BASIC + " ").length();
-    }
-    authHeaderBase64String = authHeader.substring(beginIndex);
+    LOG.debug("HTTP Auth Header [{}]", authHeader);
+
+    String[] parts = authHeader.split(" ");
+
+    // Assume the Base-64 string is always the last thing in the header
+    String authHeaderBase64String = parts[parts.length - 1];
+
     // Authorization header must have a payload
     if (authHeaderBase64String.isEmpty()) {
       throw new HttpAuthenticationException("Authorization header received " +
