@@ -158,10 +158,8 @@ class ValidTxnManager {
           ValidWriteIdList writeIdList = txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey());
           ValidWriteIdList currentWriteIdList = currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey());
           // Check if there was a conflicting write between current SNAPSHOT generation and locking.
-          // If yes, mark current transaction as outdated.
           if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
               currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
-            driverContext.setOutdatedTxn(true);
             return false;
           }
           // Check that write id is still valid
