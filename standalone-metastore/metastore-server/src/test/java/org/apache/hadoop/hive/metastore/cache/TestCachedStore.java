@@ -38,15 +38,11 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -56,13 +52,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.junit.After;
@@ -365,7 +356,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<FieldSchema> columns = Arrays.asList(soldDateCol, customerCol);
     List<FieldSchema> partitionsColumns = Collections.singletonList(soldDateCol);
     Table salesTable =
-        createTestTbl(tpcdsdb.getName(), "store_sales", tpcdsdb.getOwnerName(), columns, partitionsColumns);
+        createTable(tpcdsdb.getName(), "store_sales", columns, partitionsColumns);
     objectStore.createTable(salesTable);
 
     Map<String, ColumnStatisticsData> partitionStats = new HashMap<>();
@@ -897,9 +888,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cols.add(col1);
     cols.add(col2);
     List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTestTbl(dbName, tbl1Name, owner, cols, ptnCols);
+    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, tbl1);
-    Table tbl2 = createTestTbl(dbName, tbl2Name, owner, cols, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, tbl2);
 
     Partition part1 = new Partition();
@@ -1279,7 +1270,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       ptnCols.add(ptnCol1);
       Callable<Object> c = new Callable<Object>() {
         public Object call() {
-          Table tbl = createTestTbl(dbNames.get(0), tblName, "user1", cols, ptnCols);
+          Table tbl = createTable(dbNames.get(0), tblName, cols, ptnCols);
           sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, tbl);
           return null;
         }
@@ -1393,8 +1384,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cols.add(col1);
     cols.add(col2);
     List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTestTbl(dbName, tbl1Name, owner, cols, ptnCols);
-    Table tbl2 = createTestTbl(dbName, tbl2Name, owner, cols, ptnCols);
+    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
 
     Map<String, Integer> tableSizeMap = new HashMap<>();
     String tbl1Key = CacheUtils.buildTableKey(DEFAULT_CATALOG_NAME, dbName, tbl1Name);
@@ -1565,16 +1556,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  private Table createTestTbl(String dbName, String tblName, String tblOwner, List<FieldSchema> cols,
-      List<FieldSchema> ptnCols) {
-    String serdeLocation = "file:/tmp";
-    Map<String, String> serdeParams = new HashMap<>();
-    Map<String, String> tblParams = new HashMap<>();
+  private Table createTable(String dbName, String tblName, List<FieldSchema> cols, List<FieldSchema> ptnCols) {
     SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null, null, serdeParams);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0, serdeInfo, null, null,
+        Collections.emptyMap());
     sd.setStoredAsSubDirectories(false);
-    Table tbl = new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, ptnCols, tblParams, null, null,
+    Table tbl = new Table(tblName, dbName, "hive", 0, 0, 0, sd, ptnCols, Collections.emptyMap(), null, null,
         TableType.MANAGED_TABLE.toString());
     tbl.setCatName(DEFAULT_CATALOG_NAME);
     return tbl;
