@@ -900,13 +900,6 @@ public class CachedStore implements RawStore, Configurable {
               rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-          Deadline.startTimer("getPartitionsByNames");
-          List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-          Deadline.stopTimer();
-          // Also save partitions for consistency as they have the stats state.
-          for (Partition part : parts) {
-            sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
-          }
         }
         committed = rawStore.commitTransaction();
         LOG.debug("CachedStore: updated cached partition col stats objects for catalog: {}, database: {}, table: {}",
