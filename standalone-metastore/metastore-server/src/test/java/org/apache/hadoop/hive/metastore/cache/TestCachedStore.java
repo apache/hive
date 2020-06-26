@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.cache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -136,17 +138,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Utbl1.getDbName(), db1Utbl1.getTableName());
-    Deadline.startTimer("");
-    objectStore.dropPartitions(DEFAULT_CATALOG_NAME, db1Ptbl1.getDbName(), db1Ptbl1.getTableName(), db1Ptbl1PtnNames);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Ptbl1.getDbName(), db1Ptbl1.getTableName());
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db2Utbl1.getDbName(), db2Utbl1.getTableName());
-    Deadline.startTimer("");
-    objectStore.dropPartitions(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName(), db2Ptbl1PtnNames);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName());
-    objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db1.getName());
-    objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db2.getName());
+    for (String clg : objectStore.getCatalogs()) {
+      for (String db : objectStore.getAllDatabases(clg)) {
+        for (String tbl : objectStore.getAllTables(clg, db)) {
+          List<String> pts = objectStore.listPartitionNames(clg, db, tbl, Short.MAX_VALUE);
+          objectStore.dropPartitions(clg, db, tbl, pts);
+          objectStore.dropTable(clg, db, tbl);
+        }
+        objectStore.dropDatabase(clg, db);
+      }
+      objectStore.dropCatalog(clg);
+    }
     objectStore.shutdown();
+    CachedStore.clearSharedCache();
   }
 
   /**********************************************************************************************
@@ -344,6 +348,60 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertTrue(db2Ptns.containsAll(db2PtnsOS));
     // Clean up
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Utbl2.getDbName(), db1Utbl2.getTableName());
+    cachedStore.shutdown();
+  }
+
+  @Test public void testCacheUpdatePartitionColStats() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    ObjectStore objectStore = new ObjectStore();
+    objectStore.setConf(conf);
+
+    Database tpcdsdb = createDatabaseObject("tpcdsdb", "user1");
+    objectStore.createDatabase(tpcdsdb);
+    FieldSchema soldDateCol = new FieldSchema("ss_sold_date_sk", "int", "");
+    FieldSchema customerCol = new FieldSchema("ss_customer_sk", "int", "");
+    List<FieldSchema> columns = Arrays.asList(soldDateCol, customerCol);
+    List<FieldSchema> partitionsColumns = Collections.singletonList(soldDateCol);
+    Table salesTable =
+        createTestTbl(tpcdsdb.getName(), "store_sales", tpcdsdb.getOwnerName(), columns, partitionsColumns);
+    objectStore.createTable(salesTable);
+
+    Map<String, ColumnStatisticsData> partitionStats = new HashMap<>();
+    partitionStats.put("1999", createLongStats(100, 50, null, null));
+    partitionStats.put("2000", createLongStats(200, 100, null, null));
+
+    List<String> partNames = new ArrayList<>();
+    for (Map.Entry<String, ColumnStatisticsData> pStat : partitionStats.entrySet()) {
+      List<String> partitionValue = Collections.singletonList(pStat.getKey());
+      Partition p = createPartition(salesTable, partitionValue);
+      objectStore.addPartition(p);
+      String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue);
+      partNames.add(pName);
+      ColumnStatistics stats = createColStats(pStat.getValue(), salesTable, soldDateCol, pName);
+      objectStore.updatePartitionColumnStatistics(stats, partitionValue, null, -1);
+    }
+
+    List<ColumnStatistics> rawStats = objectStore
+        .getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, salesTable.getDbName(), salesTable.getTableName(), partNames,
+            Collections.singletonList(soldDateCol.getName()), CacheUtils.HIVE_ENGINE);
+    objectStore.shutdown();
+
+    CachedStore cachedStore = new CachedStore();
+    cachedStore.setConfForTest(conf);
+
+    updateCache(cachedStore);
+
+    List<ColumnStatistics> cachedStats = CachedStore.getSharedCache()
+        .getPartitionColStatsListFromCache(DEFAULT_CATALOG_NAME, salesTable.getDbName(), salesTable.getTableName(), partNames,
+            Collections.singletonList(soldDateCol.getName()), null, true);
+    Assert.assertNotNull(rawStats);
+    Assert.assertNotNull(cachedStats);
+    Assert.assertEquals(rawStats.size(), cachedStats.size());
+    for (int i = 0; i < rawStats.size(); i++) {
+      assertLongStatsEquals(rawStats.get(i), cachedStats.get(i));
+    }
     cachedStore.shutdown();
   }
 
@@ -1534,6 +1592,38 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return db;
   }
 
+  private Partition createPartition(Table tbl, List<String> values) {
+    Partition ptn =
+        new Partition(values, tbl.getDbName(), tbl.getTableName(), 0, 0, tbl.getSd(), Collections.emptyMap());
+    ptn.setCatName(DEFAULT_CATALOG_NAME);
+    return ptn;
+  }
+
+  private ColumnStatisticsData createLongStats(long numNulls, long numDVs, Long low, Long high) {
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    LongColumnStatsDataInspector stats = new LongColumnStatsDataInspector();
+    if (low != null) {
+      stats.setLowValue(low.longValue());
+    }
+    if (high != null) {
+      stats.setHighValue(high.longValue());
+    }
+    stats.setNumNulls(numNulls);
+    stats.setNumDVs(numDVs);
+    data.setLongStats(stats);
+    return data;
+  }
+
+  private ColumnStatistics createColStats(ColumnStatisticsData data, Table tbl, FieldSchema column, String partName) {
+    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
+    ColumnStatistics colStats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
+    statsDesc.setPartName(partName);
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(Collections.singletonList(statObj));
+    colStats.setEngine(CacheUtils.HIVE_ENGINE);
+    return colStats;
+  }
   /**
    * Create an unpartitoned table object for the given db.
    * The table has 9 types of columns
@@ -1782,6 +1872,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     List<String> getPartitionNames() {
       return ptnNames;
+    }
+  }
+
+  private void assertLongStatsEquals(ColumnStatistics expected, ColumnStatistics actual) {
+    Assert.assertEquals(expected.getStatsObjSize(), actual.getStatsObjSize());
+    for (int i = 0; i < expected.getStatsObjSize(); i++) {
+      LongColumnStatsData expectedData = expected.getStatsObj().get(i).getStatsData().getLongStats();
+      LongColumnStatsData actualData = expected.getStatsObj().get(i).getStatsData().getLongStats();
+      Assert.assertEquals(expectedData.getNumDVs(), actualData.getNumDVs());
+      Assert.assertEquals(expectedData.getNumNulls(), actualData.getNumNulls());
+      Assert.assertEquals(expectedData.getHighValue(), actualData.getHighValue());
+      Assert.assertEquals(expectedData.getLowValue(), actualData.getLowValue());
+      Assert.assertArrayEquals(expectedData.getBitVectors(), actualData.getBitVectors());
     }
   }
 
