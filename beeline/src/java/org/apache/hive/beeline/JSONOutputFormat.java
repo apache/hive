@@ -83,8 +83,10 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     case Types.DOUBLE:
     case Types.DECIMAL:
     case Types.NUMERIC:
-    case Types.NULL:
       buf.append(value);
+      return;
+    case Types.NULL:
+      buf.append("null");
       return;
     case Types.BOOLEAN:
       buf.append(value.equalsIgnoreCase("TRUE"));
