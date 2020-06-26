@@ -799,7 +799,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                     + table.getTableName() + ",location:" + tablePath + ",Database location for external tables:" + dbLocation);
           }
 
-          dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getManagedLocationUri()));
+          dbLocation = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getDatabaseManagedPath(db));
           if (dbLocation != null && FileUtils.isSubdirectory(dbLocation.toString(), tablePath.toString())) {
             throw new MetaException(
                 "An external table's location should not be located within managed warehouse root directory of its database, table:"
