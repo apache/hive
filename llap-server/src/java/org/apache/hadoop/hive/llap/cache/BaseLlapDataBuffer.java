@@ -24,11 +24,6 @@ public abstract class BaseLlapDataBuffer extends LlapAllocatorBuffer {
 
   private FileCache fileCache;
 
-  @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-    evictionDispatcher.notifyEvicted(this);
-  }
-
   public void setFileCache(FileCache fileCache) {
     assert this.fileCache == null;
     this.fileCache = fileCache;

@@ -24,4 +24,9 @@ public final class LlapDataBuffer extends BaseLlapDataBuffer {
   /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
    * the lookup is on compressed ranges, so we need to know this. */
   public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
+
+  @Override
+  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
+    evictionDispatcher.notifyEvicted(this);
+  }
 }

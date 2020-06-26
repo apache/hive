@@ -76,6 +76,11 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
 
   public static final class LlapSerDeDataBuffer extends BaseLlapDataBuffer {
     public boolean isCached = false;
+
+    @Override
+    public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
+      evictionDispatcher.notifyEvicted(this);
+    }
   }
 
   private static final class StripeInfoComparator implements
