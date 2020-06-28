@@ -1530,10 +1530,10 @@
         <column name="RM_DUMP_EXECUTION_ID" jdbc-type="bigint" allows-null="false"/>
       </field>
       <field name="metadata">
-        <column name="RM_METADATA" jdbc-type="varchar" allows-null="true"/>
+        <column name="RM_METADATA" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
       <field name="progress">
-        <column name="RM_PROGRESS" jdbc-type="varchar" allows-null="true"/>
+        <column name="RM_PROGRESS" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
       <index name="PolicyIndex">
         <column name="RM_POLICY"/>

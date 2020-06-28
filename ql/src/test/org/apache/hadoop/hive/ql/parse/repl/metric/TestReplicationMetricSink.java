@@ -67,8 +67,10 @@ public class TestReplicationMetricSink {
 
   @Test
   public void testSuccessBootstrapDumpMetrics() throws Exception {
-    ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", conf);
+    ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector(
+      "testAcidTablesReplLoadBootstrapIncr_1592205875387",
+        "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+          + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -79,7 +81,10 @@ public class TestReplicationMetricSink {
     bootstrapDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
     bootstrapDumpMetricCollector.reportEnd(Status.SUCCESS);
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.BOOTSTRAP, "staging");
+    Metadata expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
+      Metadata.ReplicationType.BOOTSTRAP, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
+      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
+      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -92,7 +97,8 @@ public class TestReplicationMetricSink {
     dumpStage.addMetric(expectedTableMetric);
     dumpStage.addMetric(expectedFuncMetric);
     expectedProgress.addStage(dumpStage);
-    ReplicationMetric expectedMetric = new ReplicationMetric(1, "repl", 0, expectedMetadata);
+    ReplicationMetric expectedMetric = new ReplicationMetric(1, "repl", 0,
+        expectedMetadata);
     expectedMetric.setProgress(expectedProgress);
     Thread.sleep(1000 * 20);
     GetReplicationMetricsRequest metricsRequest = new GetReplicationMetricsRequest();
