@@ -116,7 +116,7 @@ public class RetryTest {
             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(NullPointerException.class, e.getClass());
-            Assert.assertTrue(System.currentTimeMillis() - startTime > 180 * 1000);
+            Assert.assertTrue(System.currentTimeMillis() - startTime >= 180 * 1000);
         }
     }
 }
