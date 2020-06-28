@@ -138,6 +138,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -1748,6 +1749,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return rowResolver;
+  }
+
+  /**
+   * Validates a function in a select clause.
+   * Returns whether the function is an aggregate or not.
+   */
+  @Override
+  protected boolean validateFunction(ASTNode expressionTree, String functionName, boolean windowSpec)
+      throws SemanticException {
+    if (conf.getEngine() == Engine.IMPALA) {
+      // Validate the function name
+      boolean scalarFunction = ImpalaFunctionHelper.isScalarFunction(functionName);
+      boolean aggFunction = !scalarFunction && ImpalaFunctionHelper.isAggregateFunction(functionName);
+      boolean analyticFunction = !scalarFunction && ImpalaFunctionHelper.isAnalyticFunction(functionName);
+      if (!scalarFunction && !aggFunction && !analyticFunction) {
+        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
+      }
+      if (!aggFunction && analyticFunction && !windowSpec) {
+        throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
+      }
+      return aggFunction;
+    }
+    return super.validateFunction(expressionTree, functionName, windowSpec);
   }
 
   /***

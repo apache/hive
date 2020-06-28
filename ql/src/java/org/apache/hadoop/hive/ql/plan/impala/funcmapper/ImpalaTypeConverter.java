@@ -259,6 +259,8 @@ public class ImpalaTypeConverter {
         return Type.STRING;
       case FIXED_UDA_INTERMEDIATE:
         return Type.FIXED_UDA_INTERMEDIATE;
+      case NULL_TYPE:
+        return Type.NULL;
       default:
         throw new RuntimeException("Unknown type " + argType);
     }

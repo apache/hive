@@ -19,28 +19,25 @@
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
-import org.apache.calcite.util.NlsString;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -50,7 +47,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   protected final String func;
 
-  protected final List<RelDataType> argTypes;
+  protected final ImmutableList<RelDataType> argTypes;
 
   protected final FunctionHelper helper;
 
@@ -60,8 +57,17 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   protected final SqlOperator op;
 
+  public ImpalaFunctionResolverImpl(FunctionHelper helper, String func,
+      List<RexNode> inputNodes) {
+    this(helper, null, func, inputNodes);
+  }
 
   public ImpalaFunctionResolverImpl(FunctionHelper helper, SqlOperator op,
+      List<RexNode> inputNodes) {
+    this(helper, op, op.getName().toLowerCase(), inputNodes);
+  }
+
+  public ImpalaFunctionResolverImpl(FunctionHelper helper, SqlOperator op, String func,
       List<RexNode> inputNodes) {
     this.helper = helper;
     this.rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
@@ -69,8 +75,8 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     // op can be null for FunctionResolvers that are special and don't map to
     // anything in Calcite.  One example is the InternalIntervalFunctionResolver
     // where it maps the function "internal_interval" into a RexLiteral.
-    this.func = (op != null) ? op.getName().toLowerCase() : "";
-    this.argTypes = RexUtil.types(inputNodes);
+    this.func = func;
+    this.argTypes = ImmutableList.copyOf(RexUtil.types(inputNodes));
     this.op = op;
   }
 
@@ -104,7 +110,6 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
    * Derive the return type from the given signature and operands.
    */
   public RelDataType getRetType(ImpalaFunctionSignature funcSig, List<RexNode> operands) {
-    Preconditions.checkNotNull(op);
     RelDataType relDataType = funcSig.getRetType();
     // handle the return types with precision and scale separately.
     switch (relDataType.getSqlTypeName()) {
@@ -122,6 +127,10 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       }
       case CHAR:
       case DECIMAL:
+        // This could fail if there are Impala functions which are not mapped into Calcite
+	// and have a return type of char or decimal. We will have to figure out some way
+	// to handle these types, since it might not be wise to pick a default.
+        Preconditions.checkNotNull(op);
         return op.inferReturnType(rexBuilder.getTypeFactory(), RexUtil.types(operands));
       // For the default case, we can just create a RelDataType.
       default: {
@@ -137,8 +146,15 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   public RexNode createRexNode(ImpalaFunctionSignature candidate, List<RexNode> inputs,
       RelDataType returnDataType) {
-    Preconditions.checkNotNull(op);
-    return rexBuilder.makeCall(returnDataType, op, inputs);
+    try {
+      SqlOperator opToUse = op;
+      if (opToUse == null) {
+        opToUse = SqlFunctionConverter.getCalciteFn(func, argTypes, returnDataType, false, false);
+      }
+      return rexBuilder.makeCall(returnDataType, opToUse, inputs);
+    } catch (CalciteSemanticException e) {
+      throw new RuntimeException("Could not create an SqlOperation for " + func);
+    }
   }
 
   @Override
@@ -338,15 +354,15 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return result;
   }
 
-  private static ImpalaFunctionResolver createSpecialFuncResolver(FunctionHelper helper,
-      String func, List<RexNode> inputs) {
+  private static ImpalaFunctionResolver createGenericFuncResolver(FunctionHelper helper,
+      String func, List<RexNode> inputs) throws CalciteSemanticException {
     if (func.equals("internal_interval")) {
       return new InternalIntervalFunctionResolver(helper, inputs);
     }
     if (func.equals("inline")) {
       return new InlineFunctionResolver(helper, inputs);
     }
-    throw new RuntimeException("Could not find function resolver for " + func);
+    return new ImpalaFunctionResolverImpl(helper, func, inputs);
   }
 
   public static ImpalaFunctionResolver create(FunctionHelper helper, String func,
@@ -356,7 +372,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     if (op == null) {
       // handle the special case where there is no mapped operator
-      return createSpecialFuncResolver(helper, func, inputs);
+      return createGenericFuncResolver(helper, func, inputs);
     }
 
     switch(op.getKind()) {

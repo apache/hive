@@ -86,7 +86,6 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     List<AggFunctionDetails> aggDetails = gson.fromJson(reader, aggFuncDetailsType);
 
     for (ScalarFunctionDetails sfd : scalarDetails) {
-      List<Type> argTypes = Lists.newArrayList();
       ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, sfd.getArgTypes(),
           sfd.getRetType(), sfd.hasVarArgs);
       List<ImpalaFunctionSignature> castIfsList =
@@ -477,7 +476,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
 
     ImpalaFunctionSignature castSig =
         new ImpalaFunctionSignature("cast", Lists.newArrayList(castFrom), castTo);
-    ScalarFunctionDetails details = ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE.get(castSig);
+    ScalarFunctionDetails details = ScalarFunctionDetails.SCALAR_BUILTINS_MAP.get(castSig);
     return details != null && details.castUp;
   }
 }

@@ -24,6 +24,8 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.catalog.BuiltinsDb;
@@ -71,9 +73,13 @@ public class AggFunctionDetails implements FunctionDetails {
   public TFunctionBinaryType binaryType;
   private ImpalaFunctionSignature ifs;
 
+  // Set of all aggregate functions available in Impala
+  static final Set<String> AGG_BUILTINS = new HashSet<>();
+  // Set of all analytic functions available in Impala
+  static final Set<String> ANALYTIC_BUILTINS = new HashSet<>();
   // Map containing an aggregate Impala signature to the details associated with the signature.
   // A signature consists of the function name, the operand types and the return type.
-  static Map<ImpalaFunctionSignature, AggFunctionDetails> AGG_BUILTINS_INSTANCE = Maps.newHashMap();
+  static final Map<ImpalaFunctionSignature, AggFunctionDetails> AGG_BUILTINS_MAP = Maps.newHashMap();
 
   // populate all agg functions from the resource file.
   static {
@@ -85,10 +91,16 @@ public class AggFunctionDetails implements FunctionDetails {
 
     for (AggFunctionDetails afd : aggDetails) {
       Preconditions.checkState(afd.isAgg || afd.isAnalyticFn);
+      if (afd.isAgg) {
+        AGG_BUILTINS.add(afd.fnName.toUpperCase());
+      }
+      if (afd.isAnalyticFn) {
+        ANALYTIC_BUILTINS.add(afd.fnName.toUpperCase());
+      }
       ImpalaFunctionSignature ifs =
           ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(), afd.getRetType(), false);
       afd.ifs = ifs;
-      AGG_BUILTINS_INSTANCE.put(ifs, afd);
+      AGG_BUILTINS_MAP.put(ifs, afd);
       BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
     }
   }
@@ -198,18 +210,18 @@ public class AggFunctionDetails implements FunctionDetails {
     return ifs;
   }
 
-  /** 
+  /**
    * Retrieve function details about an agg function given a signature
    * containing the function name, return type, and operand types.
    */
   public static AggFunctionDetails get(String name, List<RelDataType> operandTypes,
        RelDataType retType) {
 
-    ImpalaFunctionSignature sig = ImpalaFunctionSignature.fetch(AGG_BUILTINS_INSTANCE,
+    ImpalaFunctionSignature sig = ImpalaFunctionSignature.fetch(AGG_BUILTINS_MAP,
         name, operandTypes, retType);
 
     if (sig != null) {
-      return AGG_BUILTINS_INSTANCE.get(sig);
+      return AGG_BUILTINS_MAP.get(sig);
     }
     return null;
   }

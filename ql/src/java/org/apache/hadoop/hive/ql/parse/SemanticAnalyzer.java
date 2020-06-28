@@ -915,8 +915,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    boolean parentIsWindowSpec = wndParent != null;
-
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
@@ -933,24 +931,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
-        String functionName = unescapeIdentifier(expressionTree.getChild(0)
-            .getText());
-        // Validate the function name
-        if (FunctionRegistry.getFunctionInfo(functionName) == null) {
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
-        }
-        if(FunctionRegistry.impliesOrder(functionName) && !parentIsWindowSpec) {
-          throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
-        }
-        if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
-          if(containsLeadLagUDF(expressionTree) && !parentIsWindowSpec) {
-            throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
-          }
+        boolean parentIsWindowSpec = wndParent != null;
+        String functionName = unescapeIdentifier(expressionTree.getChild(0).getText());
+        if (validateFunction(expressionTree, functionName, parentIsWindowSpec)) {
           aggregations.put(expressionTree.toStringTree(), expressionTree);
           FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
-          if (!fi.isNative()) {
-            unparseTranslator.addIdentifierTranslation((ASTNode) expressionTree
-                .getChild(0));
+          if (fi != null && !fi.isNative()) {
+            unparseTranslator.addIdentifierTranslation((ASTNode) expressionTree.getChild(0));
           }
           return;
         }
@@ -960,6 +947,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
           aggregations, wdwFns, wndParent);
     }
+  }
+
+  /**
+   * Validates a function in a select clause.
+   * Returns whether the function is an aggregate or not.
+   */
+  protected boolean validateFunction(ASTNode expressionTree, String functionName, boolean windowSpec)
+      throws SemanticException {
+    // Validate the function name
+    if (FunctionRegistry.getFunctionInfo(functionName) == null) {
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
+    }
+    if (FunctionRegistry.impliesOrder(functionName) && !windowSpec) {
+      throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
+    }
+    if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
+      // TODO: The following condition should probably check for other window
+      //       expressions, not only lead/lag. See CDPD-14236.
+      if (containsLeadLagUDF(expressionTree) && !windowSpec) {
+        throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
+      }
+      return true;
+    }
+    return false;
   }
 
   private List<ASTNode> doPhase1GetDistinctFuncExprs(

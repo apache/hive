@@ -96,12 +96,12 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     try {
       ImpalaFunctionResolver funcResolver = ImpalaFunctionResolverImpl.create(this,
           functionInfo.getDisplayName(), inputs);
-     
+
       ImpalaFunctionInfo impalaFunctionInfo = (ImpalaFunctionInfo) functionInfo;
       impalaFunctionInfo.setFunctionResolver(funcResolver);
-     
+
       ImpalaFunctionSignature ifs =
-          funcResolver.getFunction(ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE);
+          funcResolver.getFunction(ScalarFunctionDetails.SCALAR_BUILTINS_MAP);
       impalaFunctionInfo.setImpalaFunctionSignature(ifs);
       return funcResolver.getRetType(ifs, inputs);
     } catch (HiveException e) {
@@ -205,7 +205,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       ImpalaFunctionResolver funcResolver =
           ImpalaFunctionResolverImpl.create(this, aggregateName, aggregateParameters);
       ImpalaFunctionSignature function =
-          funcResolver.getFunction(AggFunctionDetails.AGG_BUILTINS_INSTANCE);
+          funcResolver.getFunction(AggFunctionDetails.AGG_BUILTINS_MAP);
 
       List<RexNode> convertedInputs = funcResolver.getConvertedInputs(function);
 
@@ -215,5 +215,29 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+  }
+
+  /**
+   * Returns true if the name corresponds to a scalar function
+   * in Impala.
+   */
+  public static boolean isScalarFunction(String name) {
+    return ScalarFunctionDetails.SCALAR_BUILTINS.contains(name.toUpperCase());
+  }
+
+  /**
+   * Returns true if the name corresponds to an aggregate function
+   * in Impala.
+   */
+  public static boolean isAggregateFunction(String name) {
+    return AggFunctionDetails.AGG_BUILTINS.contains(name.toUpperCase());
+  }
+
+  /**
+   * Returns true if the name corresponds to an analytic function
+   * in Impala.
+   */
+  public static boolean isAnalyticFunction(String name) {
+    return AggFunctionDetails.ANALYTIC_BUILTINS.contains(name.toUpperCase());
   }
 }

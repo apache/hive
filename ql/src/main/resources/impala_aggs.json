@@ -1,5 +1,11 @@
 [
     {
+        "impalaFnName": "not implemented",
+        "fnName": "compute_bit_vector",
+        "isAgg": "true",
+        "retType": "NULL_TYPE"
+    },
+    {
         "mergeFnSymbol": "_ZN6impala18AggregateFunctions10CountMergeEPN10impala_udf15FunctionContextERKNS1_9BigIntValEPS4_",
         "fnName": "count",
         "impalaFnName": "count",

@@ -173,6 +173,31 @@
         ]
     },
     {
+        "impalaFnName": "not implemented",
+        "fnName": "inline",
+        "retType": "NULL_TYPE"
+    },
+    {
+        "impalaFnName": "not implemented",
+        "fnName": "struct",
+        "retType": "NULL_TYPE"
+    },
+    {
+        "impalaFnName": "not implemented",
+        "fnName": "array",
+        "retType": "NULL_TYPE"
+    },
+    {
+        "impalaFnName": "not implemented",
+        "fnName": "grouping",
+        "retType": "NULL_TYPE"
+    },
+    {
+        "impalaFnName": "not implemented",
+        "fnName": "ndv_compute_bit_vector",
+        "retType": "NULL_TYPE"
+    },
+    {
         "impalaFnName": "add",
         "fnName": "+",
         "userVisible": "false",

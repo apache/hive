@@ -23,6 +23,8 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.HdfsUri;
@@ -67,9 +69,11 @@ public class ScalarFunctionDetails implements FunctionDetails {
   public HdfsUri hdfsUri;
   public ImpalaFunctionSignature ifs;
 
+  // Set of all scalar functions available in Impala
+  static final Set<String> SCALAR_BUILTINS = new HashSet<>();
   // Map containing a scalar  Impala signature to the details associated with the signature.
   // A signature consists of the function name, the operand types and the return type.
-  static public Map<ImpalaFunctionSignature, ScalarFunctionDetails> SCALAR_BUILTINS_INSTANCE = Maps.newHashMap();
+  static final Map<ImpalaFunctionSignature, ScalarFunctionDetails> SCALAR_BUILTINS_MAP = Maps.newHashMap();
 
   // populate all functions from the resource file.
   static {
@@ -80,11 +84,12 @@ public class ScalarFunctionDetails implements FunctionDetails {
     List<ScalarFunctionDetails> scalarDetails = gson.fromJson(reader, scalarFuncDetailsType);
 
     for (ScalarFunctionDetails sfd : scalarDetails) {
+      SCALAR_BUILTINS.add(sfd.fnName.toUpperCase());
       sfd.setDbName(BuiltinsDb.NAME);
       ImpalaFunctionSignature ifs =
           ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(), sfd.getRetType(), sfd.hasVarArgs);
       sfd.ifs = ifs;
-      SCALAR_BUILTINS_INSTANCE.put(ifs, sfd);
+      SCALAR_BUILTINS_MAP.put(ifs, sfd);
       BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
     }
   }
@@ -184,17 +189,17 @@ public class ScalarFunctionDetails implements FunctionDetails {
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.create(name,
         operandTypes, retType, false);
 
-    return SCALAR_BUILTINS_INSTANCE.get(sig);
+    return SCALAR_BUILTINS_MAP.get(sig);
   }
 
   public static ScalarFunctionDetails get(String name, List<RelDataType> operandTypes,
        RelDataType retType) {
 
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.fetch(
-        SCALAR_BUILTINS_INSTANCE, name, operandTypes, retType);
+        SCALAR_BUILTINS_MAP, name, operandTypes, retType);
 
     if (sig != null) {
-      return SCALAR_BUILTINS_INSTANCE.get(sig);
+      return SCALAR_BUILTINS_MAP.get(sig);
     }
     return null;
   }

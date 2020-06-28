@@ -36,7 +36,7 @@ import java.util.Map;
 public class InlineFunctionResolver extends ImpalaFunctionResolverImpl {
 
   public InlineFunctionResolver(FunctionHelper helper, List<RexNode> inputNodes) {
-    super(helper, null, inputNodes);
+    super(helper, "inline", inputNodes);
   }
 
   @Override

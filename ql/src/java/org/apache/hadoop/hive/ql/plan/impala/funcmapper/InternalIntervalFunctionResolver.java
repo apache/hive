@@ -39,7 +39,7 @@ public class InternalIntervalFunctionResolver extends ImpalaFunctionResolverImpl
   private final RexNodeExprFactory factory;
 
   public InternalIntervalFunctionResolver(FunctionHelper helper, List<RexNode> inputNodes) {
-    super(helper, null, inputNodes);
+    super(helper, "internal_interval", inputNodes);
     this.factory = helper.getRexNodeExprFactory();
   }
 
