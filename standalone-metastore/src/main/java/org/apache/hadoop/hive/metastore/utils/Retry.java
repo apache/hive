@@ -23,7 +23,8 @@ package org.apache.hadoop.hive.metastore.utils;
  */
 public abstract class Retry<T> {
 
-    public static final int MAX_RETRIES = 3;
+    public static final int MAX_RETRIES = 4;
+    public static final int DELAY = 30 * 1000;
     private int tries = 0;
     private Class retryExceptionType;
 
@@ -43,6 +44,24 @@ public abstract class Retry<T> {
                     throw e;
                 } else {
                     return run();
+                }
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public T runWithDelay() throws Exception {
+        try {
+            return execute();
+        } catch(Exception e) {
+            if (e.getClass().equals(retryExceptionType)){
+                tries++;
+                if (MAX_RETRIES == tries) {
+                    throw e;
+                } else {
+                    Thread.sleep(DELAY * tries);
+                    return runWithDelay();
                 }
             } else {
                 throw e;
