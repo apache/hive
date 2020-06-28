@@ -61,3 +61,6 @@ insert into druid_test_table_utc2 values
 (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2);
 
 select * FROM druid_test_table_utc2;
+
+EXPLAIN select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))));
+select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))));

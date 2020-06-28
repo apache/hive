@@ -207,3 +207,42 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2015-03-09 23:59:59.0 UTC	i2-end	1.0
 2015-03-10 00:00:00.0 UTC	i3-start	2.0
 2015-03-10 23:59:59.0 UTC	i3-end	2.0
+PREHOOK: query: EXPLAIN select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))))
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_test_table_1
+          properties:
+            druid.fieldNames interval_marker
+            druid.fieldTypes string
+            druid.query.json {"queryType":"scan","dataSource":"druid_test_dst.druid_test_table_1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"bound","dimension":"interval_marker","lower":"i2-start","lowerStrict":false,"upper":"i3-start","upperStrict":false,"ordering":"lexicographic"}},"columns":["interval_marker"],"resultFormat":"compactedList"}
+            druid.query.type scan
+          Select Operator
+            expressions: interval_marker (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))))
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `interval_marker` from druid_test_table_1 WHERE (NOT(((`interval_marker` >= 'i2-start') AND (`interval_marker` <= 'i3-start'))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+i1-start
+i1-end
+i2-end

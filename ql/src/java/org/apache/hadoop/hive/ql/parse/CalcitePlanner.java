@@ -201,6 +201,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveCardinalityPreservingJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidPullInvertFromBetweenRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidPushInvertIntoBetweenRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
@@ -2437,6 +2439,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 7. Apply Druid transformation rules
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          HiveDruidPullInvertFromBetweenRule.INSTANCE,
           HiveDruidRules.FILTER_DATE_RANGE_RULE,
           HiveDruidRules.FILTER, HiveDruidRules.PROJECT_FILTER_TRANSPOSE,
           HiveDruidRules.AGGREGATE_FILTER_TRANSPOSE,
@@ -2450,7 +2453,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveDruidRules.HAVING_FILTER_RULE,
           HiveDruidRules.SORT_PROJECT_TRANSPOSE,
           HiveDruidRules.SORT,
-          HiveDruidRules.PROJECT_SORT_TRANSPOSE);
+          HiveDruidRules.PROJECT_SORT_TRANSPOSE,
+          HiveDruidPushInvertIntoBetweenRule.INSTANCE);
 
       // 8. Apply JDBC transformation rules
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
