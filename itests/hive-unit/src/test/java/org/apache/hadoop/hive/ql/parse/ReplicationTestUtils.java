@@ -502,7 +502,7 @@ public class ReplicationTestUtils {
                 "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }
 
-  public static List<String> externalTableClause(boolean enable) {
+  public static List<String> includeExternalTableClause(boolean enable) {
     List<String> withClause = new ArrayList<>();
     withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='" + enable + "'");
     withClause.add("'distcp.options.pugpb'=''");

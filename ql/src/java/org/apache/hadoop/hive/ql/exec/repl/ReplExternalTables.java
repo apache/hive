@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
@@ -66,16 +67,23 @@ public final class ReplExternalTables {
   private ReplExternalTables(){}
 
   public static String externalTableLocation(HiveConf hiveConf, String location) throws SemanticException {
-    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    if (StringUtils.isEmpty(baseDir)) {
-      throw new SemanticException("Config 'hive.repl.replica.external.table.base.dir' is required");
-    }
-    Path basePath = new Path(baseDir);
+    Path basePath = getExternalTableBaseDir(hiveConf);
     Path currentPath = new Path(location);
     Path dataLocation = externalTableDataPath(hiveConf, basePath, currentPath);
 
     LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
     return dataLocation.toString();
+  }
+
+  public static Path getExternalTableBaseDir(HiveConf hiveConf) throws SemanticException {
+    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    URI baseDirUri  = StringUtils.isEmpty(baseDir) ? null : new Path(baseDir).toUri();
+    if (baseDirUri == null || baseDirUri.getScheme() == null || baseDirUri.getAuthority() == null) {
+      throw new SemanticException(
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",
+                      baseDir == null ? "" : "- ('" + baseDir + "')"));
+    }
+    return new Path(baseDirUri);
   }
 
   public static Path externalTableDataPath(HiveConf hiveConf, Path basePath, Path sourcePath)

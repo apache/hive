@@ -90,8 +90,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
 
   @Test
   public void replicationWithoutExternalTables() throws Throwable {
-    List<String> loadWithClause = ReplicationTestUtils.externalTableClause(false);
-    List<String> dumpWithClause = ReplicationTestUtils.externalTableClause(false);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(false);
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(false);
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -151,7 +151,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     // verify that the external table info is not written as metadata only replication
     assertFalseExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME));
 
-    List<String> withClauseOptions = ReplicationTestUtils.externalTableClause(true);
+    List<String> withClauseOptions = ReplicationTestUtils.includeExternalTableClause(true);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
         .run("use " + replicatedDbName)
@@ -258,7 +258,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
-    List<String> loadWithClause = ReplicationTestUtils.externalTableClause(true);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table t2 (place string) partitioned by (country string) row format "
@@ -386,7 +386,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
       outputStream.write("bangalore\n".getBytes());
     }
 
-    List<String> loadWithClause = ReplicationTestUtils.externalTableClause(true);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't1'")
@@ -441,8 +441,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
 
   @Test
   public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
-    List<String> loadWithClause = ReplicationTestUtils.externalTableClause(false);
-    List<String> dumpWithClause = ReplicationTestUtils.externalTableClause(false);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(false);
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(false);
 
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -473,7 +473,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
                                    "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'",
             "'distcp.options.pugpb'=''");
-    loadWithClause = ReplicationTestUtils.externalTableClause(true);
+    loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     tuple = primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("create external table t3 (id int)")
@@ -542,8 +542,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
 
   @Test
   public void testExternalTablesIncReplicationWithConcurrentDropTable() throws Throwable {
-    List<String> dumpWithClause = ReplicationTestUtils.externalTableClause(true);
-    List<String> loadWithClause = ReplicationTestUtils.externalTableClause(true);
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(true);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
             .run("create external table t1 (id int)")
             .run("insert into table t1 values (1)")
@@ -598,7 +598,7 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
 
   @Test
   public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
-    List<String> withClause = ReplicationTestUtils.externalTableClause(true);
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create external table t1 (id int)")
             .run("insert into table t1 values (1)")

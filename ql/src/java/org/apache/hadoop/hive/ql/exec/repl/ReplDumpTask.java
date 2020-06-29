@@ -759,13 +759,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     // this is done to remove any scheme related information that will be present in the base path
     // specifically when we are replicating to cloud storage
-    URI basePathUri  = StringUtils.isEmpty(baseDir) ? null : new Path(baseDir).toUri();
-    if (basePathUri == null || basePathUri.getScheme() == null || basePathUri.getAuthority() == null) {
-      throw new SemanticException(
-              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",
-                      baseDir == null ? "" : "- ('" + baseDir + "')"));
-    }
-    Path basePath = new Path(baseDir);
+    Path basePath = ReplExternalTables.getExternalTableBaseDir(conf);
     for (Path sourcePath : sourceLocations) {
       Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
       list.add(new DirCopyWork(sourcePath, targetPath));
