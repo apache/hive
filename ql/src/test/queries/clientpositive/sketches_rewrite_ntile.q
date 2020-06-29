@@ -37,3 +37,7 @@ select id,'rewrite',ntile(4) over (order by id nulls last) from sketch_input ord
 select id,'rewrite',ntile(4) over (order by id nulls last) from sketch_input order by id nulls last;
 
 select id,ntile(4) over (order by id) from sketch_input order by id;
+
+explain
+select category,ntile(4) over (order by category) from sketch_input order by category;
+select category,ntile(4) over (order by category) from sketch_input order by category;

@@ -48,6 +48,7 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilder.AggCall;
@@ -520,7 +521,8 @@ public final class HiveRewriteToDataSketchesRules {
         if (window.orderKeys.size() == 1
             && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
             && isApplicable1(over)) {
-          return true;
+          RelDataType type = window.orderKeys.get(0).getKey().getType();
+          return type.getFamily() == SqlTypeFamily.NUMERIC;
         }
         return false;
       }
