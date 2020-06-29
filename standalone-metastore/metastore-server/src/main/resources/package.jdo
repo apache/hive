@@ -348,17 +348,12 @@
       <field name="cols" table="COLUMNS_V2" >
         <collection element-type="MFieldSchema"/>
         <foreign-key name="COLUMNS_V2_FK" delete-action="cascade"/>
-        <join>
-          <primary-key name="COLUMNS_PK">
-            <column name="COLUMN_NAME"/>
-          </primary-key>
-          <column name="CD_ID"/>
-        </join>
+        <join column="CD_ID" />
         <element>
           <embedded>
             <field name="name">
               <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
-              </field>
+            </field>
             <field name="type">
               <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
