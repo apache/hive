@@ -1370,6 +1370,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return objectStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
     throw new RuntimeException("unimplemented");
   }

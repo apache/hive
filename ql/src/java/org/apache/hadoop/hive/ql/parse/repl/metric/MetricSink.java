@@ -71,7 +71,7 @@ public class MetricSink {
 
   long getFrequencyInSecs() {
     //Metastore conf is in minutes
-    return MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY) * 60;
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, TimeUnit.MINUTES) * 60;
   }
 
   public synchronized void tearDown() {

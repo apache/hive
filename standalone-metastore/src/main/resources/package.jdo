@@ -1535,6 +1535,9 @@
       <field name="progress">
         <column name="RM_PROGRESS" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
+      <field name="startTime">
+         <column name="RM_START_TIME" jdbc-type="integer" allows-null="false"/>
+      </field>
       <index name="PolicyIndex">
         <column name="RM_POLICY"/>
       </index>

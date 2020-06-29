@@ -29,6 +29,7 @@ public class MReplicationMetrics {
   private long dumpExecutionId;
   private String metadata;
   private String progress;
+  private int startTime;
 
   public MReplicationMetrics() {
   }
@@ -81,5 +82,13 @@ public class MReplicationMetrics {
 
   public void setProgress(String progress) {
     this.progress = progress;
+  }
+
+  public int getStartTime() {
+    return startTime;
+  }
+
+  public void setStartTime(int startTime) {
+    this.startTime = startTime;
   }
 }

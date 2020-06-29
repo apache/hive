@@ -1911,6 +1911,8 @@ public interface RawStore extends Configurable {
    */
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
+  int deleteReplicationMetrics(int maxRetainSecs);
+
   int deleteScheduledExecutions(int maxRetainSecs);
 
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;

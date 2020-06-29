@@ -1230,7 +1230,8 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_POLICY" varchar2(256) NOT NULL,
   "RM_DUMP_EXECUTION_ID" number NOT NULL,
   "RM_METADATA" varchar2(4000),
-  "RM_PROGRESS" varchar2(4000)
+  "RM_PROGRESS" varchar2(4000),
+  "RM_START_TIME" integer NOT NULL
 );
 
 --Create indexes for the replication metrics table

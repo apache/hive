@@ -1327,6 +1327,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return objectStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws NoSuchObjectException {
     return objectStore.getScheduledQuery(scheduleKey);
   }
