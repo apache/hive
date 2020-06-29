@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
@@ -117,6 +118,8 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       joinFilters = ((HiveMultiJoin)joinRel).getJoinFilters();
     } else if (joinRel instanceof HiveSemiJoin){
       joinFilters = ImmutableList.of(((HiveSemiJoin)joinRel).getJoinFilter());
+    } else if (joinRel instanceof HiveAntiJoin){
+      joinFilters = ImmutableList.of(((HiveAntiJoin)joinRel).getJoinFilter());
     } else {
       throw new SemanticException("Can't handle join type: " + joinRel.getClass().getName());
     }

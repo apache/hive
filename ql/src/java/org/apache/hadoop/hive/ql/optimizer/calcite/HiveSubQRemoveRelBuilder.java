@@ -1112,7 +1112,7 @@ public class HiveSubQRemoveRelBuilder {
   }
 
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
-                                       Set<CorrelationId> variablesSet, boolean createSemiJoin) {
+                                       Set<CorrelationId> variablesSet, JoinRelType semiJoinType) {
     Frame right = stack.pop();
     final Frame left = stack.pop();
     final RelNode join;
@@ -1138,9 +1138,9 @@ public class HiveSubQRemoveRelBuilder {
       default:
         postCondition = condition;
       }
-      if(createSemiJoin) {
+      if(semiJoinType != null) {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-                requiredColumns, JoinRelType.SEMI);
+                requiredColumns, semiJoinType);
       } else {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
                 requiredColumns, joinType);
@@ -1161,7 +1161,7 @@ public class HiveSubQRemoveRelBuilder {
    * variables. */
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
                                        Set<CorrelationId> variablesSet) {
-    return join(joinType, condition, variablesSet, false);
+    return join(joinType, condition, variablesSet, null);
   }
 
   /** Creates a {@link org.apache.calcite.rel.core.Join} using USING syntax.

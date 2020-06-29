@@ -143,6 +143,50 @@ select * from part ws1 where
                             and ws1.p_retailprice <> ws2.p_retailprice)
     and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
 
+set hive.auto.convert.anti.join=true;
+
+explain select * from part_null where p_size IN (select p_size from part_null) AND NOT EXISTS (select c from tempty);
+select * from part_null where p_size IN (select p_size from part_null) AND NOT EXISTS (select c from tempty);
+
+explain select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty);
+select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty);
+
+
+explain
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.value = b.value)
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' and not exists (select * from src s2 where s1.value = s2.value) group by s1.key )
+ ;
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.value = b.value)
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' and not exists (select * from src s2 where s1.value = s2.value) group by s1.key ) ;
+
+
+explain select count(*)  from src
+    where src.key in (select key from src s1 where s1.key > '9')
+        or src.value is not null
+        or not exists(select key from src);
+
+select count(*)  from src
+    where src.key in (select key from src s1 where s1.key > '9')
+        or src.value is not null
+        or not exists(select key from src);
+
+-- EXISTS and NOT EXISTS with non-equi predicate
+explain select * from part ws1 where
+    exists (select * from part ws2 where ws1.p_type= ws2.p_type
+                            and ws1.p_retailprice <> ws2.p_retailprice)
+    and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
+select * from part ws1 where
+    exists (select * from part ws2 where ws1.p_type= ws2.p_type
+                            and ws1.p_retailprice <> ws2.p_retailprice)
+    and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
+
+set hive.auto.convert.anti.join=false;
 
 drop table tnull;
 drop table tempty;

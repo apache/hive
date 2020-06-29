@@ -513,11 +513,17 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     }
   }
 
-  // fill forwardCache with skipvector
-  // returns whether a record was forwarded
-  private boolean createForwardJoinObject(boolean[] skip) throws HiveException {
-    Arrays.fill(forwardCache, null);
+  private void createForwardJoinObjectForAntiJoin(boolean[] skip) throws HiveException {
+    boolean forward = fillFwdCache(skip);
+    if (forward) {
+      internalForward(forwardCache, outputObjInspector);
+      countAfterReport = 0;
+    }
+  }
 
+  // fill forwardCache with skipvector
+  private boolean fillFwdCache(boolean[] skip) {
+    Arrays.fill(forwardCache, null);
     boolean forward = false;
     for (int i = 0; i < numAliases; i++) {
       if (!skip[i]) {
@@ -527,14 +533,19 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         forward = true;
       }
     }
+    return forward;
+  }
+
+  // returns whether a record was forwarded
+  private boolean createForwardJoinObject(boolean[] skip, boolean antiJoin) throws HiveException {
+    boolean forward = fillFwdCache(skip);
     if (forward) {
-      if (hasAntiJoin) {
-        // TODO : Handle hasAntiJoin
-      }
       if (needsPostEvaluation) {
         forward = !JoinUtil.isFiltered(forwardCache, residualJoinFilters, residualJoinFiltersOIs);
       }
-      if (forward) {
+
+      // For anti join, check all right side and if nothing is matched then only forward.
+      if (forward && !antiJoin) {
         // If it is not an outer join, or the post-condition filters
         // are empty or the row passed them
         internalForward(forwardCache, outputObjInspector);
@@ -628,17 +639,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     AbstractRowContainer.RowIterator<List<Object>> iter = aliasRes.rowIter();
     int pos = 0;
 
-    // For anti join, we should proceed to emit records if the right side is empty
-    if (!aliasRes.hasRows() && type == JoinDesc.ANTI_JOIN) {
-      System.arraycopy(prevSkip, 0, skip, 0, prevSkip.length);
-      skip[right] = true;
-      if (aliasNum == numAliases - 1) {
-        createForwardJoinObject(skipVectors[numAliases - 1]);
-      } else {
-        genObject(aliasNum + 1, allLeftFirst, allLeftNull);
-      }
-    }
-
     for (List<Object> rightObj = iter.first(); !done && rightObj != null;
          rightObj = loopAgain ? rightObj : iter.next(), rightFirst = loopAgain = false, pos++) {
       // Keep a copy of the skip vector and update the bit for current alias only in the loop.
@@ -693,7 +693,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
           needToProduceLeftRow = true;
           if (needsPostEvaluation) {
             // This is only executed for outer joins with residual filters
-            boolean forward = createForwardJoinObject(skipVectors[numAliases - 1]);
+            boolean forward = createForwardJoinObject(skipVectors[numAliases - 1],
+                                                    type == JoinDesc.ANTI_JOIN);
             producedRow |= forward;
             done = (type == JoinDesc.LEFT_SEMI_JOIN) && forward;
             if (!rightNull &&
@@ -712,12 +713,23 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
               }
             }
           } else {
-            createForwardJoinObject(skipVectors[numAliases - 1]);
+            createForwardJoinObject(skipVectors[numAliases - 1], type == JoinDesc.ANTI_JOIN);
           }
         }
       } else {
         // recursively call the join the other rhs tables
         genObject(aliasNum + 1, allLeftFirst && rightFirst, allLeftNull && rightNull);
+      }
+    }
+
+    // For anti join, we should proceed to emit records if the right side is empty or not matching.
+    if (type == JoinDesc.ANTI_JOIN && !producedRow) {
+      System.arraycopy(prevSkip, 0, skip, 0, prevSkip.length);
+      skip[right] = true;
+      if (aliasNum == numAliases - 1) {
+        createForwardJoinObjectForAntiJoin(skipVectors[numAliases - 1]);
+      } else {
+        genObject(aliasNum + 1, allLeftFirst, allLeftNull);
       }
     }
 
@@ -960,20 +972,22 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
         AbstractRowContainer<List<Object>> alw = storage[alias];
+        boolean isRightOfAntiJoin = (i != 0 && condn[i-1].getType() == JoinDesc.ANTI_JOIN);
 
         if (noOuterJoin) {
           if (!alw.hasRows()) {
-            if (i != 0 && condn[i-1].getType() == JoinDesc.ANTI_JOIN) {
-              //TODO : Can both anti join and outer join be present ?
-              hasEmpty = true;
-            } else {
+            if (!isRightOfAntiJoin) {
+              // For anti join the right side can be empty.
               return;
             }
+          } else if (isRightOfAntiJoin && !needsPostEvaluation)  {
+            // For anti join the right side should be empty. For needsPostEvaluation case we will
+            // wait till evaluation is done. For other cases we can directly return from here.
+            return;
           } else if (!alw.isSingleRow()) {
             mayHasMoreThanOne = true;
           }
         } else {
-          //TODO : Do we need to handle anti join here ?
           if (!alw.hasRows()) {
             hasEmpty = true;
             alw.addRow(dummyObj[i]);
@@ -997,15 +1011,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         }
       }
 
-      // For anti join right side table should be empty.
-      // TODO : What if hasEmpty is set for outer join ?
-      if (hasAntiJoin && !hasEmpty) {
-        return;
-      }
-
       if (!needsPostEvaluation && !hasEmpty && !mayHasMoreThanOne) {
         genAllOneUniqueJoinObject();
-      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin) {
+      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin && !hasAntiJoin) {
         genUniqueJoinObject(0, 0);
       } else {
         genJoinObject();

@@ -24,6 +24,8 @@ import static org.apache.calcite.plan.RelOptRule.some;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.rules.JoinProjectTransposeRule;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -133,6 +135,10 @@ public final class HiveJoinProjectTransposeRule {
 
     public void onMatch(RelOptRuleCall call) {
       //TODO: this can be removed once CALCITE-3824 is released
+      Join joinRel = call.rel(0);
+      if (joinRel.getJoinType() == JoinRelType.ANTI) {
+        return;
+      }
       HiveProject proj;
       if (hasLeftChild(call)) {
         proj = call.rel(1);

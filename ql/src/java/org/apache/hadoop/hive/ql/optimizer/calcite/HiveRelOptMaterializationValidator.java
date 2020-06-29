@@ -40,6 +40,7 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
@@ -138,6 +139,8 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
       return visit((HiveSemiJoin) node);
     } else if (node instanceof HiveExcept) {
       return visit((HiveExcept) node);
+    } else if (node instanceof HiveAntiJoin) {
+      return visit((HiveAntiJoin) node);
     } else if (node instanceof HiveIntersect) {
       return visit((HiveIntersect) node);
     }
@@ -251,6 +254,14 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     checkExpr(semiJoin.getCondition());
     checkExpr(semiJoin.getJoinFilter());
     return visitChildren(semiJoin);
+  }
+
+  // Note: Not currently part of the HiveRelNode interface
+  private RelNode visit(HiveAntiJoin antiJoin) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported join type: anti join.");
+    checkExpr(antiJoin.getCondition());
+    checkExpr(antiJoin.getJoinFilter());
+    return visitChildren(antiJoin);
   }
 
   // Note: Not currently part of the HiveRelNode interface

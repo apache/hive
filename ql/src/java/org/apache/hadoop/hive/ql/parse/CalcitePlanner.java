@@ -83,6 +83,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
@@ -181,6 +182,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.Unsu
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -394,6 +396,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           HiveTableScan.class,
           HiveAggregate.class,
+          HiveAntiJoin.class,
           HiveExcept.class,
           HiveFilter.class,
           HiveIntersect.class,
@@ -2070,8 +2073,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
+      rules.add(HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
+      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_ANTIJOIN);
       rules.add(HiveSortMergeRule.INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
@@ -2887,9 +2892,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftSemiJoin = true;
         break;
       case ANTI:
-      calciteJoinType = JoinRelType.ANTI;
-      leftSemiJoin = true;
-      break;
+        calciteJoinType = JoinRelType.ANTI;
+        leftSemiJoin = true;
+        break;
       case INNER:
       default:
         calciteJoinType = JoinRelType.INNER;
@@ -2923,10 +2928,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final RelDataType combinedRowType = SqlValidatorUtil.createJoinType(
             cluster.getTypeFactory(), inputRels[0].getRowType(), inputRels[1].getRowType(),
             null, ImmutableList.of());
-        topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            inputRels[0], inputRels[1],
-            HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
-                calciteJoinCond, RelOptUtil.getFieldTypeList(combinedRowType)));
+
+        if (hiveJoinType == JoinType.LEFTSEMI) {
+          topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+                  inputRels[0], inputRels[1],
+                  HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
+                          calciteJoinCond, RelOptUtil.getFieldTypeList(combinedRowType)));
+        } else {
+          topRel = HiveAntiJoin.getAntiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+                  inputRels[0], inputRels[1],
+                  HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
+                          calciteJoinCond, RelOptUtil.getFieldTypeList(combinedRowType)));
+        }
 
         // Create join RR: we need to check whether we need to update left RR in case
         // previous call to projectNonColumnEquiConditions updated it

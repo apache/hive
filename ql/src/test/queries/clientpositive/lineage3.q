@@ -205,4 +205,12 @@ insert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d wh
 insert into dest_dp2 partition (y=1, m) select f, w, m
 insert into dest_dp1 partition (year=0) select f, w;
 
+set hive.auto.convert.anti.join=true;
+select * from src1 a
+where not exists
+  (select cint from alltypesorc b
+   where a.key = b.ctinyint + 300)
+and key > 300;
+set hive.auto.convert.anti.join=false;
+
 reset hive.metastore.disallow.incompatible.col.type.changes;

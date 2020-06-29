@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.PKFKJoinInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -118,6 +119,15 @@ public class HiveRelMdRowCount extends RelMdRowCount {
   }
 
   public Double getRowCount(HiveSemiJoin rel, RelMetadataQuery mq) {
+    return getRowCountInt(rel, mq);
+  }
+
+  public Double getRowCount(HiveAntiJoin rel, RelMetadataQuery mq) {
+    return getRowCountInt(rel, mq);
+  }
+
+  private Double getRowCountInt(Join rel, RelMetadataQuery mq) {
+    assert rel.getJoinType() == JoinRelType.SEMI || rel.getJoinType() == JoinRelType.ANTI;
     PKFKRelationInfo pkfk = analyzeJoinForPKFK(rel, mq);
     if (pkfk != null) {
       double selectivity = pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor;

@@ -68,12 +68,16 @@ public class HiveJoinWithFilterToAntiJoinRule extends RelOptRule {
   protected void perform(RelOptRuleCall call, Project project, Filter filter, Join join) {
     LOG.debug("Matched HiveAntiJoinRule");
 
-    assert (filter != null);
+    if (join.getCondition().isAlwaysTrue()) {
+      return;
+    }
 
     //We support conversion from left outer join only.
     if (join.getJoinType() != JoinRelType.LEFT) {
       return;
     }
+
+    assert (filter != null);
 
     List<RexNode> aboveFilters = RelOptUtil.conjunctions(filter.getCondition());
     boolean hasIsNull = false;

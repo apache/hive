@@ -1249,7 +1249,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     if(isSemiJoin && !cm.mapRefRelToCorRef.containsKey(rel)) {
       // this conditions need to be pushed into semi-join since this condition
       // corresponds to IN
-      HiveSemiJoin join = ((HiveSemiJoin)frame.r);
+      Join join = ((Join)frame.r);
       final List<RexNode> conditions = new ArrayList<>();
       RexNode joinCond = join.getCondition();
       conditions.add(joinCond);
@@ -1636,7 +1636,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     if(oldInput == null) {
       if(currentRel.getInputs().size() == 1 && currentRel.getInput(0) instanceof LogicalCorrelate) {
         final Frame newFrame = map.get(currentRel.getInput(0));
-        if(newFrame.r instanceof HiveSemiJoin) {
+        if(newFrame.r instanceof HiveSemiJoin || newFrame.r instanceof HiveAntiJoin) {
           int oldFieldSize = currentRel.getInput(0).getRowType().getFieldCount();
           int newOrd = newFrame.r.getRowType().getFieldCount() + oldOrdinalNo - oldFieldSize;
           return new RexInputRef(newOrd, oldInputRef.getType());

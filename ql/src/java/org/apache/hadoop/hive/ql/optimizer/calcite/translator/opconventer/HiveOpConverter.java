@@ -99,9 +99,9 @@ public class HiveOpConverter {
     } else if (rn instanceof HiveJoin) {
       return new JoinVisitor(this).visit((HiveJoin) rn);
     } else if (rn instanceof HiveSemiJoin) {
-      return new JoinVisitor(this).visit((HiveSemiJoin) rn);
+      return new JoinVisitor(this).visit(rn);
     } else if (rn instanceof HiveAntiJoin) {
-      return new JoinVisitor(this).visit((HiveAntiJoin) rn);
+      return new JoinVisitor(this).visit(rn);
     } else if (rn instanceof HiveFilter) {
       return new HiveFilterVisitor(this).visit((HiveFilter) rn);
     } else if (rn instanceof HiveSortLimit) {
