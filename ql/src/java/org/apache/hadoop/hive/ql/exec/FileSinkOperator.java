@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -334,18 +335,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (!isMmTable && !isDirectInsert) {
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = new Path(parent, taskWithExt);
-            if (conf.isCompactionTable()) {
-              // Helper tables used for compaction are external and non-acid. We need to keep
-              // track of the taskId to avoid overwrites in the case of multiple
-              // FileSinkOperators, and the file names need to reflect the correct bucketId
-              // because the files will eventually be placed in an acid table, and the
-              // OrcFileMergeOperator should not merge data belonging to different buckets.
-              // Therefore during compaction, data will be stored in the final directory like:
-              // ${hive_staging_dir}/final_dir/taskid/bucketId
-              // For example, ${hive_staging dir}/-ext-10002/000000_0/bucket_00000
-              finalPaths[filesIdx] = new Path(finalPaths[filesIdx],
-                  AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId));
-            }
           } else {
             finalPaths[filesIdx] =  new Path(buildTmpPath(), taskWithExt);
           }
@@ -505,6 +494,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   String taskId, originalTaskId;
 
   protected boolean filesCreated = false;
+  protected BitSet filesCreatedPerBucket = new BitSet();
 
   private void initializeSpecPath() {
     // For a query of the type:
@@ -753,6 +743,22 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
+  protected void createBucketFilesForCompaction(FSPaths fsp) throws HiveException {
+    try {
+      if (fsp.outPaths.length < bucketId + 1) {
+        fsp.updaters = Arrays.copyOf(fsp.updaters, bucketId + 1);
+        fsp.outPaths = Arrays.copyOf(fsp.outPaths, bucketId + 1);
+        fsp.finalPaths = Arrays.copyOf(fsp.finalPaths, bucketId + 1);
+        fsp.outWriters = Arrays.copyOf(fsp.outWriters, bucketId + 1);
+        statsFromRecordWriter = Arrays.copyOf(statsFromRecordWriter, bucketId + 1);
+      }
+      createBucketForFileIdx(fsp, bucketId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    filesCreatedPerBucket.set(bucketId);
+  }
+
   protected void createBucketFiles(FSPaths fsp) throws HiveException {
     try {
       int filesIdx = 0;
@@ -813,7 +819,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected void createBucketForFileIdx(FSPaths fsp, int filesIdx)
       throws HiveException {
     try {
-      fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
+      if (conf.isCompactionTable()) {
+        fsp.initializeBucketPaths(filesIdx, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId),
+            isNativeTable(), isSkewedStoredAsSubDirectories);
+      } else {
+        fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
+      }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
@@ -962,16 +973,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String lbDirName = null;
     lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
 
-    if (!bDynParts && !filesCreated) {
+    if (!bDynParts && (!filesCreated || conf.isCompactionTable())) {
       if (lbDirName != null) {
         if (valToPaths.get(lbDirName) == null) {
           createNewPaths(null, lbDirName);
         }
-      } else {
-        if (conf.isCompactionTable()) {
-          int bucketProperty = getBucketProperty(row);
-          bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+      } else if (conf.isCompactionTable()) {
+        int bucketProperty = getBucketProperty(row);
+        bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        if (!filesCreatedPerBucket.get(bucketId)) {
+          createBucketFilesForCompaction(fsp);
         }
+      } else {
         createBucketFiles(fsp);
       }
     }
@@ -1063,7 +1076,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // RecordUpdater expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
-        rowOutWriters[findWriterOffset(row)].write(recordValue);
+        writerOffset = bucketId;
+        if (!conf.isCompactionTable()) {
+          writerOffset = findWriterOffset(row);
+        }
+        rowOutWriters[writerOffset].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[findWriterOffset(row)].insert(conf.getTableWriteId(), row);
       } else {

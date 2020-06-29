@@ -115,6 +115,10 @@ abstract class QueryCompactor {
       }
       for (String query : compactionQueries) {
         LOG.info("Running {} compaction via query: {}", compactionInfo.isMajorCompaction() ? "major" : "minor", query);
+        if (!compactionInfo.isMajorCompaction()) {
+          conf.set("hive.optimize.bucketingsorting", "false");
+          conf.set("hive.vectorized.execution.enabled", "false");
+        }
         DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds, compactorTxnId);
       }
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);

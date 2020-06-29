@@ -553,7 +553,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Insert test data into test table
     dataProvider.insertMmTestData(dbName, tableName);
     // Get all data before compaction is run
-    List<String> expectedData = dataProvider.getAllData(dbName, tableName);
+    List<String> expectedData = dataProvider.getAllData(dbName, tableName, false);
     Collections.sort(expectedData);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
@@ -565,7 +565,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Result directories does not match after " + compactionType.name()
             + " compaction", Collections.singletonList(resultDirName),
         CompactorTestUtil.getBaseOrDeltaNames(fs, pathFilter, table, null));
-    List<String> actualData = dataProvider.getAllData(dbName, tableName);
+    List<String> actualData = dataProvider.getAllData(dbName, tableName, false);
     Collections.sort(actualData);
     Assert.assertEquals(expectedData, actualData);
   }

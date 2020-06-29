@@ -95,8 +95,8 @@ class CompactorTestUtil {
       throws IOException {
     Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
         new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
-    return Arrays.stream(fs.listStatus(path, AcidUtils.hiddenFileFilter)).map(FileStatus::getPath).map(Path::getName)
-        .sorted().collect(Collectors.toList());
+    return Arrays.stream(fs.listStatus(path, AcidUtils.bucketFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
+        .collect(Collectors.toList());
   }
 
   /**
@@ -160,6 +160,7 @@ class CompactorTestUtil {
       throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e);
     }
     List<String> rs = new ArrayList<>();
+    driver.setMaxRows(400);
     driver.getResults(rs);
     return rs;
   }

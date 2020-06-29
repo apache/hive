@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -95,6 +97,8 @@ public class CompactorOnTezTest {
     conf.set("hive.tez.container.size", "128");
     conf.setBoolean("hive.merge.tezfiles", false);
     conf.setBoolean("hive.in.tez.test", true);
+    conf.set("tez.grouping.max-size", "1024");
+    conf.set("tez.grouping.min-size", "1");
   }
 
   @After public void tearDown() {
@@ -217,6 +221,64 @@ public class CompactorOnTezTest {
       executeStatementOnDriver("delete from " + tblName + " where a = '1'", driver);
     }
 
+    void createTableWithoutBucketWithMultipleSplits(String dbName, String tblName, String tempTblName,
+        boolean createDeletes, boolean createInserts, boolean insertOverwrite) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+        tempTblName = dbName + "." + tempTblName;
+      }
+
+      executeStatementOnDriver("drop table if exists " + tblName, driver);
+      StringBuilder query = new StringBuilder();
+      query.append("create table ").append(tblName).append(" (a string, b string, c string)");
+      query.append(" stored as orc");
+      query.append(" TBLPROPERTIES('transactional'='true',");
+      query.append(" 'transactional_properties'='default')");
+      executeStatementOnDriver(query.toString(), driver);
+
+      generateInsertsWithMultipleSplits(0, 100, tblName, tempTblName + "_1", insertOverwrite);
+
+      if (createDeletes) {
+        executeStatementOnDriver("delete from " + tblName + " where a in ('41','87','53','11')", driver);
+        executeStatementOnDriver("delete from " + tblName + " where a in ('42','88','81','12','86')", driver);
+        executeStatementOnDriver("delete from " + tblName + " where a in ('98')", driver);
+        executeStatementOnDriver("delete from " + tblName + " where a in ('40')", driver);
+      }
+
+      if (createInserts) {
+        generateInsertsWithMultipleSplits(100, 250, tblName, tempTblName + "_2", false);
+        generateInsertsWithMultipleSplits(300, 318, tblName, tempTblName + "_3", false);
+        generateInsertsWithMultipleSplits(400, 410, tblName, tempTblName + "_4", false);
+      }
+    }
+
+    private void generateInsertsWithMultipleSplits(int begin, int end, String tableName, String tempTableName,
+        boolean insertOverwrite) throws Exception {
+      StringBuffer sb = new StringBuffer();
+      for (int i = begin; i < end; i++) {
+        sb.append("('");
+        sb.append(i);
+        sb.append("','value");
+        sb.append(i);
+        sb.append("','this is some comment to increase the file size ");
+        sb.append(i);
+        sb.append("')");
+        if (i < end - 1) {
+          sb.append(",");
+        }
+      }
+      executeStatementOnDriver("DROP TABLE IF EXISTS " + tempTableName, driver);
+      executeStatementOnDriver(
+          "CREATE EXTERNAL TABLE " + tempTableName + " (id string, value string, comment string) STORED AS TEXTFILE ",
+          driver);
+      executeStatementOnDriver("insert into " + tempTableName + " values " + sb.toString(), driver);
+      if (insertOverwrite) {
+        executeStatementOnDriver("insert overwrite table " + tableName + " select * from " + tempTableName, driver);
+      } else {
+        executeStatementOnDriver("insert into " + tableName + " select * from " + tempTableName, driver);
+      }
+    }
+
     /**
      * 5 txns.
      */
@@ -261,22 +323,77 @@ public class CompactorOnTezTest {
     }
 
     List<String> getAllData(String tblName) throws Exception {
-      return getAllData(null, tblName);
+      return getAllData(null, tblName, false);
     }
 
-    List<String> getAllData(String dbName, String tblName) throws Exception {
+    List<String> getAllData(String tblName, boolean withRowId) throws Exception {
+      return getAllData(null, tblName, withRowId);
+    }
+
+    List<String> getAllData(String dbName, String tblName, boolean withRowId) throws Exception {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
-      List<String> result = executeStatementOnDriverAndReturnResults("select * from " + tblName, driver);
+      StringBuffer query = new StringBuffer();
+      query.append("select ");
+      if (withRowId) {
+        query.append("ROW__ID, ");
+      }
+      query.append("* from ");
+      query.append(tblName);
+      List<String> result = executeStatementOnDriverAndReturnResults(query.toString(), driver);
       Collections.sort(result);
       return result;
     }
 
+    List<String> getDataWithInputFileNames(String dbName, String tblName) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+      }
+      StringBuffer query = new StringBuffer();
+      query.append("select ");
+      query.append("INPUT__FILE__NAME, a from ");
+      query.append(tblName);
+      query.append(" order by a");
+      List<String> result = executeStatementOnDriverAndReturnResults(query.toString(), driver);
+      return result;
+    }
+
+    boolean compareFileNames(List<String> expectedFileNames, List<String> actualFileNames) {
+      if (expectedFileNames.size() != actualFileNames.size()) {
+        return false;
+      }
+
+      Pattern p = Pattern.compile("(.*)(bucket_[0-9]+)(_[0-9]+)?");
+      for (int i = 0; i < expectedFileNames.size(); i++) {
+        String[] expectedParts = expectedFileNames.get(i).split("\t");
+        String[] actualParts = actualFileNames.get(i).split("\t");
+
+        if (!expectedParts[1].equals(actualParts[1])) {
+          return false;
+        }
+
+        String expectedFileName = null;
+        String actualFileName = null;
+        Matcher m = p.matcher(expectedParts[0]);
+        if (m.matches()) {
+          expectedFileName = m.group(2);
+        }
+        m = p.matcher(actualParts[0]);
+        if (m.matches()) {
+          actualFileName = m.group(2);
+        }
+
+        if (expectedFileName == null || actualFileName == null || !expectedFileName.equals(actualFileName)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     protected List<String> getBucketData(String tblName, String bucketId) throws Exception {
       return executeStatementOnDriverAndReturnResults(
-          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order"
-              + " by a, b", driver);
+          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order by ROW__ID, a, b", driver);
     }
 
     protected void dropTable(String tblName) throws Exception {
