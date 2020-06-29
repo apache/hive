@@ -190,10 +190,10 @@ public class TestReplicationScenariosAcidTablesBootstrap
     prepareIncNonAcidData(primaryDbName);
     prepareIncAcidData(primaryDbName);
     // Allocate write ids for tables t1 and t2 for all txns
-    // t1=5+2(insert) and t2=5+5(insert, alter add column)
+    // t1=5+2(insert) and t2=5+6(insert, alter add column), now alter also creates a transaction
     Map<String, Long> tables = new HashMap<>();
     tables.put("t1", numTxns+2L);
-    tables.put("t2", numTxns+5L);
+    tables.put("t2", numTxns+6L);
     allocateWriteIdsForTables(primaryDbName, tables, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
