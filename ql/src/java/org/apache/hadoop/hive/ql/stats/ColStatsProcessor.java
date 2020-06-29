@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -188,9 +189,12 @@ public class ColStatsProcessor implements IStatsProcessor {
     HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
         ? SessionState.get().getTxnMgr() : null;
     if (txnMgr != null) {
-      request.setValidWriteIdList(AcidUtils.getTableValidWriteIdList(conf,
-          AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName())).toString());
       request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
+      ValidWriteIdList validWriteIdList =
+          AcidUtils.getTableValidWriteIdList(conf, AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
+      if (validWriteIdList != null) {
+        request.setValidWriteIdList(validWriteIdList.toString());
+      }
     }
     db.setPartitionColumnStatistics(request);
     return 0;

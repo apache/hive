@@ -1465,7 +1465,7 @@ public class TestTxnCommands2 {
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a,b");
     int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
     Assert.assertEquals(stringifyValues(targetVals), r);
-    //currently multi-insrt doesn't allow same table/partition in > 1 output branch
+    //currently multi-insert doesn't allow same table/partition in > 1 output branch
     String s = "from " + Table.ACIDTBLPART + "  target right outer join " +
       Table.NONACIDPART2 + " source on target.a = source.a2 " +
       " INSERT INTO TABLE " + Table.ACIDTBLPART + " PARTITION(p='even') select source.a2, source.b2 where source.a2=target.a " +
