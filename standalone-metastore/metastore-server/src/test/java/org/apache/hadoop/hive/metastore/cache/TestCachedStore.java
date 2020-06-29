@@ -1800,8 +1800,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
             DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), tbl.getDbName(), tbl.getTableName());
     Assert.assertEquals(cachedKeys.size(), 0);
 
-
-
     cachedStore.shutdown();
   }
 

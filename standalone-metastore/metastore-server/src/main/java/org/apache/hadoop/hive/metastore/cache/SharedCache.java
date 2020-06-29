@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -443,27 +444,27 @@ public class SharedCache {
           primaryKeyCacheSize = size;
         }
         break;
-        case FOREIGN_KEY_CACHE:
-          if (mode == SizeMode.Delta) {
-            foreignKeyCacheSize += size;
-          } else {
-            foreignKeyCacheSize = size;
-          }
-          break;
-        case UNIQUE_CONSTRAINT_CACHE:
-          if (mode == SizeMode.Delta) {
-            uniqueConstraintCacheSize += size;
-          } else {
-            uniqueConstraintCacheSize = size;
-          }
-          break;
-        case NOTNULL_CONSTRAINT_CACHE:
-          if (mode == SizeMode.Delta) {
-            notNullConstraintCacheSize += size;
-          } else {
-            notNullConstraintCacheSize = size;
-          }
-          break;
+      case FOREIGN_KEY_CACHE:
+        if (mode == SizeMode.Delta) {
+          foreignKeyCacheSize += size;
+        } else {
+          foreignKeyCacheSize = size;
+        }
+        break;
+      case UNIQUE_CONSTRAINT_CACHE:
+        if (mode == SizeMode.Delta) {
+          uniqueConstraintCacheSize += size;
+        } else {
+          uniqueConstraintCacheSize = size;
+        }
+        break;
+      case NOTNULL_CONSTRAINT_CACHE:
+        if (mode == SizeMode.Delta) {
+          notNullConstraintCacheSize += size;
+        } else {
+          notNullConstraintCacheSize = size;
+        }
+        break;
       default:
         break;
       }
@@ -525,28 +526,27 @@ public class SharedCache {
     }
 
     boolean cachePrimaryKeys(List<SQLPrimaryKey> primaryKeys, boolean fromPrewarm) {
-      return cacheConstraints(primaryKeys, SQLPrimaryKey.class, fromPrewarm,
+      return cacheConstraints(primaryKeys, fromPrewarm,
               MemberName.PRIMARY_KEY_CACHE, this.isPrimaryKeyCacheDirty);
     }
 
     boolean cacheForeignKeys(List<SQLForeignKey> foreignKeys, boolean fromPrewarm) {
-      return cacheConstraints(foreignKeys, SQLForeignKey.class, fromPrewarm,
+      return cacheConstraints(foreignKeys, fromPrewarm,
               MemberName.FOREIGN_KEY_CACHE, this.isForeignKeyCacheDirty);
     }
 
     boolean cacheUniqueConstraints(List<SQLUniqueConstraint> uniqueConstraints, boolean fromPrewarm) {
-      return cacheConstraints(uniqueConstraints, SQLUniqueConstraint.class, fromPrewarm,
+      return cacheConstraints(uniqueConstraints, fromPrewarm,
               MemberName.UNIQUE_CONSTRAINT_CACHE, this.isUniqueConstraintCacheDirty);
     }
 
     boolean cacheNotNulConstraints(List<SQLNotNullConstraint> notNullConstraints, boolean fromPrewarm) {
-      return cacheConstraints(notNullConstraints, SQLNotNullConstraint.class, fromPrewarm,
+      return cacheConstraints(notNullConstraints, fromPrewarm,
               MemberName.NOTNULL_CONSTRAINT_CACHE, this.isNotNullConstraintCacheDirty);
     }
 
     // Common method to cache constraints
     private boolean cacheConstraints(List constraintsList,
-                             Class constraintClass,
                              boolean fromPrewarm,
                              MemberName mn,
                              AtomicBoolean dirtyConstaintVariable) {
@@ -557,20 +557,31 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for(int i=0; i<constraintsList.size(); i++) {
-          if (constraintClass == SQLPrimaryKey.class) {
-            SQLPrimaryKey key = (SQLPrimaryKey) constraintsList.get(i);
-            this.primaryKeyCache.put(key.getPk_name(), key);
-          } else if (constraintClass == SQLForeignKey.class) {
-            SQLForeignKey key = (SQLForeignKey) constraintsList.get(i);
-            this.foreignKeyCache.put(key.getFk_name(), key);
-          } else if (constraintClass == SQLNotNullConstraint.class) {
-            SQLNotNullConstraint key = (SQLNotNullConstraint) constraintsList.get(i);
-            this.notNullConstraintCache.put(key.getNn_name(), key);
-          } else if (constraintClass == SQLUniqueConstraint.class) {
-            SQLUniqueConstraint key = (SQLUniqueConstraint) constraintsList.get(i);
-            this.uniqueConstraintCache.put(key.getUk_name(), key);
+          switch (mn) {
+            case PRIMARY_KEY_CACHE:
+              SQLPrimaryKey pk = (SQLPrimaryKey) constraintsList.get(i);
+              this.primaryKeyCache.put(pk.getPk_name(), pk);
+              size += getObjectSize(SQLPrimaryKey.class, constraintsList.get(i));
+              break;
+            case FOREIGN_KEY_CACHE:
+              SQLForeignKey fk = (SQLForeignKey) constraintsList.get(i);
+              this.foreignKeyCache.put(fk.getFk_name(), fk);
+              size += getObjectSize(SQLForeignKey.class, constraintsList.get(i));
+              break;
+            case UNIQUE_CONSTRAINT_CACHE:
+              SQLUniqueConstraint uc = (SQLUniqueConstraint) constraintsList.get(i);
+              this.uniqueConstraintCache.put(uc.getUk_name(), uc);
+              size += getObjectSize(SQLUniqueConstraint.class, constraintsList.get(i));
+              break;
+            case NOTNULL_CONSTRAINT_CACHE:
+              SQLNotNullConstraint nn = (SQLNotNullConstraint) constraintsList.get(i);
+              this.notNullConstraintCache.put(nn.getNn_name(), nn);
+              size += getObjectSize(SQLNotNullConstraint.class, constraintsList.get(i));
+              break;
+            default:
+              LOG.error("Should not reach here");
+              break;
           }
-          size += getObjectSize(constraintClass, constraintsList.get(i));
         }
 
         if (!fromPrewarm) {
@@ -585,47 +596,39 @@ public class SharedCache {
     }
 
     public List<SQLPrimaryKey> getPrimaryKeys() {
-      List<SQLPrimaryKey> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.primaryKeyCache.values());
+        return new ArrayList<>(this.primaryKeyCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
-      return keys;
     }
 
     public List<SQLForeignKey> getForeignKeys() {
-      List<SQLForeignKey> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.foreignKeyCache.values());
+        return new ArrayList<>(this.foreignKeyCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
-      return keys;
     }
 
     public List<SQLUniqueConstraint> getUniqueConstraints() {
-      List<SQLUniqueConstraint> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.uniqueConstraintCache.values());
+        return new ArrayList<>(this.uniqueConstraintCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
-      return keys;
     }
 
     public List<SQLNotNullConstraint> getNotNullConstraints() {
-      List<SQLNotNullConstraint> keys = new ArrayList<>();
       try {
         tableLock.readLock().lock();
-        keys = new ArrayList<>(this.notNullConstraintCache.values());
+        return new ArrayList<>(this.notNullConstraintCache.values());
       } finally {
         tableLock.readLock().unlock();
       }
-      return keys;
     }
 
     public Partition getPartition(List<String> partVals, SharedCache sharedCache) {
@@ -701,7 +704,7 @@ public class SharedCache {
         }
 
         if(constraint == null) {
-          // Should not reach here
+          LOG.debug("Constraint: " + name + " does not exist in cache.");
           return;
         }
         int size = getObjectSize(constraintClass, constraint);
@@ -713,7 +716,7 @@ public class SharedCache {
     }
 
     public void refreshPrimaryKeys(List<SQLPrimaryKey> keys) {
-      Map<String, SQLPrimaryKey> newKeys = new HashMap<>();
+      Map<String, SQLPrimaryKey> newKeys = new ConcurrentHashMap<>();
       try {
         tableLock.writeLock().lock();
         int size = 0;
@@ -734,7 +737,7 @@ public class SharedCache {
     }
 
     public void refreshForeignKeys(List<SQLForeignKey> keys) {
-      Map<String, SQLForeignKey> newKeys = new HashMap<>();
+      Map<String, SQLForeignKey> newKeys = new ConcurrentHashMap<>();
       try {
         tableLock.writeLock().lock();
         int size = 0;
@@ -755,7 +758,7 @@ public class SharedCache {
     }
 
     public void refreshNotNullConstraints(List<SQLNotNullConstraint> constraints) {
-      Map<String, SQLNotNullConstraint> newConstraints = new HashMap<>();
+      Map<String, SQLNotNullConstraint> newConstraints = new ConcurrentHashMap<>();
       try {
         tableLock.writeLock().lock();
         int size = 0;
@@ -776,7 +779,7 @@ public class SharedCache {
     }
 
     public void refreshUniqueConstraints(List<SQLUniqueConstraint> constraints) {
-      Map<String, SQLUniqueConstraint> newConstraints = new HashMap<>();
+      Map<String, SQLUniqueConstraint> newConstraints = new ConcurrentHashMap<>();
       try {
         tableLock.writeLock().lock();
         int size = 0;
@@ -2276,14 +2279,11 @@ public class SharedCache {
 
     // filter out required foreign keys based on parent db/tbl name
     if (!StringUtils.isEmpty(parentTblName) && !StringUtils.isEmpty(parentDbName)) {
-      List<SQLForeignKey> filteredKeys = new ArrayList<>();
-      for (SQLForeignKey key : keys) {
-        if (parentTblName.equalsIgnoreCase(key.getPktable_name())
-                && parentDbName.equalsIgnoreCase(key.getPktable_db())) {
-          filteredKeys.add(key);
-        }
-      }
-      keys = filteredKeys;
+      return keys
+        .stream()
+        .filter(key -> parentDbName.equalsIgnoreCase(key.getPktable_db())
+          && parentTblName.equalsIgnoreCase(key.getPktable_name()))
+        .collect(Collectors.toList());
     }
     return keys;
   }

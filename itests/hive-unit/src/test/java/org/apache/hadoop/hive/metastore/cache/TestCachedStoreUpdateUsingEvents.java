@@ -462,12 +462,12 @@ public class TestCachedStoreUpdateUsingEvents {
     Assert.assertEquals(nns.get(ele).getTable_db(), nN.getTable_db());
   }
 
-  private void assertsForUniqueConstraints(List<SQLUniqueConstraint> nns, int size, int ele, SQLUniqueConstraint nN) {
-    Assert.assertEquals(nns.size(), size);
-    Assert.assertEquals(nns.get(ele).getUk_name(), nN.getUk_name());
-    Assert.assertEquals(nns.get(ele).getColumn_name(), nN.getColumn_name());
-    Assert.assertEquals(nns.get(ele).getTable_name(), nN.getTable_name());
-    Assert.assertEquals(nns.get(ele).getTable_db(), nN.getTable_db());
+  private void assertsForUniqueConstraints(List<SQLUniqueConstraint> uks, int size, int ele, SQLUniqueConstraint uk) {
+    Assert.assertEquals(uks.size(), size);
+    Assert.assertEquals(uks.get(ele).getUk_name(), uk.getUk_name());
+    Assert.assertEquals(uks.get(ele).getColumn_name(), uk.getColumn_name());
+    Assert.assertEquals(uks.get(ele).getTable_name(), uk.getTable_name());
+    Assert.assertEquals(uks.get(ele).getTable_db(), uk.getTable_db());
   }
 
   @Test
