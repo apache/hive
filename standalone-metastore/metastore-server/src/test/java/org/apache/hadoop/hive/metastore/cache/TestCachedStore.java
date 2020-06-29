@@ -1576,7 +1576,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
 
     // Refresh Operation
-    SQLPrimaryKey modifiedKey = origKeys.get(0);
+    SQLPrimaryKey modifiedKey = origKeys.get(0).deepCopy();
     modifiedKey.setColumn_name("col2");
     modifiedKey.setPk_name("pk_modified");
 
@@ -1639,7 +1639,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
 
     // Refresh Operation
-    SQLNotNullConstraint modifiedKey = origKeys.get(0);
+    SQLNotNullConstraint modifiedKey = origKeys.get(0).deepCopy();
     modifiedKey.setColumn_name("col2");
     modifiedKey.setNn_name("nn_modified");
 
@@ -1702,7 +1702,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
 
     // Refresh Operation
-    SQLUniqueConstraint modifiedKey = origKeys.get(0);
+    SQLUniqueConstraint modifiedKey = origKeys.get(0).deepCopy();
     modifiedKey.setColumn_name("col2");
     modifiedKey.setUk_name("uk_modified");
 
@@ -1770,7 +1770,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.size(), 0);
 
     // Refresh Operation
-    SQLForeignKey modifiedKey = origKeys.get(0);
+    SQLForeignKey modifiedKey = origKeys.get(0).deepCopy()tus
+    ;
     modifiedKey.setFkcolumn_name("col3");
     modifiedKey.setFk_name("fk_modified");
 
