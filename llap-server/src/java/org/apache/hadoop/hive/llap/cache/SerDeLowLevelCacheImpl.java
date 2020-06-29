@@ -74,19 +74,12 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
                     ReadWriteLockMetrics.createLockMetricsSource("FileData"));
   }
 
-  public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
+  public static final class LlapSerDeDataBuffer extends BaseLlapDataBuffer {
     public boolean isCached = false;
-    private CacheTag tag;
+
     @Override
     public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
       evictionDispatcher.notifyEvicted(this);
-    }
-    public void setTag(CacheTag tag) {
-      this.tag = tag;
-    }
-    @Override
-    public CacheTag getTag() {
-      return tag;
     }
   }
 
@@ -541,7 +534,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         public FileData apply(Void input) {
           return data; // If we don't have a file cache, we will add this one as is.
         }
-      });
+      }, tag);
       cached = subCache.getCache();
     } finally {
       if (data != cached) {
@@ -554,7 +547,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
       }
       try {
         for (StripeData si : data.stripes) {
-          lockAllBuffersForPut(si, priority, tag);
+          lockAllBuffersForPut(si, priority, subCache);
         }
         if (data == cached) {
           if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
@@ -599,7 +592,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     }
   }
 
-  private void lockAllBuffersForPut(StripeData si, Priority priority, CacheTag tag) {
+  private void lockAllBuffersForPut(StripeData si, Priority priority, FileCache cache) {
     for (int i = 0; i < si.data.length; ++i) {
       LlapSerDeDataBuffer[][] colData = si.data[i];
       if (colData == null) continue;
@@ -609,7 +602,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         for (int k = 0; k < streamData.length; ++k) {
           boolean canLock = lockBuffer(streamData[k], false); // false - not in cache yet
           assert canLock;
-          streamData[k].setTag(tag);
+          streamData[k].setFileCache(cache);
           cachePolicy.cache(streamData[k], priority);
           streamData[k].isCached = true;
         }
