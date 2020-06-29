@@ -1,4 +1,4 @@
---Create table replication metrics
+-- Create table replication metrics
 CREATE TABLE REPLICATION_METRICS (
   RM_SCHEDULED_EXECUTION_ID bigint NOT NULL,
   RM_POLICY varchar(256) NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE REPLICATION_METRICS (
   PRIMARY KEY(RM_SCHEDULED_EXECUTION_ID)
 );
 
---Create indexes for the replication metrics table
+-- Create indexes for the replication metrics table
 CREATE INDEX POLICY_IDX ON REPLICATION_METRICS (RM_POLICY);
 CREATE INDEX DUMP_IDX ON REPLICATION_METRICS (RM_DUMP_EXECUTION_ID);
 

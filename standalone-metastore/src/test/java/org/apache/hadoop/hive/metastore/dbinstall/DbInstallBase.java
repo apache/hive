@@ -92,10 +92,10 @@ public abstract class DbInstallBase {
           "be sure to shut it down before rerunning the test.");
       return;
     }
-    if (runCmdAndPrintStreams(buildStopCmd(), 60) != 0) {
+    if (runCmdAndPrintStreams(buildStopCmd(), 600) != 0) {
       throw new RuntimeException("Unable to stop docker container");
     }
-    if (runCmdAndPrintStreams(buildRmCmd(), 15) != 0) {
+    if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
       throw new RuntimeException("Unable to remove docker container");
     }
   }
