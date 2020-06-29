@@ -510,6 +510,7 @@ public class CachedStore implements RawStore, Configurable {
               List<ColumnStatistics> partitionColStats = null;
               AggrStats aggrStatsAllPartitions = null;
               AggrStats aggrStatsAllButDefaultPartition = null;
+              TableCacheObjects cacheObjects = new TableCacheObjects();
               List<SQLPrimaryKey> primaryKeys = null;
               List<SQLForeignKey> foreignKeys = null;
               List<SQLUniqueConstraint> uniqueConstraints = null;
@@ -559,21 +560,27 @@ public class CachedStore implements RawStore, Configurable {
               Deadline.startTimer("getPrimaryKeys");
               primaryKeys = rawStore.getPrimaryKeys(catName, dbName, tblName);
               Deadline.stopTimer();
+              cacheObjects.setPrimaryKeys(primaryKeys);
+
               Deadline.startTimer("getForeignKeys");
               foreignKeys = rawStore.getForeignKeys(catName, null, null, dbName, tblName);
               Deadline.stopTimer();
+              cacheObjects.setForeignKeys(foreignKeys);
+
               Deadline.startTimer("getUniqueConstraints");
               uniqueConstraints = rawStore.getUniqueConstraints(catName, dbName, tblName);
               Deadline.stopTimer();
+              cacheObjects.setUniqueConstraints(uniqueConstraints);
+
               Deadline.startTimer("getNotNullConstraints");
               notNullConstraints = rawStore.getNotNullConstraints(catName, dbName, tblName);
               Deadline.stopTimer();
+              cacheObjects.setNotNullConstraints(notNullConstraints);
 
               // If the table could not cached due to memory limit, stop prewarm
               boolean isSuccess = sharedCache
                   .populateTableInCache(table, tableColStats, partitions, partitionColStats, aggrStatsAllPartitions,
-                      aggrStatsAllButDefaultPartition, primaryKeys, foreignKeys, uniqueConstraints,
-                          notNullConstraints);
+                      aggrStatsAllButDefaultPartition, cacheObjects);
               if (isSuccess) {
                 LOG.trace("Cached Database: {}'s Table: {}.", dbName, tblName);
               } else {
