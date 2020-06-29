@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
 
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -208,9 +206,6 @@ public class DriverContext {
 
   public void setCompactionWriteIds(ValidWriteIdList compactionWriteIds) {
     this.compactionWriteIds = compactionWriteIds;
-    if (compactionWriteIds != null) {
-      conf.set(ValidTxnWriteIdList.COMPACTOR_VALID_TABLES_WRITEIDS_KEY, compactionWriteIds.toString());
-    }
   }
 
   public long getCompactorTxnId() {
@@ -219,7 +214,6 @@ public class DriverContext {
 
   public void setCompactorTxnId(long compactorTxnId) {
     this.compactorTxnId = compactorTxnId;
-    conf.setLong(ValidTxnList.COMPACTOR_VALID_TXNS_ID_KEY, compactorTxnId);
   }
 
   public Context getBackupContext() {

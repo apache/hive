@@ -2351,6 +2351,7 @@ public class AcidUtils {
         }
       }
 
+
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
           && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
         return null;
