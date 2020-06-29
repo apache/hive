@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Base64;
@@ -74,7 +75,7 @@ public abstract class HadoopThriftAuthBridge {
 
   // We want to have only one auth bridge.  In the past this was handled by ShimLoader, but since
   // we're no longer using that we'll do it here.
-  private static HadoopThriftAuthBridge self = null;
+  private static volatile HadoopThriftAuthBridge self = null;
 
   public static HadoopThriftAuthBridge getBridge() {
     if (self == null) {
@@ -302,7 +303,7 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       static String encodeIdentifier(byte[] identifier) {
-        return new String(Base64.getEncoder().encode(identifier));
+        return new String(Base64.getEncoder().encode(identifier), StandardCharsets.UTF_8);
       }
 
       static char[] encodePassword(byte[] password) {
@@ -579,7 +580,7 @@ public abstract class HadoopThriftAuthBridge {
      *
      * This is used on the server side to set the UGI for each specific call.
      */
-    protected class TUGIAssumingProcessor implements TProcessor {
+    protected static class TUGIAssumingProcessor implements TProcessor {
       final TProcessor wrapped;
       DelegationTokenSecretManager secretManager;
       boolean useProxy;

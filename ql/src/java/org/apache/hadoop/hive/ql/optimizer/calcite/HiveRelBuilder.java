@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFuncti
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
+import com.google.common.collect.ImmutableList;
 
 /**
  * Builder for relational expressions in Hive.
@@ -165,4 +166,10 @@ public class HiveRelBuilder extends RelBuilder {
     return false;
   }
 
+  /** Make the method visible */
+  @Override
+  public AggCall aggregateCall(SqlAggFunction aggFunction, boolean distinct, boolean approximate, boolean ignoreNulls,
+      RexNode filter, ImmutableList<RexNode> orderKeys, String alias, ImmutableList<RexNode> operands) {
+    return super.aggregateCall(aggFunction, distinct, approximate, ignoreNulls, filter, orderKeys, alias, operands);
+  }
 }

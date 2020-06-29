@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.hadoop.hive.ql.io.filter.MutableFilterContext;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * A VectorizedRowBatch is a set of rows, organized with each column
@@ -369,6 +370,7 @@ public class VectorizedRowBatch implements Writable, MutableFilterContext {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public int[] getSelected() {
     return selected;
   }
@@ -379,6 +381,7 @@ public class VectorizedRowBatch implements Writable, MutableFilterContext {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
   public void setFilterContext(boolean isSelectedInUse, int[] selected, int selectedSize) {
     this.selectedInUse = isSelectedInUse;
     this.selected = selected;
@@ -399,6 +402,7 @@ public class VectorizedRowBatch implements Writable, MutableFilterContext {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public int[] updateSelected(int minCapacity) {
     if (selected == null || selected.length < minCapacity) {
       selected = new int[minCapacity];
@@ -412,6 +416,7 @@ public class VectorizedRowBatch implements Writable, MutableFilterContext {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
   public void setSelected(int[] selectedArray) {
     selected = selectedArray;
   }

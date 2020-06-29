@@ -778,15 +778,15 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals, String defaultStr) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
-      String errorStr = "Invalid partition key & values; keys [";
+      StringBuilder errorStrBuilder = new StringBuilder("Invalid partition key & values; keys [");
       for (FieldSchema fs : partCols) {
-        errorStr += (fs.getName() + ", ");
+        errorStrBuilder.append(fs.getName()).append(", ");
       }
-      errorStr += "], values [";
+      errorStrBuilder.append("], values [");
       for (String val : vals) {
-        errorStr += (val + ", ");
+        errorStrBuilder.append(val).append(", ");
       }
-      throw new MetaException(errorStr + "]");
+      throw new MetaException(errorStrBuilder.append("]").toString());
     }
     List<String> colNames = new ArrayList<>();
     for (FieldSchema col: partCols) {

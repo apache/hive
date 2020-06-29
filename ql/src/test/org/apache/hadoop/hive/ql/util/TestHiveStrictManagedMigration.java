@@ -140,6 +140,26 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     }
   }
 
+  /**
+   * Should encounter a DB with an unset owner, and should try to chown the new dir path to 'hive' user.
+   * This will always fail in this test, as we're never running it as root.
+   * @throws Exception
+   */
+  @Test(expected = AssertionError.class)
+  public void testExtDbDirOnFsIsCreatedAsHiveIfDbOwnerNull() throws Exception {
+    runStatementOnDriver("drop database if exists ownerlessdb");
+    runStatementOnDriver("create database ownerlessdb");
+    Database db = Hive.get().getDatabase("ownerlessdb");
+    db.setOwnerName(null);
+    Hive.get().alterDatabase("ownerlessdb", db);
+
+    String[] args = {"-m",  "external"};
+    HiveConf newConf = new HiveConf(hiveConf);
+    File newExtWarehouseDir = new File(getTestDataDir(), "newExternal");
+    newConf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, newExtWarehouseDir.getAbsolutePath());
+    runMigrationTool(newConf, args);
+  }
+
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;

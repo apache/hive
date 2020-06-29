@@ -1736,6 +1736,7 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_TYPE" char(1) NOT NULL,
   "CQ_TBLPROPERTIES" varchar(2048),
   "CQ_WORKER_ID" varchar(128),
+  "CQ_ENQUEUE_TIME" bigint,
   "CQ_START" bigint,
   "CQ_RUN_AS" varchar(128),
   "CQ_HIGHEST_WRITE_ID" bigint,
@@ -1759,6 +1760,7 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_TYPE" char(1) NOT NULL,
   "CC_TBLPROPERTIES" varchar(2048),
   "CC_WORKER_ID" varchar(128),
+  "CC_ENQUEUE_TIME" bigint,
   "CC_START" bigint,
   "CC_END" bigint,
   "CC_RUN_AS" varchar(128),
@@ -1911,6 +1913,7 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_DUMP_EXECUTION_ID" bigint NOT NULL,
   "RM_METADATA" varchar(4000),
   "RM_PROGRESS" varchar(4000),
+  "RM_START_TIME" integer NOT NULL,
   PRIMARY KEY("RM_SCHEDULED_EXECUTION_ID")
 );
 

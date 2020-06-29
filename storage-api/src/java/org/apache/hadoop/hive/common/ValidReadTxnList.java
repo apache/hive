@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
+import org.apache.commons.lang.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -41,6 +45,7 @@ public class ValidReadTxnList implements ValidTxnList {
   /**
    * Used if there are no open transactions in the snapshot
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
   public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenTxn) {
     if (exceptions.length > 0) {
       this.minOpenTxn = minOpenTxn;
@@ -52,6 +57,11 @@ public class ValidReadTxnList implements ValidTxnList {
 
   public ValidReadTxnList(String value) {
     readFromString(value);
+  }
+
+  @Override
+  public void removeException(long txnId) {
+    exceptions = ArrayUtils.remove(exceptions, Arrays.binarySearch(exceptions, txnId));
   }
 
   @Override
@@ -177,6 +187,7 @@ public class ValidReadTxnList implements ValidTxnList {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public long[] getInvalidTransactions() {
     return exceptions;
   }

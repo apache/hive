@@ -215,13 +215,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     if (cacheKey != null) {
       if (HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE)) {
-        cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(file, true, parts);
+        PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
+        cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(file, true, partitionDesc);
       }
       // If we are going to use cache, change the path to depend on file ID for extra consistency.
       FileSystem fs = file.getFileSystem(configuration);
       if (cacheKey instanceof Long && HiveConf.getBoolVar(
           cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-        file = HdfsUtils.getFileIdPath(fs, file, (long)cacheKey);
+        file = HdfsUtils.getFileIdPath(file, (long)cacheKey);
       }
     }
 

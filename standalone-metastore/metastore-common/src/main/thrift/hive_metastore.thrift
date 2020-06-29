@@ -1010,12 +1010,10 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
-
-    // An optional key/value to store atomically with the transaction
-    4: optional CommitTxnKeyValue keyValue,
-
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
-    5: optional ReplLastIdInfo replLastIdInfo,
+    4: optional ReplLastIdInfo replLastIdInfo,
+    // An optional key/value to store atomically with the transaction
+    5: optional CommitTxnKeyValue keyValue,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1191,6 +1189,7 @@ struct CompactionInfoStruct {
     12: optional i64 highestWriteId
     13: optional string errorMessage
     14: optional bool hasoldabort
+    15: optional i64 enqueueTime
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1221,6 +1220,7 @@ struct ShowCompactResponseElement {
     12: optional string hadoopJobId = "None",
     13: optional i64 id,
     14: optional string errorMessage,
+    15: optional i64 enqueueTime,
 }
 
 struct ShowCompactResponse {
@@ -2053,7 +2053,7 @@ struct ReplicationMetrics{
   2: required string policy,
   3: required i64 dumpExecutionId,
   4: optional string metadata,
-  5: optional string progress,
+  5: optional string progress
 }
 
 struct ReplicationMetricList{

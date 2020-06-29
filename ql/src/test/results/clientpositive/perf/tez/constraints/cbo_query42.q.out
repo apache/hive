@@ -51,7 +51,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(fetch=[100])
   HiveProject(d_year=[CAST(1998):INTEGER], i_category_id=[$0], i_category=[$1], _o__c3=[$2])
-    HiveSortLimit(sort0=[$3], sort1=[$0], sort2=[$1], dir0=[DESC-nulls-last], dir1=[ASC], dir2=[ASC])
+    HiveSortLimit(sort0=[$3], sort1=[$0], sort2=[$1], dir0=[DESC], dir1=[ASC], dir2=[ASC])
       HiveProject(i_category_id=[$0], i_category=[$1], _o__c3=[$2], (tok_function sum (tok_table_or_col ss_ext_sales_price))=[$2])
         HiveAggregate(group=[{5, 6}], agg#0=[sum($2)])
           HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
