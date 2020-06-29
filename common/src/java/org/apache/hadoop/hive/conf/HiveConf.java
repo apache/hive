@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
@@ -1719,6 +1720,11 @@ public class HiveConf extends Configuration {
         "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
             "the columns are independent. Setting this flag to true will cause the estimator to assume" +
             "the columns are correlated."),
+    HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR("hive.cardinality.preserving.join.optimization.factor", 1.0f,
+        "Original plan cost multiplier for rewriting when query has tables joined multiple time on primary/unique key and " +
+            "projected the majority of columns from these table. This optimization trims fields at root of tree and " +
+            "then joins back affected tables at top of tree to get rest of columns. " +
+            "Set this to 0.0 to disable this optimization or increase it for more agressive optimization."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
@@ -1825,7 +1831,8 @@ public class HiveConf extends Configuration {
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
     HIVE_DEFAULT_NULLS_LAST("hive.default.nulls.last", true,
-        "Whether to set NULLS LAST as the default null ordering"),
+        "Whether to set NULLS LAST as the default null ordering for ASC order and " +
+            "NULLS FIRST for DESC order."),
     HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
         "Whether to enable using Column Position Alias in Group By"),
     HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,
@@ -2250,6 +2257,10 @@ public class HiveConf extends Configuration {
         "This named is used by Tez to set the dag name. This name in turn will appear on \n" +
         "the Tez UI representing the work that was done. Used by Spark to set the query name, will show up in the\n" +
         "Spark UI."),
+    HIVETEZJOBNAME("tez.job.name", "HIVE-%s",
+        "This named is used by Tez to set the job name. This name in turn will appear on \n" +
+        "the Yarn UI representing the Yarn Application Name. And The job name may be a \n" +
+        "Java String.format() string, to which the session ID will be supplied as the single parameter."),
 
     SYSLOG_INPUT_FORMAT_FILE_PRUNING("hive.syslog.input.format.file.pruning", true,
       "Whether syslog input format should prune files based on timestamp (ts) column in sys.logs table."),
@@ -2785,6 +2796,8 @@ public class HiveConf extends Configuration {
     HIVE_TXN_READ_LOCKS("hive.txn.read.locks", true,
         "Flag to turn off the read locks, when set to false. Although its not recommended, \n" +
         "but in performance critical scenarios this option may be exercised."),
+    HIVE_LOCKS_PARTITION_THRESHOLD("hive.locks.max.partitions", -1,
+        "Locks the entire table if number of partition locks exceeds user-defined threshold. Disabled by default."),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
@@ -4983,10 +4996,12 @@ public class HiveConf extends Configuration {
 
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
-    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize",
+    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize,reexecute_lost_am",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
-            + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
+            + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
+            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n"
+            + "  The retrylock strategy is always enabled: recompiles the query if snapshot becomes outdated before lock acquisition"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -4996,7 +5011,11 @@ public class HiveConf extends Configuration {
 
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
-        "Maximum number of re-executions for a single query."),
+        "Maximum number of re-executions for a single query."
+            + " The maximum re-execution retry is limited at 10"),
+    HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT("hive.query.reexecution.retrylock.max.count", 5,
+        "Maximum number of re-executions with retrylock strategy for a single query."
+            + " The maximum re-execution retry is limited at 10"),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_BATCH_SIZE("hive.query.reexecution.stats.cache.batch.size", -1,
@@ -5760,6 +5779,18 @@ public class HiveConf extends Configuration {
    * given HiveConf.
    */
   public ZooKeeperHiveHelper getZKConfig() {
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword =
+            ShimLoader.getHadoopShims().getPassword(this, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname);
+        trustStorePassword =
+            ShimLoader.getHadoopShims().getPassword(this, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname);
+      } catch (IOException ex) {
+        throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
+      }
+    }
     return ZooKeeperHiveHelper.builder()
       .quorum(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM))
       .clientPort(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT))
@@ -5773,9 +5804,9 @@ public class HiveConf extends Configuration {
       .maxRetries(getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
       .sslEnabled(getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
       .keyStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-      .keyStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
+      .keyStorePassword(keyStorePassword)
       .trustStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-      .trustStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD)).build();
+      .trustStorePassword(trustStorePassword).build();
   }
 
   public HiveConf() {

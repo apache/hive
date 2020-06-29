@@ -499,6 +499,7 @@ public class Initiator extends MetaStoreCompactorThread {
   @VisibleForTesting
   protected static void updateCompactionMetrics(ShowCompactResponse showCompactResponse) {
     Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+    long oldestEnqueueTime = Long.MAX_VALUE;
 
     // Get the last compaction for each db/table/partition
     for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
@@ -506,6 +507,9 @@ public class Initiator extends MetaStoreCompactorThread {
           (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
       // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
       lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
+      if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
+        oldestEnqueueTime = element.getEnqueueTime();
+      }
     }
 
     // Get the current count for each state
@@ -521,6 +525,12 @@ public class Initiator extends MetaStoreCompactorThread {
       } else {
         Metrics.getOrCreateGauge(key).set(0);
       }
+    }
+    if (oldestEnqueueTime == Long.MAX_VALUE) {
+      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
+    } else {
+      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
+          .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
     }
   }
 }

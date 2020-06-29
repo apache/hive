@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -171,6 +172,8 @@ public interface HiveTxnManager {
    * has already been committed or aborted.
    */
   void heartbeat() throws LockException;
+
+  GetOpenTxnsResponse getOpenTxns() throws LockException;
 
   /**
    * Get the transactions that are currently valid.  The resulting

@@ -647,7 +647,7 @@ STAGE PLANS:
                 Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: bigint), _col0 (type: string)
-                  null sort order: zz
+                  null sort order: az
                   sort order: -+
                   Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
@@ -824,7 +824,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 4628 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                  null sort order: zzzz
+                  null sort order: aazz
                   sort order: --++
                   Statistics: Num rows: 13 Data size: 4628 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 

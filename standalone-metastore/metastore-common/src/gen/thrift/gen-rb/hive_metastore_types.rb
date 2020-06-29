@@ -2991,15 +2991,15 @@ class CommitTxnRequest
   TXNID = 1
   REPLPOLICY = 2
   WRITEEVENTINFOS = 3
-  KEYVALUE = 4
-  REPLLASTIDINFO = 5
+  REPLLASTIDINFO = 4
+  KEYVALUE = 5
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
     WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
-    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
-    REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true}
+    REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true},
+    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3508,6 +3508,7 @@ class CompactionInfoStruct
   HIGHESTWRITEID = 12
   ERRORMESSAGE = 13
   HASOLDABORT = 14
+  ENQUEUETIME = 15
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3523,7 +3524,8 @@ class CompactionInfoStruct
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
     HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
-    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true}
+    HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3611,6 +3613,7 @@ class ShowCompactResponseElement
   HADOOPJOBID = 12
   ID = 13
   ERRORMESSAGE = 14
+  ENQUEUETIME = 15
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3626,7 +3629,8 @@ class ShowCompactResponseElement
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
-    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end

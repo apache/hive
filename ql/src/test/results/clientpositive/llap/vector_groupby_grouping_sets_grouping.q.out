@@ -674,7 +674,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: bigint), _col3 (type: int)
-                      null sort order: zz
+                      null sort order: az
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -689,7 +689,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1392,7 +1392,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: bigint), CASE WHEN ((_col2 = 1L)) THEN (_col0) END (type: int)
-                    null sort order: zz
+                    null sort order: az
                     sort order: -+
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -1408,7 +1408,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false

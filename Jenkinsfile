@@ -67,10 +67,12 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
+    timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
           run()
         }
+      }
     }
   }
 }
@@ -85,11 +87,13 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
-OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -Pitests,qsplits"
+cp $SETTINGS .git/settings.xml
+OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
+OPTS+=" -Pitests,qsplits,dist"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
-OPTS+=" $M_OPTS "
+git config extra.mavenOpts "$OPTS"
+OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
@@ -103,13 +107,23 @@ df -h
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
+    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
-        resourceLimitMemory: '12000Mi'
+        resourceLimitMemory: '12000Mi',
+        envVars: [
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+        ]
     ),
+    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+        alwaysPullImage: true,
+        privileged: true,
+    ),
+  ],
+  volumes: [
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
   ], yaml:'''
 spec:
   securityContext:
@@ -192,8 +206,31 @@ jobWrappers {
   }
 
   stage('Testing') {
-
     def branches = [:]
+    for (def d in ['derby','postgres']) {
+      def dbType=d
+      def splitName = "init@$dbType"
+      branches[splitName] = {
+        executorNode {
+          stage('Prepare') {
+              loadWS();
+          }
+          stage('init-metastore') {
+             withEnv(["dbType=$dbType"]) {
+               sh '''#!/bin/bash -e
+set -x
+echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
+. /etc/profile.d/confs.sh
+sw hive-dev $PWD
+ping -c2 dev_$dbType
+export DOCKER_NETWORK=host
+reinit_metastore $dbType
+'''
+            }
+          }
+        }
+      }
+    }
     for (int i = 0; i < splits.size(); i++) {
       def num = i
       def split = splits[num]

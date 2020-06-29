@@ -89,6 +89,9 @@ public class Driver implements IDriver {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  // Exception message that ReExecutionRetryLockPlugin will recognize
+  public static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
+      "snapshot was outdated when locks were acquired";
   private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
@@ -675,43 +678,18 @@ public class Driver implements IDriver {
 
       try {
         if (!validTxnManager.isValidTxnListState()) {
-          LOG.info("Compiling after acquiring locks");
+          LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
-          // txn list and retry
-          // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
-          // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
-          // and then, we acquire locks. If snapshot is still valid, we continue as usual.
-          // But if snapshot is not valid, we recompile the query.
-          driverContext.setRetrial(true);
-          driverContext.getBackupContext().addSubContext(context);
-          driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
-          context = driverContext.getBackupContext();
-          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-              driverContext.getTxnManager().getValidTxns().toString());
-          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
-            validTxnManager.recordValidWriteIds();
+          // txn list and retry (see ReExecutionRetryLockPlugin)
+          try {
+            releaseLocksAndCommitOrRollback(false);
+          } catch (LockException e) {
+            handleHiveException(e, 12);
           }
-
-          if (!alreadyCompiled) {
-            // compile internal will automatically reset the perf logger
-            compileInternal(command, true);
-          } else {
-            // Since we're reusing the compiled plan, we need to update its start time for current run
-            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
-          }
-
-          if (!validTxnManager.isValidTxnListState()) {
-            // Throw exception
-            throw handleHiveException(new HiveException("Operation could not be executed"), 14);
-          }
-
-          //Reset the PerfLogger
-          perfLogger = SessionState.getPerfLogger(true);
-
-          // the reason that we set the txn manager for the cxt here is because each
-          // query has its own ctx object. The txn mgr is shared across the
-          // same instance of Driver, which can run multiple queries.
-          context.setHiveTxnManager(driverContext.getTxnManager());
+          throw handleHiveException(
+              new HiveException(
+                  "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + "."),
+              14);
         }
       } catch (LockException e) {
         throw handleHiveException(e, 13);
@@ -780,8 +758,6 @@ public class Driver implements IDriver {
   }
 
   private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
-
-    //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(false);
     } catch (LockException e) {

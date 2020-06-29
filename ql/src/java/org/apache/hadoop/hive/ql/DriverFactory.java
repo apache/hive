@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
+import org.apache.hadoop.hive.ql.reexec.ReExecutionRetryLockPlugin;
+import org.apache.hadoop.hive.ql.reexec.ReExecuteLostAMQueryPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
 
@@ -53,6 +55,8 @@ public class DriverFactory {
       }
       plugins.add(buildReExecPlugin(string));
     }
+    // The retrylock plugin is always enabled
+    plugins.add(new ReExecutionRetryLockPlugin());
 
     return new ReExecDriver(queryState, queryInfo, plugins);
   }
@@ -63,6 +67,9 @@ public class DriverFactory {
     }
     if (name.equals("reoptimize")) {
       return new ReOptimizePlugin();
+    }
+    if(name.equals("reexecute_lost_am")) {
+      return new ReExecuteLostAMQueryPlugin();
     }
     throw new RuntimeException(
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
