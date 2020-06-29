@@ -1142,6 +1142,10 @@
                   <pattern>io.netty</pattern>
                   <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.apache.calcite</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.calcite</shadedPattern>
+                </relocation>
               </relocations>
             </configuration>
           </execution>

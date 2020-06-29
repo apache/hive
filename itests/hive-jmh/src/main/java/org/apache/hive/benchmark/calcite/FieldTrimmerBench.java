@@ -20,18 +20,18 @@ package org.apache.hive.benchmark.calcite;
 import com.google.common.collect.Lists;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPlanner;
-import org.apache.calcite.plan.RelTraitSet;
-import org.apache.calcite.rel.AbstractRelNode;
-import org.apache.calcite.rel.BiRel;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.SingleRel;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelRecordType;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.tools.RelBuilder;
+import org.apache.hive.org.apache.calcite.jdbc.JavaTypeFactoryImpl;
+import org.apache.hive.org.apache.calcite.plan.RelOptCluster;
+import org.apache.hive.org.apache.calcite.plan.RelOptPlanner;
+import org.apache.hive.org.apache.calcite.plan.RelTraitSet;
+import org.apache.hive.org.apache.calcite.rel.AbstractRelNode;
+import org.apache.hive.org.apache.calcite.rel.BiRel;
+import org.apache.hive.org.apache.calcite.rel.RelNode;
+import org.apache.hive.org.apache.calcite.rel.SingleRel;
+import org.apache.hive.org.apache.calcite.rel.type.RelDataType;
+import org.apache.hive.org.apache.calcite.rel.type.RelRecordType;
+import org.apache.hive.org.apache.calcite.rex.RexBuilder;
+import org.apache.hive.org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
@@ -73,7 +73,7 @@ public class FieldTrimmerBench {
   RelOptCluster relOptCluster;
   RelBuilder relBuilder;
   RelNode root;
-  org.apache.calcite.sql2rel.RelFieldTrimmer cft;
+  org.apache.hive.org.apache.calcite.sql2rel.RelFieldTrimmer cft;
   HiveRelFieldTrimmer ft;
   HiveRelFieldTrimmer hft;
 
@@ -105,7 +105,7 @@ public class FieldTrimmerBench {
   @Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
   public void baseRelFieldTrimmer() {
     // We initialize the field trimmer for every execution of the benchmark
-    cft = new org.apache.calcite.sql2rel.RelFieldTrimmer(null, relBuilder);
+    cft = new org.apache.hive.org.apache.calcite.sql2rel.RelFieldTrimmer(null, relBuilder);
     cft.trim(root);
     cft = null;
   }
