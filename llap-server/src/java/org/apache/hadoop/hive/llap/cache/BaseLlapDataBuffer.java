@@ -18,15 +18,20 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public final class LlapDataBuffer extends BaseLlapDataBuffer {
-  public static final int UNKNOWN_CACHED_LENGTH = -1;
+import org.apache.hadoop.hive.common.io.CacheTag;
 
-  /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
-   * the lookup is on compressed ranges, so we need to know this. */
-  public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
+public abstract class BaseLlapDataBuffer extends LlapAllocatorBuffer {
+
+  private FileCache fileCache;
+
+  public void setFileCache(FileCache fileCache) {
+    assert this.fileCache == null;
+    this.fileCache = fileCache;
+  }
 
   @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-    evictionDispatcher.notifyEvicted(this);
+  public CacheTag getTag() {
+    return fileCache != null ? fileCache.getTag() : null;
   }
+
 }
