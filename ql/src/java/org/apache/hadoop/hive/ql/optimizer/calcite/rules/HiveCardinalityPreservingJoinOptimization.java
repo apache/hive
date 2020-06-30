@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -290,10 +290,14 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       RexBuilder rexBuilder) {
 
     List<RexNode> equalsConditions = new ArrayList<>(tableToJoinBack.keys.size());
+    BitSet usedKeys = new BitSet(0);
     for (TableInputRefHolder tableInputRefHolder : tableToJoinBack.joinedBackFields.mapping) {
-      if (!tableToJoinBack.keys.get(tableInputRefHolder.tableInputRef.getIndex())) {
+      if (usedKeys.get(tableInputRefHolder.tableInputRef.getIndex()) ||
+          !tableToJoinBack.keys.get(tableInputRefHolder.tableInputRef.getIndex())) {
         continue;
       }
+
+      usedKeys.set(tableInputRefHolder.tableInputRef.getIndex());
 
       int leftKeyIndex = leftInputMapping.getTarget(tableInputRefHolder.indexInOriginalRowType);
       RelDataTypeField leftKeyField = leftInput.getRowType().getFieldList().get(leftKeyIndex);
