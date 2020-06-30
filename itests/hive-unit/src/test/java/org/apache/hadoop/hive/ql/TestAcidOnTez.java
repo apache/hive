@@ -446,7 +446,6 @@ public class TestAcidOnTez {
    * {@link org.apache.hadoop.hive.ql.metadata.Hive#moveAcidFiles(FileSystem, FileStatus[], Path, List)} drops the union subdirs
    * since each delta file has a unique name.
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCtasTezUnion() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
@@ -454,13 +453,17 @@ public class TestAcidOnTez {
     setupTez(confForTez);
     //CTAS with ACID target table
     List<String> rs0 = runStatementOnDriver("explain create table " + Table.ACIDNOBUCKET + " stored as ORC TBLPROPERTIES('transactional'='true') as " +
-      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+      "(select a, b from " + Table.ACIDTBL + " where a <= 5 order by a desc , b desc limit 3) " +
+        "union all (select a, b from " + Table.NONACIDORCTBL + " where a >= 5 order by a desc, b desc limit 3)",
+        confForTez);
     LOG.warn("explain ctas:");//TezEdgeProperty.EdgeType
     for (String s : rs0) {
       LOG.warn(s);
     }
     runStatementOnDriver("create table " + Table.ACIDNOBUCKET + " stored as ORC TBLPROPERTIES('transactional'='true') as " +
-      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+      "(select a, b from " + Table.ACIDTBL + " where a <= 5 order by a desc, b desc limit 3) " +
+        "union all (select a, b from " + Table.NONACIDORCTBL + " where a >= 5 order by a desc, b desc limit 3)",
+        confForTez);
     List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after ctas:");
     for (String s : rs) {
@@ -536,7 +539,7 @@ public class TestAcidOnTez {
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003"};
+    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000024"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
         if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
@@ -560,7 +563,7 @@ public class TestAcidOnTez {
     for(int i = 0; i < expected2.length; i++) {
       Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
       //everything is now in base/
-      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003/bucket_00000"));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000027/bucket_00000"));
     }
   }
   /**
