@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -57,6 +59,8 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -88,6 +92,8 @@ import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
@@ -700,6 +706,48 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       event.setDbName(cols.get(0).getTable_db());
       event.setTableName(cols.get(0).getTable_name());
       process(event, addNotNullConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+    List<SQLDefaultConstraint> cols = addDefaultConstraintEvent.getDefaultConstraintCols();
+    if (cols.size() > 0) {
+      AddDefaultConstraintMessage msg = MessageBuilder.getInstance()
+        .buildAddDefaultConstraintMessage(addDefaultConstraintEvent.getDefaultConstraintCols());
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_DEFAULTCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(msg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addDefaultConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
+    List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
+    if (cols.size() > 0) {
+      AddCheckConstraintMessage msg = MessageBuilder.getInstance()
+        .buildAddCheckConstraintMessage(addCheckConstraintEvent.getCheckConstraintCols());
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_CHECKCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(msg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addCheckConstraintEvent);
     }
   }
 

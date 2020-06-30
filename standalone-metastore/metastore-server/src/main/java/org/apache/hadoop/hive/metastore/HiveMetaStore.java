@@ -89,6 +89,8 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2787,10 +2789,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (transactionalListeners.size() > 0) {
           if (defaultConstraintCols != null && defaultConstraintCols.size() > 0) {
             //TODO: Even listener for default
-            //AddDefaultConstraintEvent addDefaultConstraintEvent = new AddDefaultConstraintEvent(defaultConstraintCols, true, this);
-            //for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-             // transactionalListener.onAddNotNullConstraint(addDefaultConstraintEvent);
-            //}
+            AddDefaultConstraintEvent addDefaultConstraintEvent = new AddDefaultConstraintEvent(defaultConstraintCols, true, this);
+            for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+              transactionalListener.onAddDefaultConstraint(addDefaultConstraintEvent);
+            }
           }
         }
         success = ms.commitTransaction();
@@ -2805,8 +2807,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (defaultConstraintCols != null && defaultConstraintCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
-            //AddNotNullConstraintEvent addDefaultConstraintEvent = new AddNotNullConstraintEvent(defaultConstraintCols, true, this);
-            //listener.onAddDefaultConstraint(addDefaultConstraintEvent);
+            AddDefaultConstraintEvent addDefaultConstraintEvent = new AddDefaultConstraintEvent(defaultConstraintCols, true, this);
+            listener.onAddDefaultConstraint(addDefaultConstraintEvent);
           }
         }
         endFunction("add_default_constraint", success, ex, constraintName);
@@ -2840,10 +2842,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (transactionalListeners.size() > 0) {
           if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
             //TODO: Even listener for check
-            //AddcheckConstraintEvent addcheckConstraintEvent = new AddcheckConstraintEvent(checkConstraintCols, true, this);
-            //for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-            // transactionalListener.onAddNotNullConstraint(addcheckConstraintEvent);
-            //}
+            AddCheckConstraintEvent addcheckConstraintEvent = new AddCheckConstraintEvent(checkConstraintCols, true, this);
+            for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+             transactionalListener.onAddCheckConstraint(addcheckConstraintEvent);
+            }
           }
         }
         success = ms.commitTransaction();
@@ -2858,8 +2860,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
-            //AddNotNullConstraintEvent addCheckConstraintEvent = new AddNotNullConstraintEvent(checkConstraintCols, true, this);
-            //listener.onAddCheckConstraint(addCheckConstraintEvent);
+            AddCheckConstraintEvent addCheckConstraintEvent = new AddCheckConstraintEvent(checkConstraintCols, true, this);
+            listener.onAddCheckConstraint(addCheckConstraintEvent);
           }
         }
         endFunction("add_check_constraint", success, ex, constraintName);

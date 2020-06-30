@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -51,6 +53,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONAddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONAddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddPartitionMessage;
@@ -108,6 +112,8 @@ public class MessageBuilder {
   public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
   public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
   public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
+  public static final String ADD_DEFAULTCONSTRAINT_EVENT = "ADD_DEFAULTCONSTRAINT";
+  public static final String ADD_CHECKCONSTRAINT_EVENT = "ADD_CHECKCONSTRAINT";
   public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
   public static final String CREATE_ISCHEMA_EVENT = "CREATE_ISCHEMA";
   public static final String ALTER_ISCHEMA_EVENT = "ALTER_ISCHEMA";
@@ -241,6 +247,16 @@ public class MessageBuilder {
     return new JSONAddNotNullConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, nns, now());
   }
 
+  public AddDefaultConstraintMessage buildAddDefaultConstraintMessage(
+    List<SQLDefaultConstraint> dcs) {
+    return new JSONAddDefaultConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dcs, now());
+  }
+
+  public AddCheckConstraintMessage buildAddCheckConstraintMessage(
+    List<SQLCheckConstraint> dcs) {
+    return new JSONAddCheckConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dcs, now());
+  }
+
   public DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
       String constraintName) {
     return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dbName, tableName,
@@ -335,6 +351,18 @@ public class MessageBuilder {
       throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(notNullConstaintObj, "UTF-8");
+  }
+
+  public static String createDefaultConstraintObjJson(SQLDefaultConstraint defaultConstaintObj)
+    throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(defaultConstaintObj, "UTF-8");
+  }
+
+  public static String createCheckConstraintObjJson(SQLCheckConstraint checkConstraintObj)
+    throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(checkConstraintObj, "UTF-8");
   }
 
   public static String createDatabaseObjJson(Database dbObj) throws TException {
