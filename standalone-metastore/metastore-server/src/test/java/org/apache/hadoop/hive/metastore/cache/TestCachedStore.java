@@ -1770,8 +1770,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.size(), 0);
 
     // Refresh Operation
-    SQLForeignKey modifiedKey = origKeys.get(0).deepCopy()tus
-    ;
+    SQLForeignKey modifiedKey = origKeys.get(0).deepCopy();
     modifiedKey.setFkcolumn_name("col3");
     modifiedKey.setFk_name("fk_modified");
 
