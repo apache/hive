@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Optional;
 import java.util.Set;
@@ -489,6 +490,22 @@ public class ObjectStore implements RawStore, Configurable {
             // close the underlying connection pool to avoid leaks
             pmf.close();
             LOG.info("Persistence manager is closed as datanucleus/jdo properties have changed!");
+            for (String key : prop.stringPropertyNames()) {
+              if (!Objects.equals(prop.getProperty(key), propsFromConf.get(key))) {
+                if (MetastoreConf.isPrintable(key)) {
+                  // The jdbc connection url can contain sensitive information like username and password
+                  if (key.equals(ConfVars.CONNECT_URL_KEY.getVarname())) {
+                    LOG.info("Found masked property {} to be different", key);
+                    continue;
+                  }
+                  String oldVal = prop.getProperty(key);
+                  String newVal = propsFromConf.getProperty(key);
+                  LOG.info("Found {} to be different. Old val : {} : New Val : {}", key, oldVal, newVal);
+                } else {
+                  LOG.info("Found masked property {} to be different", key);
+                }
+              }
+            }
           }
         }
         pmf = null;

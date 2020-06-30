@@ -29,6 +29,7 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdenti
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class TestLlapSignerImpl {
   private static final Logger LOG = LoggerFactory.getLogger(TestLlapSignerImpl.class);
 
+  @Ignore("HIVE-22621: test case is unstable")
   @Test(timeout = 10000)
   public void testSigning() throws Exception {
     FakeSecretManager fsm = new FakeSecretManager();

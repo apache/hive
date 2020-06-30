@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.mapred.JobConf;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.ResultSet;
@@ -36,6 +37,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGetSplits {
 
+  @Ignore("HIVE-23394")
   @Test(timeout = 200000)
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
     super.testGenericUDTFOrderBySplitCount1("get_splits", new int[]{10, 1, 0, 1, 10});
