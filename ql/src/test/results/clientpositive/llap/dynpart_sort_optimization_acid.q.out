@@ -1293,6 +1293,7 @@ STAGE PLANS:
                         null sort order: aaaa
                         sort order: ++++
                         Map-reduce partition columns: '2008-04-08' (type: string), _col4 (type: int)
+                        Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: 'foo' (type: string), 'bar' (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1438,6 +1439,7 @@ STAGE PLANS:
                         null sort order: aaaa
                         sort order: ++++
                         Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
+                        Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1750,6 +1752,7 @@ STAGE PLANS:
                         null sort order: aaaa
                         sort order: ++++
                         Map-reduce partition columns: '2008-04-08' (type: string), _col4 (type: int)
+                        Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: 'foo' (type: string), 'bar' (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)

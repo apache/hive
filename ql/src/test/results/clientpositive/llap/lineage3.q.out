@@ -372,7 +372,7 @@ PREHOOK: query: create table src_dp1 (f string, w string, m int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_dp1
-Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[62][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: from src_dp, src_dp1
 insert into dest_dp1 partition (year) select first, word, year
 insert into dest_dp2 partition (y, m) select first, word, year, month
