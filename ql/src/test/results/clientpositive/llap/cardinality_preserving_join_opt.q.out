@@ -333,3 +333,59 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 John	John Doe Doe	42.5	1	1
+PREHOOK: query: explain cbo
+select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c_first_name=[$3], ss_customer_sk=[$0], c_customer_sk=[$2])
+  HiveJoin(condition=[=($2, $4)], joinType=[inner], algorithm=[CommonJoin], cost=[not available])
+    HiveJoin(condition=[=($2, $1)], joinType=[inner], algorithm=[CommonJoin], cost=[not available])
+      HiveProject(ss_customer_sk=[$0], CAST=[CAST($0):BIGINT])
+        HiveFilter(condition=[IS NOT NULL(CAST($0):BIGINT)])
+          HiveProject(ss_customer_sk=[$1])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[ss])
+      HiveProject(c_customer_sk=[$2])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(c_first_name=[$0], c_customer_sk=[$2])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PREHOOK: query: select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+John	1	1

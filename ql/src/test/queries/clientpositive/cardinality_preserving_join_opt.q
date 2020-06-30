@@ -110,3 +110,19 @@ select
     ss_customer_sk
 from store_sales ss
 join customer c on ss_customer_sk = c_customer_sk;
+
+-- Table store_sales is not joined back: only the key is projected
+explain cbo
+select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk;
+
+select
+    c_first_name,
+    ss_customer_sk,
+    c_customer_sk
+from store_sales ss
+join customer on c_customer_sk = ss_customer_sk;

@@ -141,7 +141,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
             .filter(joinedBackFields.fieldsInSourceTable::contains)
             .findFirst();
 
-        if (projectedKeys.isPresent()) {
+        if (projectedKeys.isPresent() && !projectedKeys.get().equals(joinedBackFields.fieldsInSourceTable)) {
           TableToJoinBack tableToJoinBack = new TableToJoinBack(projectedKeys.get(), joinedBackFields);
           tableToJoinBackList.add(tableToJoinBack);
           fieldsUsed = fieldsUsed.union(joinedBackFields.getSource(projectedKeys.get()));
