@@ -1135,6 +1135,7 @@ struct CompactionInfoStruct {
     11: optional i64 start
     12: optional i64 highestWriteId
     13: optional string errorMessage
+    14: optional bool hasoldabort
 }
 
 struct OptionalCompactionInfoStruct {

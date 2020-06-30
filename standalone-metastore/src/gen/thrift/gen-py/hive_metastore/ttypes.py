@@ -15248,6 +15248,7 @@ class CompactionInfoStruct:
    - start
    - highestWriteId
    - errorMessage
+   - hasoldabort
   """
 
   thrift_spec = (
@@ -15265,9 +15266,10 @@ class CompactionInfoStruct:
     (11, TType.I64, 'start', None, None, ), # 11
     (12, TType.I64, 'highestWriteId', None, None, ), # 12
     (13, TType.STRING, 'errorMessage', None, None, ), # 13
+    (14, TType.BOOL, 'hasoldabort', None, None, ), # 14
   )
 
-  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None,):
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None,):
     self.id = id
     self.dbname = dbname
     self.tablename = tablename
@@ -15281,6 +15283,7 @@ class CompactionInfoStruct:
     self.start = start
     self.highestWriteId = highestWriteId
     self.errorMessage = errorMessage
+    self.hasoldabort = hasoldabort
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15418,6 +15421,10 @@ class CompactionInfoStruct:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 13)
       oprot.writeString(self.errorMessage)
       oprot.writeFieldEnd()
+    if self.hasoldabort is not None:
+      oprot.writeFieldBegin('hasoldabort', TType.BOOL, 14)
+      oprot.writeBool(self.hasoldabort)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15448,6 +15455,7 @@ class CompactionInfoStruct:
     value = (value * 31) ^ hash(self.start)
     value = (value * 31) ^ hash(self.highestWriteId)
     value = (value * 31) ^ hash(self.errorMessage)
+    value = (value * 31) ^ hash(self.hasoldabort)
     return value
 
   def __repr__(self):
@@ -15800,6 +15808,11 @@ class ShowCompactResponseElement:
       elif fid == 14:
         if ftype == TType.STRING:
           self.errorMessage = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.BOOL:
+          self.hasoldabort = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:

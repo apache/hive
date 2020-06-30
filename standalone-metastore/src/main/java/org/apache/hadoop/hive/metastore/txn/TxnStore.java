@@ -23,7 +23,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -311,14 +309,17 @@ public interface TxnStore extends Configurable {
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
    * @param abortedThreshold  number of aborted queries forming a potential compaction request.
+   * @param abortedTimeThreshold age of an aborted txn in milliseconds that will trigger a
+   *                             potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long checkInterval) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long checkInterval)
+      throws MetaException;
 
   /**
    * This updates COMPACTION_QUEUE.  Set runAs username for the case where the request was

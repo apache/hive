@@ -50,6 +50,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String runAs;
   public String properties;
   public boolean tooManyAborts = false;
+  public boolean hasOldAbort = false;
   /**
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
    * See {@link TxnStore#setCompactionHighestWriteId(CompactionInfo, long)} for precise definition.
@@ -118,6 +119,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
+      "hasOldAbort:" + hasOldAbort + "," +
       "highestWriteId:" + highestWriteId + "," +
       "errorMessage:" + errorMessage;
   }
@@ -174,6 +176,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetToomanyaborts()) {
       ci.tooManyAborts = cr.isToomanyaborts();
     }
+    if (cr.isSetHasoldabort()) {
+      ci.hasOldAbort = cr.isHasoldabort();
+    }
     if (cr.isSetState() && cr.getState().length() != 1) {
       throw new IllegalStateException("State should only be one character but it was set to " + cr.getState());
     } else if (cr.isSetState()) {
@@ -201,6 +206,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setRunas(ci.runAs);
     cr.setProperties(ci.properties);
     cr.setToomanyaborts(ci.tooManyAborts);
+    cr.setHasoldabort(ci.hasOldAbort);
     cr.setStart(ci.start);
     cr.setState(Character.toString(ci.state));
     cr.setWorkerId(ci.workerId);

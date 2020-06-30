@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+
 /**
  * Tests for the compactor Initiator thread.
  */
@@ -229,6 +230,50 @@ public class TestInitiator extends CompactorTest {
 
     openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(1, openTxns.getOpen_txnsSize());
+  }
+
+  /**
+   * Test that HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD triggers compaction.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void compactExpiredAbortedTxns() throws Exception {
+    Table t = newTable("default", "expiredAbortedTxns", false);
+    // abort a txn
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+    comp.setOperationType(DataOperationType.DELETE);
+    comp.setTablename("expiredAbortedTxns");
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    txnHandler.lock(req);
+    txnHandler.abortTxn(new AbortTxnRequest(txnid));
+
+    // before setting, check that no compaction is queued
+    initiateAndVerifyCompactionQueueLength(0);
+
+    // negative number disables threshold check
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, -1,
+        TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    initiateAndVerifyCompactionQueueLength(0);
+
+    // set to 1 ms, wait 1 ms, and check that minor compaction is queued
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 1, TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    ShowCompactResponse rsp = initiateAndVerifyCompactionQueueLength(1);
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+  }
+
+  private ShowCompactResponse initiateAndVerifyCompactionQueueLength(int expectedLength)
+      throws Exception {
+    startInitiator();
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(expectedLength, rsp.getCompactsSize());
+    return rsp;
   }
 
   @Test

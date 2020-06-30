@@ -410,7 +410,7 @@ public class TestCompactionTxnHandler {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
     assertEquals(0, txnHandler.numLocksInLockTable());
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
     boolean sawMyTable = false, sawYourTable = false;
     for (CompactionInfo ci : potentials) {
@@ -422,13 +422,13 @@ public class TestCompactionTxnHandler {
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(2, potentials.size());
 
     //simulate auto-compaction interval
     TimeUnit.SECONDS.sleep(2);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(0, potentials.size());
 
     //simulate prev failed compaction
@@ -437,7 +437,7 @@ public class TestCompactionTxnHandler {
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markFailed(ci);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(1, potentials.size());
   }
 
@@ -565,7 +565,7 @@ public class TestCompactionTxnHandler {
     txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000, -1L);
     assertEquals(2, potentials.size());
     SortedSet<CompactionInfo> sorted = new TreeSet<CompactionInfo>(potentials);
 
