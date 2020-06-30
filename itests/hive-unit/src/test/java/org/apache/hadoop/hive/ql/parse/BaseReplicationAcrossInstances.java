@@ -74,7 +74,7 @@ public class BaseReplicationAcrossInstances {
                                                        Map<String, String> replicaOverrides, Class clazz)
           throws Exception {
     /**
-     * Setup replica cluster
+     * Setup replica cluster.
      */
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
     replicaConf = new HiveConf(clazz);
@@ -92,7 +92,7 @@ public class BaseReplicationAcrossInstances {
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
 
     /**
-     * Setup primary cluster
+     * Setup primary cluster.
      */
     String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
     conf = new HiveConf(clazz);
