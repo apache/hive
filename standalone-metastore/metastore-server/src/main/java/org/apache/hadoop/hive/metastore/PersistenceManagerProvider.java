@@ -370,13 +370,12 @@ public class PersistenceManagerProvider {
     if (clr instanceof ClassLoaderResolverImpl) {
       ClassLoaderResolverImpl clri = (ClassLoaderResolverImpl) clr;
       int resourcesCleared = clearFieldMap(clri, "resources");
-      int jreClassesClassesCleared = clearFieldMap(clri, "jreClasses");
       int loadedClassesCleared = clearFieldMap(clri, "loadedClasses");
       int unloadedClassesCleared = clearFieldMap(clri, "unloadedClasses");
 
       LOG.debug(
-          "Cleared ClassLoaderResolverImpl: resources: {}, jre classes: {}, loaded classes: {}, unloaded classes: {}",
-          resourcesCleared, jreClassesClassesCleared, loadedClassesCleared, unloadedClassesCleared);
+          "Cleared ClassLoaderResolverImpl: resources: {}, loaded classes: {}, unloaded classes: {}",
+          resourcesCleared, loadedClassesCleared, unloadedClassesCleared);
     }
   }
 
