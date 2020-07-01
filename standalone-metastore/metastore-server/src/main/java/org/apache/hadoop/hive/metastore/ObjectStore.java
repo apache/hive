@@ -375,6 +375,8 @@ public class ObjectStore implements RawStore, Configurable {
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
     try {
       String productName = MetaStoreDirectSql.getProductName(pm);
+      DatabaseProduct databaseProduct = DatabaseProduct.determineDatabaseProduct(productName);
+      LOG.debug("Creating SQL Generator [name: {}, product: {}]", productName, databaseProduct);
       sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
     } catch (SQLException e) {
       LOG.error("error trying to figure out the database product", e);
@@ -383,6 +385,7 @@ public class ObjectStore implements RawStore, Configurable {
     isInitialized = pm != null;
     if (isInitialized) {
       dbType = determineDatabaseProduct();
+      LOG.debug("Database type: {}", dbType);
       expressionProxy = createExpressionProxy(conf);
       if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
         String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");

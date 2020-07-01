@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
@@ -155,19 +156,21 @@ public final class TxnDbUtil {
   }
 
   private static void importSQL(Statement stmt, InputStream in) throws SQLException {
-    Set<String> knownErrors = getAlreadyExistsErrorCodes();
-    Scanner s = new Scanner(in, "UTF-8");
+    Scanner s = new Scanner(in, StandardCharsets.UTF_8.name());
     s.useDelimiter("(;(\r)?\n)|(--.*\n)");
     while (s.hasNext()) {
-      String line = s.next();
+      String line = s.next().trim();
 
-      if (line.trim().length() > 0) {
+      if (!line.isEmpty()) {
         try {
+          LOG.trace("Importing via raw SQL: {}", line);
           stmt.execute(line);
         } catch (SQLException e) {
-          if (knownErrors.contains(e.getSQLState())) {
-            LOG.debug("Ignoring sql error {}", e.getMessage());
-          } else {
+          // Skip over any tables or indexes that already exist in the RDBMS
+          Set<String> alreadyExistsCodes = getAlreadyExistsErrorCodes();
+          boolean ignore = alreadyExistsCodes.contains(e.getSQLState());
+          LOG.debug("Ignoring SQL error: [{}]", ignore, e);
+          if (!ignore) {
             throw e;
           }
         }
