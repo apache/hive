@@ -17,7 +17,7 @@ insert into customer(c_customer_sk, c_first_name, c_last_name, c_discount) value
 insert into store_sales(ss_customer_sk, ss_quantity, ss_list_price) values (1, 10.0, 2.5);
 
 -- Turn off optimization to have a reference
-set hive.cardinality.preserving.join.optimization=false;
+set hive.cardinality.preserving.join.optimization.factor=0.0;
 
 explain cbo
 select
@@ -39,7 +39,6 @@ from store_sales ss
 join customer c on ss_customer_sk = c_customer_sk;
 
 -- Force optimization
-set hive.cardinality.preserving.join.optimization=true;
 set hive.cardinality.preserving.join.optimization.factor=10.0;
 
 -- Only store_sales table should be joined back

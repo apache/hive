@@ -2416,7 +2416,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final HepProgramBuilder program = new HepProgramBuilder();
 
       double factor = conf.getFloatVar(ConfVars.HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR);
-      if (conf.getBoolVar(ConfVars.HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION) && factor > 0.0) {
+      if (factor > 0.0) {
         generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
             new HiveCardinalityPreservingJoinRule(factor));
       }
