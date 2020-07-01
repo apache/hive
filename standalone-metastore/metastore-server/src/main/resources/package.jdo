@@ -350,12 +350,15 @@
         <join>
           <primary-key name="SQL110922153006740">
             <column name="CD_ID"/>
-            <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
+            <column name="COLUMN_NAME"/>
           </primary-key>
           <column name="CD_ID"/>
         </join>
         <element>
           <embedded>
+            <field name="name">
+              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+            </field>
             <field name="type">
               <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
