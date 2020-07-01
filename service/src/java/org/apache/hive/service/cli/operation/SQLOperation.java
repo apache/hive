@@ -188,9 +188,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
-      // Yarn ATS
-      String guid64 = Base64.getUrlEncoder().encodeToString(getHandle().getHandleIdentifier()
-          .toTHandleIdentifier().getGuid()).trim();
+      // Yarn ATS, also used in logging so remove padding for better display
+      String guid64 = Base64.getUrlEncoder().withoutPadding()
+          .encodeToString(getHandle().getHandleIdentifier().toTHandleIdentifier().getGuid());
       driver.setOperationId(guid64);
 
       // In Hive server mode, we are not able to retry in the FetchTask

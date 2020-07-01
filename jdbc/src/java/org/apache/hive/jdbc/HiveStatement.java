@@ -748,7 +748,7 @@ public class HiveStatement implements java.sql.Statement {
     // Set on the server side.
     // @see org.apache.hive.service.cli.operation.SQLOperation#prepare
     return (stmtHandle.isPresent())
-        ? Base64.getUrlEncoder().encodeToString(stmtHandle.get().getOperationId().getGuid()).trim()
+        ? Base64.getUrlEncoder().withoutPadding().encodeToString(stmtHandle.get().getOperationId().getGuid())
         : null;
   }
 
