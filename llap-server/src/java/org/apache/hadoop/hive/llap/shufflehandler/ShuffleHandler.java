@@ -222,6 +222,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   private static ShuffleHandler INSTANCE;
   private static final String TIMEOUT_HANDLER = "timeout";
 
+  public static final String USERCACHE = "usercache";
+  public static final String APPCACHE = "appcache";
+
 
   final boolean connectionKeepAliveEnabled;
   final int connectionKeepAliveTimeOut;
@@ -260,7 +263,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
   }
 
-  private ShuffleHandler(Configuration conf) {
+  public ShuffleHandler(Configuration conf) {
     this.conf = conf;
     manageOsCache = conf.getBoolean(SHUFFLE_MANAGE_OS_CACHE,
         DEFAULT_SHUFFLE_MANAGE_OS_CACHE);
@@ -336,7 +339,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         shuffleBufferSize, shuffleTransferToAllowed, connectionKeepAliveEnabled,
         connectionKeepAliveTimeOut, mapOutputMetaInfoCacheSize, sslFileBufferSize);
   }
-
 
   public void start() throws Exception {
     ServerBootstrap bootstrap = new ServerBootstrap(selector);
@@ -758,13 +760,13 @@ public class ShuffleHandler implements AttemptRegistrationListener {
             "\n  keepAlive: " + keepAliveParam);
       }
 
-      if (mapIds == null || reduceQ == null || jobQ == null | dagIdQ == null) {
-        sendError(ctx, "Required param job, map and reduce", BAD_REQUEST);
+      // If the request is for Dag Deletion, process the request and send OK.
+      if (deleteDagDirectories(evt, dagCompletedQ, jobQ, dagIdQ))  {
         return;
       }
 
-      // If the request is for Dag Deletion, process the request and send OK.
-      if (deleteDagDirectories(evt, dagCompletedQ, jobQ, dagIdQ))  {
+      if (mapIds == null || reduceQ == null || jobQ == null || dagIdQ == null) {
+        sendError(ctx, "Required param job, map and reduce", BAD_REQUEST);
         return;
       }
 
@@ -1127,10 +1129,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
   }
 
-
-  private static final String USERCACHE_CONSTANT = "usercache";
-  private static final String APPCACHE_CONSTANT = "appcache";
-
   private static String getBaseLocation(String jobIdString, int dagId, String user) {
     // $x/$user/appcache/$appId/dag_${dagId}
     // TODO: Once Shuffle is out of NM, this can use MR APIs to convert
@@ -1140,8 +1138,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     final ApplicationId appID =
         ApplicationId.newInstance(Long.parseLong(parts[1]), Integer.parseInt(parts[2]));
     final String baseStr =
-        USERCACHE_CONSTANT + Path.SEPARATOR + user + Path.SEPARATOR
-            + APPCACHE_CONSTANT + Path.SEPARATOR
+        USERCACHE + Path.SEPARATOR + user + Path.SEPARATOR
+            + APPCACHE + Path.SEPARATOR
             + ConverterUtils.toString(appID) + Path.SEPARATOR
             + Constants.DAG_PREFIX + dagId;
     return baseStr;
