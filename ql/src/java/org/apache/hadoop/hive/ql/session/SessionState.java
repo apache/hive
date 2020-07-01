@@ -157,6 +157,11 @@ public class SessionState {
   protected boolean isSilent;
 
   /**
+   * silent mode.
+   */
+  protected boolean isQtestLogging;
+
+  /**
    * verbose mode
    */
   protected boolean isVerbose;
@@ -369,6 +374,10 @@ public class SessionState {
     }
   }
 
+  public boolean getIsQtestLogging() {
+    return isQtestLogging;
+  }
+
   public boolean isHiveServerQuery() {
     return this.isHiveServerQuery;
   }
@@ -378,6 +387,10 @@ public class SessionState {
       sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public void setIsQtestLogging(boolean isQtestLogging) {
+    this.isQtestLogging = isQtestLogging;
   }
 
   public ReentrantLock getCompileLock() {
@@ -1204,6 +1217,17 @@ public class SessionState {
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
+    public boolean getIsQtestLogging() {
+      SessionState ss = SessionState.get();
+      // use the session or the one supplied in constructor
+      return (ss != null) ? ss.getIsQtestLogging() : false;
+    }
+
     /**
      * Logs into the log file.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
@@ -1295,7 +1319,9 @@ public class SessionState {
      * @param detail Extra detail to log which will be not printed if null
      */
     public void printError(String error, String detail) {
-      getErrStream().println(error);
+      if(!getIsSilent() || getIsQtestLogging()) {
+        getErrStream().println(error);
+      }
       LOG.error(error + StringUtils.defaultString(detail));
     }
   }
