@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.jetty.util.MultiPartWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,7 @@ import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -64,31 +66,23 @@ import java.util.Arrays;
  */
 public class RangerRestClientImpl implements RangerRestClient {
   private static final Logger LOG = LoggerFactory.getLogger(RangerRestClientImpl.class);
-  private static final String RANGER_REST_URL_EXPORTJSONFILE = "/service/plugins/policies/exportJson";
+  private static final String RANGER_REST_URL_EXPORTJSONFILE = "service/plugins/policies/exportJson";
   private static final String RANGER_REST_URL_IMPORTJSONFILE =
-      "/service/plugins/policies/importPoliciesFromFile?updateIfExists=true";
+      "service/plugins/policies/importPoliciesFromFile";
 
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
                                                      String dbName,
                                                      String rangerHiveServiceName)throws SemanticException {
     LOG.info("Ranger endpoint for cluster " + sourceRangerEndpoint);
-    String uri;
     if (StringUtils.isEmpty(rangerHiveServiceName)) {
       throw new SemanticException("Ranger Service Name cannot be empty");
     }
-    uri = RANGER_REST_URL_EXPORTJSONFILE + "?serviceName=" + rangerHiveServiceName + "&polResource="
-      + dbName + "&resource:database=" + dbName
-      + "&serviceType=hive&resourceMatchScope=self_or_ancestor&resourceMatch=full";
-    if (sourceRangerEndpoint.endsWith("/")) {
-      sourceRangerEndpoint = StringUtils.removePattern(sourceRangerEndpoint, "/+$");
-    }
-    String url = sourceRangerEndpoint + (uri.startsWith("/") ? uri : ("/" + uri));
-    LOG.debug("Url to export policies from source Ranger: {}", url);
-
     Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
       @Override
       public RangerExportPolicyList execute() throws Exception {
-        WebResource.Builder builder = getRangerResourceBuilder(url);
+        String finalUrl = getRangerExportUrl(sourceRangerEndpoint, rangerHiveServiceName, dbName);
+        LOG.debug("Url to export policies from source Ranger: {}", finalUrl);
+        WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
         RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
         ClientResponse clientResp = builder.get(ClientResponse.class);
         String response = null;
@@ -123,6 +117,19 @@ public class RangerRestClientImpl implements RangerRestClient {
     }
   }
 
+  public String getRangerExportUrl(String sourceRangerEndpoint, String rangerHiveServiceName,
+                            String dbName) throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(sourceRangerEndpoint);
+    uriBuilder.setPath(RANGER_REST_URL_EXPORTJSONFILE);
+    uriBuilder.addParameter("serviceName", rangerHiveServiceName);
+    uriBuilder.addParameter("polResource", dbName);
+    uriBuilder.addParameter("resource:database", dbName);
+    uriBuilder.addParameter("serviceType", "hive");
+    uriBuilder.addParameter("resourceMatchScope", "self_or_ancestor");
+    uriBuilder.addParameter("resourceMatch", "full");
+    return uriBuilder.build().toString();
+  }
+
   public List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies) {
     List<RangerPolicy> rangerPoliciesToImport = new ArrayList<RangerPolicy>();
     if (CollectionUtils.isNotEmpty(rangerPolicies)) {
@@ -155,7 +162,6 @@ public class RangerRestClientImpl implements RangerRestClient {
     String sourceClusterServiceName = null;
     String serviceMapJsonFileName = "hive_servicemap.json";
     String rangerPoliciesJsonFileName = "hive_replicationPolicies.json";
-    String uri = RANGER_REST_URL_IMPORTJSONFILE + "&polResource=" + dbName;
 
     if (!rangerExportPolicyList.getPolicies().isEmpty()) {
       sourceClusterServiceName = rangerExportPolicyList.getPolicies().get(0).getService();
@@ -174,11 +180,8 @@ public class RangerRestClientImpl implements RangerRestClient {
     String jsonServiceMap = gson.toJson(serviceMap);
 
     String jsonRangerExportPolicyList = gson.toJson(rangerExportPolicyList);
-
-    String url = baseUrl
-        + (uri.startsWith("/") ? uri : ("/" + uri));
-
-    LOG.debug("URL to import policies on target Ranger: {}", url);
+    String finalUrl = getRangerImportUrl(baseUrl, dbName);
+    LOG.debug("URL to import policies on target Ranger: {}", finalUrl);
     Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
       @Override
       public RangerExportPolicyList execute() throws Exception {
@@ -194,7 +197,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         MultiPart multipartEntity = null;
         try {
           multipartEntity = formDataMultiPart.bodyPart(filePartPolicies).bodyPart(filePartServiceMap);
-          WebResource.Builder builder = getRangerResourceBuilder(url);
+          WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
           clientResp = builder.accept(MediaType.APPLICATION_JSON).type(MediaType.MULTIPART_FORM_DATA)
             .post(ClientResponse.class, multipartEntity);
           if (clientResp != null) {
@@ -233,6 +236,14 @@ public class RangerRestClientImpl implements RangerRestClient {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  public String getRangerImportUrl(String rangerUrl, String dbName) throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(rangerUrl);
+    uriBuilder.setPath(RANGER_REST_URL_IMPORTJSONFILE);
+    uriBuilder.addParameter("updateIfExists", "true");
+    uriBuilder.addParameter("polResource", dbName);
+    return uriBuilder.build().toString();
   }
 
   private synchronized Client getRangerClient() {
