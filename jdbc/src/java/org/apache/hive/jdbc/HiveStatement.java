@@ -309,6 +309,12 @@ public class HiveStatement implements java.sql.Statement {
     try {
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
+      List<String> infoMessages = execResp.getStatus().getInfoMessages();
+      if (infoMessages != null) {
+        for (String message : infoMessages) {
+          LOG.info(message);
+        }
+      }
       stmtHandle = Optional.of(execResp.getOperationHandle());
     } catch (SQLException eS) {
       isLogBeingGenerated = false;
