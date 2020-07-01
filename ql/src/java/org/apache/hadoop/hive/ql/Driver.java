@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -80,7 +79,6 @@ public class Driver implements IDriver {
 
   private final DriverContext driverContext;
   private final DriverState driverState = new DriverState();
-  private final ValidTxnManager validTxnManager;
   private final DriverTxnHandler driverTxnHandler;
 
   private Context context;
@@ -138,8 +136,7 @@ public class Driver implements IDriver {
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
-    validTxnManager = new ValidTxnManager(this, driverContext);
-    driverTxnHandler = new DriverTxnHandler(driverContext, driverState, validTxnManager);
+    driverTxnHandler = new DriverTxnHandler(this, driverContext, driverState);
   }
 
   /**
@@ -357,9 +354,8 @@ public class Driver implements IDriver {
       throw cpe;
     } finally {
       if (cleanupTxnList) {
-        // Valid txn list might be generated for a query compiled using this
-        // command, thus we need to reset it
-        driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
+        // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
+        driverTxnHandler.cleanupTxnList();
       }
     }
   }
@@ -478,22 +474,21 @@ public class Driver implements IDriver {
       lockAndRespond();
 
       try {
-        if (!validTxnManager.isValidTxnListState()) {
+        if (!driverTxnHandler.isValidTxnListState()) {
           LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry (see ReExecutionRetryLockPlugin)
           try {
-            releaseLocksAndCommitOrRollback(false);
+            driverTxnHandler.releaseLocksAndCommitOrRollback(false);
           } catch (LockException e) {
             handleHiveException(e, 12);
           }
-          throw handleHiveException(
-              new HiveException(
-                  "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + "."),
-              14);
+          HiveException e = new HiveException(
+              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+          handleHiveException(e, 14);
         }
       } catch (LockException e) {
-        throw handleHiveException(e, 13);
+        handleHiveException(e, 13);
       }
 
       try {
@@ -523,7 +518,7 @@ public class Driver implements IDriver {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {
-        throw handleHiveException(e, 12);
+        handleHiveException(e, 12);
       }
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
@@ -567,14 +562,14 @@ public class Driver implements IDriver {
     }
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret) throws CommandProcessorException {
-    return handleHiveException(e, ret, null);
+  private void handleHiveException(HiveException e, int ret) throws CommandProcessorException {
+    handleHiveException(e, ret, null);
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret, String rootMsg)
+  private void handleHiveException(HiveException e, int ret, String rootMsg)
       throws CommandProcessorException {
     String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-    if(rootMsg != null) {
+    if (rootMsg != null) {
       errorMessage += "\n" + rootMsg;
     }
     String sqlState = e.getCanonicalErrorMsg() != null ?
