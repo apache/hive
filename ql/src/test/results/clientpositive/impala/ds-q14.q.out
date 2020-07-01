@@ -840,7 +840,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_quantity, ss_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=32 row-size=12B cardinality=0
@@ -961,7 +961,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk, ss_quantity, ss_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=20B cardinality=0
@@ -1136,7 +1136,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=9 row-size=12B cardinality=0
@@ -1403,7 +1403,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_quantity, ss_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=77 row-size=12B cardinality=0
@@ -1697,7 +1697,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=54 row-size=12B cardinality=0
@@ -1964,7 +1964,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_quantity, ss_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=122 row-size=12B cardinality=0
@@ -2258,7 +2258,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=99 row-size=12B cardinality=0

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
@@ -116,7 +117,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     HdfsTable hdfsTable = ctx.getHdfsTable(msTbl);
     if (hdfsTable == null) {
       org.apache.impala.catalog.Db impalaDb = new Db(table.getDbName(), msDb);
-      hdfsTable = new HdfsTable(msTbl, impalaDb, tableName, table.getOwner());
+      hdfsTable = new ImpalaHdfsTable(msTbl, impalaDb, tableName, table.getOwner());
       ctx.addHdfsTable(msTbl, hdfsTable);
       hdfsTable.load(false, db.getMSC(), msTbl, "");
     }

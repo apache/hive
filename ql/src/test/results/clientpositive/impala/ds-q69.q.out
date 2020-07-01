@@ -432,7 +432,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_customer_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=8B cardinality=0

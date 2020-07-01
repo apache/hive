@@ -366,7 +366,7 @@ Per-Host Resources: mem-estimate=19.69MB mem-reservation=9.69MB thread-reservati
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk, ss_customer_sk, ss_store_sk, ss_promo_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=28B cardinality=0
@@ -558,7 +558,7 @@ Per-Host Resources: mem-estimate=17.75MB mem-reservation=7.75MB thread-reservati
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_item_sk, ss_customer_sk, ss_store_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=14 row-size=24B cardinality=0

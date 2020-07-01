@@ -343,7 +343,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_store_sk, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=12B cardinality=0
@@ -479,7 +479,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      stored statistics:
        table: rows=unavailable size=unavailable
        partitions: 0/0 rows=unavailable
-       columns: unavailable
+       columns missing stats: ss_store_sk, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=12 row-size=12B cardinality=0
