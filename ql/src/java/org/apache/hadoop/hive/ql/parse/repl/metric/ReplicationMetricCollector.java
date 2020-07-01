@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -37,6 +39,8 @@ public abstract class ReplicationMetricCollector {
   private ReplicationMetric replicationMetric;
   private MetricCollector metricCollector;
   private boolean isEnabled;
+
+  private static final Logger LOG = LoggerFactory.getLogger(ReplicationMetricCollector.class);
 
   public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
                              String stagingDir, long dumpExecutionId, HiveConf conf) {
@@ -53,7 +57,9 @@ public abstract class ReplicationMetricCollector {
 
   public void reportStageStart(String stageName, Map<String, Long> metricMap) throws SemanticException {
     if (isEnabled) {
+      LOG.debug("Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap );
       Progress progress = replicationMetric.getProgress();
+      progress.setStatus(Status.IN_PROGRESS);
       Stage stage = new Stage(stageName, Status.IN_PROGRESS, System.currentTimeMillis());
       for (Map.Entry<String, Long> metric : metricMap.entrySet()) {
         stage.addMetric(new Metric(metric.getKey(), metric.getValue()));
@@ -67,6 +73,7 @@ public abstract class ReplicationMetricCollector {
 
   public void reportStageEnd(String stageName, Status status, long lastReplId) throws SemanticException {
     if (isEnabled) {
+      LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
@@ -81,6 +88,7 @@ public abstract class ReplicationMetricCollector {
 
   public void reportStageEnd(String stageName, Status status) throws SemanticException {
     if (isEnabled) {
+      LOG.debug("Stage Ended {}, {}", stageName, status );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
@@ -92,6 +100,7 @@ public abstract class ReplicationMetricCollector {
 
   public void reportStageProgress(String stageName, String metricName, long count) throws SemanticException {
     if (isEnabled) {
+      LOG.debug("Stage progress {}, {}, {}", stageName, metricName, count );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       Metric metric = stage.getMetricByName(metricName);
@@ -107,6 +116,7 @@ public abstract class ReplicationMetricCollector {
 
   public void reportEnd(Status status) throws SemanticException {
     if (isEnabled) {
+      LOG.info("End {}", status );
       Progress progress = replicationMetric.getProgress();
       progress.setStatus(status);
       replicationMetric.setProgress(progress);

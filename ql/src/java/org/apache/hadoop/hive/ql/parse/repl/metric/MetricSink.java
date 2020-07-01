@@ -64,8 +64,10 @@ public class MetricSink {
   public synchronized void init(HiveConf conf) {
     if (!isInitialised) {
       this.conf = conf;
-      this.executorService.schedule(new MetricSinkWriter(conf), getFrequencyInSecs(), TimeUnit.SECONDS);
+      this.executorService.scheduleAtFixedRate(new MetricSinkWriter(conf), 0,
+        getFrequencyInSecs(), TimeUnit.SECONDS);
       isInitialised = true;
+      LOG.debug("Metrics Sink Initialised with frequency {} ", getFrequencyInSecs());
     }
   }
 
@@ -102,10 +104,12 @@ public class MetricSink {
     public void run() {
       ReplicationMetricList metricList = new ReplicationMetricList();
       try {
+        LOG.debug("Updating metrics to DB");
         // get metrics
         LinkedList<ReplicationMetric> metrics = collector.getMetrics();
         //Move metrics to thrift list
         if (metrics.size() > 0) {
+          LOG.debug("Converting metrics to thrift metrics {} ", metrics.size());
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
           for (int index = 0; index < totalMetricsSize; index++) {
@@ -120,25 +124,24 @@ public class MetricSink {
             replicationMetricsList.add(persistentMetric);
           }
           metricList.setReplicationMetricList(replicationMetricsList);
+          // write metrics and retry if fails
+          Retry<Void> retriable = new Retry<Void>(Exception.class) {
+            @Override
+            public Void execute() throws Exception {
+              //write
+              if (metricList.getReplicationMetricListSize() > 0) {
+                LOG.debug("Persisting metrics to DB {} ", metricList.getReplicationMetricListSize());
+                Hive.get(conf).getMSC().addReplicationMetrics(metricList);
+              }
+              return null;
+            }
+          };
+          retriable.run();
+        } else {
+          LOG.debug("No Metrics to Update ");
         }
       } catch (Exception e) {
-        throw new RuntimeException("Metrics are not getting persisted", e);
-      }
-      // write metrics and retry if fails
-      Retry<Void> retriable = new Retry<Void>(Exception.class) {
-        @Override
-        public Void execute() throws Exception {
-            //write
-          if (metricList.getReplicationMetricListSize() > 0) {
-            Hive.get(conf).getMSC().addReplicationMetrics(metricList);
-          }
-          return null;
-        }
-      };
-      try {
-        retriable.run();
-      } catch (Exception e) {
-        throw new RuntimeException("Metrics are not getting persisted to HMS", e);
+        LOG.error("Metrics are not getting persisted", e);
       }
     }
   }
