@@ -865,6 +865,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
       replLogger.endLog(bootDumpBeginReplId.toString());
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
     }
     Long bootDumpEndReplId = currentNotificationId(hiveDb);
     LOG.info("Preparing to return {},{}->{}",
@@ -875,7 +876,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     work.setDirCopyIterator(extTableCopyWorks.iterator());
     work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
-    work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
     return bootDumpBeginReplId;
   }
 
