@@ -1986,7 +1986,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED)) {
           String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.CumeDistRewrite(sketchType);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.CumeDistRewriteRule(sketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_ENABLED)) {
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.NTileRewrite(sketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_ENABLED)) {
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.RankRewriteRule(sketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
       }
