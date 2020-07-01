@@ -70,7 +70,6 @@ public class DriverContext {
   private ValidWriteIdList compactionWriteIds = null;
   private long compactorTxnId = 0;
 
-  private Context backupContext = null;
   private boolean retrial = false;
 
   private DataInput resStream;
@@ -205,14 +204,6 @@ public class DriverContext {
 
   public void setCompactorTxnId(long compactorTxnId) {
     this.compactorTxnId = compactorTxnId;
-  }
-
-  public Context getBackupContext() {
-    return backupContext;
-  }
-
-  public void setBackupContext(Context backupContext) {
-    this.backupContext = backupContext;
   }
 
   public boolean isRetrial() {
