@@ -1344,8 +1344,8 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
-      // If dirSnapshots != null, we would have already populated "original"
-      if (dirSnapshots == null) {
+      // If childrenWithId != null, we would have already populated "original"
+      if (childrenWithId != null) {
         for (Path origDir : originalDirectories) {
           findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles, true);
         }
