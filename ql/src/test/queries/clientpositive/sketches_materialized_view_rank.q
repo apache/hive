@@ -18,14 +18,14 @@ create  materialized view mv_1 as
 set hive.optimize.bi.enabled=true;
 
 explain
-select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
-select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id;
 
 set hive.optimize.bi.enabled=false;
 
 explain
-select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
-select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'no rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id;
+select 'no rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id;
 
 set hive.optimize.bi.enabled=true;
 
@@ -35,20 +35,20 @@ insert into table sketch_input values
 ;
 
 explain
-select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
-select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id;
+select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id;
 
 explain
 alter materialized view mv_1 rebuild;
 alter materialized view mv_1 rebuild;
 
 explain
-select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
-select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id;
+select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id;
 
 -- rewrite+mv matching with rollup
 explain
-select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
-select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id;
+select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id;
+select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id;
 
 drop materialized view mv_1;
