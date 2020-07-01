@@ -623,6 +623,7 @@ public class QTestUtil {
     }
     File outf = new File(logDir, stdoutName);
     setSessionOutputs(fileName, ss, outf);
+    ss.setIsQtestLogging(true);
 
     if (fileName.equals("init_file.q")) {
       ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
@@ -638,13 +639,14 @@ public class QTestUtil {
       ss.out.flush();
     }
     if (ss.err != null) {
-      ss.out.flush();
+      ss.err.flush();
     }
 
     qTestResultProcessor.setOutputs(ss, fo, fileName);
 
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
+    ss.setIsQtestLogging(true);
   }
 
   public CliSessionState startSessionState(boolean canReuseSession) throws IOException {
