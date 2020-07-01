@@ -172,9 +172,9 @@ private boolean showStats = false;
         </tr>
         <tr>
             <td>Closed Timestamp</td>
-            <td><% queryInfo.getEndTime() == null ? "Open" : new Date(queryInfo.getEndTime()) %></td>
+            <td><% queryInfo.isRunning() ? "Open" : new Date(queryInfo.getEndTime()) %></td>
         </tr>
-        <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getErrorMessage() != null %>
+        <%if queryInfo.isRunning() && queryInfo.getQueryDisplay().getErrorMessage() != null %>
             <tr>
                 <td>Error</td>
                 <td><% queryInfo.getQueryDisplay().getErrorMessage() %></td>
@@ -182,7 +182,7 @@ private boolean showStats = false;
         </%if>
         <tr>
             <td>Latency (s)</td>
-            <td><% queryInfo.getRuntime() == null ? "Not finished" : queryInfo.getRuntime()/1000 %></td>
+            <td><% queryInfo.isRunning() ? "Not finished" : queryInfo.getRuntime()/1000 %></td>
         </tr>
     </table>
 </%def>

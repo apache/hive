@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * The class is synchronized, as WebUI may access information about a running query.
  */
@@ -26,9 +28,9 @@ public class QueryInfo {
   private final String executionEngine;
   private final long beginTime;
   private final String operationId;
-  private Long runtime;  // tracks only running portion of the query.
+  private long runtime;  // tracks only running portion of the query.
 
-  private Long endTime;
+  private long endTime;
   private String state;
   private QueryDisplay queryDisplay;
 
@@ -38,20 +40,23 @@ public class QueryInfo {
     this.state = state;
     this.userName = userName;
     this.executionEngine = executionEngine;
-    this.beginTime = System.currentTimeMillis();
+    this.beginTime = System.nanoTime();
     this.operationId = operationId;
+    this.endTime = -1L;
   }
 
+  /**
+   * Get query running time in milliseconds.
+   *
+   * @return the current running time
+   */
   public synchronized long getElapsedTime() {
-    if (isRunning()) {
-      return System.currentTimeMillis() - beginTime;
-    } else {
-      return endTime - beginTime;
-    }
+    final long maxTime = isRunning() ? System.nanoTime() : endTime;
+    return TimeUnit.NANOSECONDS.toMillis(maxTime - beginTime);
   }
 
   public synchronized boolean isRunning() {
-    return endTime == null;
+    return endTime == -1L;
   }
 
   public synchronized QueryDisplay getQueryDisplay() {
@@ -78,8 +83,14 @@ public class QueryInfo {
     return beginTime;
   }
 
-  public synchronized Long getEndTime() {
-    return endTime;
+  /**
+   * Get the end time in milliseconds. Only valid if {@link #isRunning()}
+   * returns false.
+   *
+   * @return Query end time
+   */
+  public synchronized long getEndTime() {
+    return TimeUnit.NANOSECONDS.toMillis(endTime);
   }
 
   public synchronized void updateState(String state) {
@@ -91,14 +102,14 @@ public class QueryInfo {
   }
 
   public synchronized void setEndTime() {
-    this.endTime = System.currentTimeMillis();
+    this.endTime = System.nanoTime();
   }
 
   public synchronized void setRuntime(long runtime) {
     this.runtime = runtime;
   }
 
-  public synchronized Long getRuntime() {
+  public synchronized long getRuntime() {
     return runtime;
   }
 
