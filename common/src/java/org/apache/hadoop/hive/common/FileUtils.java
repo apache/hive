@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -341,7 +342,7 @@ public final class FileUtils {
   }
 
   private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
-    if (fileStatus.isDir()) {
+    if (fileStatus.isDirectory()) {
       for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
         generalListStatusRecursively(fs, stat, results);
       }
@@ -479,9 +480,13 @@ public final class FileUtils {
     return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true);
   }
 
+  @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "Intended, dir privilege all-around bug")
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, FsAction action, boolean recurse) throws Exception {
-    boolean isDir = fileStatus.isDir();
+    boolean isDir = fileStatus.isDirectory();
+
+    // for dirs user needs execute privileges as well
+    FsAction dirActionNeeded = (isDir) ? action.and(FsAction.EXECUTE) : action;
 
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
@@ -574,7 +579,7 @@ public final class FileUtils {
       return false;
     }
 
-    if ((!fileStatus.isDir()) || (!recurse)) {
+    if ((!fileStatus.isDirectory()) || (!recurse)) {
       // no sub dirs to be checked
       return true;
     }

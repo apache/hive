@@ -6477,17 +6477,11 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    StringBuffer result = new StringBuffer();
-    for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
-      if ("mr".equals(s)) {
-        continue;
-      }
-      if (result.length() != 0) {
-        result.append(", ");
-      }
-      result.append(s);
-    }
-    return result.toString();
+    Set<String> engines = new HashSet<>(ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues());
+    engines.remove("mr");
+    String validNonMrEngines = String.join(", ", engines);
+    LOG.debug("Valid non-MapReduce execution engines: {}", validNonMrEngines);
+    return validNonMrEngines;
   }
 
   public static String generateMrDeprecationWarning() {
