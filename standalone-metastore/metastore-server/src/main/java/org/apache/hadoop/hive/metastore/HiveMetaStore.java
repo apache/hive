@@ -1487,10 +1487,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               });
               if (madeManagedDir) {
                 LOG.info("Created database path in managed directory " + dbMgdPath);
+              } else {
+                throw new MetaException(
+                    "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
               }
             } catch (IOException | InterruptedException e) {
               throw new MetaException(
-                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
+                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName() + ":" + e.getMessage());
             }
           }
           if (dbExtPath != null) {
@@ -1508,10 +1511,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 LOG.info("Created database path in external directory " + dbExtPath);
               } else {
                 LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                    + "StorageBasedAuthorizationProvider is enabled ");
+                    + "StorageBasedAuthorizationProvider is enabled");
               }
             } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-              LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+              throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
                   + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
             }
           } else {
@@ -1897,6 +1900,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             deleteTableData(tablePath, false, db);
           }
           // Delete the data in the database
+          try {
+            if (db.getManagedLocationUri() != null) {
+              wh.deleteDir(new Path(db.getManagedLocationUri()), true, db);
+            }
+          } catch (Exception e) {
+            LOG.error("Failed to delete database directory: " + db.getManagedLocationUri() +
+                " " + e.getMessage());
+          }
+          // Delete the data in the database's location only if it is a legacy db path?
           try {
             wh.deleteDir(new Path(db.getLocationUri()), true, db);
           } catch (Exception e) {
