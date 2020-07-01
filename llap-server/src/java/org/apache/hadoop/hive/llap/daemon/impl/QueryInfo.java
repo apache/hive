@@ -44,6 +44,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.runtime.library.common.Constants;
 
 public class QueryInfo {
   private final QueryIdentifier queryIdentifier;
@@ -199,7 +200,7 @@ public class QueryInfo {
     // May work via YARN Service - since the directory would already exist. Otherwise may need a custom shuffle handler.
     // TODO This should be the process user - and not the user on behalf of whom the query is being submitted.
     return baseDir + File.separator + "usercache" + File.separator + user + File.separator +
-        "appcache" + File.separator + applicationIdString + File.separator + dagIdentifier;
+        "appcache" + File.separator + applicationIdString + File.separator + Constants.DAG_PREFIX + dagIdentifier;
   }
 
   /**

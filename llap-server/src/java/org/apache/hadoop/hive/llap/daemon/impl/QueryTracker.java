@@ -305,7 +305,9 @@ public class QueryTracker extends AbstractService {
       queryInfoMap.remove(queryIdentifier);
       if (!isExternalQuery) {
         rememberCompletedDag(queryIdentifier);
-        cleanupLocalDirs(queryInfo, deleteDelay);
+        // DAG Directory clean up will be taken care by LLAP Shuffle Handler
+        //todo: Properly remove all dag directory clean up code.
+        //cleanupLocalDirs(queryInfo, deleteDelay);
         handleLogOnQueryCompletion(queryInfo.getHiveQueryIdString(), queryInfo.getDagIdString());
       } else {
         // If there's no pending fragments, queue some of the cleanup for a later point - locks, log rolling.

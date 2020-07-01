@@ -332,7 +332,7 @@ public class TezSessionState {
           new TaskSchedulerDescriptor[] { TaskSchedulerDescriptor.create(
               LLAP_SERVICE, LLAP_SCHEDULER).setUserPayload(servicePluginPayload) },
           new ContainerLauncherDescriptor[] { ContainerLauncherDescriptor.create(
-              LLAP_SERVICE, LLAP_LAUNCHER) },
+              LLAP_SERVICE, LLAP_LAUNCHER).setUserPayload(servicePluginPayload)  },
           new TaskCommunicatorDescriptor[] { TaskCommunicatorDescriptor.create(
               LLAP_SERVICE, LLAP_TASK_COMMUNICATOR).setUserPayload(servicePluginPayload) });
     } else {

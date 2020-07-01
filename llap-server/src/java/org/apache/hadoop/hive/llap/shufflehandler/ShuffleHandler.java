@@ -59,6 +59,8 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hadoop.fs.FileContext;
+import org.apache.tez.runtime.library.common.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -658,7 +660,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
           @Override
           public AttemptPathInfo load(AttemptPathIdentifier key) throws
               Exception {
-            String base = getBaseLocation(key.jobId, key.dagId, key.user);
+            String base = getBaseLocation(key.jobId, key.dagId, key.user) + Path.SEPARATOR + "output" + Path.SEPARATOR;
             String attemptBase = base + key.attemptId;
             Path indexFileName =
                 lDirAlloc.getLocalPathToRead(attemptBase + "/" + INDEX_FILE_NAME, conf);
@@ -744,6 +746,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       }
       final List<String> mapIds = splitMaps(q.get("map"));
       final List<String> reduceQ = q.get("reduce");
+      final List<String> dagCompletedQ = q.get("dagAction");
       final List<String> jobQ = q.get("job");
       final List<String> dagIdQ = q.get("dag");
       if (LOG.isDebugEnabled()) {
@@ -759,6 +762,12 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         sendError(ctx, "Required param job, map and reduce", BAD_REQUEST);
         return;
       }
+
+      // If the request is for Dag Deletion, process the request and send OK.
+      if (deleteDagDirectories(evt, dagCompletedQ, jobQ, dagIdQ))  {
+        return;
+      }
+
       if (reduceQ.size() != 1 || jobQ.size() != 1 || dagIdQ.size() != 1) {
         sendError(ctx, "Too many job/reduce parameters", BAD_REQUEST);
         return;
@@ -868,6 +877,30 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       return sb.toString();
     }
 
+    private boolean deleteDagDirectories(MessageEvent evt,
+                                         List<String> dagCompletedQ, List<String> jobQ,
+                                         List<String> dagIdQ) {
+      if (jobQ == null || jobQ.isEmpty()) {
+        return false;
+      }
+      if (dagCompletedQ != null && !dagCompletedQ.isEmpty() && dagCompletedQ.get(0).contains("delete")
+          && dagIdQ != null && !dagIdQ.isEmpty()) {
+        String base = getBaseLocation(jobQ.get(0), Integer.parseInt(dagIdQ.get(0)), userRsrc.get(jobQ.get(0)));
+        try {
+          FileContext lfc = FileContext.getLocalFSFileContext();
+          for(Path dagPath : lDirAlloc.getAllLocalPathsToRead(base, conf)) {
+            lfc.delete(dagPath, true);
+            unregisterDag(dagPath.toString(), jobQ.get(0), Integer.parseInt(dagIdQ.get(0)));
+          }
+        } catch (IOException e) {
+          LOG.warn("Encountered exception during dag delete "+ e);
+        }
+        evt.getChannel().write(new DefaultHttpResponse(HTTP_1_1, OK));
+        evt.getChannel().close();
+        return true;
+      }
+      return false;
+    }
 
     protected MapOutputInfo getMapOutputInfo(String jobId, int dagId, String mapId,
                                              int reduce, String user) throws IOException {
@@ -1099,7 +1132,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   private static final String APPCACHE_CONSTANT = "appcache";
 
   private static String getBaseLocation(String jobIdString, int dagId, String user) {
-    // $x/$user/appcache/$appId/${dagId}/output/$mapId
+    // $x/$user/appcache/$appId/dag_${dagId}
     // TODO: Once Shuffle is out of NM, this can use MR APIs to convert
     // between App and Job
     String parts[] = jobIdString.split("_");
@@ -1107,11 +1140,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     final ApplicationId appID =
         ApplicationId.newInstance(Long.parseLong(parts[1]), Integer.parseInt(parts[2]));
     final String baseStr =
-        USERCACHE_CONSTANT + "/" + user + "/"
-            + APPCACHE_CONSTANT + "/"
-            + ConverterUtils.toString(appID)
-            +  "/" + dagId
-            +  "/output" + "/";
+        USERCACHE_CONSTANT + Path.SEPARATOR + user + Path.SEPARATOR
+            + APPCACHE_CONSTANT + Path.SEPARATOR
+            + ConverterUtils.toString(appID) + Path.SEPARATOR
+            + Constants.DAG_PREFIX + dagId;
     return baseStr;
   }
 
