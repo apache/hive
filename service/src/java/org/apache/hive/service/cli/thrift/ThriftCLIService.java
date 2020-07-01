@@ -569,7 +569,22 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               queryTimeout) : cliService.executeStatement(sessionHandle, statement, confOverlay,
               queryTimeout);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
-      resp.setStatus(OK_STATUS);
+      SessionManager sessionManager = cliService.getSessionManager();
+      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
+        StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
+            .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
+            .append("://")
+            .append(sessionManager.getHiveServer2HostName())
+            .append(":")
+            .append(hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT))
+            .append("/query_page?operationId=")
+            .append(operationHandle.getHandleIdentifier().toString());
+        TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
+        successWithInfo.addToInfoMessages(urlBuilder.toString());
+        resp.setStatus(successWithInfo);
+      } else {
+        resp.setStatus(OK_STATUS);
+      }
     } catch (Exception e) {
       // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
       // in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
