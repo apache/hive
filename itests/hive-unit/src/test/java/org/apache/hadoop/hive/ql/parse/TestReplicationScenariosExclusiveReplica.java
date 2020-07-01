@@ -43,8 +43,6 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
  */
 public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcrossInstances {
 
-  private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
-
   @BeforeClass
   public static void classLevelSetup() throws Exception {
     Map<String, String> overrides = new HashMap<>();
@@ -70,7 +68,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Test
   public void externalTableReplicationWithRemoteStaging() throws Throwable {
     List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
-    withClauseOptions.addAll(externalTableBasePathWithClause());
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -126,7 +123,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Test
   public void externalTableReplicationWithLocalStaging() throws Throwable {
     List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
-    withClauseOptions.addAll(externalTableBasePathWithClause());
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -183,10 +179,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     List<String> confList = new ArrayList<>();
     confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");
     return confList;
-  }
-
-  private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
   }
 
   private void assertExternalFileInfo(List<String> expected, String dumplocation, boolean isIncremental,
