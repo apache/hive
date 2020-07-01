@@ -1175,7 +1175,9 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(TEST_DB1_NAME);
 
     String dbLocation =
-      MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
+      MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/test/_testDB_create_";
+    String mgdLocation =
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
     FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
     fs.mkdirs(
               new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"),
@@ -1183,6 +1185,7 @@ public abstract class TestHiveMetaStore {
     Database db = new DatabaseBuilder()
         .setName(TEST_DB1_NAME)
         .setLocation(dbLocation)
+        .setManagedLocation(mgdLocation)
         .build(conf);
 
 
@@ -1216,7 +1219,7 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(TEST_DB1_NAME);
 
       String dbLocation =
-          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_create_naveen";
       new DatabaseBuilder()
           .setName(TEST_DB1_NAME)
           .setLocation(dbLocation)
@@ -1864,9 +1867,9 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String dbLocation =
-          "/tmp/warehouse/_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/_testDB_table_create_";
       String mgdLocation =
-          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
@@ -2105,9 +2108,9 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String dbLocation =
-          "/tmp/warehouse/_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/_testDB_table_database_";
       String mgdLocation =
-          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_database_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
