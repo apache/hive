@@ -1266,9 +1266,27 @@ public class AcidUtils {
    * @return the state of the directory
    * @throws IOException on filesystem errors
    */
-  @VisibleForTesting
   public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+  }
+
+  /**
+   * GetAcidState implementation which uses the provided dirSnapshot.
+   * Generates a new one if needed and the provided one is null.
+   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
+   * @param ignoreEmptyFiles Ignore files with 0 length
+   * @param dirSnapshots The listed directory snapshot, if null new will be generated
+   * @return the state of the directory
+   * @throws IOException on filesystem errors
+   */
+  private static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
+      HdfsDirSnapshot> dirSnapshots) throws IOException {
     ValidTxnList validTxnList = null;
     String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if(!Strings.isNullOrEmpty(s)) {
@@ -1295,7 +1313,6 @@ public class AcidUtils {
     final List<Path> abortedDirectories = new ArrayList<>();
     TxnBase bestBase = new TxnBase();
     final List<HdfsFileStatusWithId> original = new ArrayList<>();
-    Map<Path, HdfsDirSnapshot> dirSnapshots = null;
 
     List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory);
 
@@ -1305,7 +1322,9 @@ public class AcidUtils {
             bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
       }
     } else {
-      dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
+      if (dirSnapshots == null) {
+        dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
+      }
       getChildState(candidateDirectory, dirSnapshots, writeIdList, working, originalDirectories, original, obsolete,
           bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
     }
@@ -2614,28 +2633,25 @@ public class AcidUtils {
           + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       return null;
     }
-    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false);
+    if (fs == null) {
+      fs = dir.getFileSystem(jc);
+    }
+    // Collect the all of the files/dirs
+    Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
+    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
           "Computing stats for an ACID table; stats may be inaccurate");
     }
-    if (fs == null) {
-      fs = dir.getFileSystem(jc);
-    }
     for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
       fileList.add(hfs.getFileStatus());
     }
     for (ParsedDelta delta : acidInfo.getCurrentDirectories()) {
-      for (FileStatus f : HiveStatsUtils.getFileStatusRecurse(delta.getPath(), -1, fs)) {
-        fileList.add(f);
-      }
+      fileList.addAll(hdfsDirSnapshots.get(delta.getPath()).getFiles());
     }
     if (acidInfo.getBaseDirectory() != null) {
-      for (FileStatus f : HiveStatsUtils.getFileStatusRecurse(
-          acidInfo.getBaseDirectory(), -1, fs)) {
-        fileList.add(f);
-      }
+      fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
     }
     return fileList;
   }
