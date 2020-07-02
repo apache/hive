@@ -851,8 +851,6 @@ public class CachedStore implements RawStore, Configurable {
             sharedCache.refreshTableColStatsInCache(StringUtils.normalizeIdentifier(catName),
                 StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName),
                 tableColStats.getStatsObj());
-            // Update the table to get consistent stats state.
-            sharedCache.alterTableInCache(catName, dbName, tblName, table);
           }
         }
         committed = rawStore.commitTransaction();
@@ -900,13 +898,6 @@ public class CachedStore implements RawStore, Configurable {
               rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-          Deadline.startTimer("getPartitionsByNames");
-          List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-          Deadline.stopTimer();
-          // Also save partitions for consistency as they have the stats state.
-          for (Partition part : parts) {
-            sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
-          }
         }
         committed = rawStore.commitTransaction();
         LOG.debug("CachedStore: updated cached partition col stats objects for catalog: {}, database: {}, table: {}",
@@ -2264,6 +2255,8 @@ public class CachedStore implements RawStore, Configurable {
       if (colStatsMap.size() < 1) {
         LOG.debug("No stats data found for: dbName={} tblName= {} partNames= {} colNames= ", dbName, tblName, partNames,
             colNames);
+        // TODO: If we don't find any stats then most likely we should return null. Returning an empty object will not
+        // trigger the lookup in the raw store and we will end up with missing stats.
         return new MergedColumnStatsForPartitions(new ArrayList<ColumnStatisticsObj>(), 0);
       }
     }
