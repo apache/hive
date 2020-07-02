@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.SessionStream;
@@ -188,9 +188,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
-      // Yarn ATS
-      String guid64 = Base64.encodeBase64URLSafeString(getHandle().getHandleIdentifier()
-          .toTHandleIdentifier().getGuid()).trim();
+      // Yarn ATS, also used in logging so remove padding for better display
+      String guid64 = Base64.getUrlEncoder().withoutPadding()
+          .encodeToString(getHandle().getHandleIdentifier().toTHandleIdentifier().getGuid());
       driver.setOperationId(guid64);
 
       // In Hive server mode, we are not able to retry in the FetchTask
