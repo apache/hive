@@ -634,14 +634,15 @@ public class OperatorUtils {
   }
 
   /**
-   * Given an operator and an internalColName look for the original Table column
-   * that this internal col maps to, by looking at operators and its parents schemas.
+   * Given an operator and an internalColName look for the original Table columnName
+   * that this internal column maps to. This method finds the original columnName
+   * by checking column Expr mappings and schemas of the start operator and its parents.
    *
    * @param start
-   * @param internalCoName
+   * @param internalColName
    * @return the original column name or null if not found
    */
-  public static String findTableColNameOf(Operator<?> start, String internalCoName) {
+  public static String findTableColNameOf(Operator<?> start, String internalColName) {
     // Look for internalCoName alias in current OR Parent RowSchemas
     Stack<Operator<?>> parentOps = new Stack<>();
     ColumnInfo keyColInfo = null;
@@ -652,7 +653,12 @@ public class OperatorUtils {
         // Dont want to follow that parent path
         continue;
       }
-      keyColInfo = currentOp.getSchema().getColumnInfo(internalCoName);
+      // If columnName is the output of a ColumnExpr get the original columnName from the Expr Map
+      if (currentOp.getColumnExprMap() != null && currentOp.getColumnExprMap().containsKey(internalColName)
+              && currentOp.getColumnExprMap().get(internalColName) instanceof ExprNodeColumnDesc) {
+        internalColName = ((ExprNodeColumnDesc) currentOp.getColumnExprMap().get(internalColName)).getColumn();
+      }
+      keyColInfo = currentOp.getSchema().getColumnInfo(internalColName);
       if (keyColInfo != null) {
         // Get original colName alias (or fallback to internal colName)
         return keyColInfo.getAlias() != null ? keyColInfo.getAlias() : keyColInfo.getInternalName();
