@@ -23,6 +23,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -56,13 +57,12 @@ public class TestRemoteHMSZKNegative {
     zkClient.create()
         .creatingParentsIfNeeded()
         .withMode(CreateMode.PERSISTENT)
-        .forPath("/" + rootNamespace);
+        .forPath(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
   }
 
   @Test
   public void createClient() {
     try {
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE, rootNamespace);
       new HiveMetaStoreClient(conf);
       fail("an exception is expected");
     } catch (Exception e) {
