@@ -377,7 +377,7 @@ public class ObjectStore implements RawStore, Configurable {
       String productName = MetaStoreDirectSql.getProductName(pm);
       DatabaseProduct databaseProduct = DatabaseProduct.determineDatabaseProduct(productName);
       LOG.debug("Creating SQL Generator [name: {}, product: {}]", productName, databaseProduct);
-      sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
+      sqlGenerator = new SQLGenerator(databaseProduct, conf);
     } catch (SQLException e) {
       LOG.error("error trying to figure out the database product", e);
       throw new RuntimeException(e);
