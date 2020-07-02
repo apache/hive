@@ -277,8 +277,8 @@ class MetaStoreDirectSql {
     try {
       // Force the underlying db to initialize.
       initQueries.add(pm.newQuery(MDatabase.class, "name == ''"));
-      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "dbName == ''"));
-      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "catName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "catName == ''"));
       initQueries.add(pm.newQuery(MConstraint.class, "childIntegerIndex < 0"));
       initQueries.add(pm.newQuery(MNotificationLog.class, "dbName == ''"));
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
