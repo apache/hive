@@ -327,6 +327,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
 
+    if (metastoreUrisString.isEmpty() && "zookeeper".equalsIgnoreCase(serviceDiscoveryMode)) {
+      throw new MetaException("No metastore server available. "
+          + "Please ensure that at least one metastore server is online");
+    }
+
+    LOG.info("Resolved metastore uris: " + Arrays.toString(metastoreUrisString.toArray()));
+
     List<URI> metastoreURIArray = new ArrayList<URI>();
     try {
       for (String s : metastoreUrisString) {
