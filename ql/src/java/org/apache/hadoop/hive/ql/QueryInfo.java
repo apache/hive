@@ -20,19 +20,24 @@ package org.apache.hadoop.hive.ql;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The class is synchronized, as WebUI may access information about a running query.
+ * Provide WebUI information about a running query. Class is thread safe so that
+ * multiple browser sessions can access the data simultaneously.
  */
 public class QueryInfo {
 
   private final String userName;
   private final String executionEngine;
-  private final long beginTime;
   private final String operationId;
-  private long runtime;  // tracks only running portion of the query.
 
-  private long endTime;
   private String state;
   private QueryDisplay queryDisplay;
+
+  /*
+   * Times are stored internally with nanosecond precision.
+   */
+  private final long beginTime;
+  private long runtime;
+  private long endTime;
 
   private String operationLogLocation;
 
@@ -50,20 +55,20 @@ public class QueryInfo {
    *
    * @return the current running time
    */
-  public synchronized long getElapsedTime() {
+  public long getElapsedTime() {
     final long maxTime = isRunning() ? System.nanoTime() : endTime;
     return TimeUnit.NANOSECONDS.toMillis(maxTime - beginTime);
   }
 
-  public synchronized boolean isRunning() {
+  public boolean isRunning() {
     return endTime == -1L;
   }
 
-  public synchronized QueryDisplay getQueryDisplay() {
+  public QueryDisplay getQueryDisplay() {
     return queryDisplay;
   }
 
-  public synchronized void setQueryDisplay(QueryDisplay queryDisplay) {
+  public void setQueryDisplay(QueryDisplay queryDisplay) {
     this.queryDisplay = queryDisplay;
   }
 
@@ -75,12 +80,17 @@ public class QueryInfo {
     return executionEngine;
   }
 
-  public synchronized String getState() {
+  public String getState() {
     return state;
   }
 
+  /**
+   * The time the query began in milliseconds.
+   *
+   * @return The time the query began
+   */
   public long getBeginTime() {
-    return beginTime;
+    return TimeUnit.NANOSECONDS.toMillis(beginTime);
   }
 
   /**
@@ -89,11 +99,11 @@ public class QueryInfo {
    *
    * @return Query end time
    */
-  public synchronized long getEndTime() {
+  public long getEndTime() {
     return TimeUnit.NANOSECONDS.toMillis(endTime);
   }
 
-  public synchronized void updateState(String state) {
+  public void updateState(String state) {
     this.state = state;
   }
 
@@ -101,16 +111,26 @@ public class QueryInfo {
     return operationId;
   }
 
-  public synchronized void setEndTime() {
+  public void setEndTime() {
     this.endTime = System.nanoTime();
   }
 
-  public synchronized void setRuntime(long runtime) {
-    this.runtime = runtime;
+  /**
+   * Set the amount of time the query spent actually running in milliseconds.
+   *
+   * @param runtime The amount of time this query spent running
+   */
+  public void setRuntime(long runtime) {
+    this.runtime = TimeUnit.MILLISECONDS.toNanos(runtime);
   }
 
-  public synchronized long getRuntime() {
-    return runtime;
+  /**
+   * Get the amount of time the query spent actually running in milliseconds.
+   *
+   * @return The amount of time this query spent running
+   */
+  public long getRuntime() {
+    return TimeUnit.NANOSECONDS.toMillis(runtime);
   }
 
   public String getOperationLogLocation() {
