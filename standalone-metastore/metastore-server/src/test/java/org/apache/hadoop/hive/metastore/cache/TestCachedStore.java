@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.cache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +38,13 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -54,13 +52,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.junit.After;
@@ -136,17 +129,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Utbl1.getDbName(), db1Utbl1.getTableName());
-    Deadline.startTimer("");
-    objectStore.dropPartitions(DEFAULT_CATALOG_NAME, db1Ptbl1.getDbName(), db1Ptbl1.getTableName(), db1Ptbl1PtnNames);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Ptbl1.getDbName(), db1Ptbl1.getTableName());
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db2Utbl1.getDbName(), db2Utbl1.getTableName());
-    Deadline.startTimer("");
-    objectStore.dropPartitions(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName(), db2Ptbl1PtnNames);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName());
-    objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db1.getName());
-    objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db2.getName());
+    for (String clg : objectStore.getCatalogs()) {
+      for (String db : objectStore.getAllDatabases(clg)) {
+        for (String tbl : objectStore.getAllTables(clg, db)) {
+          List<String> pts = objectStore.listPartitionNames(clg, db, tbl, Short.MAX_VALUE);
+          objectStore.dropPartitions(clg, db, tbl, pts);
+          objectStore.dropTable(clg, db, tbl);
+        }
+        objectStore.dropDatabase(clg, db);
+      }
+      objectStore.dropCatalog(clg);
+    }
     objectStore.shutdown();
+    CachedStore.clearSharedCache();
   }
 
   /**********************************************************************************************
@@ -344,6 +339,60 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertTrue(db2Ptns.containsAll(db2PtnsOS));
     // Clean up
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Utbl2.getDbName(), db1Utbl2.getTableName());
+    cachedStore.shutdown();
+  }
+
+  @Test public void testCacheUpdatePartitionColStats() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    ObjectStore objectStore = new ObjectStore();
+    objectStore.setConf(conf);
+
+    Database tpcdsdb = createDatabaseObject("tpcdsdb", "user1");
+    objectStore.createDatabase(tpcdsdb);
+    FieldSchema soldDateCol = new FieldSchema("ss_sold_date_sk", "int", "");
+    FieldSchema customerCol = new FieldSchema("ss_customer_sk", "int", "");
+    List<FieldSchema> columns = Arrays.asList(soldDateCol, customerCol);
+    List<FieldSchema> partitionsColumns = Collections.singletonList(soldDateCol);
+    Table salesTable =
+        createTable(tpcdsdb.getName(), "store_sales", columns, partitionsColumns);
+    objectStore.createTable(salesTable);
+
+    Map<String, ColumnStatisticsData> partitionStats = new HashMap<>();
+    partitionStats.put("1999", createLongStats(100, 50, null, null));
+    partitionStats.put("2000", createLongStats(200, 100, null, null));
+
+    List<String> partNames = new ArrayList<>();
+    for (Map.Entry<String, ColumnStatisticsData> pStat : partitionStats.entrySet()) {
+      List<String> partitionValue = Collections.singletonList(pStat.getKey());
+      Partition p = createPartition(salesTable, partitionValue);
+      objectStore.addPartition(p);
+      String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue);
+      partNames.add(pName);
+      ColumnStatistics stats = createColStats(pStat.getValue(), salesTable, soldDateCol, pName);
+      objectStore.updatePartitionColumnStatistics(stats, partitionValue, null, -1);
+    }
+
+    List<ColumnStatistics> rawStats = objectStore
+        .getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, salesTable.getDbName(), salesTable.getTableName(), partNames,
+            Collections.singletonList(soldDateCol.getName()), CacheUtils.HIVE_ENGINE);
+    objectStore.shutdown();
+
+    CachedStore cachedStore = new CachedStore();
+    cachedStore.setConfForTest(conf);
+
+    updateCache(cachedStore);
+
+    List<ColumnStatistics> cachedStats = CachedStore.getSharedCache()
+        .getPartitionColStatsListFromCache(DEFAULT_CATALOG_NAME, salesTable.getDbName(), salesTable.getTableName(), partNames,
+            Collections.singletonList(soldDateCol.getName()), null, true);
+    Assert.assertNotNull(rawStats);
+    Assert.assertNotNull(cachedStats);
+    Assert.assertEquals(rawStats.size(), cachedStats.size());
+    for (int i = 0; i < rawStats.size(); i++) {
+      assertLongStatsEquals(rawStats.get(i), cachedStats.get(i));
+    }
     cachedStore.shutdown();
   }
 
@@ -839,9 +888,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cols.add(col1);
     cols.add(col2);
     List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTestTbl(dbName, tbl1Name, owner, cols, ptnCols);
+    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, tbl1);
-    Table tbl2 = createTestTbl(dbName, tbl2Name, owner, cols, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, tbl2);
 
     Partition part1 = new Partition();
@@ -1221,7 +1270,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       ptnCols.add(ptnCol1);
       Callable<Object> c = new Callable<Object>() {
         public Object call() {
-          Table tbl = createTestTbl(dbNames.get(0), tblName, "user1", cols, ptnCols);
+          Table tbl = createTable(dbNames.get(0), tblName, cols, ptnCols);
           sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, tbl);
           return null;
         }
@@ -1335,8 +1384,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cols.add(col1);
     cols.add(col2);
     List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTestTbl(dbName, tbl1Name, owner, cols, ptnCols);
-    Table tbl2 = createTestTbl(dbName, tbl2Name, owner, cols, ptnCols);
+    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
 
     Map<String, Integer> tableSizeMap = new HashMap<>();
     String tbl1Key = CacheUtils.buildTableKey(DEFAULT_CATALOG_NAME, dbName, tbl1Name);
@@ -1507,16 +1556,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  private Table createTestTbl(String dbName, String tblName, String tblOwner, List<FieldSchema> cols,
-      List<FieldSchema> ptnCols) {
-    String serdeLocation = "file:/tmp";
-    Map<String, String> serdeParams = new HashMap<>();
-    Map<String, String> tblParams = new HashMap<>();
+  private Table createTable(String dbName, String tblName, List<FieldSchema> cols, List<FieldSchema> ptnCols) {
     SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null, null, serdeParams);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0, serdeInfo, null, null,
+        Collections.emptyMap());
     sd.setStoredAsSubDirectories(false);
-    Table tbl = new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, ptnCols, tblParams, null, null,
+    Table tbl = new Table(tblName, dbName, "hive", 0, 0, 0, sd, ptnCols, Collections.emptyMap(), null, null,
         TableType.MANAGED_TABLE.toString());
     tbl.setCatName(DEFAULT_CATALOG_NAME);
     return tbl;
@@ -1534,6 +1579,38 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return db;
   }
 
+  private Partition createPartition(Table tbl, List<String> values) {
+    Partition ptn =
+        new Partition(values, tbl.getDbName(), tbl.getTableName(), 0, 0, tbl.getSd(), Collections.emptyMap());
+    ptn.setCatName(DEFAULT_CATALOG_NAME);
+    return ptn;
+  }
+
+  private ColumnStatisticsData createLongStats(long numNulls, long numDVs, Long low, Long high) {
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    LongColumnStatsDataInspector stats = new LongColumnStatsDataInspector();
+    if (low != null) {
+      stats.setLowValue(low.longValue());
+    }
+    if (high != null) {
+      stats.setHighValue(high.longValue());
+    }
+    stats.setNumNulls(numNulls);
+    stats.setNumDVs(numDVs);
+    data.setLongStats(stats);
+    return data;
+  }
+
+  private ColumnStatistics createColStats(ColumnStatisticsData data, Table tbl, FieldSchema column, String partName) {
+    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
+    ColumnStatistics colStats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
+    statsDesc.setPartName(partName);
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(Collections.singletonList(statObj));
+    colStats.setEngine(CacheUtils.HIVE_ENGINE);
+    return colStats;
+  }
   /**
    * Create an unpartitoned table object for the given db.
    * The table has 9 types of columns
@@ -1564,160 +1641,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     tbl.setCatName(DEFAULT_CATALOG_NAME);
     tbl.setWriteId(0);
     return tbl;
-  }
-
-  private TableAndColStats createUnpartitionedTableObjectWithColStats(Database db) {
-    String dbName = db.getName();
-    String owner = db.getName();
-    String serdeLocation = "file:/tmp";
-    Map<String, String> serdeParams = new HashMap<>();
-    Map<String, String> tblParams = new HashMap<>();
-    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
-    FieldSchema col1 = new FieldSchema("col1", "binary", "binary column");
-    // Stats values for col1
-    long col1MaxColLength = 500;
-    double col1AvgColLength = 225.5;
-    long col1Nulls = 10;
-    FieldSchema col2 = new FieldSchema("col2", "boolean", "boolean column");
-    long col2NumTrues = 100;
-    long col2NumFalses = 30;
-    long col2Nulls = 10;
-    FieldSchema col3 = new FieldSchema("col3", "date", "date column");
-    Date col3LowVal = new Date(100);
-    Date col3HighVal = new Date(100000);
-    long col3Nulls = 10;
-    long col3DV = 20;
-    FieldSchema col4 = new FieldSchema("col4", "decimal", "decimal column");
-    Decimal col4LowVal = DecimalUtils.getDecimal(3, 0);
-    Decimal col4HighVal = DecimalUtils.getDecimal(5, 0);
-    long col4Nulls = 10;
-    long col4DV = 20;
-    FieldSchema col5 = new FieldSchema("col5", "double", "double column");
-    double col5LowVal = 10.5;
-    double col5HighVal = 550.5;
-    long col5Nulls = 10;
-    long col5DV = 20;
-    FieldSchema col6 = new FieldSchema("col6", "float", "float column");
-    float col6LowVal = 10.5f;
-    float col6HighVal = 550.5f;
-    long col6Nulls = 10;
-    long col6DV = 20;
-    FieldSchema col7 = new FieldSchema("col7", "int", "int column");
-    int col7LowVal = 10;
-    int col7HighVal = 550;
-    long col7Nulls = 10;
-    long col7DV = 20;
-    FieldSchema col8 = new FieldSchema("col8", "string", "string column");
-    long col8MaxColLen = 100;
-    double col8AvgColLen = 45.5;
-    long col8Nulls = 5;
-    long col8DV = 40;
-    List<FieldSchema> cols = Arrays.asList(col1, col2, col3, col4, col5, col6, col7, col8);
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null, null, serdeParams);
-    sd.setStoredAsSubDirectories(false);
-    Table tbl = new Table(dbName + "_unptntbl1", dbName, owner, 0, 0, 0, sd, new ArrayList<>(), tblParams, null, null,
-        TableType.MANAGED_TABLE.toString());
-    tbl.setCatName(DEFAULT_CATALOG_NAME);
-    tbl.setWriteId(0);
-    ColumnStatistics stats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tbl.getTableName());
-    List<ColumnStatisticsObj> colStatObjList = new ArrayList<>();
-
-    // Col1
-    ColumnStatisticsData data1 = new ColumnStatisticsData();
-    ColumnStatisticsObj col1Stats = new ColumnStatisticsObj(col1.getName(), col1.getType(), data1);
-    BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-    binaryStats.setMaxColLen(col1MaxColLength);
-    binaryStats.setAvgColLen(col1AvgColLength);
-    binaryStats.setNumNulls(col1Nulls);
-    data1.setBinaryStats(binaryStats);
-    colStatObjList.add(col1Stats);
-
-    // Col2
-    ColumnStatisticsData data2 = new ColumnStatisticsData();
-    ColumnStatisticsObj col2Stats = new ColumnStatisticsObj(col2.getName(), col2.getType(), data2);
-    BooleanColumnStatsData booleanStats = new BooleanColumnStatsData();
-    booleanStats.setNumTrues(col2NumTrues);
-    booleanStats.setNumFalses(col2NumFalses);
-    booleanStats.setNumNulls(col2Nulls);
-    colStatObjList.add(col2Stats);
-
-    // Col3
-    ColumnStatisticsData data3 = new ColumnStatisticsData();
-    ColumnStatisticsObj col3Stats = new ColumnStatisticsObj(col3.getName(), col3.getType(), data3);
-    DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
-    dateStats.setLowValue(col3LowVal);
-    dateStats.setHighValue(col3HighVal);
-    dateStats.setNumNulls(col3Nulls);
-    dateStats.setNumDVs(col3DV);
-    colStatObjList.add(col3Stats);
-
-    // Col4
-    ColumnStatisticsData data4 = new ColumnStatisticsData();
-    ColumnStatisticsObj col4Stats = new ColumnStatisticsObj(col4.getName(), col4.getType(), data4);
-    DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
-    decimalStats.setLowValue(col4LowVal);
-    decimalStats.setHighValue(col4HighVal);
-    decimalStats.setNumNulls(col4Nulls);
-    decimalStats.setNumDVs(col4DV);
-    colStatObjList.add(col4Stats);
-
-    // Col5
-    ColumnStatisticsData data5 = new ColumnStatisticsData();
-    ColumnStatisticsObj col5Stats = new ColumnStatisticsObj(col5.getName(), col5.getType(), data5);
-    DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
-    doubleStats.setLowValue(col5LowVal);
-    doubleStats.setHighValue(col5HighVal);
-    doubleStats.setNumNulls(col5Nulls);
-    doubleStats.setNumDVs(col5DV);
-    colStatObjList.add(col5Stats);
-
-    // Col6
-    ColumnStatisticsData data6 = new ColumnStatisticsData();
-    ColumnStatisticsObj col6Stats = new ColumnStatisticsObj(col6.getName(), col6.getType(), data6);
-    DoubleColumnStatsDataInspector floatStats = new DoubleColumnStatsDataInspector();
-    floatStats.setLowValue(col6LowVal);
-    floatStats.setHighValue(col6HighVal);
-    floatStats.setNumNulls(col6Nulls);
-    floatStats.setNumDVs(col6DV);
-    colStatObjList.add(col6Stats);
-
-    // Col7
-    ColumnStatisticsData data7 = new ColumnStatisticsData();
-    ColumnStatisticsObj col7Stats = new ColumnStatisticsObj(col7.getName(), col7.getType(), data7);
-    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-    longStats.setLowValue(col7LowVal);
-    longStats.setHighValue(col7HighVal);
-    longStats.setNumNulls(col7Nulls);
-    longStats.setNumDVs(col7DV);
-    colStatObjList.add(col7Stats);
-
-    // Col8
-    ColumnStatisticsData data8 = new ColumnStatisticsData();
-    ColumnStatisticsObj col8Stats = new ColumnStatisticsObj(col8.getName(), col8.getType(), data8);
-    StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
-    stringStats.setMaxColLen(col8MaxColLen);
-    stringStats.setAvgColLen(col8AvgColLen);
-    stringStats.setNumNulls(col8Nulls);
-    stringStats.setNumDVs(col8DV);
-    colStatObjList.add(col8Stats);
-
-    stats.setStatsDesc(statsDesc);
-    stats.setStatsObj(colStatObjList);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
-
-    return new TableAndColStats(tbl, stats);
-  }
-
-  class TableAndColStats {
-    private Table table;
-    private ColumnStatistics colStats;
-
-    TableAndColStats(Table table, ColumnStatistics colStats) {
-      this.table = table;
-      this.colStats = colStats;
-    }
   }
 
   /**
@@ -1782,6 +1705,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     List<String> getPartitionNames() {
       return ptnNames;
+    }
+  }
+
+  private void assertLongStatsEquals(ColumnStatistics expected, ColumnStatistics actual) {
+    Assert.assertEquals(expected.getStatsObjSize(), actual.getStatsObjSize());
+    for (int i = 0; i < expected.getStatsObjSize(); i++) {
+      LongColumnStatsData expectedData = expected.getStatsObj().get(i).getStatsData().getLongStats();
+      LongColumnStatsData actualData = expected.getStatsObj().get(i).getStatsData().getLongStats();
+      Assert.assertEquals(expectedData.getNumDVs(), actualData.getNumDVs());
+      Assert.assertEquals(expectedData.getNumNulls(), actualData.getNumNulls());
+      Assert.assertEquals(expectedData.getHighValue(), actualData.getHighValue());
+      Assert.assertEquals(expectedData.getLowValue(), actualData.getLowValue());
+      Assert.assertArrayEquals(expectedData.getBitVectors(), actualData.getBitVectors());
     }
   }
 
