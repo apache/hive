@@ -131,8 +131,24 @@ public class SharedCache {
   }
 
   private enum MemberName {
-    TABLE_COL_STATS_CACHE, PARTITION_CACHE, PARTITION_COL_STATS_CACHE, AGGR_COL_STATS_CACHE, PRIMARY_KEY_CACHE,
-    FOREIGN_KEY_CACHE, NOTNULL_CONSTRAINT_CACHE, UNIQUE_CONSTRAINT_CACHE
+    TABLE_COL_STATS_CACHE(0),
+    PARTITION_CACHE(1),
+    PARTITION_COL_STATS_CACHE(2),
+    AGGR_COL_STATS_CACHE(3),
+    PRIMARY_KEY_CACHE(4),
+    FOREIGN_KEY_CACHE(5),
+    NOTNULL_CONSTRAINT_CACHE(6),
+    UNIQUE_CONSTRAINT_CACHE(7);
+
+    private int value;
+
+    MemberName(int value) {
+      this.value = value;
+    }
+
+    public int getValue() {
+      return this.value;
+    }
   }
 
   static {
@@ -267,38 +283,28 @@ public class SharedCache {
     private Map<String, String> parameters;
     private byte[] sdHash;
     private int otherSize;
-    private int tableColStatsCacheSize;
-    private int partitionCacheSize;
-    private int partitionColStatsCacheSize;
-    private int aggrColStatsCacheSize;
 
-    // Arrays to hold the size/dirty bit of cached objects.
+    // Arrays to hold the size/updated bit of cached objects.
     // These arrays are to be referenced using MemberName enum only.
-    // Currently hold valid values only for Constraints objects.
-    // ToDo: Add partitions/columnStats
     private int[] memberObjectsSize = new int[MemberName.values().length];
-    private AtomicBoolean[] memberCacheDirty = new AtomicBoolean[MemberName.values().length];
+    private AtomicBoolean[] memberCacheUpdated = new AtomicBoolean[MemberName.values().length];
 
     private ReentrantReadWriteLock tableLock = new ReentrantReadWriteLock(true);
     // For caching column stats for an unpartitioned table
     // Key is column name and the value is the col stat object
     private Map<String, ColumnStatisticsObj> tableColStatsCache = new ConcurrentHashMap<String, ColumnStatisticsObj>();
-    private AtomicBoolean isTableColStatsCacheDirty = new AtomicBoolean(false);
     // For caching partition objects
     // Ket is partition values and the value is a wrapper around the partition object
     private Map<String, PartitionWrapper> partitionCache = new ConcurrentHashMap<String, PartitionWrapper>();
-    private AtomicBoolean isPartitionCacheDirty = new AtomicBoolean(false);
     // For caching column stats for a partitioned table
     // Key is aggregate of partition values, column name and the value is the col stat object
     private Map<String, ColumnStatisticsObj> partitionColStatsCache =
         new ConcurrentHashMap<String, ColumnStatisticsObj>();
-    private AtomicBoolean isPartitionColStatsCacheDirty = new AtomicBoolean(false);
     // For caching aggregate column stats for all and all minus default partition
     // Key is column name and the value is a list of 2 col stat objects
     // (all partitions and all but default)
     private Map<String, List<ColumnStatisticsObj>> aggrColStatsCache =
         new ConcurrentHashMap<String, List<ColumnStatisticsObj>>();
-    private AtomicBoolean isAggrPartitionColStatsCacheDirty = new AtomicBoolean(false);
 
     private Map<String, SQLPrimaryKey> primaryKeyCache = new ConcurrentHashMap<>();
 
@@ -313,15 +319,19 @@ public class SharedCache {
       this.sdHash = sdHash;
       this.location = location;
       this.parameters = parameters;
-      this.tableColStatsCacheSize = 0;
-      this.partitionCacheSize = 0;
-      this.partitionColStatsCacheSize = 0;
-      this.aggrColStatsCacheSize = 0;
       for(MemberName mn : MemberName.values()) {
-        this.memberObjectsSize[mn.ordinal()] = 0;
-        this.memberCacheDirty[mn.ordinal()] = new AtomicBoolean(false);
+        this.memberObjectsSize[mn.getValue()] = 0;
+        this.memberCacheUpdated[mn.getValue()] = new AtomicBoolean(false);
       }
       this.otherSize = getTableWrapperSizeWithoutMaps();
+    }
+
+    public boolean compareAndSetMemberCacheUpdated(MemberName mn, boolean oldValue, boolean newValue) {
+      return this.memberCacheUpdated[mn.getValue()].compareAndSet(oldValue, newValue);
+    }
+
+    public void setMemberCacheUpdated(MemberName mn, boolean newValue) {
+      this.memberCacheUpdated[mn.getValue()].set(newValue);
     }
 
     private int getTableWrapperSizeWithoutMaps() {
@@ -361,13 +371,11 @@ public class SharedCache {
       if (sizeEstimators == null) {
         return 0;
       }
-      int totalSize = 0;
+      int membersSize = 0;
       for(MemberName mn : MemberName.values()) {
-        totalSize += this.memberObjectsSize[mn.ordinal()];
+        membersSize += this.memberObjectsSize[mn.getValue()];
       }
-      // ToDo: Remove individual partitions/stats size and rely just on size array instead
-      return otherSize + tableColStatsCacheSize + partitionCacheSize + partitionColStatsCacheSize
-          + aggrColStatsCacheSize + totalSize;
+      return otherSize + membersSize;
     }
 
     public Table getTable() {
@@ -411,47 +419,13 @@ public class SharedCache {
         return;
       }
 
-      switch (mn) {
-      case TABLE_COL_STATS_CACHE:
-        if (mode == SizeMode.Delta) {
-          tableColStatsCacheSize += size;
-        } else {
-          tableColStatsCacheSize = size;
-        }
-        break;
-      case PARTITION_CACHE:
-        if (mode == SizeMode.Delta) {
-          partitionCacheSize += size;
-        } else {
-          partitionCacheSize = size;
-        }
-        break;
-      case PARTITION_COL_STATS_CACHE:
-        if (mode == SizeMode.Delta) {
-          partitionColStatsCacheSize += size;
-        } else {
-          partitionColStatsCacheSize = size;
-        }
-        break;
-      case AGGR_COL_STATS_CACHE:
-        if (mode == SizeMode.Delta) {
-          aggrColStatsCacheSize += size;
-        } else {
-          aggrColStatsCacheSize = size;
-        }
-        break;
-      case PRIMARY_KEY_CACHE:
-      case FOREIGN_KEY_CACHE:
-      case UNIQUE_CONSTRAINT_CACHE:
-      case NOTNULL_CONSTRAINT_CACHE:
-        if (mode == SizeMode.Delta) {
-          this.memberObjectsSize[mn.ordinal()] += size;
-        } else {
-          this.memberObjectsSize[mn.ordinal()] = size;
-        }
-        break;
-      default:
-        break;
+      switch (mode) {
+        case Delta:
+          this.memberObjectsSize[mn.getValue()] += size;
+          break;
+        case Snapshot:
+          this.memberObjectsSize[mn.getValue()] = size;
+          break;
       }
 
       String tblKey = getTblKey();
@@ -473,7 +447,7 @@ public class SharedCache {
         partitionCache.put(CacheUtils.buildPartitionCacheKey(part.getValues()), wrapper);
         int size = getObjectSize(PartitionWrapper.class, wrapper);
         updateMemberSize(MemberName.PARTITION_CACHE, size, SizeMode.Delta);
-        isPartitionCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.PARTITION_CACHE, true);
 
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
@@ -495,7 +469,7 @@ public class SharedCache {
           size += getObjectSize(PartitionWrapper.class, wrapper);
 
           if (!fromPrewarm) {
-            isPartitionCacheDirty.set(true);
+            setMemberCacheUpdated(MemberName.PARTITION_CACHE, true);
           }
         }
         updateMemberSize(MemberName.PARTITION_CACHE, size, SizeMode.Delta);
@@ -522,7 +496,7 @@ public class SharedCache {
       return cacheConstraints(uniqueConstraints, fromPrewarm, MemberName.UNIQUE_CONSTRAINT_CACHE);
     }
 
-    boolean cacheNotNulConstraints(List<SQLNotNullConstraint> notNullConstraints, boolean fromPrewarm) {
+    boolean cacheNotNullConstraints(List<SQLNotNullConstraint> notNullConstraints, boolean fromPrewarm) {
       return cacheConstraints(notNullConstraints, fromPrewarm, MemberName.NOTNULL_CONSTRAINT_CACHE);
     }
 
@@ -535,40 +509,40 @@ public class SharedCache {
       }
       try {
         tableLock.writeLock().lock();
-        int size = 0;
-        for(int i=0; i<constraintsList.size(); i++) {
+        final int[] size = {0};
+        constraintsList.forEach(constraint -> {
           switch (mn) {
             case PRIMARY_KEY_CACHE:
-              SQLPrimaryKey pk = (SQLPrimaryKey) constraintsList.get(i);
-              this.primaryKeyCache.put(pk.getPk_name(), pk);
-              size += getObjectSize(SQLPrimaryKey.class, constraintsList.get(i));
+              SQLPrimaryKey pk = (SQLPrimaryKey) constraint;
+              this.primaryKeyCache.put(pk.getPk_name().toLowerCase(), pk);
+              size[0] += getObjectSize(SQLPrimaryKey.class, constraint);
               break;
             case FOREIGN_KEY_CACHE:
-              SQLForeignKey fk = (SQLForeignKey) constraintsList.get(i);
-              this.foreignKeyCache.put(fk.getFk_name(), fk);
-              size += getObjectSize(SQLForeignKey.class, constraintsList.get(i));
+              SQLForeignKey fk = (SQLForeignKey) constraint;
+              this.foreignKeyCache.put(fk.getFk_name().toLowerCase(), fk);
+              size[0] += getObjectSize(SQLForeignKey.class, constraint);
               break;
             case UNIQUE_CONSTRAINT_CACHE:
-              SQLUniqueConstraint uc = (SQLUniqueConstraint) constraintsList.get(i);
-              this.uniqueConstraintCache.put(uc.getUk_name(), uc);
-              size += getObjectSize(SQLUniqueConstraint.class, constraintsList.get(i));
+              SQLUniqueConstraint uc = (SQLUniqueConstraint) constraint;
+              this.uniqueConstraintCache.put(uc.getUk_name().toLowerCase(), uc);
+              size[0] += getObjectSize(SQLUniqueConstraint.class, constraint);
               break;
             case NOTNULL_CONSTRAINT_CACHE:
-              SQLNotNullConstraint nn = (SQLNotNullConstraint) constraintsList.get(i);
-              this.notNullConstraintCache.put(nn.getNn_name(), nn);
-              size += getObjectSize(SQLNotNullConstraint.class, constraintsList.get(i));
+              SQLNotNullConstraint nn = (SQLNotNullConstraint) constraint;
+              this.notNullConstraintCache.put(nn.getNn_name().toLowerCase(), nn);
+              size[0] += getObjectSize(SQLNotNullConstraint.class, constraint);
               break;
             default:
               LOG.error("Should not reach here");
               break;
           }
-        }
+        });
 
         if (!fromPrewarm) {
-          this.memberCacheDirty[mn.ordinal()].set(false);
+          setMemberCacheUpdated(mn, true);
         }
 
-        updateMemberSize(mn, size, SizeMode.Delta);
+        updateMemberSize(mn, size[0], SizeMode.Delta);
         return true;
       } finally {
         tableLock.writeLock().unlock();
@@ -661,25 +635,22 @@ public class SharedCache {
         Object constraint = null;
         MemberName mn = null;
         Class constraintClass = null;
+        name = name.toLowerCase();
         if (this.primaryKeyCache.containsKey(name)) {
           constraint = this.primaryKeyCache.remove(name);
           mn = MemberName.PRIMARY_KEY_CACHE;
-          this.memberCacheDirty[mn.ordinal()].set(true);
           constraintClass = SQLPrimaryKey.class;
         } else if (this.foreignKeyCache.containsKey(name)) {
           constraint = this.foreignKeyCache.remove(name);
           mn = MemberName.FOREIGN_KEY_CACHE;
-          this.memberCacheDirty[mn.ordinal()].set(true);
           constraintClass = SQLForeignKey.class;
         } else if (this.notNullConstraintCache.containsKey(name)) {
           constraint = this.notNullConstraintCache.remove(name);
           mn = MemberName.NOTNULL_CONSTRAINT_CACHE;
-          this.memberCacheDirty[mn.ordinal()].set(true);
           constraintClass = SQLNotNullConstraint.class;
         } else if (this.uniqueConstraintCache.containsKey(name)) {
           constraint = this.uniqueConstraintCache.remove(name);
           mn = MemberName.UNIQUE_CONSTRAINT_CACHE;
-          this.memberCacheDirty[mn.ordinal()].set(true);
           constraintClass = SQLUniqueConstraint.class;
         }
 
@@ -687,9 +658,9 @@ public class SharedCache {
           LOG.debug("Constraint: " + name + " does not exist in cache.");
           return;
         }
+        setMemberCacheUpdated(mn, true);
         int size = getObjectSize(constraintClass, constraint);
         updateMemberSize(mn, -1 * size, SizeMode.Delta);
-
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -701,16 +672,17 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for (SQLPrimaryKey key : keys) {
-          if (this.memberCacheDirty[MemberName.PRIMARY_KEY_CACHE.ordinal()].compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, true, false)) {
             LOG.debug("Skipping primary key cache update for table: " + getTable().getTableName()
                     + "; the primary keys we have is dirty.");
             return;
           }
-          newKeys.put(key.getPk_name(), key);
+          newKeys.put(key.getPk_name().toLowerCase(), key);
           size += getObjectSize(SQLPrimaryKey.class, key);
         }
         primaryKeyCache = newKeys;
         updateMemberSize(MemberName.PRIMARY_KEY_CACHE, size, SizeMode.Snapshot);
+        LOG.debug("Primary keys refresh in cache was successful.");
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -722,16 +694,17 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for (SQLForeignKey key : keys) {
-          if (this.memberCacheDirty[MemberName.FOREIGN_KEY_CACHE.ordinal()].compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, true, false)) {
             LOG.debug("Skipping foreign key cache update for table: " + getTable().getTableName()
                     + "; the foreign keys we have is dirty.");
             return;
           }
-          newKeys.put(key.getFk_name(), key);
+          newKeys.put(key.getFk_name().toLowerCase(), key);
           size += getObjectSize(SQLForeignKey.class, key);
         }
         foreignKeyCache = newKeys;
         updateMemberSize(MemberName.FOREIGN_KEY_CACHE, size, SizeMode.Snapshot);
+        LOG.debug("Foreign keys refresh in cache was successful.");
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -743,16 +716,17 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for (SQLNotNullConstraint constraint : constraints) {
-          if (this.memberCacheDirty[MemberName.NOTNULL_CONSTRAINT_CACHE.ordinal()].compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, true, false)) {
             LOG.debug("Skipping not null constraints cache update for table: " + getTable().getTableName()
                     + "; the not null constraints we have is dirty.");
             return;
           }
-          newConstraints.put(constraint.getNn_name(), constraint);
+          newConstraints.put(constraint.getNn_name().toLowerCase(), constraint);
           size += getObjectSize(SQLNotNullConstraint.class, constraint);
         }
         notNullConstraintCache = newConstraints;
         updateMemberSize(MemberName.NOTNULL_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
+        LOG.debug("Not null constraints refresh in cache was successful.");
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -764,16 +738,17 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for (SQLUniqueConstraint constraint : constraints) {
-          if (this.memberCacheDirty[MemberName.UNIQUE_CONSTRAINT_CACHE.ordinal()].compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, true, false)) {
             LOG.debug("Skipping unique constraints cache update for table: " + getTable().getTableName()
                     + "; the unique costraints we have is dirty.");
             return;
           }
-          newConstraints.put(constraint.getUk_name(), constraint);
+          newConstraints.put(constraint.getUk_name().toLowerCase(), constraint);
           size += getObjectSize(SQLUniqueConstraint.class, constraint);
         }
         uniqueConstraintCache = newConstraints;
         updateMemberSize(MemberName.UNIQUE_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
+        LOG.debug("Unique constraints refresh in cache was successful.");
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -787,7 +762,7 @@ public class SharedCache {
         if (wrapper == null) {
           return null;
         }
-        isPartitionCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.PARTITION_CACHE, true);
 
         int size = getObjectSize(PartitionWrapper.class, wrapper);
         updateMemberSize(MemberName.PARTITION_CACHE, -1 * size, SizeMode.Delta);
@@ -880,7 +855,7 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int size = 0;
         for (Partition part : partitions) {
-          if (isPartitionCacheDirty.compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.PARTITION_CACHE, true, false)) {
             LOG.debug("Skipping partition cache update for table: " + getTable().getTableName()
                 + "; the partition list we have is dirty.");
             return;
@@ -923,7 +898,7 @@ public class SharedCache {
           statsSize += getObjectSize(ColumnStatisticsObj.class, colStatObj);
         }
         updateMemberSize(MemberName.TABLE_COL_STATS_CACHE, statsSize, SizeMode.Delta);
-        isTableColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.TABLE_COL_STATS_CACHE, true);
         return true;
       } finally {
         tableLock.writeLock().unlock();
@@ -936,7 +911,7 @@ public class SharedCache {
         tableLock.writeLock().lock();
         int statsSize = 0;
         for (ColumnStatisticsObj colStatObj : colStatsForTable) {
-          if (isTableColStatsCacheDirty.compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.TABLE_COL_STATS_CACHE,true, false)) {
             LOG.debug("Skipping table col stats cache update for table: " + getTable().getTableName()
                 + "; the table col stats list we have is dirty.");
             return;
@@ -983,7 +958,7 @@ public class SharedCache {
           tableColStatsCache.remove(colName);
           updateMemberSize(MemberName.TABLE_COL_STATS_CACHE, 0, SizeMode.Snapshot);
         }
-        isTableColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.TABLE_COL_STATS_CACHE, true);
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -994,7 +969,7 @@ public class SharedCache {
         tableLock.writeLock().lock();
         tableColStatsCache.clear();
         updateMemberSize(MemberName.TABLE_COL_STATS_CACHE, 0, SizeMode.Snapshot);
-        isTableColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.TABLE_COL_STATS_CACHE, true);
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -1102,7 +1077,7 @@ public class SharedCache {
           statsSize += getObjectSize(ColumnStatisticsObj.class, colStatObj);
         }
         updateMemberSize(MemberName.PARTITION_COL_STATS_CACHE, statsSize, SizeMode.Delta);
-        isPartitionColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, true);
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
           aggrColStatsCache.clear();
@@ -1123,7 +1098,7 @@ public class SharedCache {
           int statsSize = getObjectSize(ColumnStatisticsObj.class, statsObj);
           updateMemberSize(MemberName.PARTITION_COL_STATS_CACHE, -1 * statsSize, SizeMode.Delta);
         }
-        isPartitionColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, true);
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
           aggrColStatsCache.clear();
@@ -1139,7 +1114,7 @@ public class SharedCache {
         tableLock.writeLock().lock();
         partitionColStatsCache.clear();
         updateMemberSize(MemberName.PARTITION_COL_STATS_CACHE, 0, SizeMode.Snapshot);
-        isPartitionColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, true);
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
           aggrColStatsCache.clear();
@@ -1157,7 +1132,7 @@ public class SharedCache {
         String tableName = StringUtils.normalizeIdentifier(getTable().getTableName());
         int statsSize = 0;
         for (ColumnStatistics cs : partitionColStats) {
-          if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+          if (compareAndSetMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, true, false)) {
             LOG.debug("Skipping partition column stats cache update for table: " + getTable().getTableName()
                 + "; the partition column stats list we have is dirty");
             return;
@@ -1167,7 +1142,7 @@ public class SharedCache {
             partVal = Warehouse.makeValsFromName(cs.getStatsDesc().getPartName(), null);
             List<ColumnStatisticsObj> colStatsObjs = cs.getStatsObj();
             for (ColumnStatisticsObj colStatObj : colStatsObjs) {
-              if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+              if (compareAndSetMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, true, false)) {
                 LOG.debug("Skipping partition column stats cache update for table: " + getTable().getTableName()
                     + "; the partition column list we have is dirty");
                 return;
@@ -1238,7 +1213,7 @@ public class SharedCache {
           }
         }
         updateMemberSize(MemberName.AGGR_COL_STATS_CACHE, statsSize, SizeMode.Snapshot);
-        isAggrPartitionColStatsCacheDirty.set(true);
+        setMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, true);
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -1271,7 +1246,7 @@ public class SharedCache {
         }
         if (aggrStatsAllPartitions != null) {
           for (ColumnStatisticsObj statObj : aggrStatsAllPartitions.getColStats()) {
-            if (isAggrPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+            if (compareAndSetMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, true, false)) {
               LOG.debug("Skipping aggregate stats cache update for table: " + getTable().getTableName()
                   + "; the aggregate stats list we have is dirty");
               return;
@@ -1286,7 +1261,7 @@ public class SharedCache {
         }
         if (aggrStatsAllButDefaultPartition != null) {
           for (ColumnStatisticsObj statObj : aggrStatsAllButDefaultPartition.getColStats()) {
-            if (isAggrPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+            if (compareAndSetMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, true, false)) {
               LOG.debug("Skipping aggregate stats cache update for table: " + getTable().getTableName()
                   + "; the aggregate stats list we have is dirty");
               return;
@@ -1656,9 +1631,7 @@ public class SharedCache {
     }
   }
 
-  public boolean populateTableInCache(Table table, ColumnStatistics tableColStats, List<Partition> partitions,
-      List<ColumnStatistics> partitionColStats, AggrStats aggrStatsAllPartitions,
-      AggrStats aggrStatsAllButDefaultPartition, TableCacheObjects cacheObjects) {
+  public boolean populateTableInCache(Table table, TableCacheObjects cacheObjects) {
     String catName = StringUtils.normalizeIdentifier(table.getCatName());
     String dbName = StringUtils.normalizeIdentifier(table.getDbName());
     String tableName = StringUtils.normalizeIdentifier(table.getTableName());
@@ -1668,19 +1641,19 @@ public class SharedCache {
       return false;
     }
     TableWrapper tblWrapper = createTableWrapper(catName, dbName, tableName, table);
-    if (!table.isSetPartitionKeys() && (tableColStats != null)) {
-      if (table.getPartitionKeys().isEmpty() && (tableColStats != null)) {
+    if (!table.isSetPartitionKeys() && (cacheObjects.getTableColStats() != null)) {
+      if (table.getPartitionKeys().isEmpty() && (cacheObjects.getTableColStats() != null)) {
         return false;
       }
     } else {
-      if (partitions != null) {
+      if (cacheObjects.getPartitions() != null) {
         // If the partitions were not added due to memory limit, return false
-        if (!tblWrapper.cachePartitions(partitions, this, true)) {
+        if (!tblWrapper.cachePartitions(cacheObjects.getPartitions(), this, true)) {
           return false;
         }
       }
-      if (partitionColStats != null) {
-        for (ColumnStatistics cs : partitionColStats) {
+      if (cacheObjects.getPartitionColStats() != null) {
+        for (ColumnStatistics cs : cacheObjects.getPartitionColStats()) {
           List<String> partVal;
           try {
             partVal = Warehouse.makeValsFromName(cs.getStatsDesc().getPartName(), null);
@@ -1693,40 +1666,41 @@ public class SharedCache {
           }
         }
       }
-      tblWrapper.cacheAggrPartitionColStats(aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
+      tblWrapper.cacheAggrPartitionColStats(cacheObjects.getAggrStatsAllPartitions(),
+        cacheObjects.getAggrStatsAllButDefaultPartition());
     }
-    tblWrapper.isPartitionCacheDirty.set(false);
-    tblWrapper.isTableColStatsCacheDirty.set(false);
-    tblWrapper.isPartitionColStatsCacheDirty.set(false);
-    tblWrapper.isAggrPartitionColStatsCacheDirty.set(false);
+    tblWrapper.setMemberCacheUpdated(MemberName.PARTITION_CACHE, false);
+    tblWrapper.setMemberCacheUpdated(MemberName.TABLE_COL_STATS_CACHE, false);
+    tblWrapper.setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, false);
+    tblWrapper.setMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, false);
 
     if (cacheObjects.getPrimaryKeys() != null) {
       if(!tblWrapper.cachePrimaryKeys(cacheObjects.getPrimaryKeys(), true)) {
         return false;
       }
     }
-    tblWrapper.memberCacheDirty[MemberName.PRIMARY_KEY_CACHE.ordinal()].set(false);
+    tblWrapper.setMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE,false);
 
     if (cacheObjects.getForeignKeys() != null) {
       if(!tblWrapper.cacheForeignKeys(cacheObjects.getForeignKeys(), true)) {
         return false;
       }
     }
-    tblWrapper.memberCacheDirty[MemberName.PRIMARY_KEY_CACHE.ordinal()].set(false);
+    tblWrapper.setMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE,false);
 
     if (cacheObjects.getNotNullConstraints() != null) {
-      if(!tblWrapper.cacheNotNulConstraints(cacheObjects.getNotNullConstraints(), true)) {
+      if(!tblWrapper.cacheNotNullConstraints(cacheObjects.getNotNullConstraints(), true)) {
         return false;
       }
     }
-    tblWrapper.memberCacheDirty[MemberName.PRIMARY_KEY_CACHE.ordinal()].set(false);
+    tblWrapper.setMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE,false);
 
     if (cacheObjects.getUniqueConstraints() != null) {
       if(!tblWrapper.cacheUniqueConstraints(cacheObjects.getUniqueConstraints(), true)) {
         return false;
       }
     }
-    tblWrapper.memberCacheDirty[MemberName.PRIMARY_KEY_CACHE.ordinal()].set(false);
+    tblWrapper.setMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE,false);
 
     try {
       cacheLock.writeLock().lock();
@@ -2127,7 +2101,7 @@ public class SharedCache {
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
       if (tblWrapper != null) {
-        tblWrapper.cacheNotNulConstraints(keys, false);
+        tblWrapper.cacheNotNullConstraints(keys, false);
       }
     } finally {
       cacheLock.readLock().unlock();
