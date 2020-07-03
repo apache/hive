@@ -207,6 +207,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     } catch (Throwable e) {
       setState(OperationState.ERROR);
       if (e instanceof OutOfMemoryError) {
+        // propagate
         throw e;
       } else {
         throw new HiveSQLException("Error running query", e);

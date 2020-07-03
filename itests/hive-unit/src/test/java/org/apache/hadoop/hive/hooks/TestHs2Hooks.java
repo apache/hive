@@ -19,12 +19,13 @@
 //The tests here are heavily based on some timing, so there is some chance to fail.
 package org.apache.hadoop.hive.hooks;
 
-import java.io.Serializable;
 import java.lang.Override;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.hive.service.server.HiveServer2OomHandler;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,6 +47,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.fail;
 
 /**
  * Tests information retrieved from hooks.
@@ -271,5 +274,61 @@ public class TestHs2Hooks {
     }
     stmt.close();
     connection.close();
+  }
+
+
+  static class OOMHook1 implements HiveServer2OomHandler.OomHookWithContext {
+    static String MSG = "OOMHook1 throws exception";
+
+    @Override public void run(HiveServer2OomHandler.OomHookContext context) {
+      throw new RuntimeException(MSG);
+    }
+  }
+
+  static class OOMHook2 implements HiveServer2OomHandler.OomHookWithContext {
+    static String MSG = "OOMHook2 throws exception";
+
+    @Override public void run(HiveServer2OomHandler.OomHookContext context) {
+      throw new RuntimeException(MSG);
+    }
+  }
+
+  @Test
+  public void testOomHooks() {
+    HiveConf hiveConf = new HiveConf();
+    HiveServer2OomHandler handler = new HiveServer2OomHandler(hiveConf);
+    try {
+      // the default handler
+      Assert.assertTrue(handler.getHooks().size() > 0);
+      handler.run();
+      fail("An exception should throw");
+    } catch (Exception e) {
+      // context.getHiveServer2() should return null
+      Assert.assertTrue(e instanceof NullPointerException);
+    }
+
+    String hook1 = OOMHook1.class.getName(), hook2 = OOMHook2.class.getName();
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook1 + "," + hook2);
+    handler = new HiveServer2OomHandler(hiveConf);
+    test(handler, OOMHook1.MSG, Arrays.asList(OOMHook1.class, OOMHook2.class));
+
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook2 + "," + hook1);
+    handler = new HiveServer2OomHandler(hiveConf);
+    test(handler, OOMHook2.MSG, Arrays.asList(OOMHook2.class, OOMHook1.class));
+  }
+
+  private void test(HiveServer2OomHandler handler, String expectedMsg, List<Class> expectedClass) {
+
+    Assert.assertTrue(handler.getHooks().size() == expectedClass.size());
+    for (int i = 0; i < expectedClass.size(); i++) {
+      Assert.assertTrue(handler.getHooks().get(i).getClass() == expectedClass.get(i));
+    }
+
+    try {
+      handler.run();
+      fail("An exception should throw");
+    } catch (Exception e) {
+      Assert.assertTrue(e.getMessage().equals(expectedMsg));
+    }
   }
 }

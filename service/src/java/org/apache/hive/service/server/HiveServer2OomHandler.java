@@ -26,18 +26,20 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HiveServer2OOMHandler implements Runnable {
+public class HiveServer2OomHandler implements Runnable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OOMHandler.class);
-  private HookContext context;
-  private final List<OOMHook> hooks = new ArrayList<OOMHook>();
+  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OomHandler.class);
+  private OomHookContext context;
+  private final List<OomHookWithContext> hooks = new ArrayList<OomHookWithContext>();
 
-  HiveServer2OOMHandler(HiveServer2 hiveServer2) {
-    context = new HookContext(hiveServer2);
-    init(hiveServer2.getHiveConf());
+  HiveServer2OomHandler(HiveServer2 hiveServer2, HiveConf hiveConf) {
+    context = new OomHookContext(hiveServer2);
+    // currently hiveServer2.getHiveConf() will be null, the HS2 has not been initialized yet
+    init(hiveConf);
   }
 
   private void init(HiveConf hiveConf) {
@@ -46,9 +48,10 @@ public class HiveServer2OOMHandler implements Runnable {
       String[] hookClasses = csHooks.split(",");
       for (String hookClass : hookClasses) {
         try {
-          OOMHook hook = (OOMHook) Class.forName(hookClass.trim(), true,
-              JavaUtils.getClassLoader()).newInstance();
-          hooks.add(hook);
+          Class clazz =  Class.forName(hookClass.trim(), true, JavaUtils.getClassLoader());
+          Constructor ctor = clazz.getDeclaredConstructor();
+          ctor.setAccessible(true);
+          hooks.add((OomHookWithContext)ctor.newInstance());
         } catch (Exception e) {
           LOG.error("Skip adding oom hook '" + hookClass + "'", e);
         }
@@ -57,29 +60,29 @@ public class HiveServer2OOMHandler implements Runnable {
   }
 
   @VisibleForTesting
-  HiveServer2OOMHandler(HiveConf hiveConf) {
+  public HiveServer2OomHandler(HiveConf hiveConf) {
     init(hiveConf);
   }
 
   @VisibleForTesting
-  public List<OOMHook> getHooks() {
+  public List<OomHookWithContext> getHooks() {
     return hooks;
   }
 
   @Override
   public void run() {
-    for (OOMHook hook : hooks) {
+    for (OomHookWithContext hook : hooks) {
       hook.run(context);
     }
   }
 
-  public static interface OOMHook {
-    public void run(HookContext context);
+  public static interface OomHookWithContext {
+    public void run(OomHookContext context);
   }
 
-  public static class HookContext {
+  public static class OomHookContext {
     private final HiveServer2 hiveServer2;
-    public HookContext(HiveServer2 hiveServer2) {
+    public OomHookContext(HiveServer2 hiveServer2) {
       this.hiveServer2 = hiveServer2;
     }
     public HiveServer2 getHiveServer2() {
@@ -87,9 +90,12 @@ public class HiveServer2OOMHandler implements Runnable {
     }
   }
 
-  static class DefaultOOMHook implements OOMHook {
+  /**
+   * Used as default oom hook
+   */
+  private static class DefaultOomHook implements OomHookWithContext {
     @Override
-    public void run(HookContext context) {
+    public void run(OomHookContext context) {
       context.getHiveServer2().stop();
     }
   }
