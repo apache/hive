@@ -501,24 +501,20 @@ public class AcidUtils {
     String filename = bucketFile.getName();
     int bucket = parseBucketId(bucketFile);
     String attemptId = parseAttemptId(bucketFile);
-    if (ORIGINAL_PATTERN.matcher(filename).matches()) {
+    if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
+      long minWriteId = 0;
+      long maxWriteId = 0;
+      if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
+        minWriteId = parsedDelta.getMinWriteId();
+        maxWriteId = parsedDelta.getMaxWriteId();
+      }
       result
           .setOldStyle(true)
-          .minimumWriteId(0)
-          .maximumWriteId(0)
+          .minimumWriteId(minWriteId)
+          .maximumWriteId(maxWriteId)
           .bucket(bucket)
           .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
-    }
-    else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
-      //todo: define groups in regex and use parseInt(Matcher.group(2))....
-      int copyNumber = Integer.parseInt(filename.substring(filename.lastIndexOf('_') + 1));
-      result
-        .setOldStyle(true)
-        .minimumWriteId(0)
-        .maximumWriteId(0)
-        .bucket(bucket)
-        .copyNumber(copyNumber)
-        .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
     else if (filename.startsWith(BUCKET_PREFIX)) {
       if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
@@ -529,8 +525,7 @@ public class AcidUtils {
             .bucket(bucket)
             .writingBase(true);
       } else if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELTA_PREFIX,
-          bucketFile.getFileSystem(conf), null);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
         result
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
@@ -538,8 +533,7 @@ public class AcidUtils {
             .bucket(bucket)
             .attemptId(attemptId);
       } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX,
-          bucketFile.getFileSystem(conf), null);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
         result
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
