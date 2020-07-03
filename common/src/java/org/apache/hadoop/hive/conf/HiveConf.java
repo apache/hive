@@ -3420,6 +3420,9 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", "org.apache.hive.service.server.HiveServer2OOMHandler$DefaultOOMHook",
+        "A comma separated list of hooks which implement HiveServer2OOMHandler$OOMHook. Will be run in the order specified \n" +
+        "when HiveServer2 oom happens."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",

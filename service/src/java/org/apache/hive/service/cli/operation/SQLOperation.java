@@ -206,7 +206,11 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw toSQLException("Error while compiling statement", e);
     } catch (Throwable e) {
       setState(OperationState.ERROR);
-      throw new HiveSQLException("Error running query", e);
+      if (e instanceof OutOfMemoryError) {
+        throw e;
+      } else {
+        throw new HiveSQLException("Error running query", e);
+      }
     }
   }
 
@@ -241,6 +245,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
       } else if (e instanceof HiveSQLException) {
         throw (HiveSQLException) e;
+      } else if (e instanceof OutOfMemoryError) {
+        throw (OutOfMemoryError) e;
       } else {
         throw new HiveSQLException("Error running query", e);
       }
