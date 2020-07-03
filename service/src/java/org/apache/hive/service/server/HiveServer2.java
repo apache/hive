@@ -219,7 +219,7 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new HiveServer2OomHandler(hiveServer2, hiveConf);
+    Runnable oomHook = new HiveServer2OomHookHandler(hiveServer2, hiveConf);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {

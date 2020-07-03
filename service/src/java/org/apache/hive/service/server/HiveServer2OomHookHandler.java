@@ -30,13 +30,13 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HiveServer2OomHandler implements Runnable {
+public class HiveServer2OomHookHandler implements Runnable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OomHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OomHookHandler.class);
   private OomHookContext context;
   private final List<OomHookWithContext> hooks = new ArrayList<OomHookWithContext>();
 
-  HiveServer2OomHandler(HiveServer2 hiveServer2, HiveConf hiveConf) {
+  HiveServer2OomHookHandler(HiveServer2 hiveServer2, HiveConf hiveConf) {
     context = new OomHookContext(hiveServer2);
     // currently hiveServer2.getHiveConf() will be null, the HS2 has not been initialized yet
     init(hiveConf);
@@ -60,7 +60,7 @@ public class HiveServer2OomHandler implements Runnable {
   }
 
   @VisibleForTesting
-  public HiveServer2OomHandler(HiveConf hiveConf) {
+  public HiveServer2OomHookHandler(HiveConf hiveConf) {
     init(hiveConf);
   }
 

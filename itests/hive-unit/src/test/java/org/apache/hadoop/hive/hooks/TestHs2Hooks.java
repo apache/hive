@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.hive.service.server.HiveServer2OomHandler;
+import org.apache.hive.service.server.HiveServer2OomHookHandler;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -277,18 +277,18 @@ public class TestHs2Hooks {
   }
 
 
-  static class OOMHook1 implements HiveServer2OomHandler.OomHookWithContext {
+  static class OOMHook1 implements HiveServer2OomHookHandler.OomHookWithContext {
     static String MSG = "OOMHook1 throws exception";
 
-    @Override public void run(HiveServer2OomHandler.OomHookContext context) {
+    @Override public void run(HiveServer2OomHookHandler.OomHookContext context) {
       throw new RuntimeException(MSG);
     }
   }
 
-  static class OOMHook2 implements HiveServer2OomHandler.OomHookWithContext {
+  static class OOMHook2 implements HiveServer2OomHookHandler.OomHookWithContext {
     static String MSG = "OOMHook2 throws exception";
 
-    @Override public void run(HiveServer2OomHandler.OomHookContext context) {
+    @Override public void run(HiveServer2OomHookHandler.OomHookContext context) {
       throw new RuntimeException(MSG);
     }
   }
@@ -296,7 +296,7 @@ public class TestHs2Hooks {
   @Test
   public void testOomHooks() {
     HiveConf hiveConf = new HiveConf();
-    HiveServer2OomHandler handler = new HiveServer2OomHandler(hiveConf);
+    HiveServer2OomHookHandler handler = new HiveServer2OomHookHandler(hiveConf);
     try {
       // the default handler
       Assert.assertTrue(handler.getHooks().size() > 0);
@@ -309,15 +309,15 @@ public class TestHs2Hooks {
 
     String hook1 = OOMHook1.class.getName(), hook2 = OOMHook2.class.getName();
     hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook1 + "," + hook2);
-    handler = new HiveServer2OomHandler(hiveConf);
+    handler = new HiveServer2OomHookHandler(hiveConf);
     test(handler, OOMHook1.MSG, Arrays.asList(OOMHook1.class, OOMHook2.class));
 
     hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook2 + "," + hook1);
-    handler = new HiveServer2OomHandler(hiveConf);
+    handler = new HiveServer2OomHookHandler(hiveConf);
     test(handler, OOMHook2.MSG, Arrays.asList(OOMHook2.class, OOMHook1.class));
   }
 
-  private void test(HiveServer2OomHandler handler, String expectedMsg, List<Class> expectedClass) {
+  private void test(HiveServer2OomHookHandler handler, String expectedMsg, List<Class> expectedClass) {
 
     Assert.assertTrue(handler.getHooks().size() == expectedClass.size());
     for (int i = 0; i < expectedClass.size(); i++) {
