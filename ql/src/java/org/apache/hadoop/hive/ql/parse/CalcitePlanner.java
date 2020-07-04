@@ -1707,7 +1707,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         resultDir = fso.getConf().getDirName();
       }
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          conf, impalaRel, dbname, username, resultDir, ctx.isExplainPlan());
+          conf, getDb(), impalaRel, dbname, username, resultDir, ctx.isExplainPlan());
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);

@@ -18,32 +18,27 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.planner.PlannerContext;
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.util.EventSequence;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ImpalaPlannerContext extends PlannerContext {
 
   private ImpalaBasicAnalyzer analyzer;
   private TExecRequest execRequest;
   private List<Expr> resultExprs;
-  // a per-query cache of metastore table instance to HdfsTable instance
-  private Map<Table, HdfsTable> hdfsTableMap;
+  private ImpalaTableLoader tableLoader;
 
   public ImpalaPlannerContext(TQueryCtx queryCtx, EventSequence timeline,
       ImpalaBasicAnalyzer analyzer) {
     super(queryCtx, timeline);
     this.analyzer = analyzer;
-    this.hdfsTableMap = new HashMap<>();
+    this.tableLoader = new ImpalaTableLoader();
   }
 
   @Override
@@ -73,12 +68,8 @@ public class ImpalaPlannerContext extends PlannerContext {
     return resultExprs;
   }
 
-  public HdfsTable getHdfsTable(Table msTbl) {
-    return hdfsTableMap.get(msTbl);
-  }
-
-  public void addHdfsTable(Table msTbl, HdfsTable hdfsTable) {
-    hdfsTableMap.put(msTbl, hdfsTable);
+  public ImpalaTableLoader getTableLoader() {
+    return tableLoader;
   }
 
 }

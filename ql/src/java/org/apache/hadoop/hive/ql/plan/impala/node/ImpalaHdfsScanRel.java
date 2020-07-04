@@ -52,7 +52,6 @@ import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.analysis.TableName;
 import org.apache.impala.analysis.TableRef;
 import org.apache.impala.analysis.TupleDescriptor;
-import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsTable;
@@ -99,6 +98,14 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     return conjuncts;
   }
 
+  public Hive getDb() {
+    return db;
+  }
+
+  public HiveTableScan getScan() {
+    return scan;
+  }
+
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException,
       MetaException {
@@ -106,21 +113,9 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       return hdfsScanNode;
     }
 
-    String tableName = scan.getTable().getQualifiedName().get(1);
-    PlanNodeId nodeId = ctx.getNextNodeId();
     Table table = ((RelOptHiveTable) scan.getTable()).getHiveTableMD();
-
-    // get the corresponding metastore Table object
     org.apache.hadoop.hive.metastore.api.Table msTbl = table.getTTable();
-    // TODO: CDPD-8324: ideally we should cache the metastore DB object at query level
-    org.apache.hadoop.hive.metastore.api.Database msDb = db.getDatabase(table.getDbName());
-    HdfsTable hdfsTable = ctx.getHdfsTable(msTbl);
-    if (hdfsTable == null) {
-      org.apache.impala.catalog.Db impalaDb = new Db(table.getDbName(), msDb);
-      hdfsTable = new ImpalaHdfsTable(msTbl, impalaDb, tableName, table.getOwner());
-      ctx.addHdfsTable(msTbl, hdfsTable);
-      hdfsTable.load(false, db.getMSC(), msTbl, "");
-    }
+    HdfsTable hdfsTable = ctx.getTableLoader().getHdfsTable(msTbl);
 
     List<FeFsPartition> feFsPartitions = Lists.newArrayList();
     // propagate Hive's statically pruned partition list to Impala
@@ -153,6 +148,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     List<Expr> partitionConjuncts = new ArrayList<>();
     List<Expr> nonPartitionConjuncts = new ArrayList<>();
 
+    String tableName = scan.getTable().getQualifiedName().get(1);
     TableName impalaTblName = TableName.parse(tableName);
     String alias = null;
     // Impala assumes that if an alias was supplied it is an explicit alias.
@@ -187,6 +183,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
     }
     this.nodeInfo = new ImpalaNodeInfo(assignedConjuncts, tupleDesc);
+    PlanNodeId nodeId = ctx.getNextNodeId();
 
     hdfsScanNode = new ImpalaHdfsScanNode(nodeId, feFsPartitions, baseTblRef, aggInfo, partitionConjuncts, nodeInfo);
     hdfsScanNode.init(ctx.getRootAnalyzer());

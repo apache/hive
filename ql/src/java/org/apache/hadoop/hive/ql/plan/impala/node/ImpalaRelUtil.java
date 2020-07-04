@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -98,6 +99,20 @@ public class ImpalaRelUtil {
     ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
         analyzer, ImmutableList.of(input), input.getCluster().getRexBuilder());
     return exp.stream().map(e -> e.accept(visitor)).collect(Collectors.toList());
+  }
+
+  /**
+   * Gather all Impala Hdfs table scans in the plan starting from a root node and populate
+   * the supplied tableScans list
+   */
+  public static void gatherTableScans(ImpalaPlanRel rootRelNode, List<ImpalaHdfsScanRel> tableScans) {
+    if (rootRelNode instanceof ImpalaHdfsScanRel) {
+      tableScans.add((ImpalaHdfsScanRel) rootRelNode);
+      return;
+    }
+    for (RelNode child : rootRelNode.getInputs()) {
+      gatherTableScans((ImpalaPlanRel) child, tableScans);
+    }
   }
 
 }

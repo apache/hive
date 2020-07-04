@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -52,6 +49,10 @@ import org.apache.impala.thrift.TReservedWordsVersion;
 import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 
 public class ImpalaHelper {
@@ -99,14 +100,17 @@ public class ImpalaHelper {
     return programBuilder.build();
   }
 
-  public ImpalaCompiledPlan compilePlan(HiveConf conf, RelNode rootRelNode, String db, String userName,
-      Path resultPath, boolean isExplain) throws HiveException {
+  public ImpalaCompiledPlan compilePlan(HiveConf conf, Hive db, RelNode rootRelNode,
+      String dbName, String userName, Path resultPath,
+      boolean isExplain) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel);
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       TQueryOptions options = createQueryOptions(conf);
-      ImpalaPlanner impalaPlanner = new ImpalaPlanner(db, userName, options, resultPath);
+      ImpalaPlanner impalaPlanner =
+        new ImpalaPlanner(dbName, userName, options, resultPath);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
+      planCtx.getTableLoader().loadTablesAndPartitions(db, impalaRelNode);
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);
       LOG.debug("Impala request is {}", execRequest);
