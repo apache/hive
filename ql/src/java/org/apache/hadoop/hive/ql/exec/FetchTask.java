@@ -94,9 +94,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
       sink = work.getSink();
 
-      if (conf.getEngine() == Engine.IMPALA &&
-              conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING &&
-              queryPlan.getOperation() == HiveOperation.QUERY) {
+      if (needsImpalaStreamingFetchOperator()) {
         // Currently we only support streaming from Impala execution engine
         fetch = new ImpalaStreamingFetchOperator(work, job, source, getVirtualColumns(source),
                 queryPlan.getResultSchema());
@@ -114,6 +112,19 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       LOG.error("Initialize failed", e);
       throw new RuntimeException(e);
     }
+  }
+
+  private boolean needsImpalaStreamingFetchOperator() {
+    if (conf.getEngine() == Engine.IMPALA) {
+      if (conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING &&
+          queryPlan.getOperation() == HiveOperation.QUERY) {
+        return true;
+      }
+      if (queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<VirtualColumn> getVirtualColumns(Operator<?> ts) {

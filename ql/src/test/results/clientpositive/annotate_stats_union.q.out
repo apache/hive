@@ -289,11 +289,11 @@ POSTHOOK: Lineage: loc_orc_n3.state SIMPLE [(loc_staging_n3)loc_staging_n3.Field
 POSTHOOK: Lineage: loc_orc_n3.year SIMPLE [(loc_staging_n3)loc_staging_n3.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc_n3.zip SIMPLE [(loc_staging_n3)loc_staging_n3.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: analyze table loc_staging_n3 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: test@loc_staging_n3
 PREHOOK: Output: test@loc_staging_n3
 POSTHOOK: query: analyze table loc_staging_n3 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: test@loc_staging_n3
 POSTHOOK: Output: test@loc_staging_n3
 PREHOOK: query: analyze table loc_staging_n3 compute statistics for columns state,locid,zip,year

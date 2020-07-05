@@ -1,0 +1,1 @@
+FAILED: SemanticException ANALYZE TABLE NOSCAN is not supported for Impala

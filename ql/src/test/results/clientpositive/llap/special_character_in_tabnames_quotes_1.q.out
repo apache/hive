@@ -159,13 +159,13 @@ POSTHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Lineage: src/_/cbo.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src/_/cbo.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table "c/b/o_t1" partition (dt) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: query: analyze table "c/b/o_t1" partition (dt) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1
@@ -185,13 +185,13 @@ POSTHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Output: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 PREHOOK: query: analyze table "//cbo_t2" partition (dt) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2
 PREHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: query: analyze table "//cbo_t2" partition (dt) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2
@@ -211,11 +211,11 @@ POSTHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Output: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 #### A masked pattern was here ####
 PREHOOK: query: analyze table "cbo_/t3////" compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
 PREHOOK: Output: db~!@#$%^&*(),<>@cbo_/t3////
 POSTHOOK: query: analyze table "cbo_/t3////" compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
 POSTHOOK: Output: db~!@#$%^&*(),<>@cbo_/t3////
 PREHOOK: query: analyze table "cbo_/t3////" compute statistics for columns key, value, c_int, c_float, c_boolean
@@ -229,11 +229,11 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@cbo_/t3////
 POSTHOOK: Output: db~!@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 PREHOOK: query: analyze table "src/_/cbo" compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 PREHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: query: analyze table "src/_/cbo" compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
 PREHOOK: query: analyze table "src/_/cbo" compute statistics for columns
@@ -247,11 +247,11 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Output: db~!@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 PREHOOK: query: analyze table "p/a/r/t" compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
 PREHOOK: Output: db~!@#$%^&*(),<>@p/a/r/t
 POSTHOOK: query: analyze table "p/a/r/t" compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
 POSTHOOK: Output: db~!@#$%^&*(),<>@p/a/r/t
 PREHOOK: query: analyze table "p/a/r/t" compute statistics for columns
@@ -265,11 +265,11 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@p/a/r/t
 POSTHOOK: Output: db~!@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 PREHOOK: query: analyze table "line/item" compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@line/item
 PREHOOK: Output: db~!@#$%^&*(),<>@line/item
 POSTHOOK: query: analyze table "line/item" compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@line/item
 POSTHOOK: Output: db~!@#$%^&*(),<>@line/item
 PREHOOK: query: analyze table "line/item" compute statistics for columns
@@ -19400,11 +19400,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: db~!@#$%^&*(),<>@t//
 POSTHOOK: Lineage: t//.col SCRIPT []
 PREHOOK: query: analyze table "t//" compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: db~!@#$%^&*(),<>@t//
 PREHOOK: Output: db~!@#$%^&*(),<>@t//
 POSTHOOK: query: analyze table "t//" compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: db~!@#$%^&*(),<>@t//
 POSTHOOK: Output: db~!@#$%^&*(),<>@t//
 PREHOOK: query: explain select * from "t//"

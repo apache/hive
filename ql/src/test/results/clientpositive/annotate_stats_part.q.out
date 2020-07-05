@@ -110,12 +110,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Output: default@loc_orc_n4
 PREHOOK: Output: default@loc_orc_n4@year=2001
 POSTHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001
@@ -205,13 +205,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table loc_orc_n4 partition(year) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Output: default@loc_orc_n4
 PREHOOK: Output: default@loc_orc_n4@year=2001
 PREHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: query: analyze table loc_orc_n4 partition(year) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001

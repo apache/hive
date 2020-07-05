@@ -68,11 +68,11 @@ POSTHOOK: Lineage: orc_create_people_n0.salary SIMPLE [(orc_create_people_stagin
 POSTHOOK: Lineage: orc_create_people_n0.start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_create_people_n0.state SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: analyze table orc_create_people_n0 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: analyze table orc_create_people_n0 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: desc formatted orc_create_people_n0
@@ -116,11 +116,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people_n0 compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: analyze table orc_create_people_n0 compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: desc formatted orc_create_people_n0
@@ -306,13 +306,13 @@ POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(o
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
@@ -400,13 +400,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
@@ -692,13 +692,13 @@ POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(o
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
@@ -786,13 +786,13 @@ Sort Columns:       	[Order(col:last_name, order:1)]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
@@ -1078,13 +1078,13 @@ POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(o
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
@@ -1131,13 +1131,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0
 PREHOOK: Output: default@orc_create_people_n0@state=Ca
 PREHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca

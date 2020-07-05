@@ -25,11 +25,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@kv_table
 PREHOOK: query: ANALYZE TABLE kv_table COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@kv_table
 PREHOOK: Output: default@kv_table
 POSTHOOK: query: ANALYZE TABLE kv_table COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@kv_table
 POSTHOOK: Output: default@kv_table
 PREHOOK: query: ANALYZE TABLE kv_table COMPUTE STATISTICS FOR COLUMNS key, value

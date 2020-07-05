@@ -248,13 +248,13 @@ POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
 30
 PREHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 PREHOOK: Output: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 POSTHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 POSTHOOK: Output: default@partcoltypenum

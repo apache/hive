@@ -27,11 +27,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: statsdb@srctable
 PREHOOK: query: analyze table srctable compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb@srctable
 PREHOOK: Output: statsdb@srctable
 POSTHOOK: query: analyze table srctable compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb@srctable
 POSTHOOK: Output: statsdb@srctable
 PREHOOK: query: describe formatted srctable
@@ -194,11 +194,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table statstable compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb@statstable
 PREHOOK: Output: statsdb@statstable
 POSTHOOK: query: analyze table statstable compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb@statstable
 POSTHOOK: Output: statsdb@statstable
 PREHOOK: query: describe formatted statstable
@@ -321,13 +321,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: statsdb@srcpart_n0
 POSTHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=12
 PREHOOK: query: analyze table srcpart_n0 partition (ds='2008-04-08', hr='11') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb@srcpart_n0
 PREHOOK: Input: statsdb@srcpart_n0@ds=2008-04-08/hr=11
 PREHOOK: Output: statsdb@srcpart_n0
 PREHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: query: analyze table srcpart_n0 partition (ds='2008-04-08', hr='11') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb@srcpart_n0
 POSTHOOK: Input: statsdb@srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: Output: statsdb@srcpart_n0
@@ -503,13 +503,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table srcpart_n0 partition (ds='2017-01-19', hr='11') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb@srcpart_n0
 PREHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
 PREHOOK: Output: statsdb@srcpart_n0
 PREHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
 POSTHOOK: query: analyze table srcpart_n0 partition (ds='2017-01-19', hr='11') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb@srcpart_n0
 POSTHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
 POSTHOOK: Output: statsdb@srcpart_n0

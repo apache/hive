@@ -69,11 +69,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table s_n5 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@s_n5
 PREHOOK: Output: default@s_n5
 POSTHOOK: query: analyze table s_n5 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@s_n5
 POSTHOOK: Output: default@s_n5
 PREHOOK: query: explain select * from s_n5

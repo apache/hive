@@ -38,7 +38,7 @@ POSTHOOK: Input: default@tpart_n0@k=2
 #### A masked pattern was here ####
 0
 PREHOOK: query: analyze table tpart_n0 partition (k) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tpart_n0
 PREHOOK: Input: default@tpart_n0@k=1
 PREHOOK: Input: default@tpart_n0@k=2
@@ -46,7 +46,7 @@ PREHOOK: Output: default@tpart_n0
 PREHOOK: Output: default@tpart_n0@k=1
 PREHOOK: Output: default@tpart_n0@k=2
 POSTHOOK: query: analyze table tpart_n0 partition (k) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tpart_n0
 POSTHOOK: Input: default@tpart_n0@k=1
 POSTHOOK: Input: default@tpart_n0@k=2

@@ -353,11 +353,11 @@ POSTHOOK: Lineage: l3_monthly_dw_dimplan.resource_key SIMPLE [(l3_monthly_dw_dim
 POSTHOOK: Lineage: l3_monthly_dw_dimplan.transclass_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:transclass_key, type:bigint, comment:null), ]
 POSTHOOK: Lineage: l3_monthly_dw_dimplan.txn_class_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:txn_class_object_id, type:bigint, comment:null), ]
 PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
 PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
 POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
 POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
 PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics for columns
@@ -371,11 +371,11 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_201802
 POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
 #### A masked pattern was here ####
 PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
 PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
 POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
 POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
 PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics for columns
@@ -389,11 +389,11 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
 #### A masked pattern was here ####
 PREHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 PREHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
 PREHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics for columns
@@ -407,11 +407,11 @@ POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
 #### A masked pattern was here ####
 PREHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@l3_monthly_dw_dimplan
 PREHOOK: Output: default@l3_monthly_dw_dimplan
 POSTHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 POSTHOOK: Output: default@l3_monthly_dw_dimplan
 PREHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics for columns

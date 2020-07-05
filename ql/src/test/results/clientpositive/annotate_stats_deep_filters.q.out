@@ -49,11 +49,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k_n4
 PREHOOK: query: analyze table over1k_n4 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@over1k_n4
 PREHOOK: Output: default@over1k_n4
 POSTHOOK: query: analyze table over1k_n4 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@over1k_n4
 POSTHOOK: Output: default@over1k_n4
 PREHOOK: query: analyze table over1k_n4 compute statistics for columns

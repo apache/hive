@@ -11819,6 +11819,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
       }
+      if (isImpalaPlan(conf) && qbp.getTableSpec().specType == SpecType.STATIC_PARTITION) {
+        throw new SemanticException(
+            "Partitions cannot be statically specified in ANALYZE TABLE in Impala");
+      }
       List<Partition> partitions = qbp.getTableSpec().partitions;
       if (partitions != null) {
         for (Partition partn : partitions) {
@@ -14482,6 +14486,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (tbl.isNonNative()) {
       throw new SemanticException(ErrorMsg.ANALYZE_TABLE_NOSCAN_NON_NATIVE.getMsg(tbl
           .getTableName()));
+    }
+
+    if (isImpalaPlan(conf)) {
+      throw new SemanticException("ANALYZE TABLE NOSCAN is not supported for Impala");
     }
   }
 

@@ -117,11 +117,11 @@ POSTHOOK: Lineage: cs.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, co
 POSTHOOK: Lineage: cs.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ss_n1
 PREHOOK: Output: default@ss_n1
 POSTHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ss_n1
 POSTHOOK: Output: default@ss_n1
 PREHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
@@ -135,11 +135,11 @@ POSTHOOK: Input: default@ss_n1
 POSTHOOK: Output: default@ss_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@sr
 PREHOOK: Output: default@sr
 POSTHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@sr
 POSTHOOK: Output: default@sr
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
@@ -153,11 +153,11 @@ POSTHOOK: Input: default@sr
 POSTHOOK: Output: default@sr
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cs
 PREHOOK: Output: default@cs
 POSTHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cs
 POSTHOOK: Output: default@cs
 PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3

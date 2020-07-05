@@ -137,11 +137,11 @@ POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.F
 POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_merge5b_n0
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
@@ -314,11 +314,11 @@ POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.F
 POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_merge5b_n0
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
@@ -348,11 +348,11 @@ POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.F
 POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_merge5b_n0
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
@@ -409,11 +409,11 @@ POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc_merge5b_n0
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items

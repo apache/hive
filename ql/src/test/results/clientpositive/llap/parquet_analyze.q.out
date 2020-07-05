@@ -108,11 +108,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@parquet_create_people
 PREHOOK: Output: default@parquet_create_people
 POSTHOOK: query: ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@parquet_create_people
 POSTHOOK: Output: default@parquet_create_people
 PREHOOK: query: DESC FORMATTED parquet_create_people

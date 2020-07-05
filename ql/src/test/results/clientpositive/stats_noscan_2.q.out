@@ -23,11 +23,11 @@ POSTHOOK: Input: default@anaylyze_external
 5
 6
 PREHOOK: query: analyze table anaylyze_external compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: analyze table anaylyze_external compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
 PREHOOK: query: describe formatted anaylyze_external
@@ -64,11 +64,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table anaylyze_external compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: analyze table anaylyze_external compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
 PREHOOK: query: describe formatted anaylyze_external
@@ -199,13 +199,13 @@ POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 #### A masked pattern was here ####
 500
 PREHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 PREHOOK: Output: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external@insertdate=2008-01-01
 POSTHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 POSTHOOK: Output: default@anaylyze_external
@@ -246,13 +246,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 PREHOOK: Output: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external@insertdate=2008-01-01
 POSTHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 POSTHOOK: Output: default@anaylyze_external

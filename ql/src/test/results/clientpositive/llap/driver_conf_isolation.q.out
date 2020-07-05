@@ -16,11 +16,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: analyze table t compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: analyze table t compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 PREHOOK: query: select "strict"

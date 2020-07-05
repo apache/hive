@@ -210,11 +210,11 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrcpart_n1
 POSTHOOK: Output: default@tstsrcpart_n1
 PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src
 POSTHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src
 PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value

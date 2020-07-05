@@ -511,11 +511,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab2_n6
 Warning: Value had a \n character in it.
 PREHOOK: query: analyze table tab2_n6 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab2_n6
 PREHOOK: Output: default@tab2_n6
 POSTHOOK: query: analyze table tab2_n6 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab2_n6
 POSTHOOK: Output: default@tab2_n6
 PREHOOK: query: analyze table tab2_n6 compute statistics for columns

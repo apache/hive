@@ -71,27 +71,27 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@loc
 PREHOOK: query: analyze table emp_n2 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emp_n2
 PREHOOK: Output: default@emp_n2
 POSTHOOK: query: analyze table emp_n2 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emp_n2
 POSTHOOK: Output: default@emp_n2
 PREHOOK: query: analyze table dept_n1 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dept_n1
 PREHOOK: Output: default@dept_n1
 POSTHOOK: query: analyze table dept_n1 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dept_n1
 POSTHOOK: Output: default@dept_n1
 PREHOOK: query: analyze table loc compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc
 PREHOOK: Output: default@loc
 POSTHOOK: query: analyze table loc compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc
 POSTHOOK: Output: default@loc
 PREHOOK: query: analyze table emp_n2 compute statistics for columns lastname,deptid,locid

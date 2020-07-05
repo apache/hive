@@ -265,11 +265,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table stats2 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats2
 PREHOOK: Output: default@stats2
 POSTHOOK: query: analyze table stats2 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats2
 POSTHOOK: Output: default@stats2
 PREHOOK: query: desc formatted stats2
@@ -669,11 +669,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table stats2 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats2
 PREHOOK: Output: default@stats2
 POSTHOOK: query: analyze table stats2 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats2
 POSTHOOK: Output: default@stats2
 PREHOOK: query: desc formatted stats2

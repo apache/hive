@@ -55,19 +55,19 @@ POSTHOOK: Lineage: dsrv2_small.shipdate_string SIMPLE [(dsrv2_big)dsrv2_big.Fiel
 POSTHOOK: Lineage: dsrv2_small.shipdate_ts SIMPLE [(dsrv2_big)dsrv2_big.FieldSchema(name:shipdate_ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: dsrv2_small.shipdate_varchar SIMPLE [(dsrv2_big)dsrv2_big.FieldSchema(name:shipdate_varchar, type:varchar(10), comment:null), ]
 PREHOOK: query: analyze table dsrv2_big compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dsrv2_big
 PREHOOK: Output: default@dsrv2_big
 POSTHOOK: query: analyze table dsrv2_big compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dsrv2_big
 POSTHOOK: Output: default@dsrv2_big
 PREHOOK: query: analyze table dsrv2_small compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dsrv2_small
 PREHOOK: Output: default@dsrv2_small
 POSTHOOK: query: analyze table dsrv2_small compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dsrv2_small
 POSTHOOK: Output: default@dsrv2_small
 PREHOOK: query: analyze table dsrv2_big compute statistics for columns

@@ -230,11 +230,11 @@ POSTHOOK: Input: default@users
 #### A masked pattern was here ####
 2
 PREHOOK: query: analyze table users compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@users
 PREHOOK: Output: default@users
 POSTHOOK: query: analyze table users compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@users
 POSTHOOK: Output: default@users
 PREHOOK: query: desc formatted users

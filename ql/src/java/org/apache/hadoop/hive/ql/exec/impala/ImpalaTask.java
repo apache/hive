@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.impala;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ImpalaExecutionMode;
 import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
@@ -24,15 +25,13 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TaskQueue;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Implementation of a Task for managing the execution of ImpalaWork. It starts execution of the desired Impala query
@@ -51,29 +50,41 @@ public class ImpalaTask extends Task<ImpalaWork> {
         int rc = 0;
         HiveConf conf = getQueryState().getConf();
         boolean isPlannedMode = conf.getImpalaExecutionMode() == ImpalaExecutionMode.PLAN;
-        boolean isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
+        boolean isStreaming;
         try {
             ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
             TOperationHandle opHandle;
-            if (work.hasPlannedWork()) {
+            switch (work.getType()) {
+            case PLANNED_EXEC_REQUEST:
                 Preconditions.checkState(isPlannedMode);
+                isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
                 opHandle = session.executePlan(work.getQuery(), work.getExecRequest());
-            } else {
-                Preconditions.checkState(isPlannedMode == false, "Tried to pass-through query unexpectedly");
+                break;
+            case PLANNED_QUERY:
+                Preconditions.checkState(isPlannedMode);
+                Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE);
+                isStreaming = true;
                 opHandle = session.execute(work.getQuery());
+                break;
+            case QUERY:
+                Preconditions.checkState(isPlannedMode == false, "Tried to pass-through query unexpectedly");
+                isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
+                opHandle = session.execute(work.getQuery());
+                break;
+            default:
+                throw new RuntimeException("Type not recognized: " + work.getType());
             }
 
             FetchTask fetch = work.getFetch();
             if(fetch != null) {
-              FetchOperator fetchOp = fetch.getFetchOp();
-              if (fetchOp instanceof ImpalaStreamingFetchOperator) {
+              if (fetch.getFetchOp() instanceof ImpalaStreamingFetchOperator) {
                   Preconditions.checkState(isStreaming);
-                  ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetchOp;
+                  ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetch.getFetchOp();
                   impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle, work.getFetchSize()));
               } else {
+                // Non streaming mode: This will block until results are ready.
                 Preconditions.checkState(isStreaming == false);
                 try {
-                  // Will block until results are ready
                   session.fetch(opHandle, 1);
                 } finally {
                   // Always close operation independently on whether

@@ -19,11 +19,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@s/c
 PREHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@s/c
 PREHOOK: Output: default@s/c
 POSTHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@s/c
 POSTHOOK: Output: default@s/c
 PREHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS FOR COLUMNS key,value

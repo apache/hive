@@ -17,11 +17,11 @@ POSTHOOK: Output: default@analyze_srcbucket
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain analyze table analyze_srcbucket compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@analyze_srcbucket
 PREHOOK: Output: default@analyze_srcbucket
 POSTHOOK: query: explain analyze table analyze_srcbucket compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@analyze_srcbucket
 POSTHOOK: Output: default@analyze_srcbucket
 STAGE DEPENDENCIES:
@@ -41,11 +41,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcbucket compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@analyze_srcbucket
 PREHOOK: Output: default@analyze_srcbucket
 POSTHOOK: query: analyze table analyze_srcbucket compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@analyze_srcbucket
 POSTHOOK: Output: default@analyze_srcbucket
 PREHOOK: query: describe formatted analyze_srcbucket

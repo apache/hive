@@ -113,11 +113,11 @@ POSTHOOK: Output: default@lday
 POSTHOOK: Lineage: lday.d_date SCRIPT []
 POSTHOOK: Lineage: lday.ly_date SCRIPT []
 PREHOOK: query: analyze table item compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@item
 PREHOOK: Output: default@item
 POSTHOOK: query: analyze table item compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@item
 POSTHOOK: Output: default@item
 PREHOOK: query: analyze table item compute statistics for columns
@@ -131,11 +131,11 @@ POSTHOOK: Input: default@item
 POSTHOOK: Output: default@item
 #### A masked pattern was here ####
 PREHOOK: query: analyze table odetail compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@odetail
 PREHOOK: Output: default@odetail
 POSTHOOK: query: analyze table odetail compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@odetail
 POSTHOOK: Output: default@odetail
 PREHOOK: query: analyze table odetail compute statistics for columns
@@ -149,11 +149,11 @@ POSTHOOK: Input: default@odetail
 POSTHOOK: Output: default@odetail
 #### A masked pattern was here ####
 PREHOOK: query: analyze table ytday compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ytday
 PREHOOK: Output: default@ytday
 POSTHOOK: query: analyze table ytday compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ytday
 POSTHOOK: Output: default@ytday
 PREHOOK: query: analyze table ytday compute statistics for columns
@@ -167,11 +167,11 @@ POSTHOOK: Input: default@ytday
 POSTHOOK: Output: default@ytday
 #### A masked pattern was here ####
 PREHOOK: query: analyze table lday compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@lday
 PREHOOK: Output: default@lday
 POSTHOOK: query: analyze table lday compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lday
 POSTHOOK: Output: default@lday
 PREHOOK: query: analyze table lday compute statistics for columns

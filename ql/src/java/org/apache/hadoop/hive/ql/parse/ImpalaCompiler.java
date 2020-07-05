@@ -17,8 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.ImpalaQueryOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -26,6 +31,10 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
@@ -36,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 /**
  * Creates a single task that encapsulates all work and context required for Impala execution.
@@ -55,33 +66,100 @@ public class ImpalaCompiler extends TaskCompiler {
 
     @Override
     protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
-                                    List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
-            throws SemanticException {
+            List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
         // CDPD-6976: Add Perf logging for Impala Execution
-        ImpalaWork work = null;
+        ImpalaWork work;
         if (isPlanned) {
-            TExecRequest execRequest = getExecRequest(pCtx);
-            work = new ImpalaWork(execRequest, pCtx.getQueryState().getQueryString(),
-                pCtx.getFetchTask(), requestedFetchSize);
+            boolean computeStats = pCtx.getQueryProperties().isAnalyzeCommand() ||
+                pCtx.getQueryProperties().isAnalyzeRewrite();
+            if (computeStats) {
+                // Compute statistics statements are sent to the Impala engine
+                // as a SQL statement.
+                // We need to create a fetch operator since only Impala returns
+                // results for this statement
+                createFetchTask(pCtx);
+                work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
+                    pCtx.getFetchTask(), requestedFetchSize);
+            } else {
+                // This is the common path for a planned query
+                TExecRequest execRequest = getExecRequest(pCtx);
+                work = ImpalaWork.createPlannedWork(execRequest, pCtx.getQueryState().getQueryString(),
+                    pCtx.getFetchTask(), requestedFetchSize);
+            }
         } else {
             // CDPD-7172: Investigate security implications of Impala query execution mode
-            work = new ImpalaWork(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
+            work = ImpalaWork.createQuery(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
         }
         rootTasks.add(TaskFactory.get(work));
     }
 
+    /**
+     * This method creates a fetch task for planned query path.
+     * For instance, compute stats returns a row with a single 'summary' string
+     * field after completion (see {@link ColumnStatsSemanticAnalyzer#analyze}).
+     * However, compute stats query does not return any result in Hive,
+     * thus the plan does not contain a fetch task. We solve that mismatch
+     * using this method. Note that the fetch task will use the result schema
+     * as it was defined during semantic analysis.
+     */
+    private void createFetchTask(ParseContext pCtx) {
+        FetchWork fetch = new FetchWork(new ArrayList<>(), new ArrayList<>(), null);
+        fetch.setSink(pCtx.getFetchSink());
+        FetchTask fetchTask = (FetchTask) TaskFactory.get(fetch);
+        pCtx.setFetchTask(fetchTask);
+    }
+
+    /*
+     * The translation is as follows:
+     * - No column stats:
+     *     ANALYZE TABLE `tab` COMPUTE STATISTICS
+     *     -> COMPUTE STATS `tab` ()
+     * - All columns:
+     *     ANALYZE TABLE `tab` COMPUTE STATISTICS FOR COLUMNS
+     *     -> COMPUTE STATS `tab`
+     * - Subset of columns:
+     *    ANALYZE TABLE `tab` COMPUTE STATISTICS FOR COLUMNS `col1`, `col2`
+     *     -> COMPUTE STATS `tab` (`col1`, `col2`)
+     */
+    private String generateComputeStatsStatement(ParseContext pCtx, Set<ReadEntity> inputs) {
+        Table table = inputs.iterator().next().getTable();
+        StringBuilder sb = new StringBuilder();
+        sb.append("COMPUTE STATS ");
+        sb.append(unparseIdentifier(table.getDbName(), conf));
+        sb.append(".");
+        sb.append(unparseIdentifier(table.getTableName(), conf));
+        AnalyzeRewriteContext columnStatsCtx = pCtx.getAnalyzeRewrite();
+        if (columnStatsCtx != null && columnStatsCtx.getColName() != null) {
+            Set<String> colStats = new HashSet<>(columnStatsCtx.getColName());
+            boolean append = table.getCols().stream()
+                .anyMatch(col -> !colStats.contains(col.getName()));
+            if (append) {
+              sb.append(" (");
+              sb.append(columnStatsCtx.getColName()
+                  .stream()
+                  .map(colName -> unparseIdentifier(colName, conf))
+                  .collect(Collectors.joining(", ")));
+              sb.append(")");
+            }
+        } else {
+            sb.append(" ()");
+        }
+        return sb.toString();
+    }
+
     @Override
     protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
-                                        Set<WriteEntity> outputs) throws SemanticException {
+            Set<WriteEntity> outputs) {
     }
 
     @Override
     protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
-                                  GlobalLimitCtx globalLimitCtx) throws SemanticException {
+            GlobalLimitCtx globalLimitCtx) {
     }
 
     @Override
-    protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx, Context ctx) throws SemanticException {
+    protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
+            Context ctx) {
     }
 
     @Override
@@ -89,14 +167,30 @@ public class ImpalaCompiler extends TaskCompiler {
     }
 
     private TExecRequest getExecRequest(ParseContext pCtx) {
-      Collection<Operator<?>> tableScanOps =
-          Lists.<Operator<?>>newArrayList(pCtx.getTopOps().values());
-      Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
-      if (fsOps.isEmpty()) {
-        throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
-      }
-      ImpalaCompiledPlan compiledPlan = fsOps.iterator().next().getCompiledPlan();
-      return ((ImpalaCompiledPlan) compiledPlan).getExecRequest();
+        Collection<Operator<?>> tableScanOps =
+            Lists.newArrayList(pCtx.getTopOps().values());
+        Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
+        if (fsOps.isEmpty()) {
+            throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
+        }
+        ImpalaCompiledPlan compiledPlan = fsOps.iterator().next().getCompiledPlan();
+        return compiledPlan.getExecRequest();
+    }
 
+    @Override
+    protected void genColumnStats(List<Task<?>> rootTasks, ParseContext pCtx,
+            final Set<ReadEntity> inputs, final Set<WriteEntity> outputs) {
+        Preconditions.checkArgument(pCtx.getQueryProperties().isAnalyzeRewrite(),
+            "Only explicit column stats computation is supported for Impala");
+        // Add partitions to output write entities
+        Table table = inputs.iterator().next().getTable();
+        if (table.isPartitioned() && !pCtx.getOpToPartList().isEmpty()) {
+            PrunedPartitionList ppl =
+                pCtx.getOpToPartList().entrySet().iterator().next().getValue();
+            for (Partition partn : ppl.getPartitions()) {
+                LOG.trace("adding part: " + partn);
+                outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
+            }
+        }
     }
 }

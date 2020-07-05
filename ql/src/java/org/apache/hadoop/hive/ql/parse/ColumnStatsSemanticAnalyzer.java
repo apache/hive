@@ -496,7 +496,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     try {
       ctx = new Context(conf);
     } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_IO_ERROR.getMsg());
+      throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_IO_ERROR.getMsg(), e);
     }
     ctx.setCmd(rewrittenQuery);
     ctx.setHDFSCleanup(true);
@@ -504,7 +504,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     try {
       return ParseUtils.parse(rewrittenQuery, ctx);
     } catch (ParseException e) {
-      throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_PARSE_ERROR.getMsg());
+      throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_PARSE_ERROR.getMsg(), e);
     }
   }
 
@@ -560,6 +560,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       // Save away the original AST
       originalTree = ast;
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
+      if (isImpalaPlan(conf) && isPartitionStats) {
+        throw new SemanticException(
+            "Partitions cannot be statically specified in ANALYZE TABLE in Impala");
+      }
       Map<String, String> partSpec = null;
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
@@ -601,13 +605,19 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       ctx.setExplainConfig(origCtx.getExplainConfig());
       LOG.info("Invoking analyze on rewritten query");
       analyzeInternal(rewrittenTree);
-      // After analyzeInternal() Hiveop get set as Query
-      // since we are passing in AST for select query, so reset it.
-      this.queryState.setCommandType(HiveOperation.ANALYZE_TABLE);
     } else {
       initCtx(origCtx);
       LOG.info("Invoking analyze on original query");
       analyzeInternal(originalTree);
+    }
+    // After analyzeInternal() Hiveop get set as Query
+    // since we are passing in AST for select query, so reset it.
+    this.queryState.setCommandType(HiveOperation.ANALYZE_TABLE);
+    if (isImpalaPlan(conf)) {
+      // Special handling for Impala. The query result will contain
+      // a single row with a 'summary' string column.
+      this.resultSchema = new ArrayList<>();
+      this.resultSchema.add(new FieldSchema("summary", "string", ""));
     }
   }
 

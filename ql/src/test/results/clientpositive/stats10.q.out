@@ -415,7 +415,7 @@ POSTHOOK: Input: default@bucket3_1_n0@ds=1
 498	val_498	1
 498	val_498	1
 PREHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@bucket3_1_n0
 PREHOOK: Input: default@bucket3_1_n0@ds=1
 PREHOOK: Input: default@bucket3_1_n0@ds=2
@@ -423,7 +423,7 @@ PREHOOK: Output: default@bucket3_1_n0
 PREHOOK: Output: default@bucket3_1_n0@ds=1
 PREHOOK: Output: default@bucket3_1_n0@ds=2
 POSTHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@bucket3_1_n0
 POSTHOOK: Input: default@bucket3_1_n0@ds=1
 POSTHOOK: Input: default@bucket3_1_n0@ds=2
@@ -447,7 +447,7 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@bucket3_1_n0
 PREHOOK: Input: default@bucket3_1_n0@ds=1
 PREHOOK: Input: default@bucket3_1_n0@ds=2
@@ -455,7 +455,7 @@ PREHOOK: Output: default@bucket3_1_n0
 PREHOOK: Output: default@bucket3_1_n0@ds=1
 PREHOOK: Output: default@bucket3_1_n0@ds=2
 POSTHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@bucket3_1_n0
 POSTHOOK: Input: default@bucket3_1_n0@ds=1
 POSTHOOK: Input: default@bucket3_1_n0@ds=2

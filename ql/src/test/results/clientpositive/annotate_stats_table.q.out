@@ -97,11 +97,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table emp_orc compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emp_orc
 PREHOOK: Output: default@emp_orc
 POSTHOOK: query: analyze table emp_orc compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: explain select * from emp_orc

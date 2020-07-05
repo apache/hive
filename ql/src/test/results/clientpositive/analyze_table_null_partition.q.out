@@ -46,7 +46,7 @@ POSTHOOK: Lineage: test2_n6 PARTITION(age=30).name SIMPLE [(test1_n9)test1_n9.Fi
 POSTHOOK: Lineage: test2_n6 PARTITION(age=40).name SIMPLE [(test1_n9)test1_n9.FieldSchema(name:name, type:string, comment:null), ]
 POSTHOOK: Lineage: test2_n6 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1_n9)test1_n9.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: ANALYZE TABLE test2_n6 PARTITION(age) COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@test2_n6
 PREHOOK: Input: default@test2_n6@age=15
 PREHOOK: Input: default@test2_n6@age=30
@@ -58,7 +58,7 @@ PREHOOK: Output: default@test2_n6@age=30
 PREHOOK: Output: default@test2_n6@age=40
 PREHOOK: Output: default@test2_n6@age=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: query: ANALYZE TABLE test2_n6 PARTITION(age) COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@test2_n6
 POSTHOOK: Input: default@test2_n6@age=15
 POSTHOOK: Input: default@test2_n6@age=30

@@ -27,11 +27,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studentnull100
 PREHOOK: query: analyze table studentnull100 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@studentnull100
 PREHOOK: Output: default@studentnull100
 POSTHOOK: query: analyze table studentnull100 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@studentnull100
 POSTHOOK: Output: default@studentnull100
 studentnull100.name	studentnull100.age	studentnull100.gpa

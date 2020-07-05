@@ -35,7 +35,7 @@ POSTHOOK: Lineage: analyze_srcpart_n3 PARTITION(ds=2008-04-09,hr=12).key SIMPLE 
 POSTHOOK: Lineage: analyze_srcpart_n3 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
 analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@analyze_srcpart_n3
 PREHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 PREHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=12
@@ -44,7 +44,7 @@ PREHOOK: Output: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 PREHOOK: Output: default@analyze_srcpart_n3@ds=2008-04-08/hr=12
 POSTHOOK: query: explain extended
 analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@analyze_srcpart_n3
 POSTHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=12
@@ -151,7 +151,7 @@ STAGE PLANS:
           Stats Aggregation Key Prefix: default.analyze_srcpart_n3/
 
 PREHOOK: query: analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@analyze_srcpart_n3
 PREHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 PREHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=12
@@ -159,7 +159,7 @@ PREHOOK: Output: default@analyze_srcpart_n3
 PREHOOK: Output: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 PREHOOK: Output: default@analyze_srcpart_n3@ds=2008-04-08/hr=12
 POSTHOOK: query: analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@analyze_srcpart_n3
 POSTHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@analyze_srcpart_n3@ds=2008-04-08/hr=12

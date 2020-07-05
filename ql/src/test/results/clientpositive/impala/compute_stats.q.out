@@ -1,0 +1,211 @@
+PREHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: default@impala_tpch_lineitem
+POSTHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: default@impala_tpch_lineitem
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpch_lineitem` ()
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpch_lineitem`
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns l_returnflag
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns l_returnflag
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpch_lineitem` (`l_returnflag`)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns
+  `l_orderkey`, `l_orderkey`, `l_suppkey`,
+  `l_linenumber`, `l_quantity`, `l_extendedprice`,
+  `l_discount`, `l_tax`, `l_returnflag`,
+  `l_linestatus`, `l_shipdate`, `l_commitdate`,
+  `l_receiptdate`, `l_shipinstruct`, `l_shipmode`,
+  `l_comment`
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+analyze table `impala_tpch_lineitem`
+compute statistics for columns
+  `l_orderkey`, `l_orderkey`, `l_suppkey`,
+  `l_linenumber`, `l_quantity`, `l_extendedprice`,
+  `l_discount`, `l_tax`, `l_returnflag`,
+  `l_linestatus`, `l_shipdate`, `l_commitdate`,
+  `l_receiptdate`, `l_shipinstruct`, `l_shipmode`,
+  `l_comment`
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpch_lineitem` (`l_orderkey`, `l_orderkey`, `l_suppkey`, `l_linenumber`, `l_quantity`, `l_extendedprice`, `l_discount`, `l_tax`, `l_returnflag`, `l_linestatus`, `l_shipdate`, `l_commitdate`, `l_receiptdate`, `l_shipinstruct`, `l_shipmode`, `l_comment`)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: default@impala_tpcds_store_sales
+POSTHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: default@impala_tpcds_store_sales
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpcds_store_sales` ()
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpcds_store_sales`
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics for columns ss_addr_sk
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@impala_tpcds_store_sales
+PREHOOK: Output: default@impala_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+analyze table `impala_tpcds_store_sales`
+compute statistics for columns ss_addr_sk
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: Output: default@impala_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: COMPUTE STATS `default`.`impala_tpcds_store_sales` (`ss_addr_sk`)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

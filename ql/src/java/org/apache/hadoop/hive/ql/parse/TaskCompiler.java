@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
@@ -290,68 +289,10 @@ public abstract class TaskCompiler {
 
     optimizeTaskPlan(rootTasks, pCtx, ctx);
 
-    /*
-     * If the query was the result of analyze table column compute statistics rewrite, create
-     * a column stats task instead of a fetch task to persist stats to the metastore.
-     * As per HIVE-15903, we will also collect table stats when user computes column stats.
-     * That means, if isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()
-     * We need to collect table stats
-     * if isCStats, we need to include a basic stats task
-     * else it is ColumnStatsAutoGather, which should have a move task with a stats task already.
-     */
+    // If the query was the result of analyze table column compute statistics rewrite
+    // or auto-gather column stats, create a column stats task
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      // map from tablename to task (ColumnStatsTask which includes a BasicStatsTask)
-      Map<String, StatsTask> map = new LinkedHashMap<>();
-      if (isCStats) {
-        if (rootTasks == null || rootTasks.size() != 1 || pCtx.getTopOps() == null
-            || pCtx.getTopOps().size() != 1) {
-          throw new SemanticException("Can not find correct root task!");
-        }
-        try {
-          Task<?> root = rootTasks.iterator().next();
-          StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
-              .iterator().next(), root, outputs);
-          root.addDependentTask(tsk);
-          map.put(extractTableFullName(tsk), tsk);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, map, outerQueryLimit, 0);
-      } else {
-        Set<Task<?>> leafTasks = new LinkedHashSet<Task<?>>();
-        getLeafTasks(rootTasks, leafTasks);
-        List<Task<?>> nonStatsLeafTasks = new ArrayList<>();
-        for (Task<?> tsk : leafTasks) {
-          // map table name to the correct ColumnStatsTask
-          if (tsk instanceof StatsTask) {
-            map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
-          } else {
-            nonStatsLeafTasks.add(tsk);
-          }
-        }
-        // add cStatsTask as a dependent of all the nonStatsLeafTasks
-        for (Task<?> tsk : nonStatsLeafTasks) {
-          for (Task<?> cStatsTask : map.values()) {
-            tsk.addDependentTask(cStatsTask);
-          }
-        }
-        for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
-            .getColumnStatsAutoGatherContexts()) {
-          if (!columnStatsAutoGatherContext.isInsertInto()) {
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, 0);
-          } else {
-            int numBitVector;
-            try {
-              numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
-            } catch (Exception e) {
-              throw new SemanticException(e.getMessage());
-            }
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, numBitVector);
-          }
-        }
-      }
+      genColumnStats(rootTasks, pCtx, inputs, outputs);
     }
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
@@ -397,6 +338,72 @@ public abstract class TaskCompiler {
     for (Task<?> rootTask : rootTasks) {
       GenMapRedUtils.internTableDesc(rootTask, interner);
       GenMapRedUtils.deriveFinalExplainAttributes(rootTask, pCtx.getConf());
+    }
+  }
+
+  /**
+   * Create a column stats task to persist stats to the metastore.
+   * If isCStats, we need to include a basic stats task (see HIVE-15903).
+   * Otherwise, we are auto-gathering stats, which should have a move task
+   * with a stats task already.
+   */
+  protected void genColumnStats(List<Task<?>> rootTasks, ParseContext pCtx,
+      final Set<ReadEntity> inputs, final Set<WriteEntity> outputs)
+      throws SemanticException {
+    List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
+    boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
+    int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
+    // map from tablename to task (ColumnStatsTask which includes a BasicStatsTask)
+    Map<String, StatsTask> map = new LinkedHashMap<>();
+    if (isCStats) {
+      if (rootTasks == null || rootTasks.size() != 1 || pCtx.getTopOps() == null
+          || pCtx.getTopOps().size() != 1) {
+        throw new SemanticException("Can not find correct root task!");
+      }
+      try {
+        Task<?> root = rootTasks.iterator().next();
+        StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
+            .iterator().next(), root, outputs);
+        root.addDependentTask(tsk);
+        map.put(extractTableFullName(tsk), tsk);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, map, outerQueryLimit, 0);
+    } else {
+      Set<Task<?>> leafTasks = new LinkedHashSet<Task<?>>();
+      getLeafTasks(rootTasks, leafTasks);
+      List<Task<?>> nonStatsLeafTasks = new ArrayList<>();
+      for (Task<?> tsk : leafTasks) {
+        // map table name to the correct ColumnStatsTask
+        if (tsk instanceof StatsTask) {
+          map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
+        } else {
+          nonStatsLeafTasks.add(tsk);
+        }
+      }
+      // add cStatsTask as a dependent of all the nonStatsLeafTasks
+      for (Task<?> tsk : nonStatsLeafTasks) {
+        for (Task<?> cStatsTask : map.values()) {
+          tsk.addDependentTask(cStatsTask);
+        }
+      }
+      for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
+          .getColumnStatsAutoGatherContexts()) {
+        if (!columnStatsAutoGatherContext.isInsertInto()) {
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, 0);
+        } else {
+          int numBitVector;
+          try {
+            numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+          } catch (Exception e) {
+            throw new SemanticException(e.getMessage());
+          }
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, numBitVector);
+        }
+      }
     }
   }
 

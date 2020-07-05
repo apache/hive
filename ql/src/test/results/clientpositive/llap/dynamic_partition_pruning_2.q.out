@@ -68,15 +68,15 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@agg_01@dim_shops_id=3
 PREHOOK: query: analyze table dim_shops compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dim_shops
 PREHOOK: Output: default@dim_shops
 POSTHOOK: query: analyze table dim_shops compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dim_shops
 POSTHOOK: Output: default@dim_shops
 PREHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
@@ -86,7 +86,7 @@ PREHOOK: Output: default@agg_01@dim_shops_id=1
 PREHOOK: Output: default@agg_01@dim_shops_id=2
 PREHOOK: Output: default@agg_01@dim_shops_id=3
 POSTHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2

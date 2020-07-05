@@ -64,11 +64,11 @@ value               	string
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_orc_merge_test_stat
 PREHOOK: Output: default@src_orc_merge_test_stat
 POSTHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 POSTHOOK: Output: default@src_orc_merge_test_stat
 PREHOOK: query: desc formatted  src_orc_merge_test_stat
@@ -115,11 +115,11 @@ POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 POSTHOOK: Output: default@src_orc_merge_test_stat
 PREHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_orc_merge_test_stat
 PREHOOK: Output: default@src_orc_merge_test_stat
 POSTHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 POSTHOOK: Output: default@src_orc_merge_test_stat
 PREHOOK: query: desc formatted src_orc_merge_test_stat
@@ -257,12 +257,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_orc_merge_test_part_stat
 PREHOOK: Output: default@src_orc_merge_test_part_stat
 PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
 POSTHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 POSTHOOK: Output: default@src_orc_merge_test_part_stat
 POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
@@ -312,12 +312,12 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
 PREHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_orc_merge_test_part_stat
 PREHOOK: Output: default@src_orc_merge_test_part_stat
 PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
 POSTHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 POSTHOOK: Output: default@src_orc_merge_test_part_stat
 POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011

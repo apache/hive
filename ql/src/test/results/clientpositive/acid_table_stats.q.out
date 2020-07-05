@@ -145,13 +145,13 @@ POSTHOOK: Input: default@acid
 #### A masked pattern was here ####
 1000
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@acid
 PREHOOK: Input: default@acid@ds=2008-04-08
 PREHOOK: Output: default@acid
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08
 POSTHOOK: Output: default@acid
@@ -335,13 +335,13 @@ Num Buckets:        	2
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@acid
 PREHOOK: Input: default@acid@ds=2008-04-08
 PREHOOK: Output: default@acid
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08
 POSTHOOK: Output: default@acid

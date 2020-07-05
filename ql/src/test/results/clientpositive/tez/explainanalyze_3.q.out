@@ -249,19 +249,19 @@ POSTHOOK: Output: default@src_stats
 POSTHOOK: Lineage: src_stats.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_stats.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table src_stats compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
 POSTHOOK: query: analyze table src_stats compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
 PREHOOK: query: explain analyze analyze table src_stats compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
 POSTHOOK: query: explain analyze analyze table src_stats compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
 Stage-2

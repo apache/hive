@@ -176,11 +176,11 @@ POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp1 EXPRESSION [(small_alltypesor
 POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: small_alltypesorc_a.ctinyint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@small_alltypesorc_a
 PREHOOK: Output: default@small_alltypesorc_a
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS

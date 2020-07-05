@@ -1556,11 +1556,11 @@ POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 0
 PREHOOK: query: analyze table dsrv_small compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dsrv_small
 PREHOOK: Output: default@dsrv_small
 POSTHOOK: query: analyze table dsrv_small compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dsrv_small
 POSTHOOK: Output: default@dsrv_small
 PREHOOK: query: analyze table dsrv_small compute statistics for columns

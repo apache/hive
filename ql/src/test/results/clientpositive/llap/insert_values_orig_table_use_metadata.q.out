@@ -868,13 +868,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table sp PARTITION (ds="2008-04-08", hr="11") compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@sp
 PREHOOK: Input: default@sp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@sp
 PREHOOK: Output: default@sp@ds=2008-04-08/hr=11
 POSTHOOK: query: analyze table sp PARTITION (ds="2008-04-08", hr="11") compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@sp
 POSTHOOK: Input: default@sp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@sp

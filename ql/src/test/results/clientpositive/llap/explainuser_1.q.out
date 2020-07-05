@@ -4372,11 +4372,11 @@ POSTHOOK: Lineage: smb_input1_n2.value SIMPLE [(smb_input_n0)smb_input_n0.FieldS
 POSTHOOK: Lineage: smb_input2_n2.key SIMPLE [(smb_input_n0)smb_input_n0.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_input2_n2.value SIMPLE [(smb_input_n0)smb_input_n0.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: analyze table smb_input1_n2 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@smb_input1_n2
 PREHOOK: Output: default@smb_input1_n2
 POSTHOOK: query: analyze table smb_input1_n2 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@smb_input1_n2
 POSTHOOK: Output: default@smb_input1_n2
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key

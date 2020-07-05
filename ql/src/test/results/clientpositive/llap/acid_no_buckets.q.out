@@ -56,7 +56,7 @@ POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
 2008-04-09	11	413	val_413
 2008-04-09	11	413	val_413
 PREHOOK: query: analyze table srcpart_acid PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acid
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
@@ -68,7 +68,7 @@ PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acid PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acid
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
@@ -319,7 +319,7 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: analyze table srcpart_acid PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acid
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
@@ -331,7 +331,7 @@ PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acid PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acid
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
@@ -715,7 +715,7 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
 2008-04-09	11	413	val_413
 2008-04-09	11	413	val_413
 PREHOOK: query: analyze table srcpart_acidb PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidb
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
@@ -727,7 +727,7 @@ PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidb PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidb
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
@@ -918,7 +918,7 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 2008-04-08	11	1002	val1002
 2008-04-08	11	1003	val1003
 PREHOOK: query: analyze table srcpart_acidb PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidb
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
@@ -930,7 +930,7 @@ PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidb PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidb
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
@@ -1254,7 +1254,7 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
 2008-04-09	11	413	val_413
 2008-04-09	11	413	val_413
 PREHOOK: query: analyze table srcpart_acidv PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidv
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
@@ -1266,7 +1266,7 @@ PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidv PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidv
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
@@ -1472,7 +1472,7 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 2008-04-08	11	1002	val1002
 2008-04-08	11	1003	val1003
 PREHOOK: query: analyze table srcpart_acidv PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidv
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
@@ -1484,7 +1484,7 @@ PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidv PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidv
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
@@ -2113,7 +2113,7 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
 2008-04-09	11	413	val_413
 2008-04-09	11	413	val_413
 PREHOOK: query: analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidvb
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
@@ -2125,7 +2125,7 @@ PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidvb
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
@@ -2331,7 +2331,7 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 2008-04-08	11	1002	val1002
 2008-04-08	11	1003	val1003
 PREHOOK: query: analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_acidvb
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
@@ -2343,7 +2343,7 @@ PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_acidvb
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12

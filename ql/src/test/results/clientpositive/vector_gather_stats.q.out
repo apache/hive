@@ -59,14 +59,14 @@ POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_marital_status S
 POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_purchase_estimate SCRIPT []
 PREHOOK: query: explain vectorization detail
 analyze table cd partition (cd_education_status) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cd
 PREHOOK: Input: default@cd@cd_education_status=Primary
 PREHOOK: Output: default@cd
 PREHOOK: Output: default@cd@cd_education_status=Primary
 POSTHOOK: query: explain vectorization detail
 analyze table cd partition (cd_education_status) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cd
 POSTHOOK: Input: default@cd@cd_education_status=Primary
 POSTHOOK: Output: default@cd
@@ -98,13 +98,13 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: analyze table cd partition (cd_education_status) compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cd
 PREHOOK: Input: default@cd@cd_education_status=Primary
 PREHOOK: Output: default@cd
 PREHOOK: Output: default@cd@cd_education_status=Primary
 POSTHOOK: query: analyze table cd partition (cd_education_status) compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cd
 POSTHOOK: Input: default@cd@cd_education_status=Primary
 POSTHOOK: Output: default@cd

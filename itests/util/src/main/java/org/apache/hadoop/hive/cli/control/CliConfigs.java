@@ -329,6 +329,25 @@ public class CliConfigs {
     }
   }
 
+  public static class ImpalaNegativeCliConfig extends AbstractCliConfig {
+    public ImpalaNegativeCliConfig() {
+      super(CoreNegativeCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientnegative/impala");
+
+        setResultsDir("ql/src/test/results/clientnegative/impala");
+        setLogDir("itests/qtest/target/qfile-results/clientnegative/impala");
+
+        setHiveConfDir("data/conf/impala");
+        setClusterType(MiniClusterType.mr);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.hdfs);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
   public static class TezPerfCliConfig extends AbstractCliConfig {
     public TezPerfCliConfig(boolean useConstraints) {
       super(CorePerfCliDriver.class);

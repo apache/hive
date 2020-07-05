@@ -63,11 +63,11 @@ POSTHOOK: Lineage: table_8.tinyint_col_1 SIMPLE [(table_8_txt)table_8_txt.FieldS
 POSTHOOK: Lineage: table_8.tinyint_col_26 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:tinyint_col_26, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: table_8.varchar0200_col_31 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:varchar0200_col_31, type:varchar(200), comment:null), ]
 PREHOOK: query: analyze table table_8 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@table_8
 PREHOOK: Output: default@table_8
 POSTHOOK: query: analyze table table_8 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@table_8
 POSTHOOK: Output: default@table_8
 PREHOOK: query: CREATE EXTERNAL TABLE table_19_txt (float_col_1 FLOAT, varchar0037_col_2 VARCHAR(37), decimal2912_col_3 DECIMAL(29, 12), decimal0801_col_4 DECIMAL(8, 1), timestamp_col_5 TIMESTAMP, boolean_col_6 BOOLEAN, string_col_7 STRING, tinyint_col_8 TINYINT, boolean_col_9 BOOLEAN, decimal1614_col_10 DECIMAL(16, 14), boolean_col_11 BOOLEAN, float_col_12 FLOAT, char0116_col_13 CHAR(116), boolean_col_14 BOOLEAN, string_col_15 STRING, double_col_16 DOUBLE, string_col_17 STRING, bigint_col_18 BIGINT, int_col_19 INT)
@@ -122,11 +122,11 @@ POSTHOOK: Lineage: table_19.timestamp_col_5 SIMPLE [(table_19_txt)table_19_txt.F
 POSTHOOK: Lineage: table_19.tinyint_col_8 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:tinyint_col_8, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: table_19.varchar0037_col_2 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:varchar0037_col_2, type:varchar(37), comment:null), ]
 PREHOOK: query: analyze table table_19 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@table_19
 PREHOOK: Output: default@table_19
 POSTHOOK: query: analyze table table_19 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@table_19
 POSTHOOK: Output: default@table_19
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4

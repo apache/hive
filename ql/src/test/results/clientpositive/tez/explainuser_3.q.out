@@ -223,11 +223,11 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:newdb
 POSTHOOK: Output: database:newdb
 PREHOOK: query: explain analyze table src compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src
 POSTHOOK: query: explain analyze table src compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src
 Stage-2

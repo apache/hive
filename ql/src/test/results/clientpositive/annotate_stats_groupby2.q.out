@@ -19,11 +19,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@location
 PREHOOK: query: analyze table location compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@location
 PREHOOK: Output: default@location
 POSTHOOK: query: analyze table location compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@location
 POSTHOOK: Output: default@location
 PREHOOK: query: analyze table location compute statistics for columns state, country

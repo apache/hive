@@ -58,11 +58,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_rn3
 PREHOOK: query: analyze table orc1 compute statistics
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@orc1
 PREHOOK: Output: default@orc1
 POSTHOOK: query: analyze table orc1 compute statistics
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@orc1
 POSTHOOK: Output: default@orc1
 PREHOOK: query: explain vectorization from orc1 a
