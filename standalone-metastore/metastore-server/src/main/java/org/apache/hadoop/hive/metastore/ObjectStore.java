@@ -13061,7 +13061,10 @@ public class ObjectStore implements RawStore, Configurable {
         execution.setExecutorQueryId(info.getExecutorQueryId());
       }
       if (info.isSetErrorMessage()) {
-        execution.setErrorMessage(info.getErrorMessage());
+        // Error messages are stored as a varchar(2000) - the intention here is to only capture the "message"
+        // however: there are execptions which are repackaging the stacktrace into the message part...
+        String[] parts = info.getErrorMessage().split("\n", 2);
+        execution.setErrorMessage(StringUtils.abbreviate(parts[0], 1000));
       }
 
       switch (info.getState()) {
