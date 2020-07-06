@@ -241,6 +241,7 @@ STAGE PLANS:
                 TableScan
                   alias: test2b_n0
                   filterExpr: a is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_21_container, bigKeyColName:a, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -394,6 +395,7 @@ STAGE PLANS:
                 TableScan
                   alias: test2b_n0
                   filterExpr: a is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_21_container, bigKeyColName:a, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
