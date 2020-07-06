@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ import java.util.Map;
 public class StandardConstantMapObjectInspector extends StandardMapObjectInspector
   implements ConstantObjectInspector {
 
-  private Map<?, ?> value;
+  private Map<?, ?> value = new HashMap<>();
 
   protected StandardConstantMapObjectInspector() {
     super();
@@ -40,8 +41,10 @@ public class StandardConstantMapObjectInspector extends StandardMapObjectInspect
    */
    protected StandardConstantMapObjectInspector(ObjectInspector mapKeyObjectInspector,
        ObjectInspector mapValueObjectInspector, Map<?, ?> value) {
-    super(mapKeyObjectInspector, mapValueObjectInspector);
-    this.value = value;
+     super(mapKeyObjectInspector, mapValueObjectInspector);
+     if (null != value) {
+       this.value = value;
+     }
   }
 
   @Override
