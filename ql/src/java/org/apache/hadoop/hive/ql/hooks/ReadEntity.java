@@ -127,11 +127,11 @@ public class ReadEntity extends Entity implements Serializable {
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
-    super(p, true);
+    super(p);
   }
 
   public ReadEntity(Partition p, ReadEntity parent) {
-    super(p, true);
+    super(p);
     initParent(parent);
   }
 

@@ -96,7 +96,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          Partition that is written to.
    */
   public WriteEntity(Partition p, WriteType type) {
-    super(p, true);
+    super(p);
     setWriteTypeInternal(type);
   }
 

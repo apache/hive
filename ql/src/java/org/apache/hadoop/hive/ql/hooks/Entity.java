@@ -225,13 +225,12 @@ public class Entity implements Serializable {
    * @param p
    *          Partition that is read or written to.
    */
-  public Entity(Partition p, boolean complete) {
+  public Entity(Partition p) {
     d = null;
     this.p = p;
     t = p.getTable();
     typ = Type.PARTITION;
     name = computeName();
-    this.complete = complete;
   }
 
   public Entity(DummyPartition p, boolean complete) {
