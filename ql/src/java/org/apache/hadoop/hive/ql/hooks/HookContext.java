@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,7 +135,7 @@ public class HookContext {
   }
 
   public Set<WriteEntity> getOutputs() {
-    return new HashSet<>(outputs);
+    return outputs;
   }
 
   public void setOutputs(Set<WriteEntity> outputs) {
