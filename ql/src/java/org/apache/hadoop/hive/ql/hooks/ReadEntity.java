@@ -88,7 +88,7 @@ public class ReadEntity extends Entity implements Serializable {
    *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
-    super(t, true);
+    super(t);
   }
 
   private void initParent(ReadEntity parent) {
@@ -98,7 +98,7 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   public ReadEntity(Table t, ReadEntity parent) {
-    super(t, true);
+    super(t);
     initParent(parent);
   }
 

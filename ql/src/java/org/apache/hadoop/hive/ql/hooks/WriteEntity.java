@@ -71,7 +71,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          Table that is written to.
    */
   public WriteEntity(Table t, WriteType type) {
-    super(t, true);
+    super(t);
     setWriteTypeInternal(type);
   }
 

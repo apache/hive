@@ -211,13 +211,12 @@ public class Entity implements Serializable {
    * @param t
    *          Table that is read or written to.
    */
-  public Entity(Table t, boolean complete) {
+  public Entity(Table t) {
     d = null;
     p = null;
     this.t = t;
     typ = Type.TABLE;
     name = computeName();
-    this.complete = complete;
   }
 
   /**
