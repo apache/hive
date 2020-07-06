@@ -78,7 +78,7 @@ public class ReadEntity extends Entity implements Serializable {
    * Constructor for a database.
    */
   public ReadEntity(Database database) {
-    super(database, true);
+    super(database);
   }
 
   /**

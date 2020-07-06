@@ -183,14 +183,11 @@ public class Entity implements Serializable {
    *
    * @param database
    *          Database that is read or written to.
-   * @param complete
-   *          Means the database is target, not for table or partition, etc.
    */
-  public Entity(Database database, boolean complete) {
+  protected Entity(Database database) {
     this.database = database;
     this.typ = Type.DATABASE;
     this.name = computeName();
-    this.complete = complete;
   }
 
   /**

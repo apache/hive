@@ -60,7 +60,7 @@ public class WriteEntity extends Entity implements Serializable {
   }
 
   public WriteEntity(Database database, WriteType type) {
-    super(database, true);
+    super(database);
     setWriteTypeInternal(type);
   }
 
@@ -72,11 +72,6 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Table t, WriteType type) {
     super(t, true);
-    setWriteTypeInternal(type);
-  }
-
-  public WriteEntity(Table t, WriteType type, boolean complete) {
-    super(t, complete);
     setWriteTypeInternal(type);
   }
 
