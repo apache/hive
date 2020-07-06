@@ -143,14 +143,15 @@ public class ImpalaResultLocation implements FeFsTable {
         SlotRef slot = (SlotRef) expr;
         columnDescs.add(new TColumnDescriptor(slot.getDesc().getLabel(), slot.getType().toThrift()));
         columnNames.add(slot.getDesc().getLabel());
-      } else if (expr instanceof LiteralExpr || expr instanceof ImpalaFunctionCallExpr ||
-          expr instanceof ImpalaCaseExpr) {
-        // TODO: Investigate column naming
+      } else {
+        // Generically handle other expression types. We generally only care about about the return
+        // types. LiteralExpr, ImpalaFunctionCallExpr, ImpalaCaseExpr, ImpalaBinaryCompExpr are
+        // some types of Exprs that can occur here.
+        // TODO: Investigate column naming (can we generate better names for the columns for
+        // different Expr types).
         columnDescs.add(new TColumnDescriptor("_c" + literalCount,  expr.getType().toThrift()));
         columnNames.add("_c" + literalCount);
         literalCount++;
-      } else {
-        throw new IllegalStateException("Unhandled expression type " + expr);
       }
     }
 

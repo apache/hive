@@ -1,0 +1,624 @@
+PREHOOK: query: drop table if exists type_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists type_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table type_test(
+  tt_tinyint tinyint,
+  tt_smallint smallint,
+  tt_int int,
+  tt_bigint bigint,
+  tt_float float,
+  tt_double double,
+  tt_double_precision double precision,
+  tt_decimal decimal,
+  tt_decimal_pre decimal(8,4),
+  tt_numeric numeric,
+  tt_numeric_pre numeric(8,4),
+  tt_timestamp timestamp,
+  tt_string string,
+  tt_varchar varchar(13),
+  tt_char char(13),
+  tt_boolean boolean
+  -- BINARY NOT SUPPORTED tt_binary binary
+) partitioned by (tt_date date) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@type_test
+POSTHOOK: query: create table type_test(
+  tt_tinyint tinyint,
+  tt_smallint smallint,
+  tt_int int,
+  tt_bigint bigint,
+  tt_float float,
+  tt_double double,
+  tt_double_precision double precision,
+  tt_decimal decimal,
+  tt_decimal_pre decimal(8,4),
+  tt_numeric numeric,
+  tt_numeric_pre numeric(8,4),
+  tt_timestamp timestamp,
+  tt_string string,
+  tt_varchar varchar(13),
+  tt_char char(13),
+  tt_boolean boolean
+  -- BINARY NOT SUPPORTED tt_binary binary
+) partitioned by (tt_date date) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@type_test
+PREHOOK: query: explain select * from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select * from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=121.11KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.type_test.tt_tinyint, default.type_test.tt_smallint, default.type_test.tt_int, default.type_test.tt_bigint, default.type_test.tt_float, default.type_test.tt_double, default.type_test.tt_double_precision, default.type_test.tt_decimal, default.type_test.tt_decimal_pre, default.type_test.tt_numeric, default.type_test.tt_numeric_pre, default.type_test.tt_timestamp, default.type_test.tt_string, default.type_test.tt_varchar, default.type_test.tt_char, default.type_test.tt_boolean, default.type_test.tt_date
+  |  mem-estimate=117B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=121.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=117B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns missing stats: tt_tinyint, tt_smallint, tt_int, tt_bigint, tt_float, tt_double, tt_double_precision, tt_decimal, tt_decimal_pre, tt_numeric, tt_numeric_pre, tt_timestamp, tt_string, tt_varchar, tt_char, tt_boolean
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=117B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select 1 < tt_int from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select 1 < tt_int from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: CAST(1 AS INT) < default.type_test.tt_int
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select cast(tt_int as bigint) from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select cast(tt_int as bigint) from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: _impala_builtins.casttobigint(default.type_test.tt_int)
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select tt_decimal, 'literal' from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select tt_decimal, 'literal' from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.01KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.type_test.tt_decimal, 'literal'
+  |  mem-estimate=8B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select case when tt_int > 34 then 34 else tt_int end  from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select case when tt_int > 34 then 34 else tt_int end  from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: CASE WHEN default.type_test.tt_int > CAST(34 AS INT) THEN CAST(34 AS INT) ELSE default.type_test.tt_int END
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select tt_int in (1,2,3,4) from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select tt_int in (1,2,3,4) from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.type_test.tt_int IN (CAST(1 AS INT), CAST(2 AS INT), CAST(3 AS INT), CAST(4 AS INT))
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select cast('01/01/1984' as date) + interval 1 days
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select cast('01/01/1984' as date) + interval 1 days
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('01/01/1984')), INTERVAL CAST(86400000 AS BIGINT) MILLISECOND)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select lag(tt_int,1) over(partition by tt_date) as yest from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select lag(tt_int,1) over(partition by tt_date) as yest from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=20.01KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: _impala_builtins.lag(default.type_test.tt_int, 1)
+  |  mem-estimate=12B mem-reservation=0B thread-reservation=0
+  |
+  04:EXCHANGE [UNPARTITIONED]
+     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=3,2 row-size=12B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [HASH(default.type_test.tt_date)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=10.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:ANALYTIC
+  |  functions: _impala_builtins.lag(tt_int, 1)
+  |  partition by: default.type_test.tt_date
+  |  order by: tt_date ASC NULLS FIRST
+  |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=3,2 row-size=12B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SORT
+  |  order by: tt_date ASC NULLS FIRST
+  |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=3 row-size=8B cardinality=0
+  |  in pipelines: 01(GETNEXT), 00(OPEN)
+  |
+  03:EXCHANGE [HASH(default.type_test.tt_date)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=03, HASH(default.type_test.tt_date)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns missing stats: tt_int
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select 1 is null
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select 1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: FALSE
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select tt_int is null from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select tt_int is null from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.type_test.tt_int IS NULL
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select tt_int > 4 and tt_int < 10 or tt_int = 33 from type_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@type_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select tt_int > 4 and tt_int < 10 or tt_int = 33 from type_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@type_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.type_test.tt_int > CAST(4 AS INT) AND default.type_test.tt_int < CAST(10 AS INT) OR default.type_test.tt_int = CAST(33 AS INT)
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.type_test, RANDOM]
+     partitions=0/0 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       partitions: 0/0 rows=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select date '1984-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select date '1984-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: DATE '1984-01-01'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
