@@ -361,7 +361,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   }
 
   private String generateLongErrorMessage() {
-    StringBuffer sb=new StringBuffer();
+    StringBuffer sb = new StringBuffer();
     for (int i = 0; i < 2500; i++) {
       sb.append("e");
     }
