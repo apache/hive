@@ -30,15 +30,15 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HiveServer2OomHookHandler implements Runnable {
+public class HiveServer2OomHookRunner implements Runnable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OomHookHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2OomHookRunner.class);
   private OomHookContext context;
   private final List<OomHookWithContext> hooks = new ArrayList<OomHookWithContext>();
 
-  HiveServer2OomHookHandler(HiveServer2 hiveServer2, HiveConf hiveConf) {
+  HiveServer2OomHookRunner(HiveServer2 hiveServer2, HiveConf hiveConf) {
     context = new OomHookContext(hiveServer2);
-    // currently hiveServer2.getHiveConf() will be null, the HS2 has not been initialized yet
+    // The hs2 has not been initialized yet, hiveServer2.getHiveConf() would be null
     init(hiveConf);
   }
 
@@ -48,7 +48,7 @@ public class HiveServer2OomHookHandler implements Runnable {
       String[] hookClasses = csHooks.split(",");
       for (String hookClass : hookClasses) {
         try {
-          Class clazz =  Class.forName(hookClass.trim(), true, JavaUtils.getClassLoader());
+          Class clazz =  JavaUtils.loadClass(hookClass.trim());
           Constructor ctor = clazz.getDeclaredConstructor();
           ctor.setAccessible(true);
           hooks.add((OomHookWithContext)ctor.newInstance());
@@ -60,7 +60,7 @@ public class HiveServer2OomHookHandler implements Runnable {
   }
 
   @VisibleForTesting
-  public HiveServer2OomHookHandler(HiveConf hiveConf) {
+  public HiveServer2OomHookRunner(HiveConf hiveConf) {
     init(hiveConf);
   }
 

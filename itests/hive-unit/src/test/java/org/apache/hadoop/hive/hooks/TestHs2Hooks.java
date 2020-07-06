@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.hive.service.server.HiveServer2OomHookHandler;
+import org.apache.hive.service.server.HiveServer2OomHookRunner;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,8 +47,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.fail;
 
 /**
  * Tests information retrieved from hooks.
@@ -277,18 +275,18 @@ public class TestHs2Hooks {
   }
 
 
-  static class OOMHook1 implements HiveServer2OomHookHandler.OomHookWithContext {
+  static class OOMHook1 implements HiveServer2OomHookRunner.OomHookWithContext {
     static String MSG = "OOMHook1 throws exception";
 
-    @Override public void run(HiveServer2OomHookHandler.OomHookContext context) {
+    @Override public void run(HiveServer2OomHookRunner.OomHookContext context) {
       throw new RuntimeException(MSG);
     }
   }
 
-  static class OOMHook2 implements HiveServer2OomHookHandler.OomHookWithContext {
+  static class OOMHook2 implements HiveServer2OomHookRunner.OomHookWithContext {
     static String MSG = "OOMHook2 throws exception";
 
-    @Override public void run(HiveServer2OomHookHandler.OomHookContext context) {
+    @Override public void run(HiveServer2OomHookRunner.OomHookContext context) {
       throw new RuntimeException(MSG);
     }
   }
@@ -296,12 +294,12 @@ public class TestHs2Hooks {
   @Test
   public void testOomHooks() {
     HiveConf hiveConf = new HiveConf();
-    HiveServer2OomHookHandler handler = new HiveServer2OomHookHandler(hiveConf);
+    HiveServer2OomHookRunner handler = new HiveServer2OomHookRunner(hiveConf);
     try {
       // the default handler
       Assert.assertTrue(handler.getHooks().size() > 0);
       handler.run();
-      fail("An exception should throw");
+      Assert.fail("An exception should throw");
     } catch (Exception e) {
       // context.getHiveServer2() should return null
       Assert.assertTrue(e instanceof NullPointerException);
@@ -309,15 +307,15 @@ public class TestHs2Hooks {
 
     String hook1 = OOMHook1.class.getName(), hook2 = OOMHook2.class.getName();
     hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook1 + "," + hook2);
-    handler = new HiveServer2OomHookHandler(hiveConf);
-    test(handler, OOMHook1.MSG, Arrays.asList(OOMHook1.class, OOMHook2.class));
+    handler = new HiveServer2OomHookRunner(hiveConf);
+    verify(handler, OOMHook1.MSG, Arrays.asList(OOMHook1.class, OOMHook2.class));
 
     hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook2 + "," + hook1);
-    handler = new HiveServer2OomHookHandler(hiveConf);
-    test(handler, OOMHook2.MSG, Arrays.asList(OOMHook2.class, OOMHook1.class));
+    handler = new HiveServer2OomHookRunner(hiveConf);
+    verify(handler, OOMHook2.MSG, Arrays.asList(OOMHook2.class, OOMHook1.class));
   }
 
-  private void test(HiveServer2OomHookHandler handler, String expectedMsg, List<Class> expectedClass) {
+  private void verify(HiveServer2OomHookRunner handler, String expectedMsg, List<Class> expectedClass) {
 
     Assert.assertTrue(handler.getHooks().size() == expectedClass.size());
     for (int i = 0; i < expectedClass.size(); i++) {
@@ -326,7 +324,7 @@ public class TestHs2Hooks {
 
     try {
       handler.run();
-      fail("An exception should throw");
+      Assert.fail("An exception should throw");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().equals(expectedMsg));
     }
