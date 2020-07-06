@@ -13065,6 +13065,7 @@ public class ObjectStore implements RawStore, Configurable {
         // however: there are execptions which are repackaging the stacktrace into the message part...
         String[] parts = info.getErrorMessage().split("\n", 2);
         execution.setErrorMessage(StringUtils.abbreviate(parts[0], 1000));
+        //        execution.setErrorMessage(info.getErrorMessage());
       }
 
       switch (info.getState()) {
