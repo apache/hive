@@ -13061,11 +13061,7 @@ public class ObjectStore implements RawStore, Configurable {
         execution.setExecutorQueryId(info.getExecutorQueryId());
       }
       if (info.isSetErrorMessage()) {
-        // Error messages are stored as a varchar(2000) - the intention here is to only capture the "message"
-        // however: there are execptions which are repackaging the stacktrace into the message part...
-        String[] parts = info.getErrorMessage().split("\n", 2);
-        execution.setErrorMessage(StringUtils.abbreviate(parts[0], 1000));
-        //        execution.setErrorMessage(info.getErrorMessage());
+        execution.setErrorMessage(abbreviateErrorMessage(info.getErrorMessage(), 1000));
       }
 
       switch (info.getState()) {
@@ -13090,6 +13086,20 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  /**
+   * Abbreviates the error message to the given size.
+   *
+   * There might be error messages which may also contain a stack trace.
+   */
+
+  private String abbreviateErrorMessage(String errorMessage, int maxLength) {
+    if (errorMessage.length() < maxLength) {
+      return errorMessage;
+    }
+    String[] parts = errorMessage.split("\n", 2);
+    return StringUtils.abbreviate(parts[0], maxLength);
   }
 
   @Override
