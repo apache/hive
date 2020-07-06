@@ -13093,7 +13093,6 @@ public class ObjectStore implements RawStore, Configurable {
    *
    * There might be error messages which may also contain a stack trace.
    */
-
   private String abbreviateErrorMessage(String errorMessage, int maxLength) {
     if (errorMessage.length() < maxLength) {
       return errorMessage;
