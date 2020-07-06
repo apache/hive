@@ -2143,9 +2143,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         LOG.warn("Can't determine bucket ID for " + split.getPath() + "; ignoring");
       }
       bucket = acidIOOptions.getBucketId();
-      if(split.isOriginal()) {
-        mergerOptions.copyIndex(acidIOOptions.getCopyNumber()).bucketPath(split.getPath());
-      }
     } else {
       bucket = (int) split.getStart();
       assert false : "We should never have a split w/o base in acid 2.0 for full acid: " + split.getPath();
