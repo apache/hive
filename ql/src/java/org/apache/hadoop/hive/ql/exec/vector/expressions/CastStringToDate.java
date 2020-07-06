@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.DateParser;
 
+import java.sql.Date;
+
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -116,14 +118,16 @@ public class CastStringToDate extends VectorExpression {
 
   private void evaluate(LongColumnVector outV, BytesColumnVector inV, int i) {
     String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
-    if (dateParser.parseDate(dateString, sqlDate)) {
+    try {
+      Date utilDate = Date.valueOf(dateString);
+      sqlDate.setTime(utilDate.getTime());
       outV.vector[i] = DateWritable.dateToDays(sqlDate);
       return;
+    } catch (IllegalArgumentException e) {
+      outV.vector[i] = 1;
+      outV.isNull[i] = true;
+      outV.noNulls = false;
     }
-
-    outV.vector[i] = 1;
-    outV.isNull[i] = true;
-    outV.noNulls = false;
   }
 
   @Override
