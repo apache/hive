@@ -90,11 +90,14 @@ public class Entity implements Serializable {
    * Whether the output is complete or not. For eg, for dynamic partitions, the
    * complete output may not be known
    */
-  @Deprecated
   private boolean complete;
 
   public boolean isComplete() {
-    return true;
+    return complete;
+  }
+
+  public void setComplete(boolean complete) {
+    this.complete = complete;
   }
 
   public String getName() {
@@ -183,11 +186,14 @@ public class Entity implements Serializable {
    *
    * @param database
    *          Database that is read or written to.
+   * @param complete
+   *          Means the database is target, not for table or partition, etc.
    */
-  protected Entity(Database database) {
+  public Entity(Database database, boolean complete) {
     this.database = database;
     this.typ = Type.DATABASE;
     this.name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -211,12 +217,13 @@ public class Entity implements Serializable {
    * @param t
    *          Table that is read or written to.
    */
-  public Entity(Table t) {
+  public Entity(Table t, boolean complete) {
     d = null;
     p = null;
     this.t = t;
     typ = Type.TABLE;
     name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -225,12 +232,13 @@ public class Entity implements Serializable {
    * @param p
    *          Partition that is read or written to.
    */
-  public Entity(Partition p) {
+  public Entity(Partition p, boolean complete) {
     d = null;
     this.p = p;
     t = p.getTable();
     typ = Type.PARTITION;
     name = computeName();
+    this.complete = complete;
   }
 
   public Entity(DummyPartition p, boolean complete) {

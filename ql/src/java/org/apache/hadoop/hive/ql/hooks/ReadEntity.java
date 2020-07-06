@@ -78,7 +78,7 @@ public class ReadEntity extends Entity implements Serializable {
    * Constructor for a database.
    */
   public ReadEntity(Database database) {
-    super(database);
+    super(database, true);
   }
 
   /**
@@ -88,7 +88,7 @@ public class ReadEntity extends Entity implements Serializable {
    *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
-    super(t);
+    super(t, true);
   }
 
   private void initParent(ReadEntity parent) {
@@ -98,7 +98,7 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   public ReadEntity(Table t, ReadEntity parent) {
-    super(t);
+    super(t, true);
     initParent(parent);
   }
 
@@ -127,11 +127,11 @@ public class ReadEntity extends Entity implements Serializable {
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
-    super(p);
+    super(p, true);
   }
 
   public ReadEntity(Partition p, ReadEntity parent) {
-    super(p);
+    super(p, true);
     initParent(parent);
   }
 
