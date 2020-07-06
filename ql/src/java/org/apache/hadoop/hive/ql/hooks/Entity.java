@@ -90,14 +90,11 @@ public class Entity implements Serializable {
    * Whether the output is complete or not. For eg, for dynamic partitions, the
    * complete output may not be known
    */
+  @Deprecated
   private boolean complete;
 
   public boolean isComplete() {
-    return complete;
-  }
-
-  public void setComplete(boolean complete) {
-    this.complete = complete;
+    return true;
   }
 
   public String getName() {
