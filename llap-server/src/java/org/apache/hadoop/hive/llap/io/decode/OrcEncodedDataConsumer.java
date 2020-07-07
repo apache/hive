@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -55,6 +53,8 @@ import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastBytesHashTable;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized.VectorMapJoinOptimizedHashTable;
 import org.apache.hadoop.hive.ql.io.filter.MutableFilterContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.orc.CompressionCodec;
@@ -114,14 +114,18 @@ public class OrcEncodedDataConsumer
           .getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
       // Start periodic MapJoinTable lookup Thread
       new Thread( () -> {
-        while (probeDecodeMapJoinTable == null && !isStopped) {
+        while (!isStopped) {
           try {
             // TODO: Check if we can get directly from operator
             Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = probeDecodeCache.retrieve(this.includes.getProbeCacheKey());
             if (smallTablePair != null ) {
               VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[this.includes.getProbeMjSmallTablePos()]).vectorMapJoinHashTable();
-              this.probeDecodeMapJoinTable = ht;
-              LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
+              if (!(ht instanceof VectorMapJoinFastBytesHashTable) && !(ht instanceof VectorMapJoinOptimizedHashTable)) {
+                this.probeDecodeMapJoinTable = ht;
+                LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
+              }
+              // make sure we stop thread when HT is found
+              break;
             } else {
               Thread.sleep(50);
             }
@@ -300,7 +304,7 @@ public class OrcEncodedDataConsumer
    * @param batchSize Original ColumnVectorBatch size
    */
   public void HashTableRowFilterCallback(ColumnVectorBatch cvb, int colIdx, int batchSize) {
-    if (!(cvb.cols[colIdx] instanceof LongColumnVector)) {
+    if (cvb.cols[colIdx].type  != ColumnVector.Type.LONG) {
       // Currently support only HashTable Long key lookups
       return;
     }
@@ -310,21 +314,18 @@ public class OrcEncodedDataConsumer
     int newSize = 0;
     boolean selectedInUse = false;
     LongColumnVector probeCol = (LongColumnVector) cvb.cols[colIdx];
-    // Repeating values case
     if (probeCol.isRepeating) {
-      // All must be selected otherwise size would be zero
-      // Repeating property will not change.
-      if (!(probeDecodeMapJoinTable.containsLongKey(probeCol.vector[0]))) {
-        // Entire batch is filtered out.
-        cvb.filterContext.size = 0;
+      // Repeating values case
+      if (probeDecodeMapJoinTable.containsLongKey(probeCol.vector[0])) {
+        // If repeating and match, next CVs of batch are read FULLY
+        // DO NOT set selected here as next CVs are not necessarily repeating!
+        newSize = batchSize;
       } else {
-        selectedInUse = true;
-        selected = cntx.updateSelected(1);
-        selected[newSize++] = 0;
+        // If repeating and NO match, the entire batch is filtered out.
+        selectedInUse = true; // and newSize remains 0
       }
-    }
-    // Non-repeating values TODO: consider nulls explicitly?
-    else {
+    } else {
+      // Non-repeating values case
       selected = cntx.updateSelected(batchSize);
       for (int row = 0; row < batchSize; ++row) {
         // Pass ony Valid keys
@@ -332,8 +333,6 @@ public class OrcEncodedDataConsumer
           selected[newSize++] = row;
         }
       }
-      // Completely skip VectorBatch
-      if (newSize == 0) cvb.filterContext.size = 0;
       selectedInUse = true;
     }
     cntx.setFilterContext(selectedInUse, selected, newSize);
@@ -356,7 +355,7 @@ public class OrcEncodedDataConsumer
 
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       for (int i = 0; i < columnReaders.length; ++i) {
-        LlapIoImpl.LOG.debug("Created a reader at " + i + ": " + columnReaders[i]
+        LlapIoImpl.LOG.info("Created a reader at " + i + ": " + columnReaders[i]
             + " from schema " + batchSchemas[i]);
       }
     }

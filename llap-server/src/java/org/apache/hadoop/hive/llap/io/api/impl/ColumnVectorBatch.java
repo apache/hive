@@ -82,7 +82,7 @@ public class ColumnVectorBatch {
         if (cv == null) continue;
         if (cv != null) {
           try {
-            cv.stringifyValue(b, i);
+            cv.stringifyValue(b, filterContext.isSelectedInUse() ? filterContext.getSelected()[i] : i);
           } catch (Exception ex) {
             b.append("invalid");
           }

@@ -90,7 +90,6 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
       InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
       Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
-    LlapIoImpl.LOG.info("ProbeDecode ORC split {}", split.toString());
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
         consumer, includes, _skipCorrupt, counters, ioMetrics, conf);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
