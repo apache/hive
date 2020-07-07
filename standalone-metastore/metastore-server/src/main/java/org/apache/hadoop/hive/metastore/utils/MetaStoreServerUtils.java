@@ -503,7 +503,7 @@ public class MetaStoreServerUtils {
   }
 
   /**
-   *Returns if p is a prefix of s.
+   * Returns true if p is a prefix of s.
    */
   public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
     if (p == s) {
