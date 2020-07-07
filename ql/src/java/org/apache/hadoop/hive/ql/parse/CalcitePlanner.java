@@ -5436,7 +5436,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     final String  dbName = names[0];
     final String fullyQualName = dbName + "." + tableName;
     if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = db.getTable(dbName, tableName, throwException);
+      Table table = db.getTable(dbName, tableName, throwException, true);
       if (table != null) {
         tabNameToTabObject.put(fullyQualName, table);
       }

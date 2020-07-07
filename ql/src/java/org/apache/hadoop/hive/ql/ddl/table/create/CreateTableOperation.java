@@ -62,7 +62,8 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     if (desc.getReplicationSpec().isInReplicationScope()) {
       // If in replication scope, we should check if the object we're looking at exists, and if so,
       // trigger replace-mode semantics.
-      Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
+      Table existingTable = context.getDb().getTable(tbl.getDbName(),
+      tbl.getTableName(), false, true);
       if (existingTable != null) {
         if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
           desc.setReplaceMode(true); // we replace existing table.

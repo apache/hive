@@ -1713,7 +1713,7 @@ public abstract class BaseSemanticAnalyzer {
     Table tab;
     try {
       tab = database == null ? db.getTable(tblName, false)
-          : db.getTable(database, tblName, false);
+          : db.getTable(database, tblName, false, true);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
