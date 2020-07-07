@@ -359,14 +359,9 @@ public class HiveAlterHandler implements AlterHandler {
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
 
-        if (isPartitionedTable) {
+        if (cascade && isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
-          boolean runPartitionMetadataUpdate =
-              (cascade && !MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols()));
-          // we may skip the update entirely if there are only new columns added
-          runPartitionMetadataUpdate |=
-              !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
-          if (runPartitionMetadataUpdate) {
+          if (!MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
             parts = msdb.getPartitions(catName, dbname, name, -1);
             for (Partition part : parts) {
               Partition oldPart = new Partition(part);
