@@ -234,11 +234,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if ((getStatus().getState() == OperationState.CANCELED)
-          || (getStatus().getState() == OperationState.TIMEDOUT)
-          || (getStatus().getState() == OperationState.CLOSED)
-          || (getStatus().getState() == OperationState.FINISHED)) {
-        log.warn("Ignore exception in terminal state", e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: " + getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -682,5 +679,4 @@ public class SQLOperation extends ExecuteStatementOperation {
   public String getExecutionEngine() {
     return queryState.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
   }
-
 }
