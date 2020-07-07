@@ -33,8 +33,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.fail;
-
 /**
  * Test MetaStore Client throws exception when no MetaStore spec found in zookeeper.
  *
@@ -64,15 +62,15 @@ public class TestRemoteHMSZKNegative {
   public void createClient() {
     try {
       new HiveMetaStoreClient(conf);
-      fail("an exception is expected");
+      Assert.fail("an exception is expected");
     } catch (Exception e) {
       Assert.assertTrue(e instanceof MetaException);
-      Assert.assertTrue(e.getMessage().contains("No metastore server available."));
+      Assert.assertTrue(e.getMessage().contains("No metastore service discovered in ZooKeeper"));
     }
   }
 
   @After
-  public void stopZookeeper() throws Exception {
+  public void stop() throws Exception {
     if (zkClient != null) {
       zkClient.close();
     }
