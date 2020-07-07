@@ -1382,7 +1382,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         maxParts, result);
   }
 
-  @Override public boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
+  @Override
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
       throws TException {
     throw new UnsupportedOperationException();
   }
