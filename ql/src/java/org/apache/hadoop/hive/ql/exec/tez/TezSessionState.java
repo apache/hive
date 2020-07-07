@@ -445,11 +445,16 @@ public class TezSessionState implements TezSession {
     return llapCredentials;
   }
 
-  protected final TezConfiguration createTezConfig() throws IOException {
+  protected final TezConfiguration createDefaultTezConfig() {
     TezConfiguration tezConfig = new TezConfiguration(true);
     tezConfig.addResource(conf);
     setupTezParamsBasedOnMR(tezConfig);
     conf.stripHiddenConfigurations(tezConfig);
+    return tezConfig;
+  }
+
+  protected final TezConfiguration createTezConfig() throws IOException {
+    TezConfiguration tezConfig = createDefaultTezConfig();
     setupSessionAcls(tezConfig, conf);
     return tezConfig;
   }
@@ -671,7 +676,7 @@ public class TezSessionState implements TezSession {
     }
   }
 
-  private void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
+  protected void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
       IOException {
 
     // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.

@@ -28,15 +28,12 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezAppMasterStatus;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -53,17 +50,29 @@ public class TezExternalSessionState extends TezSessionState {
   private String externalAppId;
   private boolean isDestroying = false;
   private final ExternalSessionsRegistry registry;
+  private static final Object defaultConfCreatelock = new Object();
+  private static TezConfiguration defaultTezConfiguration;
 
   public TezExternalSessionState(
       DagUtils utils, HiveConf conf, ExternalSessionsRegistry registry) {
     super(utils, conf);
     this.registry = registry;
+    synchronized (defaultConfCreatelock) {
+      if (defaultTezConfiguration == null) {
+        defaultTezConfiguration = createDefaultTezConfig();
+      }
+    }
   }
 
   public TezExternalSessionState(String sessionId, HiveConf conf,
     ExternalSessionsRegistry registry) {
     super(sessionId, conf);
     this.registry = registry;
+    synchronized (defaultConfCreatelock) {
+      if (defaultTezConfiguration == null) {
+        defaultTezConfiguration = createDefaultTezConfig();
+      }
+    }
   }
 
   @Override
@@ -84,7 +93,8 @@ public class TezExternalSessionState extends TezSessionState {
     Map<String, String> amEnv = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
 
-    TezConfiguration tezConfig = createTezConfig();
+    TezConfiguration tezConfig = new TezConfiguration(defaultTezConfiguration);
+    setupSessionAcls(tezConfig, conf);
     ServicePluginsDescriptor spd = createServicePluginDescriptor(llapMode, tezConfig);
     Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
 
