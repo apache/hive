@@ -3592,19 +3592,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
     try {
+      GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
+      req.setTblName(tblName);
+      req.setDbName(dbName);
+      req.setPartValues(pvals);
+      req.setMaxParts(max);
       if (AcidUtils.isTransactionalTable(t)) {
-        GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
-        req.setTblName(tblName);
-        req.setDbName(dbName);
-        req.setPartValues(pvals);
-        req.setMaxParts(max);
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
-        names = res.getNames();
-      } else {
-        names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
       }
+      GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
+      names = res.getNames();
     } catch (NoSuchObjectException nsoe) {
       // this means no partition exists for the given partition spec
       // key value pairs - thrift cannot handle null return values, hence
@@ -3626,27 +3624,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
       exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     }
     try {
-
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-
+      PartitionsByExprRequest req =
+          new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
+      req.setDefaultPartitionName(defaultPartitionName);
+      if (maxParts >= 0) {
+        req.setMaxParts(maxParts);
+      }
+      req.setOrder(order);
+      req.setCatName(tbl.getCatalogName());
       if (AcidUtils.isTransactionalTable(tbl)) {
-        PartitionsByExprRequest req =
-            new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
-        req.setDefaultPartitionName(defaultPartitionName);
-        if (maxParts >= 0) {
-          req.setMaxParts(maxParts);
-        }
-        req.setOrder(order);
-        req.setCatName(tbl.getCatalogName());
         ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        names = getMSC().listPartitionNames(req);
-
-      } else {
-        names = getMSC()
-            .listPartitionNames(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(), defaultPartitionName,
-                exprBytes, order, maxParts);
       }
+      names = getMSC().listPartitionNames(req);
+
     } catch (NoSuchObjectException nsoe) {
       return Lists.newArrayList();
     } catch (Exception e) {
@@ -3667,21 +3659,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
+        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+        req.setTblName(tbl.getTableName());
+        req.setDbName(tbl.getDbName());
+        req.setUserName(getUserName());
+        req.setMaxParts((short) -1);
+        req.setGroupNames(getGroupNames());
         if (AcidUtils.isTransactionalTable(tbl)) {
-          GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
-          req.setTblName(tbl.getTableName());
-          req.setDbName(tbl.getDbName());
-          req.setUserName(getUserName());
-          req.setMaxParts((short) -1);
-          req.setGroupNames(getGroupNames());
           ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
           req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-          GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
-          tParts = res.getPartitions();
-        } else {
-          tParts = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(), (short) -1, getUserName(),
-              getGroupNames());
         }
+        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+        tParts = res.getPartitions();
+
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -3976,22 +3966,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
     List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts = new ArrayList<>();
-
+    PartitionsByExprRequest req = new PartitionsByExprRequest();
+    req.setDbName(tbl.getDbName());
+    req.setTblName((tbl.getTableName()));
+    req.setDefaultPartitionName(defaultPartitionName);
+    req.setMaxParts((short) -1);
+    req.setExpr(exprBytes);
     if (AcidUtils.isTransactionalTable(tbl)) {
-      PartitionsByExprRequest req = new PartitionsByExprRequest();
-      req.setDbName(tbl.getDbName());
-      req.setTblName((tbl.getTableName()));
-      req.setDefaultPartitionName(defaultPartitionName);
-      req.setMaxParts((short) -1);
-      req.setExpr(exprBytes);
       ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
       req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-      hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
-    } else {
-      hasUnknownParts = getMSC()
-          .listPartitionsSpecByExpr(tbl.getDbName(), tbl.getTableName(), exprBytes, defaultPartitionName, (short) -1,
-              msParts);
     }
+    hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
+
     result.addAll(convertFromPartSpec(msParts.iterator(), tbl));
     return hasUnknownParts;
   }
