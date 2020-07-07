@@ -46,7 +46,6 @@ import static java.util.Collections.singletonList;
  * Testing whether AcidTxnCleanerService removes the correct records
  * from the TXNS table (via TxnStore).
  */
-@Ignore("test unstable HIVE-23525")
 public class TestAcidTxnCleanerService {
 
   private AcidTxnCleanerService underTest;
