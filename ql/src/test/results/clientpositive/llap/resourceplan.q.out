@@ -198,6 +198,10 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
