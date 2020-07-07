@@ -37,7 +37,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
 
 import static java.util.Collections.singletonList;
@@ -82,7 +81,7 @@ public class TestAcidTxnCleanerService {
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
     // The max TxnId might be greater id the openTxns failes with slow commit and retries
-    Assert.assertTrue("The max txnId shoul be at least 5", getMaxTxnId() >= 5);
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -97,7 +96,7 @@ public class TestAcidTxnCleanerService {
 
     // deletes only the initial (committed) TXNS record
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertTrue("The max txnId shoul be at least 5", getMaxTxnId() >= 5);
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -113,7 +112,7 @@ public class TestAcidTxnCleanerService {
 
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
-    Assert.assertTrue("The max txnId shoul be at least 5", getMaxTxnId() >= 5);
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -135,7 +134,7 @@ public class TestAcidTxnCleanerService {
 
     // kept only the 5 non-empty aborted ones
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertTrue("The max txnId shoul be at least 15", getMaxTxnId() >= 15);
+    Assert.assertTrue("The max txnId should be at least 15", getMaxTxnId() >= 15);
   }
 
   @Test
@@ -157,7 +156,7 @@ public class TestAcidTxnCleanerService {
 
     openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(2, openTxns.getOpen_txnsSize());
-    Assert.assertTrue("The max txnId shoul be at least", getMaxTxnId() >= TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1);
+    Assert.assertTrue("The max txnId should be at least", getMaxTxnId() >= TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1);
   }
 
   private void openNonEmptyThenAbort() throws MetaException, NoSuchTxnException, TxnAbortedException {
