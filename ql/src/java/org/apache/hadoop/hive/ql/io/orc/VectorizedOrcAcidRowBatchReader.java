@@ -593,7 +593,7 @@ public class VectorizedOrcAcidRowBatchReader
        * writeId is the same in both cases
        */
       for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
-        ColumnStatistics[] colStats = stats.get(firstStripeIndex)
+        ColumnStatistics[] colStats = stats.get(i)
             .getColumnStatistics();
         IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics)
             colStats[OrcRecordUpdater.BUCKET + 1];
