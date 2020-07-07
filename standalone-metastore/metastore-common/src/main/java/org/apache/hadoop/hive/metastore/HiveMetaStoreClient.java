@@ -3413,12 +3413,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
-    client.seedWriteId(new SeedTableWriteIdsRequest(dbName, tableName, seedWriteId));
+    client.seed_write_id(new SeedTableWriteIdsRequest(dbName, tableName, seedWriteId));
   }
 
   @Override
   public void seedTxnId(long seedTxnId) throws TException {
-    client.seedTxnId(new SeedTxnIdRequest(seedTxnId));
+    client.seed_txn_id(new SeedTxnIdRequest(seedTxnId));
   }
 
   @Override

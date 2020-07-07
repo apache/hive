@@ -65,6 +65,12 @@ public class Msck {
   public static final Logger LOG = LoggerFactory.getLogger(Msck.class);
   public static final int separator = 9; // tabCode
   private static final int terminator = 10; // newLineCode
+  private static final String TABLES_NOT_IN_METASTORE = "Tables not in metastore:";
+  private static final String TABLES_MISSING_ON_FILESYSTEM = "Tables missing on filesystem:";
+  private static final String PARTITIONS_NOT_IN_METASTORE = "Partitions not in metastore:";
+  private static final String PARTITIONS_MISSING_FROM_FILESYSTEM = "Partitions missing from filesystem:";
+  private static final String EXPIRED_PARTITIONS = "Expired partitions:";
+  private static final String EXPIRED_PARTITIONS_RETENTION = "Expired partitions (retention period: %s s) :";
   private boolean acquireLock;
   private boolean deleteData;
 
@@ -239,16 +245,14 @@ public class Msck {
             throw new MetastoreException(e);
           }
         }
-        if (transactionalTable && !MetaStoreServerUtils.isPartitioned(table)) {
-          if (result.getMaxWriteId() > 0) {
-            if (txnId < 0) {
-              // We need the txnId to check against even if we didn't do the locking
-              txnId = getMsc().openTxn(getUserName());
-            }
-
-            validateAndAddMaxTxnIdAndWriteId(result.getMaxWriteId(), result.getMaxTxnId(),
-                table.getDbName(), table.getTableName(), txnId);
+        if (transactionalTable && !MetaStoreServerUtils.isPartitioned(table) && result.getMaxWriteId() > 0) {
+          if (txnId < 0) {
+            // We need the txnId to check against even if we didn't do the locking
+            txnId = getMsc().openTxn(getUserName());
           }
+
+          validateAndAddMaxTxnIdAndWriteId(result.getMaxWriteId(), result.getMaxTxnId(), table.getDbName(),
+              table.getTableName(), txnId);
         }
       }
       success = true;
@@ -256,15 +260,17 @@ public class Msck {
       LOG.warn("Failed to run metacheck: ", e);
       success = false;
     } finally {
-      if (result!=null) {
+      if (result != null) {
         logResult(result);
         if (msckInfo.getResFile() != null) {
-          success = writeResultToFile(msckInfo, result, repairOutput, partitionExpirySeconds) && success;
+          // sorting to stabilize qfile output (msck_repair_drop.q)
+          Collections.sort(repairOutput);
+          success &= writeResultToFile(msckInfo, result, repairOutput, partitionExpirySeconds);
         }
       }
 
       if (txnId > 0) {
-        success = closeTxn(qualifiedTableName, success, txnId) && success;
+        success &= closeTxn(qualifiedTableName, success, txnId);
       }
       if (getMsc() != null) {
         getMsc().close();
@@ -281,7 +287,7 @@ public class Msck {
         LOG.info("txnId: {} succeeded. Committing..", txnId);
         getMsc().commitTxn(txnId);
       } catch (Exception e) {
-        LOG.warn("Error while committing txnId: {} for table: {}", txnId, qualifiedTableName, e);
+        LOG.error("Error while committing txnId: {} for table: {}", txnId, qualifiedTableName, e);
         ret = false;
       }
     } else {
@@ -289,7 +295,7 @@ public class Msck {
         LOG.info("txnId: {} failed. Aborting..", txnId);
         getMsc().abortTxns(Lists.newArrayList(txnId));
       } catch (Exception e) {
-        LOG.warn("Error while aborting txnId: {} for table: {}", txnId, qualifiedTableName, e);
+        LOG.error("Error while aborting txnId: {} for table: {}", txnId, qualifiedTableName, e);
         ret = false;
       }
     }
@@ -297,55 +303,47 @@ public class Msck {
   }
 
   private void logResult(CheckResult result) {
-    LOG.info("Tables not in metastore: {}", result.getTablesNotInMs());
-    LOG.info("Tables missing on filesystem: {}", result.getTablesNotOnFs());
-    LOG.info("Partitions not in metastore: {}", result.getPartitionsNotInMs());
-    LOG.info("Partitions missing from filesystem: {}", result.getPartitionsNotOnFs());
-    LOG.info("Expired partitions: {}", result.getExpiredPartitions());
+    StringBuilder sb = new StringBuilder();
+    sb.append(TABLES_NOT_IN_METASTORE).append(" ").append(result.getTablesNotInMs()).append("\n")
+        .append(TABLES_MISSING_ON_FILESYSTEM).append(" ").append(result.getTablesNotOnFs()).append("\n")
+        .append(PARTITIONS_NOT_IN_METASTORE).append(" ").append(result.getPartitionsNotInMs()).append("\n")
+        .append(PARTITIONS_MISSING_FROM_FILESYSTEM).append(" ").append(result.getPartitionsNotOnFs()).append("\n")
+        .append(EXPIRED_PARTITIONS).append(" ").append(result.getExpiredPartitions()).append("\n");
+    LOG.info(sb.toString());
   }
 
   private boolean writeResultToFile(MsckInfo msckInfo, CheckResult result, List<String> repairOutput,
       long partitionExpirySeconds) {
     boolean success = true;
-    BufferedWriter resultOut = null;
     try {
       Path resFile = new Path(msckInfo.getResFile());
       FileSystem fs = resFile.getFileSystem(getConf());
-      resultOut = new BufferedWriter(new OutputStreamWriter(fs.create(resFile)));
 
-      boolean firstWritten = false;
-      firstWritten |= writeMsckResult(result.getTablesNotInMs(),
-        "Tables not in metastore:", resultOut, firstWritten);
-      firstWritten |= writeMsckResult(result.getTablesNotOnFs(),
-        "Tables missing on filesystem:", resultOut, firstWritten);
-      firstWritten |= writeMsckResult(result.getPartitionsNotInMs(),
-        "Partitions not in metastore:", resultOut, firstWritten);
-      firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
-        "Partitions missing from filesystem:", resultOut, firstWritten);
-      firstWritten |= writeMsckResult(result.getExpiredPartitions(),
-        "Expired partitions (retention period: " + partitionExpirySeconds + "s) :", resultOut, firstWritten);
-      // sorting to stabilize qfile output (msck_repair_drop.q)
-      Collections.sort(repairOutput);
-      for (String rout : repairOutput) {
-        if (firstWritten) {
-          resultOut.write(terminator);
-        } else {
-          firstWritten = true;
+      try (BufferedWriter resultOut = new BufferedWriter(new OutputStreamWriter(fs.create(resFile)))) {
+
+        boolean firstWritten = false;
+        firstWritten |= writeMsckResult(result.getTablesNotInMs(), TABLES_NOT_IN_METASTORE, resultOut, firstWritten);
+        firstWritten |=
+            writeMsckResult(result.getTablesNotOnFs(), TABLES_MISSING_ON_FILESYSTEM, resultOut, firstWritten);
+        firstWritten |=
+            writeMsckResult(result.getPartitionsNotInMs(), PARTITIONS_NOT_IN_METASTORE, resultOut, firstWritten);
+        firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(), PARTITIONS_MISSING_FROM_FILESYSTEM, resultOut,
+            firstWritten);
+        firstWritten |= writeMsckResult(result.getExpiredPartitions(),
+            String.format(EXPIRED_PARTITIONS_RETENTION, partitionExpirySeconds), resultOut, firstWritten);
+
+        for (String rout : repairOutput) {
+          if (firstWritten) {
+            resultOut.write(terminator);
+          } else {
+            firstWritten = true;
+          }
+          resultOut.write(rout);
         }
-        resultOut.write(rout);
       }
     } catch (IOException e) {
-      LOG.warn("Failed to save metacheck output: ", e);
+      LOG.error("Failed to save metacheck output: ", e);
       success = false;
-    } finally {
-      if (resultOut != null) {
-        try {
-          resultOut.close();
-        } catch (IOException e) {
-          LOG.warn("Failed to close output file: ", e);
-          success = false;
-        }
-      }
     }
     return success;
   }
@@ -474,8 +472,9 @@ public class Msck {
               partition.setWriteId(table.getWriteId());
               partsToAdd.add(partition);
               lastBatch.add(part);
-              addMsgs.add(String.format(addMsgFormat, part.getPartitionName()));
-              LOG.debug(String.format(addMsgFormat, part.getPartitionName()));
+              String msg = String.format(addMsgFormat, part.getPartitionName());
+              addMsgs.add(msg);
+              LOG.debug(msg);
               currentBatchSize--;
             }
             metastoreClient.add_partitions(partsToAdd, true, false);

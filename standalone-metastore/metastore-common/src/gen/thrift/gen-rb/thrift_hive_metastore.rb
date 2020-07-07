@@ -2862,32 +2862,32 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_max_allocated_table_write_id failed: unknown result')
     end
 
-    def seedWriteId(rqst)
-      send_seedWriteId(rqst)
-      recv_seedWriteId()
+    def seed_write_id(rqst)
+      send_seed_write_id(rqst)
+      recv_seed_write_id()
     end
 
-    def send_seedWriteId(rqst)
-      send_message('seedWriteId', SeedWriteId_args, :rqst => rqst)
+    def send_seed_write_id(rqst)
+      send_message('seed_write_id', Seed_write_id_args, :rqst => rqst)
     end
 
-    def recv_seedWriteId()
-      result = receive_message(SeedWriteId_result)
+    def recv_seed_write_id()
+      result = receive_message(Seed_write_id_result)
       raise result.o1 unless result.o1.nil?
       return
     end
 
-    def seedTxnId(rqst)
-      send_seedTxnId(rqst)
-      recv_seedTxnId()
+    def seed_txn_id(rqst)
+      send_seed_txn_id(rqst)
+      recv_seed_txn_id()
     end
 
-    def send_seedTxnId(rqst)
-      send_message('seedTxnId', SeedTxnId_args, :rqst => rqst)
+    def send_seed_txn_id(rqst)
+      send_message('seed_txn_id', Seed_txn_id_args, :rqst => rqst)
     end
 
-    def recv_seedTxnId()
-      result = receive_message(SeedTxnId_result)
+    def recv_seed_txn_id()
+      result = receive_message(Seed_txn_id_result)
       raise result.o1 unless result.o1.nil?
       return
     end
@@ -6255,26 +6255,26 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_max_allocated_table_write_id', seqid)
     end
 
-    def process_seedWriteId(seqid, iprot, oprot)
-      args = read_args(iprot, SeedWriteId_args)
-      result = SeedWriteId_result.new()
+    def process_seed_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Seed_write_id_args)
+      result = Seed_write_id_result.new()
       begin
-        @handler.seedWriteId(args.rqst)
+        @handler.seed_write_id(args.rqst)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'seedWriteId', seqid)
+      write_result(result, oprot, 'seed_write_id', seqid)
     end
 
-    def process_seedTxnId(seqid, iprot, oprot)
-      args = read_args(iprot, SeedTxnId_args)
-      result = SeedTxnId_result.new()
+    def process_seed_txn_id(seqid, iprot, oprot)
+      args = read_args(iprot, Seed_txn_id_args)
+      result = Seed_txn_id_result.new()
       begin
-        @handler.seedTxnId(args.rqst)
+        @handler.seed_txn_id(args.rqst)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'seedTxnId', seqid)
+      write_result(result, oprot, 'seed_txn_id', seqid)
     end
 
     def process_lock(seqid, iprot, oprot)
@@ -13510,7 +13510,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class SeedWriteId_args
+  class Seed_write_id_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
@@ -13526,7 +13526,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class SeedWriteId_result
+  class Seed_write_id_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 
@@ -13542,7 +13542,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class SeedTxnId_args
+  class Seed_txn_id_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
@@ -13558,7 +13558,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class SeedTxnId_result
+  class Seed_txn_id_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

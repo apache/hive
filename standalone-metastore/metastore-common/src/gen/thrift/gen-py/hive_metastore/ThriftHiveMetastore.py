@@ -1350,14 +1350,14 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def seedWriteId(self, rqst):
+  def seed_write_id(self, rqst):
     """
     Parameters:
      - rqst
     """
     pass
 
-  def seedTxnId(self, rqst):
+  def seed_txn_id(self, rqst):
     """
     Parameters:
      - rqst
@@ -8041,23 +8041,23 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_max_allocated_table_write_id failed: unknown result")
 
-  def seedWriteId(self, rqst):
+  def seed_write_id(self, rqst):
     """
     Parameters:
      - rqst
     """
-    self.send_seedWriteId(rqst)
-    self.recv_seedWriteId()
+    self.send_seed_write_id(rqst)
+    self.recv_seed_write_id()
 
-  def send_seedWriteId(self, rqst):
-    self._oprot.writeMessageBegin('seedWriteId', TMessageType.CALL, self._seqid)
-    args = seedWriteId_args()
+  def send_seed_write_id(self, rqst):
+    self._oprot.writeMessageBegin('seed_write_id', TMessageType.CALL, self._seqid)
+    args = seed_write_id_args()
     args.rqst = rqst
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_seedWriteId(self):
+  def recv_seed_write_id(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -8065,30 +8065,30 @@ class Client(fb303.FacebookService.Client, Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = seedWriteId_result()
+    result = seed_write_id_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.o1 is not None:
       raise result.o1
     return
 
-  def seedTxnId(self, rqst):
+  def seed_txn_id(self, rqst):
     """
     Parameters:
      - rqst
     """
-    self.send_seedTxnId(rqst)
-    self.recv_seedTxnId()
+    self.send_seed_txn_id(rqst)
+    self.recv_seed_txn_id()
 
-  def send_seedTxnId(self, rqst):
-    self._oprot.writeMessageBegin('seedTxnId', TMessageType.CALL, self._seqid)
-    args = seedTxnId_args()
+  def send_seed_txn_id(self, rqst):
+    self._oprot.writeMessageBegin('seed_txn_id', TMessageType.CALL, self._seqid)
+    args = seed_txn_id_args()
     args.rqst = rqst
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_seedTxnId(self):
+  def recv_seed_txn_id(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -8096,7 +8096,7 @@ class Client(fb303.FacebookService.Client, Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = seedTxnId_result()
+    result = seed_txn_id_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.o1 is not None:
@@ -10686,8 +10686,8 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["get_valid_write_ids"] = Processor.process_get_valid_write_ids
     self._processMap["allocate_table_write_ids"] = Processor.process_allocate_table_write_ids
     self._processMap["get_max_allocated_table_write_id"] = Processor.process_get_max_allocated_table_write_id
-    self._processMap["seedWriteId"] = Processor.process_seedWriteId
-    self._processMap["seedTxnId"] = Processor.process_seedTxnId
+    self._processMap["seed_write_id"] = Processor.process_seed_write_id
+    self._processMap["seed_txn_id"] = Processor.process_seed_txn_id
     self._processMap["lock"] = Processor.process_lock
     self._processMap["check_lock"] = Processor.process_check_lock
     self._processMap["unlock"] = Processor.process_unlock
@@ -15026,13 +15026,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_seedWriteId(self, seqid, iprot, oprot):
-    args = seedWriteId_args()
+  def process_seed_write_id(self, seqid, iprot, oprot):
+    args = seed_write_id_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = seedWriteId_result()
+    result = seed_write_id_result()
     try:
-      self._handler.seedWriteId(args.rqst)
+      self._handler.seed_write_id(args.rqst)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -15043,18 +15043,18 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("seedWriteId", msg_type, seqid)
+    oprot.writeMessageBegin("seed_write_id", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_seedTxnId(self, seqid, iprot, oprot):
-    args = seedTxnId_args()
+  def process_seed_txn_id(self, seqid, iprot, oprot):
+    args = seed_txn_id_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = seedTxnId_result()
+    result = seed_txn_id_result()
     try:
-      self._handler.seedTxnId(args.rqst)
+      self._handler.seed_txn_id(args.rqst)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -15065,7 +15065,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("seedTxnId", msg_type, seqid)
+    oprot.writeMessageBegin("seed_txn_id", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -45827,7 +45827,7 @@ class get_max_allocated_table_write_id_result:
   def __ne__(self, other):
     return not (self == other)
 
-class seedWriteId_args:
+class seed_write_id_args:
   """
   Attributes:
    - rqst
@@ -45865,7 +45865,7 @@ class seedWriteId_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('seedWriteId_args')
+    oprot.writeStructBegin('seed_write_id_args')
     if self.rqst is not None:
       oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
       self.rqst.write(oprot)
@@ -45893,7 +45893,7 @@ class seedWriteId_args:
   def __ne__(self, other):
     return not (self == other)
 
-class seedWriteId_result:
+class seed_write_id_result:
   """
   Attributes:
    - o1
@@ -45931,7 +45931,7 @@ class seedWriteId_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('seedWriteId_result')
+    oprot.writeStructBegin('seed_write_id_result')
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
@@ -45959,7 +45959,7 @@ class seedWriteId_result:
   def __ne__(self, other):
     return not (self == other)
 
-class seedTxnId_args:
+class seed_txn_id_args:
   """
   Attributes:
    - rqst
@@ -45997,7 +45997,7 @@ class seedTxnId_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('seedTxnId_args')
+    oprot.writeStructBegin('seed_txn_id_args')
     if self.rqst is not None:
       oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
       self.rqst.write(oprot)
@@ -46025,7 +46025,7 @@ class seedTxnId_args:
   def __ne__(self, other):
     return not (self == other)
 
-class seedTxnId_result:
+class seed_txn_id_result:
   """
   Attributes:
    - o1
@@ -46063,7 +46063,7 @@ class seedTxnId_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('seedTxnId_result')
+    oprot.writeStructBegin('seed_txn_id_result')
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)

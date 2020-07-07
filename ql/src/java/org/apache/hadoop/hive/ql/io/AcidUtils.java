@@ -2343,7 +2343,7 @@ public class AcidUtils {
       if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
         validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
         if (isStatsUpdater) {
-          writeId = sessionTxnMgr != null ? sessionTxnMgr.getAllocatedTableWriteId(dbName, tblName) : -1;
+          writeId = sessionTxnMgr.getAllocatedTableWriteId(dbName, tblName);
           if (writeId < 1) {
             // TODO: this is not ideal... stats updater that doesn't have write ID is currently
             //       "create table"; writeId would be 0/-1 here. No need to call this w/true.

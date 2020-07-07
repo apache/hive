@@ -464,33 +464,27 @@ public class HiveMetaStoreChecker {
     // Read the writeIds from every base and delta directory and find the max
     long maxWriteId = 0L;
     long maxVisibilityId = 0L;
-    for(FileStatus fileStatus : deltaOrBaseFiles) {
+    for (FileStatus fileStatus : deltaOrBaseFiles) {
       if (!fileStatus.isDirectory()) {
         continue;
       }
       long writeId = 0L;
       long visibilityId = 0L;
       String folder = fileStatus.getPath().getName();
+      String visParts[] = folder.split(VISIBILITY_PREFIX);
+      if (visParts.length > 1) {
+        visibilityId = Long.parseLong(visParts[1]);
+        folder = visParts[0];
+      }
       if (folder.startsWith(BASE_PREFIX)) {
-        visibilityId = getVisibilityTxnId(folder);
-        if (visibilityId > 0) {
-          folder = removeVisibilityTxnId(folder);
-        }
         writeId = Long.parseLong(folder.substring(BASE_PREFIX.length()));
       } else if (folder.startsWith(DELTA_PREFIX) || folder.startsWith(DELETE_DELTA_PREFIX)) {
         // See AcidUtils.parseDelta
-        visibilityId = getVisibilityTxnId(folder);
-        if (visibilityId > 0) {
-          folder = removeVisibilityTxnId(folder);
-        }
         boolean isDeleteDelta = folder.startsWith(DELETE_DELTA_PREFIX);
         String rest = folder.substring((isDeleteDelta ? DELETE_DELTA_PREFIX : DELTA_PREFIX).length());
-        int split = rest.indexOf('_');
-        //split2 may be -1 if no statementId
-        int split2 = rest.indexOf('_', split + 1);
+        String[] nameParts = rest.split("_");
         // We always want the second part (it is either the same or greater if it is a compacted delta)
-        writeId = split2 == -1 ? Long.parseLong(rest.substring(split + 1)) : Long
-            .parseLong(rest.substring(split + 1, split2));
+        writeId = Long.parseLong(nameParts.length > 1 ? nameParts[1] : nameParts[0]);
       }
       if (writeId > maxWriteId) {
         maxWriteId = writeId;
@@ -503,21 +497,6 @@ public class HiveMetaStoreChecker {
         partPath.toUri().toString());
     res.setMaxWriteId(maxWriteId);
     res.setMaxTxnId(maxVisibilityId);
-  }
-  private long getVisibilityTxnId(String folder) {
-    int idxOfVis = folder.indexOf(VISIBILITY_PREFIX);
-    if (idxOfVis >= 0) {
-      return Long.parseLong(folder.substring(idxOfVis + VISIBILITY_PREFIX.length()));
-    }
-    return 0L;
-  }
-
-  private String removeVisibilityTxnId(String folder) {
-    int idxOfVis = folder.indexOf(VISIBILITY_PREFIX);
-    if (idxOfVis >= 0) {
-      folder = folder.substring(0, idxOfVis);
-    }
-    return folder;
   }
 
   /**

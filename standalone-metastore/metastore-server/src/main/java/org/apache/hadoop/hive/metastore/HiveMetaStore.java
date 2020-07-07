@@ -8329,12 +8329,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException {
+    public void seed_write_id(SeedTableWriteIdsRequest rqst) throws MetaException {
       getTxnHandler().seedWriteId(rqst);
     }
 
     @Override
-    public void seedTxnId(SeedTxnIdRequest rqst) throws MetaException {
+    public void seed_txn_id(SeedTxnIdRequest rqst) throws MetaException {
       getTxnHandler().seedTxnId(rqst);
     }
 

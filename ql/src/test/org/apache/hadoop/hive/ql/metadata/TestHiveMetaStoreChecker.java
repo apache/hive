@@ -375,60 +375,6 @@ public class TestHiveMetaStoreChecker {
     assertEquals(200, result.getMaxTxnId());
   }
 
-  private Path addFolderToPath(FileSystem fs, String rootPath, String folder) throws IOException{
-    Path folderParth = new Path(rootPath, folder);
-    fs.mkdirs(folderParth);
-    fs.deleteOnExit(folderParth);
-    return folderParth;
-  }
-
-  private Table createTestTable(boolean transactional) throws HiveException, AlreadyExistsException {
-    Database db = new Database();
-    db.setName(dbName);
-    hive.createDatabase(db, true);
-
-    Table table = new Table(dbName, tableName);
-    table.setDbName(dbName);
-    if (transactional) {
-      table.setInputFormatClass(OrcInputFormat.class);
-      table.setOutputFormatClass(OrcOutputFormat.class);
-    } else {
-      table.setInputFormatClass(TextInputFormat.class);
-      table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-    }
-    table.setPartCols(partCols);
-    if (transactional) {
-      table.setProperty("transactional", "true");
-    }
-
-    hive.createTable(table);
-    table = hive.getTable(dbName, tableName);
-    Assert.assertTrue(table.getTTable().isSetId());
-    table.getTTable().unsetId();
-
-    for (Map<String, String> partSpec : parts) {
-      hive.createPartition(table, partSpec);
-    }
-    return table;
-  }
-  private Table createNonPartitionedTable() throws Exception {
-    Database db = new Database();
-    db.setName(dbName);
-    hive.createDatabase(db, true);
-
-    Table table = new Table(dbName, tableName);
-    table.setDbName(dbName);
-    table.setInputFormatClass(OrcInputFormat.class);
-    table.setOutputFormatClass(OrcOutputFormat.class);
-    table.setProperty("transactional", "true");
-
-    hive.createTable(table);
-    table = hive.getTable(dbName, tableName);
-    Assert.assertTrue(table.getTTable().isSetId());
-    table.getTTable().unsetId();
-    return table;
-  }
-
   @Test
   public void testPartitionsCheck() throws HiveException,
     IOException, TException, MetastoreException {
@@ -827,5 +773,59 @@ public class TestHiveMetaStoreChecker {
     fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata1"));
     fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata2"));
     fs.deleteOnExit(part);
+  }
+
+  private Path addFolderToPath(FileSystem fs, String rootPath, String folder) throws IOException{
+    Path folderParth = new Path(rootPath, folder);
+    fs.mkdirs(folderParth);
+    fs.deleteOnExit(folderParth);
+    return folderParth;
+  }
+
+  private Table createTestTable(boolean transactional) throws HiveException, AlreadyExistsException {
+    Database db = new Database();
+    db.setName(dbName);
+    hive.createDatabase(db, true);
+
+    Table table = new Table(dbName, tableName);
+    table.setDbName(dbName);
+    if (transactional) {
+      table.setInputFormatClass(OrcInputFormat.class);
+      table.setOutputFormatClass(OrcOutputFormat.class);
+    } else {
+      table.setInputFormatClass(TextInputFormat.class);
+      table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    }
+    table.setPartCols(partCols);
+    if (transactional) {
+      table.setProperty("transactional", "true");
+    }
+
+    hive.createTable(table);
+    table = hive.getTable(dbName, tableName);
+    Assert.assertTrue(table.getTTable().isSetId());
+    table.getTTable().unsetId();
+
+    for (Map<String, String> partSpec : parts) {
+      hive.createPartition(table, partSpec);
+    }
+    return table;
+  }
+  private Table createNonPartitionedTable() throws Exception {
+    Database db = new Database();
+    db.setName(dbName);
+    hive.createDatabase(db, true);
+
+    Table table = new Table(dbName, tableName);
+    table.setDbName(dbName);
+    table.setInputFormatClass(OrcInputFormat.class);
+    table.setOutputFormatClass(OrcOutputFormat.class);
+    table.setProperty("transactional", "true");
+
+    hive.createTable(table);
+    table = hive.getTable(dbName, tableName);
+    Assert.assertTrue(table.getTTable().isSetId());
+    table.getTTable().unsetId();
+    return table;
   }
 }

@@ -239,6 +239,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
+
   private static DataSource connPool;
   private static DataSource connPoolMutex;
 
@@ -269,6 +270,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "WHERE \"HL_LAST_HEARTBEAT\" < %s - ? AND \"HL_TXNID\" = 0";
   private static final String TXN_TO_WRITE_ID_INSERT_QUERY = "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\", " +
       "\"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)";
+  private static final String SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID =
+      "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
 
 
   private List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -2029,13 +2032,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        List<String> params = Arrays.asList(dbName, tableName);
-        String query = "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
-        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">", quoteString(dbName),
-            quoteString(tableName));
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID,
+            Arrays.asList(dbName, tableName));
+        LOG.debug("Going to execute query <" + SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID.replaceAll("\\?", "{}") + ">",
+            quoteString(dbName), quoteString(tableName));
         rs = pStmt.executeQuery();
         // If there is no record, we never allocated anything
         long maxWriteId = 0l;
@@ -2048,12 +2049,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.error(
             "Exception during reading the max allocated writeId for dbName={}, tableName={}. Will retry if possible.",
             dbName, tableName, e);
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getMaxAllocatedTableWrited(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(rs, pStmt, dbConn);
-        unlockInternal();
       }
     } catch (RetryException e) {
       return getMaxAllocatedTableWrited(rqst);
@@ -2067,7 +2066,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       Connection dbConn = null;
       PreparedStatement pst = null;
       try {
-        lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
 
         //since this is on conversion from non-acid to acid, NEXT_WRITE_ID should not have an entry
@@ -2090,7 +2088,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(null, pst, dbConn);
-        unlockInternal();
       }
     } catch (RetryException e) {
       seedWriteId(rqst);

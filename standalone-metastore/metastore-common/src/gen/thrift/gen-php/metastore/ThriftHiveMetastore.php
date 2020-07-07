@@ -1338,12 +1338,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @param \metastore\SeedTableWriteIdsRequest $rqst
    * @throws \metastore\MetaException
    */
-  public function seedWriteId(\metastore\SeedTableWriteIdsRequest $rqst);
+  public function seed_write_id(\metastore\SeedTableWriteIdsRequest $rqst);
   /**
    * @param \metastore\SeedTxnIdRequest $rqst
    * @throws \metastore\MetaException
    */
-  public function seedTxnId(\metastore\SeedTxnIdRequest $rqst);
+  public function seed_txn_id(\metastore\SeedTxnIdRequest $rqst);
   /**
    * @param \metastore\LockRequest $rqst
    * @return \metastore\LockResponse
@@ -11538,34 +11538,34 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("get_max_allocated_table_write_id failed: unknown result");
   }
 
-  public function seedWriteId(\metastore\SeedTableWriteIdsRequest $rqst)
+  public function seed_write_id(\metastore\SeedTableWriteIdsRequest $rqst)
   {
-    $this->send_seedWriteId($rqst);
-    $this->recv_seedWriteId();
+    $this->send_seed_write_id($rqst);
+    $this->recv_seed_write_id();
   }
 
-  public function send_seedWriteId(\metastore\SeedTableWriteIdsRequest $rqst)
+  public function send_seed_write_id(\metastore\SeedTableWriteIdsRequest $rqst)
   {
-    $args = new \metastore\ThriftHiveMetastore_seedWriteId_args();
+    $args = new \metastore\ThriftHiveMetastore_seed_write_id_args();
     $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'seedWriteId', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'seed_write_id', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('seedWriteId', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('seed_write_id', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_seedWriteId()
+  public function recv_seed_write_id()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_seedWriteId_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_seed_write_id_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -11579,7 +11579,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_seedWriteId_result();
+      $result = new \metastore\ThriftHiveMetastore_seed_write_id_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -11589,34 +11589,34 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function seedTxnId(\metastore\SeedTxnIdRequest $rqst)
+  public function seed_txn_id(\metastore\SeedTxnIdRequest $rqst)
   {
-    $this->send_seedTxnId($rqst);
-    $this->recv_seedTxnId();
+    $this->send_seed_txn_id($rqst);
+    $this->recv_seed_txn_id();
   }
 
-  public function send_seedTxnId(\metastore\SeedTxnIdRequest $rqst)
+  public function send_seed_txn_id(\metastore\SeedTxnIdRequest $rqst)
   {
-    $args = new \metastore\ThriftHiveMetastore_seedTxnId_args();
+    $args = new \metastore\ThriftHiveMetastore_seed_txn_id_args();
     $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'seedTxnId', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'seed_txn_id', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('seedTxnId', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('seed_txn_id', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_seedTxnId()
+  public function recv_seed_txn_id()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_seedTxnId_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_seed_txn_id_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -11630,7 +11630,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_seedTxnId_result();
+      $result = new \metastore\ThriftHiveMetastore_seed_txn_id_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -55165,7 +55165,7 @@ class ThriftHiveMetastore_get_max_allocated_table_write_id_result {
 
 }
 
-class ThriftHiveMetastore_seedWriteId_args {
+class ThriftHiveMetastore_seed_write_id_args {
   static $_TSPEC;
 
   /**
@@ -55191,7 +55191,7 @@ class ThriftHiveMetastore_seedWriteId_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_seedWriteId_args';
+    return 'ThriftHiveMetastore_seed_write_id_args';
   }
 
   public function read($input)
@@ -55229,7 +55229,7 @@ class ThriftHiveMetastore_seedWriteId_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seedWriteId_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seed_write_id_args');
     if ($this->rqst !== null) {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -55245,7 +55245,7 @@ class ThriftHiveMetastore_seedWriteId_args {
 
 }
 
-class ThriftHiveMetastore_seedWriteId_result {
+class ThriftHiveMetastore_seed_write_id_result {
   static $_TSPEC;
 
   /**
@@ -55271,7 +55271,7 @@ class ThriftHiveMetastore_seedWriteId_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_seedWriteId_result';
+    return 'ThriftHiveMetastore_seed_write_id_result';
   }
 
   public function read($input)
@@ -55309,7 +55309,7 @@ class ThriftHiveMetastore_seedWriteId_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seedWriteId_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seed_write_id_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -55322,7 +55322,7 @@ class ThriftHiveMetastore_seedWriteId_result {
 
 }
 
-class ThriftHiveMetastore_seedTxnId_args {
+class ThriftHiveMetastore_seed_txn_id_args {
   static $_TSPEC;
 
   /**
@@ -55348,7 +55348,7 @@ class ThriftHiveMetastore_seedTxnId_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_seedTxnId_args';
+    return 'ThriftHiveMetastore_seed_txn_id_args';
   }
 
   public function read($input)
@@ -55386,7 +55386,7 @@ class ThriftHiveMetastore_seedTxnId_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seedTxnId_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seed_txn_id_args');
     if ($this->rqst !== null) {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -55402,7 +55402,7 @@ class ThriftHiveMetastore_seedTxnId_args {
 
 }
 
-class ThriftHiveMetastore_seedTxnId_result {
+class ThriftHiveMetastore_seed_txn_id_result {
   static $_TSPEC;
 
   /**
@@ -55428,7 +55428,7 @@ class ThriftHiveMetastore_seedTxnId_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_seedTxnId_result';
+    return 'ThriftHiveMetastore_seed_txn_id_result';
   }
 
   public function read($input)
@@ -55466,7 +55466,7 @@ class ThriftHiveMetastore_seedTxnId_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seedTxnId_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_seed_txn_id_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
