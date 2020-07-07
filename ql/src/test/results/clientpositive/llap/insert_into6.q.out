@@ -201,6 +201,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into6a
 POSTHOOK: Input: default@insert_into6a@ds=1
 POSTHOOK: Input: default@insert_into6a@ds=2
+POSTHOOK: Output: default@insert_into6b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -307,6 +308,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into6a
 POSTHOOK: Input: default@insert_into6a@ds=1
 POSTHOOK: Input: default@insert_into6a@ds=2
+POSTHOOK: Output: default@insert_into6b
 POSTHOOK: Output: default@insert_into6b@ds=1
 POSTHOOK: Output: default@insert_into6b@ds=2
 POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
