@@ -982,27 +982,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_date_n9
-                    numFiles 1
-                    numRows 1000
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 176000
-                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3054
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1013,10 +1004,8 @@ STAGE PLANS:
                       name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_date_n9
                   name: default.srcpart_date_n9
@@ -1028,27 +1017,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_date_n9
-                    numFiles 1
-                    numRows 1000
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 176000
-                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3054
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -1059,10 +1039,8 @@ STAGE PLANS:
                       name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_date_n9
                   name: default.srcpart_date_n9
@@ -1124,27 +1102,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_small_n4
-                    numFiles 0
-                    numRows 0
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 0
-                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
@@ -1155,10 +1124,8 @@ STAGE PLANS:
                       name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_small_n4
                   name: default.srcpart_small_n4
@@ -1170,27 +1137,18 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-09
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
-                    bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.srcpart_small_n4
-                    numFiles 1
-                    numRows 20
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 3520
-                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 471
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
@@ -1201,10 +1159,8 @@ STAGE PLANS:
                       name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_small_n4
                   name: default.srcpart_small_n4

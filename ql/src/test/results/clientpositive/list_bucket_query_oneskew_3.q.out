@@ -217,28 +217,21 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              bucket_count -1
               column.name.delimiter ,
               columns x,y,z
-              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily_n0
-              numFiles 3
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 117
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 EXTERNAL TRUE
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns x,y,z
@@ -248,10 +241,8 @@ STAGE PLANS:
                 name default.fact_daily_n0
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily_n0
             name: default.fact_daily_n0
@@ -263,28 +254,21 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              bucket_count -1
               column.name.delimiter ,
               columns x,y,z
-              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily_n0
-              numFiles 3
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 117
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 EXTERNAL TRUE
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns x,y,z
@@ -294,10 +278,8 @@ STAGE PLANS:
                 name default.fact_daily_n0
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily_n0
             name: default.fact_daily_n0
@@ -309,28 +291,21 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              bucket_count -1
               column.name.delimiter ,
               columns x,y,z
-              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily_n0
-              numFiles 3
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 117
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 EXTERNAL TRUE
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns x,y,z
@@ -340,10 +315,8 @@ STAGE PLANS:
                 name default.fact_daily_n0
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily_n0
             name: default.fact_daily_n0

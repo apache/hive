@@ -127,7 +127,8 @@ public class HiveSplitGenerator extends InputInitializer {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
-    this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
+    this.conf = new Configuration(initializerContext.getVertexConfiguration());
+    TezUtils.addToConfFromByteString(this.conf, userPayloadProto.getConfigurationBytes());
     
     this.jobConf = new JobConf(conf);
 

@@ -340,9 +340,6 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
-    driverContext.getConf().set("mapreduce.workflow.id", "hive_" + driverContext.getQueryId());
-    driverContext.getConf().set("mapreduce.workflow.name", driverContext.getQueryString());
-
     // initialize FetchTask right here
     if (plan.getFetchTask() != null) {
       plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);

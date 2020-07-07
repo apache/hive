@@ -118,30 +118,20 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k0":"true","k1":"true","k2":"true","k3":"true","k4":"true","k5":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns k0,k1,k2,k3,k4,k5
-                    columns.comments 
                     columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                     name default.dst_union22_delta
-                    numFiles 1
-                    numRows 500
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 16936
-                    serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 17436
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
@@ -151,10 +141,8 @@ STAGE PLANS:
                       name default.dst_union22_delta
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
@@ -250,30 +238,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k1":"true","k2":"true","k3":"true","k4":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns k1,k2,k3,k4
-              columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22
-              numFiles 1
-              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 11124
-              serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
@@ -283,10 +261,8 @@ STAGE PLANS:
                 name default.dst_union22
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22
             name: default.dst_union22
@@ -298,30 +274,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k0":"true","k1":"true","k2":"true","k3":"true","k4":"true","k5":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
-              columns.comments 
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
-              numFiles 1
-              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 16936
-              serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 17436
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
@@ -331,10 +297,8 @@ STAGE PLANS:
                 name default.dst_union22_delta
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22_delta
             name: default.dst_union22_delta
@@ -371,7 +335,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          bucket_count -1
                           bucketing_version 2
                           column.name.delimiter ,
                           columns k1,k2,k3,k4
@@ -381,10 +344,8 @@ STAGE PLANS:
                           name default.dst_union22
                           partition_columns ds
                           partition_columns.types string
-                          serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dst_union22
                     TotalFiles: 1
@@ -426,7 +387,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns k1,k2,k3,k4
@@ -436,10 +396,8 @@ STAGE PLANS:
                       name default.dst_union22
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.dst_union22
                 TotalFiles: 1
@@ -498,30 +456,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k0":"true","k1":"true","k2":"true","k3":"true","k4":"true","k5":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
-              columns.comments 
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
-              numFiles 1
-              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 16936
-              serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 17436
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
@@ -531,10 +479,8 @@ STAGE PLANS:
                 name default.dst_union22_delta
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22_delta
             name: default.dst_union22_delta
@@ -587,7 +533,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
@@ -597,10 +542,8 @@ STAGE PLANS:
                 name default.dst_union22
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22
 
@@ -672,30 +615,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k1":"true","k2":"true","k3":"true","k4":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns k1,k2,k3,k4
-              columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22
-              numFiles 1
-              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 11124
-              serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
@@ -705,10 +638,8 @@ STAGE PLANS:
                 name default.dst_union22
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22
             name: default.dst_union22
@@ -720,30 +651,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"k0":"true","k1":"true","k2":"true","k3":"true","k4":"true","k5":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
-              columns.comments 
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
-              numFiles 1
-              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 16936
-              serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 17436
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
@@ -753,10 +674,8 @@ STAGE PLANS:
                 name default.dst_union22_delta
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22_delta
             name: default.dst_union22_delta

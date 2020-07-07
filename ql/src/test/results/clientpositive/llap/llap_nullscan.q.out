@@ -89,31 +89,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value,ds,hr
-                    columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.src_orc_n1
-                    numFiles 1
-                    numRows 10
-                    rawDataSize 3560
-                    serialization.ddl struct src_orc_n1 { string key, string value, string ds, string hr}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
-                    totalSize 646
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.NullStructSerDe
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value,ds,hr
@@ -122,14 +112,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.src_orc_n1
-                      numFiles 1
-                      numRows 10
-                      rawDataSize 3560
-                      serialization.ddl struct src_orc_n1 { string key, string value, string ds, string hr}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 646
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.src_orc_n1
                   name: default.src_orc_n1

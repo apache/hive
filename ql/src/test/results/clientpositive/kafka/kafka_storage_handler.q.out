@@ -1191,7 +1191,6 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
-                    columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                     columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
 #### A masked pattern was here ####
                     hive.kafka.max.retries 6
@@ -1205,15 +1204,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.wiki_kafka_avro_table
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
                     storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.kafka.KafkaSerDe
                 
                     input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
@@ -1290,7 +1283,6 @@ STAGE PLANS:
     "type" : "string"
   } ]
 }
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
@@ -1308,15 +1300,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.wiki_kafka_avro_table
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
                       storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.kafka.KafkaSerDe
                     name: default.wiki_kafka_avro_table
                   name: default.wiki_kafka_avro_table
@@ -1516,7 +1502,6 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
-                    columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                     columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
 #### A masked pattern was here ####
                     hive.kafka.max.retries 6
@@ -1530,15 +1515,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.wiki_kafka_avro_table
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
                     storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.kafka.KafkaSerDe
                 
                     input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
@@ -1615,7 +1594,6 @@ STAGE PLANS:
     "type" : "string"
   } ]
 }
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
@@ -1633,15 +1611,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.wiki_kafka_avro_table
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
                       storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.kafka.KafkaSerDe
                     name: default.wiki_kafka_avro_table
                   name: default.wiki_kafka_avro_table

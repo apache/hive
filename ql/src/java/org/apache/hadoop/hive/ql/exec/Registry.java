@@ -75,7 +75,7 @@ public class Registry {
   /**
    * The mapping from expression function names to expression classes.
    */
-  private final Map<String, FunctionInfo> mFunctions = new LinkedHashMap<String, FunctionInfo>();
+  private final Map<String, FunctionInfo> mFunctions = new ConcurrentHashMap<String, FunctionInfo>();
   private final Set<Class<?>> builtIns = Collections.synchronizedSet(new HashSet<Class<?>>());
   /**
    * Persistent map contains refcounts that are only modified in synchronized methods for now,
@@ -88,6 +88,7 @@ public class Registry {
   /**
    * The epic lock for the registry. This was added to replace the synchronized methods with
    * minimum disruption; the locking should really be made more granular here.
+   * This lock is protecting mFunctions, builtIns and persistent maps.
    */
   private final ReentrantLock lock = new ReentrantLock();
 
@@ -314,11 +315,9 @@ public class Registry {
    * @return
    */
   public FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
-    lock.lock();
-    try {
       functionName = functionName.toLowerCase();
       if (FunctionUtils.isQualifiedFunctionName(functionName)) {
-        FunctionInfo functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
+        FunctionInfo functionInfo = getQualifiedFunctionInfo(functionName);
         addToCurrentFunctions(functionName, functionInfo);
         return functionInfo;
       }
@@ -331,14 +330,10 @@ public class Registry {
       if (functionInfo == null) {
         functionName = FunctionUtils.qualifyFunctionName(
             functionName, SessionState.get().getCurrentDatabase().toLowerCase());
-        functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
+        functionInfo = getQualifiedFunctionInfo(functionName);
       }
       addToCurrentFunctions(functionName, functionInfo);
       return functionInfo;
-    } finally {
-      lock.unlock();
-    }
-
   }
 
   private void addToCurrentFunctions(String functionName, FunctionInfo functionInfo) {
@@ -616,7 +611,7 @@ public class Registry {
     return null;
   }
 
-  private FunctionInfo getQualifiedFunctionInfoUnderLock(String qualifiedName) throws SemanticException {
+  private FunctionInfo getQualifiedFunctionInfo(String qualifiedName) throws SemanticException {
     FunctionInfo info = mFunctions.get(qualifiedName);
     if (info != null && info.isBlockedFunction()) {
       throw new SemanticException ("UDF " + qualifiedName + " is not allowed");
@@ -641,15 +636,7 @@ public class Registry {
     if (conf == null || !HiveConf.getBoolVar(conf, ConfVars.HIVE_ALLOW_UDF_LOAD_ON_DEMAND)) {
       return null;
     }
-    // This is a little bit weird. We'll do the MS call outside of the lock. Our caller calls us
-    // under lock, so we'd preserve the lock state for them; their finally block will release the
-    // lock correctly. See the comment on the lock field - the locking needs to be reworked.
-    lock.unlock();
-    try {
-      return getFunctionInfoFromMetastoreNoLock(qualifiedName, conf);
-    } finally {
-      lock.lock();
-    }
+    return getFunctionInfoFromMetastoreNoLock(qualifiedName, conf);
   }
 
   // should be called after session registry is checked

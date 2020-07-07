@@ -38,8 +38,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns col1
@@ -47,14 +45,8 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.hive_test_src_n3
-                numFiles 0
-                numRows 0
-                rawDataSize 0
-                serialization.ddl struct hive_test_src_n3 { string col1}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.hive_test_src_n3
 

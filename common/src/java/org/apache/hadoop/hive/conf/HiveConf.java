@@ -2813,6 +2813,12 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
+
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+        "will gather stats if there are stats already associated with the table/partition.\n" +
+        "Turn this off to save some resources and the stats are not used anyway.\n" +
+        "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
+
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_INITIATOR_FAILED_THRESHOLD
      */
@@ -4733,6 +4739,8 @@ public class HiveConf extends Configuration {
       "Merge adjacent joins into a single n-way join"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 1000000L, new RangeValidator(0L, null),
       "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
+    HIVE_TEZ_SKIP_LOCAL_XML("hive.tez.skip.local.xml", false, "Hive excludes local xml files"
+        + " when sending configuration options to Tez AM when true"),
     /**
      * @deprecated Use MetastoreConf.MSCK_PATH_VALIDATION
      */

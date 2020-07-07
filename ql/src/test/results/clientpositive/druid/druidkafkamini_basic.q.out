@@ -270,31 +270,21 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"fullname":"true","shortname":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns shortname,fullname
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.languages
-                    numFiles 1
-                    numRows 2
-                    rawDataSize 20
-                    serialization.ddl struct languages { string shortname, string fullname}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 22
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"fullname":"true","shortname":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns shortname,fullname
@@ -303,14 +293,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.languages
-                      numFiles 1
-                      numRows 2
-                      rawDataSize 20
-                      serialization.ddl struct languages { string shortname, string fullname}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 22
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.languages
                   name: default.languages
@@ -347,13 +331,11 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                   output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","deleted":"true","language":"true","page":"true","user":"true"}}
                     EXTERNAL TRUE
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns __time,page,user,language,added,deleted
-                    columns.comments 
                     columns.types timestamp:string:string:string:int:int
                     druid.datasource default.druid_kafka_test
                     druid.fieldNames language,user
@@ -374,23 +356,15 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.druid_kafka_test
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct druid_kafka_test { timestamp __time, string page, string user, string language, i32 added, i32 deleted}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                     storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                 
                     input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                     output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","deleted":"true","language":"true","page":"true","user":"true"}}
                       EXTERNAL TRUE
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns __time,page,user,language,added,deleted
@@ -415,15 +389,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.druid_kafka_test
-                      numFiles 0
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct druid_kafka_test { timestamp __time, string page, string user, string language, i32 added, i32 deleted}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                       storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                     name: default.druid_kafka_test
                   name: default.druid_kafka_test

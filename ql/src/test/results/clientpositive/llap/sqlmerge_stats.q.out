@@ -49,8 +49,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into t values (1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -106,8 +104,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain merge into t as t using upd_t as u ON t.a = u.a 
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
@@ -455,8 +451,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: merge into t as t using upd_t as u ON t.a = u.a 
 WHEN MATCHED THEN DELETE
 WHEN NOT MATCHED THEN INSERT (a, b) VALUES(u.a, u.b)
@@ -521,8 +515,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: create table t2(a int, b int, c int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -599,8 +591,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[a]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 

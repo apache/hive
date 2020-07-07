@@ -788,11 +788,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         filesIdx++;
       }
       assert filesIdx == numFiles;
-
-      // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      if (isNativeTable() && fs != null && fsp != null && !conf.isMmTable() && !conf.isDirectInsert()) {
-        autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
-      }
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);

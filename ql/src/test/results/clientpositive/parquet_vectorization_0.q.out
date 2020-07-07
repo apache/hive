@@ -1712,30 +1712,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
             output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-              columns.comments 
               columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
               name default.alltypesparquet
-              numFiles 1
-              numRows 12288
-              rawDataSize __SOME_NUMBER__
-              serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-              totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
           
               input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
               output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
@@ -1743,14 +1733,8 @@ STAGE PLANS:
                 columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                 name default.alltypesparquet
-                numFiles 1
-                numRows 12288
-                rawDataSize __SOME_NUMBER__
-                serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
               name: default.alltypesparquet
             name: default.alltypesparquet
@@ -30537,30 +30521,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
             output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-              columns.comments 
               columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
               name default.alltypesparquet
-              numFiles 1
-              numRows 12288
-              rawDataSize __SOME_NUMBER__
-              serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-              totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
           
               input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
               output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
@@ -30568,14 +30542,8 @@ STAGE PLANS:
                 columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                 name default.alltypesparquet
-                numFiles 1
-                numRows 12288
-                rawDataSize __SOME_NUMBER__
-                serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
               name: default.alltypesparquet
             name: default.alltypesparquet
@@ -30657,30 +30625,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
             output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-              columns.comments 
               columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
               name default.alltypesparquet
-              numFiles 1
-              numRows 12288
-              rawDataSize __SOME_NUMBER__
-              serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-              totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
           
               input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
               output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
@@ -30688,14 +30646,8 @@ STAGE PLANS:
                 columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                 name default.alltypesparquet
-                numFiles 1
-                numRows 12288
-                rawDataSize __SOME_NUMBER__
-                serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
               name: default.alltypesparquet
             name: default.alltypesparquet
@@ -30778,30 +30730,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
             output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-              columns.comments 
               columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
               name default.alltypesparquet
-              numFiles 1
-              numRows 12288
-              rawDataSize __SOME_NUMBER__
-              serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-              totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
           
               input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
               output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
@@ -30809,14 +30751,8 @@ STAGE PLANS:
                 columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                 name default.alltypesparquet
-                numFiles 1
-                numRows 12288
-                rawDataSize __SOME_NUMBER__
-                serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
               name: default.alltypesparquet
             name: default.alltypesparquet
@@ -30890,30 +30826,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
             output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-              columns.comments 
               columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
               name default.alltypesparquet
-              numFiles 1
-              numRows 12288
-              rawDataSize __SOME_NUMBER__
-              serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-              totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
           
               input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
               output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
@@ -30921,14 +30847,8 @@ STAGE PLANS:
                 columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                 name default.alltypesparquet
-                numFiles 1
-                numRows 12288
-                rawDataSize __SOME_NUMBER__
-                serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                totalSize __SOME_NUMBER__
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
               name: default.alltypesparquet
             name: default.alltypesparquet

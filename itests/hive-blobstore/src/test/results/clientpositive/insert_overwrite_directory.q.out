@@ -118,31 +118,21 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns id,key
-              columns.comments 
               columns.types int:string
               field.delim ,
 #### A masked pattern was here ####
               name default.table1
-              numFiles 2
-              numRows 2
-              rawDataSize 8
-              serialization.ddl struct table1 { i32 id, string key}
               serialization.format ,
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 10
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true","key":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id,key
@@ -151,14 +141,8 @@ STAGE PLANS:
                 field.delim ,
 #### A masked pattern was here ####
                 name default.table1
-                numFiles 2
-                numRows 2
-                rawDataSize 8
-                serialization.ddl struct table1 { i32 id, string key}
                 serialization.format ,
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 10
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
             name: default.table1
@@ -378,31 +362,21 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns id,key
-              columns.comments 
               columns.types int:string
               field.delim ,
 #### A masked pattern was here ####
               name default.table1
-              numFiles 2
-              numRows 2
-              rawDataSize 8
-              serialization.ddl struct table1 { i32 id, string key}
               serialization.format ,
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 10
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true","key":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns id,key
@@ -411,14 +385,8 @@ STAGE PLANS:
                 field.delim ,
 #### A masked pattern was here ####
                 name default.table1
-                numFiles 2
-                numRows 2
-                rawDataSize 8
-                serialization.ddl struct table1 { i32 id, string key}
                 serialization.format ,
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 10
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
             name: default.table1

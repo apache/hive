@@ -341,8 +341,6 @@ public class Executor {
       if (noName) {
         driverContext.getConf().set(MRJobConfig.JOB_NAME, jobName + " (" + task.getId() + ")");
       }
-      driverContext.getConf().set(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME, task.getId());
-      Utilities.setWorkflowAdjacencies(driverContext.getConf(), driverContext.getPlan());
       taskQueue.incCurJobNo(1);
       CONSOLE.printInfo("Launching Job " + taskQueue.getCurJobNo() + " out of " + jobCount);
     }

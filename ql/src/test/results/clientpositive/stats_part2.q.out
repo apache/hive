@@ -200,8 +200,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mysource
@@ -272,8 +270,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(key) from stats_part where p > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -371,8 +367,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: show partitions stats_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@stats_part
@@ -525,8 +519,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 101)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -562,8 +554,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 102)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -599,8 +589,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: update stats_part set key = key + 100 where key in(-50,40) and p > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -723,8 +711,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 101)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -760,8 +746,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 102)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -797,8 +781,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select count(value) from stats_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -863,8 +845,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 101)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -900,8 +880,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 102)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -937,8 +915,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select count(value) from stats_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -1007,8 +983,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 101)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -1044,8 +1018,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition(p = 102)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part
@@ -1081,8 +1053,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats_part where p = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part

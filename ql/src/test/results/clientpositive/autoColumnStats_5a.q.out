@@ -59,7 +59,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          bucket_count -1
                           bucketing_version 2
                           column.name.delimiter ,
                           columns a,b
@@ -68,10 +67,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                           name default.partitioned1
                           partition_columns.types int
-                          serialization.ddl struct partitioned1 { i32 a, string b}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.partitioned1
                     TotalFiles: 1
@@ -110,11 +107,9 @@ STAGE PLANS:
               bucketing_version 2
               column.name.delimiter ,
               columns 
-              columns.comments 
               columns.types 
 #### A masked pattern was here ####
               name _dummy_database._dummy_table
-              serialization.ddl struct _dummy_table { }
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -122,7 +117,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns 
@@ -130,7 +124,6 @@ STAGE PLANS:
                 columns.types 
 #### A masked pattern was here ####
                 name _dummy_database._dummy_table
-                serialization.ddl struct _dummy_table { }
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
               serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -193,7 +186,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -202,10 +194,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
 
@@ -233,7 +223,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns a,b
@@ -243,10 +232,8 @@ STAGE PLANS:
                     name default.partitioned1
                     partition_columns part
                     partition_columns.types int
-                    serialization.ddl struct partitioned1 { i32 a, string b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.partitioned1
               TotalFiles: 1
@@ -261,7 +248,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns a,b
@@ -270,16 +256,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.partitioned1
               partition_columns.types int
-              serialization.ddl struct partitioned1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -288,10 +271,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
             name: default.partitioned1
@@ -312,7 +293,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns a,b
@@ -322,10 +302,8 @@ STAGE PLANS:
                     name default.partitioned1
                     partition_columns part
                     partition_columns.types int
-                    serialization.ddl struct partitioned1 { i32 a, string b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.partitioned1
               TotalFiles: 1
@@ -340,7 +318,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns a,b
@@ -349,16 +326,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.partitioned1
               partition_columns.types int
-              serialization.ddl struct partitioned1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -367,10 +341,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
             name: default.partitioned1
@@ -485,7 +457,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          bucket_count -1
                           bucketing_version 2
                           column.name.delimiter ,
                           columns a,b
@@ -494,10 +465,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                           name default.partitioned1
                           partition_columns.types int
-                          serialization.ddl struct partitioned1 { i32 a, string b}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.partitioned1
                     TotalFiles: 1
@@ -536,11 +505,9 @@ STAGE PLANS:
               bucketing_version 2
               column.name.delimiter ,
               columns 
-              columns.comments 
               columns.types 
 #### A masked pattern was here ####
               name _dummy_database._dummy_table
-              serialization.ddl struct _dummy_table { }
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -548,7 +515,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns 
@@ -556,7 +522,6 @@ STAGE PLANS:
                 columns.types 
 #### A masked pattern was here ####
                 name _dummy_database._dummy_table
-                serialization.ddl struct _dummy_table { }
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
               serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -619,7 +584,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -628,10 +592,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
 
@@ -659,7 +621,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns a,b
@@ -669,10 +630,8 @@ STAGE PLANS:
                     name default.partitioned1
                     partition_columns part
                     partition_columns.types int
-                    serialization.ddl struct partitioned1 { i32 a, string b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.partitioned1
               TotalFiles: 1
@@ -687,7 +646,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns a,b
@@ -696,16 +654,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.partitioned1
               partition_columns.types int
-              serialization.ddl struct partitioned1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -714,10 +669,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
             name: default.partitioned1
@@ -738,7 +691,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns a,b
@@ -748,10 +700,8 @@ STAGE PLANS:
                     name default.partitioned1
                     partition_columns part
                     partition_columns.types int
-                    serialization.ddl struct partitioned1 { i32 a, string b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.partitioned1
               TotalFiles: 1
@@ -766,7 +716,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns a,b
@@ -775,16 +724,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.partitioned1
               partition_columns.types int
-              serialization.ddl struct partitioned1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
@@ -793,10 +739,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.partitioned1
                 partition_columns.types int
-                serialization.ddl struct partitioned1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.partitioned1
             name: default.partitioned1

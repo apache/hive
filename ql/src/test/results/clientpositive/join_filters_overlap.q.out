@@ -84,30 +84,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -115,14 +105,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -229,30 +213,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -260,14 +234,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -418,30 +386,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -449,14 +407,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -563,30 +515,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -594,14 +536,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -752,30 +688,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -783,14 +709,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -897,30 +817,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -928,14 +838,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1084,30 +988,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1115,14 +1009,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1230,30 +1118,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1261,14 +1139,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1376,30 +1248,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1407,14 +1269,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1560,30 +1416,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1591,14 +1437,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1705,30 +1545,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1736,14 +1566,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4
@@ -1851,30 +1675,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a_n4
-              numFiles 1
-              numRows 3
-              rawDataSize 18
-              serialization.ddl struct a_n4 { i32 key, i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 21
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -1882,14 +1696,8 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a_n4
-                numFiles 1
-                numRows 3
-                rawDataSize 18
-                serialization.ddl struct a_n4 { i32 key, i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 21
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a_n4
             name: default.a_n4

@@ -155,30 +155,20 @@ STAGE PLANS:
             partition values:
               d_date_sk 2416945
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim_n1
-              numFiles 1
-              numRows 1
               partition_columns d_date_sk
               partition_columns.types bigint
-              rawDataSize 56
-              serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 201
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns d_date
@@ -188,10 +178,8 @@ STAGE PLANS:
                 name default.date_dim_n1
                 partition_columns d_date_sk
                 partition_columns.types bigint
-                serialization.ddl struct date_dim_n1 { date d_date}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.date_dim_n1
             name: default.date_dim_n1
@@ -201,30 +189,20 @@ STAGE PLANS:
             partition values:
               d_date_sk 2416946
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim_n1
-              numFiles 1
-              numRows 1
               partition_columns d_date_sk
               partition_columns.types bigint
-              rawDataSize 56
-              serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 201
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns d_date
@@ -234,10 +212,8 @@ STAGE PLANS:
                 name default.date_dim_n1
                 partition_columns d_date_sk
                 partition_columns.types bigint
-                serialization.ddl struct date_dim_n1 { date d_date}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.date_dim_n1
             name: default.date_dim_n1
@@ -247,30 +223,20 @@ STAGE PLANS:
             partition values:
               d_date_sk 2416947
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim_n1
-              numFiles 1
-              numRows 1
               partition_columns d_date_sk
               partition_columns.types bigint
-              rawDataSize 56
-              serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 201
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns d_date
@@ -280,10 +246,8 @@ STAGE PLANS:
                 name default.date_dim_n1
                 partition_columns d_date_sk
                 partition_columns.types bigint
-                serialization.ddl struct date_dim_n1 { date d_date}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.date_dim_n1
             name: default.date_dim_n1
@@ -293,30 +257,20 @@ STAGE PLANS:
             partition values:
               d_date_sk 2416948
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim_n1
-              numFiles 1
-              numRows 1
               partition_columns d_date_sk
               partition_columns.types bigint
-              rawDataSize 56
-              serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 201
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns d_date
@@ -326,10 +280,8 @@ STAGE PLANS:
                 name default.date_dim_n1
                 partition_columns d_date_sk
                 partition_columns.types bigint
-                serialization.ddl struct date_dim_n1 { date d_date}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.date_dim_n1
             name: default.date_dim_n1

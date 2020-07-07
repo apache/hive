@@ -733,11 +733,9 @@ STAGE PLANS:
                     bucketing_version 2
                     column.name.delimiter ,
                     columns 
-                    columns.comments 
                     columns.types 
 #### A masked pattern was here ####
                     name _dummy_database._dummy_table
-                    serialization.ddl struct _dummy_table { }
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                   serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -745,7 +743,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns 
@@ -753,7 +750,6 @@ STAGE PLANS:
                       columns.types 
 #### A masked pattern was here ####
                       name _dummy_database._dummy_table
-                      serialization.ddl struct _dummy_table { }
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     serde: org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -791,12 +787,9 @@ STAGE PLANS:
                         name default.acid_ptn_bucket1
                         partition_columns ds
                         partition_columns.types string
-                        serialization.ddl struct acid_ptn_bucket1 { i32 a, i32 b}
-                        serialization.format 1
                         serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                         transactional true
                         transactional_properties default
-#### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acid_ptn_bucket1
                   TotalFiles: 1
@@ -829,12 +822,9 @@ STAGE PLANS:
                 name default.acid_ptn_bucket1
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct acid_ptn_bucket1 { i32 a, i32 b}
-                serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 transactional true
                 transactional_properties default
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_ptn_bucket1
           Write Type: INSERT

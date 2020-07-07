@@ -426,30 +426,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tw_code":"true","tw_value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns tw_code,tw_value
-                    columns.comments 
                     columns.types string:double
 #### A masked pattern was here ####
                     name default.topnkey_windowing
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 176
-                    serialization.ddl struct topnkey_windowing { string tw_code, double tw_value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 202
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tw_code":"true","tw_value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns tw_code,tw_value
@@ -457,14 +447,8 @@ STAGE PLANS:
                       columns.types string:double
 #### A masked pattern was here ####
                       name default.topnkey_windowing
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 176
-                      serialization.ddl struct topnkey_windowing { string tw_code, double tw_value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 202
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.topnkey_windowing
                   name: default.topnkey_windowing
@@ -627,30 +611,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tw_code":"true","tw_value":"true"}}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns tw_code,tw_value
-                    columns.comments 
                     columns.types string:double
 #### A masked pattern was here ####
                     name default.topnkey_windowing
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 176
-                    serialization.ddl struct topnkey_windowing { string tw_code, double tw_value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 202
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tw_code":"true","tw_value":"true"}}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns tw_code,tw_value
@@ -658,14 +632,8 @@ STAGE PLANS:
                       columns.types string:double
 #### A masked pattern was here ####
                       name default.topnkey_windowing
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 176
-                      serialization.ddl struct topnkey_windowing { string tw_code, double tw_value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 202
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.topnkey_windowing
                   name: default.topnkey_windowing

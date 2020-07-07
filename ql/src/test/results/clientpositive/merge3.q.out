@@ -135,30 +135,20 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.merge_src
-              numFiles 4
-              numRows 2000
-              rawDataSize 21248
-              serialization.ddl struct merge_src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 23248
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -166,14 +156,8 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.merge_src
-                numFiles 4
-                numRows 2000
-                rawDataSize 21248
-                serialization.ddl struct merge_src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src
             name: default.merge_src
@@ -2475,7 +2459,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -2485,10 +2468,8 @@ STAGE PLANS:
                       name default.merge_src_part2
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct merge_src_part2 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.merge_src_part2
                 TotalFiles: 1
@@ -2525,30 +2506,20 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.merge_src_part
-              numFiles 2
-              numRows 1000
               partition_columns ds
               partition_columns.types string
-              rawDataSize 10624
-              serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -2558,10 +2529,8 @@ STAGE PLANS:
                 name default.merge_src_part
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -2573,30 +2542,20 @@ STAGE PLANS:
             partition values:
               ds 2008-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.merge_src_part
-              numFiles 2
-              numRows 1000
               partition_columns ds
               partition_columns.types string
-              rawDataSize 10624
-              serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -2606,10 +2565,8 @@ STAGE PLANS:
                 name default.merge_src_part
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -2671,7 +2628,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -2681,10 +2637,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
 
@@ -2712,7 +2666,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -2722,10 +2675,8 @@ STAGE PLANS:
                     name default.merge_src_part2
                     partition_columns ds
                     partition_columns.types string
-                    serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -2740,7 +2691,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
@@ -2750,16 +2700,13 @@ STAGE PLANS:
               name default.merge_src_part2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -2769,10 +2716,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
@@ -2793,7 +2738,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -2803,10 +2747,8 @@ STAGE PLANS:
                     name default.merge_src_part2
                     partition_columns ds
                     partition_columns.types string
-                    serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -2821,7 +2763,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
@@ -2831,16 +2772,13 @@ STAGE PLANS:
               name default.merge_src_part2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -2850,10 +2788,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
@@ -4984,30 +4920,20 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.merge_src_part
-              numFiles 2
-              numRows 1000
               partition_columns ds
               partition_columns.types string
-              rawDataSize 10624
-              serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -5017,10 +4943,8 @@ STAGE PLANS:
                 name default.merge_src_part
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -5032,30 +4956,20 @@ STAGE PLANS:
             partition values:
               ds 2008-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.merge_src_part
-              numFiles 2
-              numRows 1000
               partition_columns ds
               partition_columns.types string
-              rawDataSize 10624
-              serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11624
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -5065,10 +4979,8 @@ STAGE PLANS:
                 name default.merge_src_part
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -5092,7 +5004,6 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
-                  bucket_count -1
                   bucketing_version 2
                   column.name.delimiter ,
                   columns key,value
@@ -5102,10 +5013,8 @@ STAGE PLANS:
                   name default.merge_src_part2
                   partition_columns ds
                   partition_columns.types string
-                  serialization.ddl struct merge_src_part2 { string key, string value}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.merge_src_part2
             TotalFiles: 1
@@ -5168,7 +5077,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -5178,10 +5086,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
 
@@ -5209,7 +5115,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -5219,10 +5124,8 @@ STAGE PLANS:
                     name default.merge_src_part2
                     partition_columns ds
                     partition_columns.types string
-                    serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -5237,7 +5140,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
@@ -5247,16 +5149,13 @@ STAGE PLANS:
               name default.merge_src_part2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -5266,10 +5165,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
@@ -5290,7 +5187,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -5300,10 +5196,8 @@ STAGE PLANS:
                     name default.merge_src_part2
                     partition_columns ds
                     partition_columns.types string
-                    serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -5318,7 +5212,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
@@ -5328,16 +5221,13 @@ STAGE PLANS:
               name default.merge_src_part2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -5347,10 +5237,8 @@ STAGE PLANS:
                 name default.merge_src_part2
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2

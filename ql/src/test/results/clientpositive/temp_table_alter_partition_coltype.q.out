@@ -184,30 +184,20 @@ STAGE PLANS:
               dt 100
               ts 3.0
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -215,15 +205,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -236,30 +221,20 @@ STAGE PLANS:
               dt 100
               ts 6.30
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -267,15 +242,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -390,30 +360,20 @@ STAGE PLANS:
               dt 100
               ts 3.0
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -421,15 +381,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -442,30 +397,20 @@ STAGE PLANS:
               dt 100
               ts 6.30
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -473,15 +418,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -615,30 +555,20 @@ STAGE PLANS:
               dt 100
               ts 3.0
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -646,15 +576,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -665,30 +590,20 @@ STAGE PLANS:
               dt 100
               ts 6.30
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype_temp
-              numFiles 1
-              numRows 25
               partition_columns dt/ts
               partition_columns.types string:double
-              rawDataSize 191
-              serialization.ddl struct alter_coltype_temp { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 216
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
@@ -696,15 +611,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype_temp
-                numFiles 0
-                numRows 0
                 partition_columns dt/ts
                 partition_columns.types string:double
-                rawDataSize 0
-                serialization.ddl struct alter_coltype_temp { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype_temp
             name: default.alter_coltype_temp
@@ -871,30 +781,20 @@ STAGE PLANS:
               partcol1 1
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
-              bucket_count -1
               column.name.delimiter ,
               columns intcol
-              columns.comments 
               columns.types string
 #### A masked pattern was here ####
               name pt.alterdynamic_part_table_temp
-              numFiles 2
-              numRows 2
               partition_columns partcol1/partcol2
               partition_columns.types int:string
-              rawDataSize 3
-              serialization.ddl struct alterdynamic_part_table_temp { string intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns intcol
@@ -902,15 +802,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name pt.alterdynamic_part_table_temp
-                numFiles 0
-                numRows 0
                 partition_columns partcol1/partcol2
                 partition_columns.types int:string
-                rawDataSize 0
-                serialization.ddl struct alterdynamic_part_table_temp { string intcol}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: pt.alterdynamic_part_table_temp
             name: pt.alterdynamic_part_table_temp
@@ -954,30 +849,20 @@ STAGE PLANS:
               partcol1 2
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
-              bucket_count -1
               column.name.delimiter ,
               columns intcol
-              columns.comments 
               columns.types string
 #### A masked pattern was here ####
               name pt.alterdynamic_part_table_temp
-              numFiles 1
-              numRows 1
               partition_columns partcol1/partcol2
               partition_columns.types int:string
-              rawDataSize 1
-              serialization.ddl struct alterdynamic_part_table_temp { string intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 2
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
-                bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
                 columns intcol
@@ -985,15 +870,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name pt.alterdynamic_part_table_temp
-                numFiles 0
-                numRows 0
                 partition_columns partcol1/partcol2
                 partition_columns.types int:string
-                rawDataSize 0
-                serialization.ddl struct alterdynamic_part_table_temp { string intcol}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: pt.alterdynamic_part_table_temp
             name: pt.alterdynamic_part_table_temp

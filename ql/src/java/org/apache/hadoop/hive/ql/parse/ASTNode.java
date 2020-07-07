@@ -78,13 +78,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     if (super.getChildCount() == 0) {
       return null;
     }
-
-    ArrayList<Node> ret_vec = new ArrayList<Node>();
-    for (int i = 0; i < super.getChildCount(); ++i) {
-      ret_vec.add((Node) super.getChild(i));
-    }
-
-    return ret_vec;
+    return new ArrayList<>((List<? extends Node>) super.getChildren());
   }
 
   /*

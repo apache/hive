@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -77,6 +78,83 @@ public class DynamicSerDe extends AbstractSerDe {
 
   TIOStreamTransport tios;
 
+  private static HashMap<String, String> typeToThriftTypeMap;
+  static {
+    typeToThriftTypeMap = new HashMap<>();
+    typeToThriftTypeMap.put(serdeConstants.BOOLEAN_TYPE_NAME, "bool");
+    typeToThriftTypeMap.put(serdeConstants.TINYINT_TYPE_NAME, "byte");
+    typeToThriftTypeMap.put(serdeConstants.SMALLINT_TYPE_NAME, "i16");
+    typeToThriftTypeMap.put(serdeConstants.INT_TYPE_NAME, "i32");
+    typeToThriftTypeMap.put(serdeConstants.BIGINT_TYPE_NAME, "i64");
+    typeToThriftTypeMap.put(serdeConstants.DOUBLE_TYPE_NAME, "double");
+    typeToThriftTypeMap.put(serdeConstants.FLOAT_TYPE_NAME, "float");
+    typeToThriftTypeMap.put(serdeConstants.LIST_TYPE_NAME, "list");
+    typeToThriftTypeMap.put(serdeConstants.MAP_TYPE_NAME, "map");
+    typeToThriftTypeMap.put(serdeConstants.STRING_TYPE_NAME, "string");
+    typeToThriftTypeMap.put(serdeConstants.BINARY_TYPE_NAME, "binary");
+    // These 4 types are not supported yet.
+    // We should define a complex type date in thrift that contains a single int
+    // member, and DynamicSerDe
+    // should convert it to date type at runtime.
+    typeToThriftTypeMap.put(serdeConstants.DATE_TYPE_NAME, "date");
+    typeToThriftTypeMap.put(serdeConstants.DATETIME_TYPE_NAME, "datetime");
+    typeToThriftTypeMap.put(serdeConstants.TIMESTAMP_TYPE_NAME, "timestamp");
+    typeToThriftTypeMap.put(serdeConstants.DECIMAL_TYPE_NAME, "decimal");
+  }
+
+  /**
+   * Convert type to ThriftType. We do that by tokenizing the type and convert
+   * each token.
+   */
+  private String typeToThriftType(String type) {
+    StringBuilder thriftType = new StringBuilder();
+    int last = 0;
+    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    for (int i = 1; i <= type.length(); i++) {
+      if (i == type.length()
+          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+        String token = type.substring(last, i);
+        last = i;
+        String thriftToken = typeToThriftTypeMap.get(token);
+        thriftType.append(thriftToken == null ? token : thriftToken);
+        lastAlphaDigit = !lastAlphaDigit;
+      }
+    }
+    return thriftType.toString();
+  }
+
+  /**
+   * Generate Thrift DDL from column props.
+   */
+  private String getDDLFrom(String structName,
+    String cols, String types) throws SerDeException{
+    String[] colNames = cols.split(",");
+    String[] colTypes = types.split(":");
+
+    if (colNames.length != colTypes.length) {
+      throw new SerDeException("colnames : " + cols + " types: "+types);
+    }
+    StringBuilder ddl = new StringBuilder();
+    ddl.append("struct ");
+    ddl.append(structName);
+    ddl.append(" { ");
+    boolean first = true;
+    for (int i=0; i < colNames.length; i++) {
+      if (first) {
+        first = false;
+      } else {
+        ddl.append(", ");
+      }
+      ddl.append(typeToThriftType(colTypes[i]));
+      ddl.append(' ');
+      ddl.append(colNames[i]);
+    }
+    ddl.append("}");
+
+    LOG.trace("DDL: {}", ddl);
+    return ddl.toString();
+  }
+
   @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
     try {
@@ -92,6 +170,11 @@ public class DynamicSerDe extends AbstractSerDe {
         type_name = tableName.substring(index + 1, tableName.length());
       } else {
         type_name = tableName;
+      }
+
+      if (null == ddl) {
+        ddl = getDDLFrom(type_name, tbl.getProperty(serdeConstants.LIST_COLUMNS), tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES));
+
       }
       String protoName = tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT);
 

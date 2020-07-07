@@ -2523,30 +2523,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns join_col,filter_col
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.my_dim
-                    numFiles 1
-                    numRows 4
-                    rawDataSize 692
-                    serialization.ddl struct my_dim { string join_col, string filter_col}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 340
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns join_col,filter_col
@@ -2554,14 +2544,8 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.my_dim
-                      numFiles 1
-                      numRows 4
-                      rawDataSize 692
-                      serialization.ddl struct my_dim { string join_col, string filter_col}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 340
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.my_dim
                   name: default.my_dim
