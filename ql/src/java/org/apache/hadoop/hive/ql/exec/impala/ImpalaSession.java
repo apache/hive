@@ -313,6 +313,7 @@ public class ImpalaSession {
         req.setStatement(sql);
         TExecuteStatementResp resp = RetryRPC("ExecuteStatement", (c) -> c.ExecuteStatement(req));
         checkThriftStatus(resp.getStatus());
+        fetchEOF = false;
         return resp.getOperationHandle();
     }
 

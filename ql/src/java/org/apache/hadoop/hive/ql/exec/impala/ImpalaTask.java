@@ -48,13 +48,12 @@ public class ImpalaTask extends Task<ImpalaWork> {
     public int execute() {
         // zero is success, non-zero is failure
         int rc = 0;
-        ImpalaSessionManager impalaSessionManager = null;
         HiveConf conf = getQueryState().getConf();
         boolean isPlannedMode = conf.getImpalaExecutionMode() == ImpalaExecutionMode.PLAN;
         boolean isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
         try {
             ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
-            TOperationHandle opHandle = null;
+            TOperationHandle opHandle;
             if (work.hasPlannedWork()) {
                 Preconditions.checkState(isPlannedMode);
                 opHandle = session.executePlan(work.getQuery(), work.getExecRequest());
@@ -72,8 +71,18 @@ public class ImpalaTask extends Task<ImpalaWork> {
                   impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle, work.getFetchSize()));
               } else {
                 Preconditions.checkState(isStreaming == false);
-                // Will block until results are ready
-                session.fetch(opHandle, 1);
+                try {
+                  // Will block until results are ready
+                  session.fetch(opHandle, 1);
+                } finally {
+                  // Always close operation independently on whether
+                  // it was successful or not
+                  try {
+                    session.closeOperation(opHandle);
+                  } catch (HiveException e) {
+                    LOG.warn("Could not close operation", e);
+                  }
+                }
               }
             }
 
