@@ -1960,6 +1960,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
+      throws TException {
+    assert partitionSpec != null;
+    PartitionsSpecByExprResult result;
+    try {
+      result = client.get_partitions_spec_by_expr(request);
+    } catch (TApplicationException te) {
+      if (te.getType() != TApplicationException.UNKNOWN_METHOD
+          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
+        throw te;
+      }
+      throw new IncompatibleMetastoreException(
+          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+    }
+
+    // do client side filtering
+    result.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
+        isClientFilterEnabled, filterHook, result.getPartitionsSpec()));
+
+    partitionSpec.addAll(result.getPartitionsSpec());
+    return !result.isSetHasUnknownPartitions() || result.isHasUnknownPartitions();
+  }
+  @Override
   public boolean listPartitionsSpecByExpr(String dbName, String tblName,
       byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
       throws TException {
@@ -2466,6 +2489,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         dbName, tblName, client.get_partition_names_req(req));
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, req.getCatName(),
+        req.getDbName(), req.getTblName(), client.get_partition_names_req(req));
   }
 
   @Override

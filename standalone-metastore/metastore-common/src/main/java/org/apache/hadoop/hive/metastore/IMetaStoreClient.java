@@ -1253,6 +1253,17 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param request request
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException  no such table.
+   */
+  List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values
    * @param request request
    * @return reponse
@@ -1379,6 +1390,16 @@ public interface IMetaStoreClient {
    */
   boolean listPartitionsSpecByExpr(String dbName, String tblName,
       byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+          throws TException;
+
+    /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param request request
+   * @param partitionSpec the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
           throws TException;
 
   /**

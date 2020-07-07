@@ -1382,6 +1382,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         maxParts, result);
   }
 
+  @Override public boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
       String defaultPartitionName, short maxParts, List<PartitionSpec> result)
@@ -1482,6 +1487,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       String defaultPartName, byte[] exprBytes, String order,
       short maxParts) throws MetaException, TException, NoSuchObjectException {
 
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException {
     throw new UnsupportedOperationException();
   }
 

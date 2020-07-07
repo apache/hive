@@ -115,65 +115,7 @@ import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FireEventRequest;
-import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
-import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.Materialization;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -1407,13 +1349,7 @@ public class Hive {
     try {
       // Note: this is currently called w/true from StatsOptimizer only.
       if (checkTransactional) {
-        ValidWriteIdList validWriteIdList = null;
-        long txnId = SessionState.get().getTxnMgr() != null ?
-            SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
-        if (txnId > 0) {
-          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf,
-              dbName, tableName);
-        }
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
             validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
       } else {
@@ -1457,6 +1393,22 @@ public class Hive {
     }
 
     return new Table(tTable);
+  }
+
+  /**
+   * Get ValidWriteIdList for the current transaction.
+   * @param dbName
+   * @param tableName
+   * @return
+   * @throws LockException
+   */
+  private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
+    ValidWriteIdList validWriteIdList = null;
+    long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+    if (txnId > 0) {
+      validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
+    }
+    return validWriteIdList;
   }
 
   /**
@@ -3284,6 +3236,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
+      // TODO: Either create a new getPartitionWithAuthInfo API with request/response format that takes
+      //  ValidWriteIdList and tableId or if this API is no longer required, remove all the references.
       tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
           tbl.getTableName(), pvals, getUserName(), getGroupNames());
     } catch (NoSuchObjectException nsoe) {
@@ -3550,11 +3504,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public List<String> getPartitionNames(String tblName, short max) throws HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
-    return getPartitionNames(names[0], names[1], max);
-  }
-
   public List<String> getPartitionNames(String dbName, String tblName, short max)
       throws HiveException {
     List<String> names = null;
@@ -3580,7 +3529,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
     try {
-      names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
+      if (AcidUtils.isTransactionalTable(t)) {
+        GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
+        req.setTblName(tblName);
+        req.setDbName(dbName);
+        req.setPartValues(pvals);
+        req.setMaxParts(max);
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
+        names = res.getNames();
+      } else {
+        names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
+      }
     } catch (NoSuchObjectException nsoe) {
       // this means no partition exists for the given partition spec
       // key value pairs - thrift cannot handle null return values, hence
@@ -3602,9 +3563,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
       exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     }
     try {
+
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-      names = getMSC().listPartitionNames(tbl.getCatalogName(), tbl.getDbName(),
-          tbl.getTableName(), defaultPartitionName, exprBytes, order, maxParts);
+
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        PartitionsByExprRequest req =
+            new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
+        req.setDefaultPartitionName(defaultPartitionName);
+        if (maxParts >= 0) {
+          req.setMaxParts(maxParts);
+        }
+        req.setOrder(order);
+        req.setCatName(tbl.getCatalogName());
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        names = getMSC().listPartitionNames(req);
+
+      } else {
+        names = getMSC()
+            .listPartitionNames(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(), defaultPartitionName,
+                exprBytes, order, maxParts);
+      }
     } catch (NoSuchObjectException nsoe) {
       return Lists.newArrayList();
     } catch (Exception e) {
@@ -3625,8 +3604,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
-        tParts = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-            (short) -1, getUserName(), getGroupNames());
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+          req.setTblName(tbl.getTableName());
+          req.setDbName(tbl.getDbName());
+          req.setUserName(getUserName());
+          req.setMaxParts((short) -1);
+          req.setGroupNames(getGroupNames());
+          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+          GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+          tParts = res.getPartitions();
+        } else {
+          tParts = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(), (short) -1, getUserName(),
+              getGroupNames());
+        }
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -3917,12 +3909,26 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> result) throws HiveException, TException {
     assert result != null;
+    boolean hasUnknownParts;
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
-        new ArrayList<>();
-    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
-        tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts = new ArrayList<>();
+
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      PartitionsByExprRequest req = new PartitionsByExprRequest();
+      req.setDbName(tbl.getDbName());
+      req.setTblName((tbl.getTableName()));
+      req.setDefaultPartitionName(defaultPartitionName);
+      req.setMaxParts((short) -1);
+      req.setExpr(exprBytes);
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+      req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+      hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
+    } else {
+      hasUnknownParts = getMSC()
+          .listPartitionsSpecByExpr(tbl.getDbName(), tbl.getTableName(), exprBytes, defaultPartitionName, (short) -1,
+              msParts);
+    }
     result.addAll(convertFromPartSpec(msParts.iterator(), tbl));
     return hasUnknownParts;
   }
