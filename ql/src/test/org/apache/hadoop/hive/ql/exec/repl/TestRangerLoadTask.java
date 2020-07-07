@@ -262,4 +262,27 @@ public class TestRangerLoadTask {
     //Deny policy is added
     Assert.assertEquals(1, actualPolicyList.getListSize());
   }
+
+  @Test
+  public void testRangerEndpointCreation() throws Exception {
+    RangerRestClientImpl rangerRestClient = new RangerRestClientImpl();
+    Assert.assertTrue(rangerRestClient.getRangerExportUrl("http://ranger.apache.org:6080",
+      "hive", "dbname").equals("http://ranger.apache.org:6080/service/plugins/"
+      + "policies/exportJson?serviceName=hive&polResource=dbname&resource%3Adatabase=dbname&serviceType=hive"
+      + "&resourceMatchScope=self_or_ancestor&resourceMatch=full"));
+
+    Assert.assertTrue(rangerRestClient.getRangerExportUrl("http://ranger.apache.org:6080/",
+      "hive", "dbname").equals("http://ranger.apache.org:6080/service/plugins/"
+      + "policies/exportJson?serviceName=hive&polResource=dbname&resource%3Adatabase=dbname&serviceType=hive"
+      + "&resourceMatchScope=self_or_ancestor&resourceMatch=full"));
+
+    Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080/",
+      "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
+      + "?updateIfExists=true&polResource=dbname"));
+
+    Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080",
+      "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
+      + "?updateIfExists=true&polResource=dbname"));
+
+  }
 }
