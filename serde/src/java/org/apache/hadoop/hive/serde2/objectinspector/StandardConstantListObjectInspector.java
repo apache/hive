@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +30,7 @@ import java.util.List;
 public class StandardConstantListObjectInspector extends StandardListObjectInspector
   implements ConstantObjectInspector {
 
-  private List<?> value = new ArrayList<>();
+  private List<?> value;
 
   protected StandardConstantListObjectInspector() {
     super();
@@ -42,9 +41,7 @@ public class StandardConstantListObjectInspector extends StandardListObjectInspe
   protected StandardConstantListObjectInspector(
       ObjectInspector listElementObjectInspector, List<?> value) {
     super(listElementObjectInspector);
-    if (null != value) {
-      this.value = value;
-    }
+    this.value = value;
   }
 
   @Override
