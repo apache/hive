@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -1192,7 +1193,8 @@ public class StatsUtils {
         // check if list elements are primitive or Objects
         ObjectInspector leoi = scloi.getListElementObjectInspector();
         if (leoi.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
-          result += getSizeOfPrimitiveTypeArraysFromType(leoi.getTypeName(), length, conf);
+          int maxVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
+          result += getSizeOfPrimitiveTypeArraysFromType(leoi.getTypeName(), length, maxVarLen);
         } else {
           result += JavaDataModel.get().lengthForObjectArrayOfSize(length);
         }
@@ -1257,78 +1259,88 @@ public class StatsUtils {
   }
 
   /**
-   * Get size of fixed length primitives
-   * @param colType
-   *          - column type
+   * Get size of fixed length primitives.
+   *
+   * @param colType column type
    * @return raw data size
+   * @throws NullPointerException if colType is {@code null}
    */
-  public static long getAvgColLenOfFixedLengthTypes(String colType) {
-    String colTypeLowerCase = colType.toLowerCase();
-    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.VOID_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+  public static long getAvgColLenOfFixedLengthTypes(final String colType) {
+    String colTypeLowerCase = Objects.requireNonNull(colType).toLowerCase();
+    switch (colTypeLowerCase) {
+    case serdeConstants.TINYINT_TYPE_NAME:
+    case serdeConstants.SMALLINT_TYPE_NAME:
+    case serdeConstants.INT_TYPE_NAME:
+    case serdeConstants.VOID_TYPE_NAME:
+    case serdeConstants.BOOLEAN_TYPE_NAME:
+    case serdeConstants.FLOAT_TYPE_NAME:
       return JavaDataModel.get().primitive1();
-    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)
-        || colTypeLowerCase.equals("long")) {
+    case serdeConstants.DOUBLE_TYPE_NAME:
+    case serdeConstants.BIGINT_TYPE_NAME:
+    case serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME:
+    case "long":
       return JavaDataModel.get().primitive2();
-    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+    case serdeConstants.TIMESTAMP_TYPE_NAME:
+    case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
       return JavaDataModel.get().lengthOfTimestamp();
-    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+    case serdeConstants.DATE_TYPE_NAME:
       return JavaDataModel.get().lengthOfDate();
-    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+    case serdeConstants.DECIMAL_TYPE_NAME:
       return JavaDataModel.get().lengthOfDecimal();
-    } else if (colTypeLowerCase.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
+    case serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME:
       return JavaDataModel.JAVA32_META;
-    } else {
-      //TODO: support complex types
+    default:
+      // TODO: support complex types
       // for complex type we simply return 0
       return 0;
     }
   }
 
   /**
-   * Get the size of arrays of primitive types
+   * Get the size of arrays of primitive types.
+   *
+   * @param colType The column type
+   * @param length The length of the column type
+   * @param maxLength The maximum length of the field
    * @return raw data size
+   * @throws NullPointerException if colType is {@code null}
    */
-  public static long getSizeOfPrimitiveTypeArraysFromType(String colType, int length, HiveConf conf) {
-    String colTypeLowerCase = colType.toLowerCase();
-    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForIntArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForDoubleArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)
-        || colTypeLowerCase.equals("long")) {
-      return JavaDataModel.get().lengthForLongArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForByteArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForBooleanArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.DATETIME_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForTimestampArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForDateArrayOfSize(length);
-    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-      return JavaDataModel.get().lengthForDecimalArrayOfSize(length);
-    } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
-        || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+  public static long getSizeOfPrimitiveTypeArraysFromType(final String colType, final int length, final int maxLength) {
+    String colTypeLowerCase = Objects.requireNonNull(colType).toLowerCase();
+    if (colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
-      int configVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
-      int siz = JavaDataModel.get().lengthForStringOfLength(configVarLen);
-      return JavaDataModel.get().lengthForPrimitiveArrayOfSize(siz, length);
-    } else {
+      int charTypeLen = JavaDataModel.get().lengthForStringOfLength(maxLength);
+      return JavaDataModel.get().lengthForPrimitiveArrayOfSize(charTypeLen, length);
+    }
+    switch (colTypeLowerCase) {
+    case serdeConstants.TINYINT_TYPE_NAME:
+    case serdeConstants.SMALLINT_TYPE_NAME:
+    case serdeConstants.INT_TYPE_NAME:
+    case serdeConstants.FLOAT_TYPE_NAME:
+      return JavaDataModel.get().lengthForIntArrayOfSize(length);
+    case serdeConstants.DOUBLE_TYPE_NAME:
+      return JavaDataModel.get().lengthForDoubleArrayOfSize(length);
+    case serdeConstants.BIGINT_TYPE_NAME:
+    case "long":
+      return JavaDataModel.get().lengthForLongArrayOfSize(length);
+    case serdeConstants.BINARY_TYPE_NAME:
+      return JavaDataModel.get().lengthForByteArrayOfSize(length);
+    case serdeConstants.BOOLEAN_TYPE_NAME:
+      return JavaDataModel.get().lengthForBooleanArrayOfSize(length);
+    case serdeConstants.TIMESTAMP_TYPE_NAME:
+    case serdeConstants.DATETIME_TYPE_NAME:
+    case serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME:
+    case serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME:
+    case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
+      return JavaDataModel.get().lengthForTimestampArrayOfSize(length);
+    case serdeConstants.DATE_TYPE_NAME:
+      return JavaDataModel.get().lengthForDateArrayOfSize(length);
+    case serdeConstants.DECIMAL_TYPE_NAME:
+      return JavaDataModel.get().lengthForDecimalArrayOfSize(length);
+    case serdeConstants.STRING_TYPE_NAME:
+      int stringTypeLen = JavaDataModel.get().lengthForStringOfLength(maxLength);
+      return JavaDataModel.get().lengthForPrimitiveArrayOfSize(stringTypeLen, length);
+    default:
       return 0;
     }
   }
