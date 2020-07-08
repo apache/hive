@@ -210,6 +210,66 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertExternalFileInfo(Arrays.asList("t2", "t3", "t4"), tuple.dumpLocation, true);
   }
 
+  @Test
+  public void externalTableReplicationWithDefaultPathsLazyCopy() throws Throwable {
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    //creates external tables with partitions
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("insert into table t2 partition(country='france') values ('paris')")
+            .dump(primaryDbName, lazyCopyClause);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t1", "t2"), tuple.dumpLocation, primaryDbName, false);
+
+
+
+    replica.load(replicatedDbName, primaryDbName, lazyCopyClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select country from t2 where country = 'us'")
+            .verifyResult("us")
+            .run("select country from t2 where country = 'france'")
+            .verifyResult("france")
+            .run("show partitions t2").verifyResults(new String[] {"country=france", "country=india", "country=us"});
+
+    String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    // Ckpt should be set on bootstrapped db.
+    replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
+
+    assertTablePartitionLocation(primaryDbName + ".t1", replicatedDbName + ".t1");
+    assertTablePartitionLocation(primaryDbName + ".t2", replicatedDbName + ".t2");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (10)")
+            .run("create external table t4 as select id from t3")
+            .dump(primaryDbName, lazyCopyClause);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, true);
+
+    replica.load(replicatedDbName, primaryDbName, lazyCopyClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("select id from t3")
+            .verifyResult("10")
+            .run("select id from t4")
+            .verifyResult("10");
+  }
+
   /**
    * @param sourceTableName  -- Provide the fully qualified table name
    * @param replicaTableName -- Provide the fully qualified table name

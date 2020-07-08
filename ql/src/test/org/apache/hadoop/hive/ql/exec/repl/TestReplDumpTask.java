@@ -21,9 +21,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -131,16 +131,15 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList,
-                                                    Path dbRootMetadata, Path dbRootData,
-                                               long lastReplId, Hive hiveDb,
-                                               HiveWrapper.Tuple<Table> tuple)
+      void dumpTable(String dbName, String tblName, String validTxnList,
+                     Path dbRootMetadata, Path dbRootData,
+                     long lastReplId, Hive hiveDb,
+                     HiveWrapper.Tuple<Table> tuple, FileList managedTableDirFileList, boolean dataCopyAtLoad)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {
           throw new TestException();
         }
-        return Collections.emptyList();
       }
     };
 
