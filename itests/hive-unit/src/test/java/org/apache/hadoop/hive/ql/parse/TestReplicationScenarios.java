@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
@@ -3419,6 +3421,8 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".tbl1(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl2(a string, b string, foreign key (a, b) references " + dbName + ".tbl1(a, b) disable novalidate)", driver);
     run("CREATE TABLE " + dbName + ".tbl3(a string, b string not null disable, unique (a) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl7(a string, price double CHECK (price > 0 AND price <= 1000))", driver);
+    run("CREATE TABLE " + dbName + ".tbl8(a string, usr string DEFAULT current_user())", driver);
 
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
     String replDumpId = bootstrapDump.lastReplId;
@@ -3432,6 +3436,10 @@ public class TestReplicationScenarios {
       assertEquals(fks.size(), 2);
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl3"));
       assertEquals(nns.size(), 1);
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl8"));
+      assertEquals(dks.size(), 1);
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl7"));
+      assertEquals(cks.size(), 1);
     } catch (TException te) {
       assertNull(te);
     }
@@ -3439,6 +3447,8 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".tbl4(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl5(a string, b string, foreign key (a, b) references " + dbName + ".tbl4(a, b) disable novalidate)", driver);
     run("CREATE TABLE " + dbName + ".tbl6(a string, b string not null disable, unique (a) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl9(a string, price double CHECK (price > 0 AND price <= 1000))", driver);
+    run("CREATE TABLE " + dbName + ".tbl10(a string, usr string DEFAULT current_user())", driver);
 
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
     replDumpId = incrementalDump.lastReplId;
@@ -3447,6 +3457,8 @@ public class TestReplicationScenarios {
     String ukName = null;
     String fkName = null;
     String nnName = null;
+    String dkName = null;
+    String ckName = null;
     try {
       List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl4"));
       assertEquals(pks.size(), 2);
@@ -3460,7 +3472,12 @@ public class TestReplicationScenarios {
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
-
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl10"));
+      assertEquals(dks.size(), 1);
+      dkName = dks.get(0).getDc_name();
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl9"));
+      assertEquals(cks.size(), 1);
+      ckName = cks.get(0).getDc_name();
     } catch (TException te) {
       assertNull(te);
     }
@@ -3469,6 +3486,8 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".tbl4 DROP CONSTRAINT `" + ukName + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl5 DROP CONSTRAINT `" + fkName + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl6 DROP CONSTRAINT `" + nnName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl9 DROP CONSTRAINT `" + ckName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName + "`", driver);
 
     incrementalLoadAndVerify(dbName, replDbName);
     try {
@@ -3480,6 +3499,11 @@ public class TestReplicationScenarios {
       assertTrue(fks.isEmpty());
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
       assertTrue(nns.isEmpty());
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl10"));
+      assertTrue(dks.isEmpty());
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl9"));
+      assertTrue(cks.isEmpty());
+
     } catch (TException te) {
       assertNull(te);
     }
