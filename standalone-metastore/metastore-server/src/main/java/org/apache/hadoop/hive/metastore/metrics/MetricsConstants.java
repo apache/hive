@@ -47,4 +47,31 @@ public class MetricsConstants {
   public static final String TOTAL_DATABASES = "total_count_dbs";
   public static final String TOTAL_TABLES = "total_count_tables";
   public static final String TOTAL_PARTITIONS = "total_count_partitions";
+
+  public static final String DB_NUMBER_OF_DATASTORE_READS = "db_NumberOfDatastoreReads";
+  public static final String DB_NUMBER_OF_DATASTORE_WRITES = "db_NumberOfDatastoreWrites";
+  public static final String DB_NUMBER_OF_DATASTORE_READS_IN_LATES_TXN = "db_NumberOfDatastoreReadsInLatestTxn";
+  public static final String DB_NUMBER_OF_DATASTORE_WRITES_IN_LATEST_TXN = "db_NumberOfDatastoreWritesInLatestTxn";
+  public static final String DB_NUMBER_OF_OBJECT_DELETES = "db_NumberOfObjectDeletes";
+  public static final String DB_NUMBER_OF_OBJECTS_FETCHES = "db_NumberOfObjectFetches";
+  public static final String DB_NUMBER_OF_OBJECT_INSERT = "db_NumberOfObjectInserts";
+  public static final String DB_NUMBER_OF_OBJECT_UPDATES = "db_NumberOfObjectUpdates";
+  public static final String DB_CONNECTION_ACTIVE_CURRENT = "db_ConnectionActiveCurrent";
+  public static final String DB_CONNECTION_ACTIVE_TOTAL = "db_ConnectionActiveTotal";
+  public static final String DB_CONNECTION_ACTIVE_HIGH = "db_ConnectionActiveHigh";
+  public static final String DB_QUERY_EXECUTION_TIME_AVERAGE = "db_QueryExecutionTimeAverage";
+  public static final String DB_QUERY_EXECUTION_TIME_HIGH = "db_QueryExecutionTimeHigh";
+  public static final String DB_QUERY_ACTIVE_TOTAL_COUNT = "db_QueryActiveTotalCount";
+  public static final String DB_QUERY_ERROR_TOTAL_COUNT = "db_QueryErrorTotalCount";
+  public static final String DB_QUERY_EXECUTION_TIME_LOW = "db_QueryExecutionTimeLow";
+  public static final String DB_QUERY_EXECUTIO_TOTAL_COUNT = "db_QueryExecutionTotalCount";
+  public static final String DB_QUERY_EXECUTION_TOTAL_TIME = "db_QueryExecutionTotalTime";
+  public static final String DB_TRANSACTION_EXECUTION_TIME_AVERAGE = "db_TransactionExecutionTimeAverage";
+  public static final String DB_TRANSACTION_EXECUTION_TIME_HIGH = "db_TransactionExecutionTimeHigh";
+  public static final String DB_TRANSACTION_ACTIVE_TOTAL_COUNT = "db_TransactionActiveTotalCount";
+  public static final String DB_TRANSACTION_COMMITTED_TOTAL_COUNT = "db_TransactionCommittedTotalCount";
+  public static final String DB_TRANSACTION_EXECUTION_TIME_LOW = "db_TransactionExecutionTimeLow";
+  public static final String DB_TRANSACTION_EXECUTION_TOTAL_TIME = "DB_TransactionExecutionTotalTime";
+  public static final String DB_TRANSACTION_ROLLEDBACK_TOTAL_COUNT = "db_TransactionRolledBackTotalCount";
+  public static final String DB_TRANSACTION_TOTAL_COUNT = "db_TransactionTotalCount";
 }

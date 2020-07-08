@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
+import org.apache.hadoop.hive.metastore.metrics.DBMetricUtils;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MOrder;
@@ -42,6 +43,7 @@ import org.datanucleus.NucleusContext;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
+import org.datanucleus.management.FactoryStatistics;
 import org.datanucleus.store.scostore.Store;
 import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
@@ -90,6 +92,7 @@ public class PersistenceManagerProvider {
   private static int retryLimit;
   private static long retryInterval;
   private static com.google.common.base.Supplier<String> passwordProvider;
+  public static FactoryStatistics dbStats;
 
   static {
     Map<String, Class<?>> map = new HashMap<>();
@@ -227,7 +230,6 @@ public class PersistenceManagerProvider {
 
   private static void initPMF(Configuration conf) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(prop);
     } else {
@@ -240,6 +242,7 @@ public class PersistenceManagerProvider {
         dsProperties.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds);
         dsProperties.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
             "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
+        //dsProperties.put("datanucleus.enableStatistics","true");
         pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
       } catch (SQLException e) {
         LOG.warn("Could not create PersistenceManagerFactory using "
@@ -247,6 +250,9 @@ public class PersistenceManagerProvider {
         pmf = JDOHelper.getPersistenceManagerFactory(prop);
       }
     }
+    JDOPersistenceManagerFactory dnpmf = (JDOPersistenceManagerFactory)pmf;
+    dbStats = dnpmf.getNucleusContext().getStatistics();
+    DBMetricUtils.register(dbStats);
     DataStoreCache dsc = pmf.getDataStoreCache();
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
