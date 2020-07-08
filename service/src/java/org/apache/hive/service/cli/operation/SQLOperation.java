@@ -234,7 +234,7 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if (getState().isTerminal()) {
+      if (getStatus().getState().isTerminal()) {
         log.warn("Ignore exception in terminal state: " + getState(), e);
         return;
       }
