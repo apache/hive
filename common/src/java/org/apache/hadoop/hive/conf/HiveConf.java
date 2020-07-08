@@ -62,6 +62,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -101,6 +102,59 @@ public class HiveConf extends Configuration {
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
   private static final int LOG_PREFIX_LENGTH = 64;
+
+  public enum ResultFileFormat {
+    INVALID_FORMAT {
+      @Override
+        public String toString() {
+          return "invalid result file format";
+        }
+    },
+    TEXTFILE {
+      @Override
+        public String toString() {
+          return "TextFile";
+        }
+    },
+    SEQUENCEFILE {
+      @Override
+        public String toString() {
+          return "SequenceFile";
+        }
+    },
+    RCFILE {
+      @Override
+        public String toString() {
+          return "RCfile";
+        }
+    },
+    LLAP {
+      @Override
+        public String toString() {
+          return "Llap";
+        }
+    };
+
+    public static ResultFileFormat getInvalid() {
+      return INVALID_FORMAT;
+    }
+
+    public static EnumSet<ResultFileFormat> getValidSet() {
+      return EnumSet.complementOf(EnumSet.of(getInvalid()));
+    }
+
+    public static ResultFileFormat from(String value) {
+      try {
+        return valueOf(value.toUpperCase());
+      } catch (Exception e) {
+        return getInvalid();
+      }
+    }
+  }
+
+  public ResultFileFormat getResultFileFormat() {
+    return ResultFileFormat.from(this.getVar(ConfVars.HIVEQUERYRESULTFILEFORMAT));
+  }
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -1875,7 +1929,8 @@ public class HiveConf extends Configuration {
         "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
         "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
         "for all tables."),
-    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "SequenceFile", new StringSet("TextFile", "SequenceFile", "RCfile", "Llap"),
+    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", ResultFileFormat.SEQUENCEFILE.toString(),
+        new StringSet(ResultFileFormat.getValidSet()),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
 
