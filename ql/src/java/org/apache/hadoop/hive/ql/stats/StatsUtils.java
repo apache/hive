@@ -1342,7 +1342,7 @@ public class StatsUtils {
   public static long getSizeOfMap(StandardConstantMapObjectInspector scmoi) {
     Map<?, ?> map = scmoi.getWritableConstantValue();
     if (null == map || map.isEmpty()) {
-      return 0L;
+      return JavaDataModel.get().hashMap(0);
     }
     ObjectInspector koi = scmoi.getMapKeyObjectInspector();
     ObjectInspector voi = scmoi.getMapValueObjectInspector();
