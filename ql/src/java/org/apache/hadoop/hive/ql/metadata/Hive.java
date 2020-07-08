@@ -3299,8 +3299,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
-      // TODO: Either create a new getPartitionWithAuthInfo API with request/response format that takes
-      //  ValidWriteIdList and tableId or if this API is no longer required, remove all the references.
       tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
           tbl.getTableName(), pvals, getUserName(), getGroupNames());
     } catch (NoSuchObjectException nsoe) {
