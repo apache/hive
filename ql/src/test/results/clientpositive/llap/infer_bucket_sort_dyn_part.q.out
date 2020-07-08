@@ -29,6 +29,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table_n8
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: test_table_n8 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -128,6 +129,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table_n8
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: test_table_n8 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -229,6 +231,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table_n8
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@test_table_n8@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: test_table_n8 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

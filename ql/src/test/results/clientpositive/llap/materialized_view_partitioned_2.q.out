@@ -25,6 +25,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_1
+POSTHOOK: Output: default@partition_mv_1
 POSTHOOK: Output: default@partition_mv_1@key=201
 POSTHOOK: Output: default@partition_mv_1@key=202
 POSTHOOK: Output: default@partition_mv_1@key=203
@@ -161,6 +162,7 @@ SELECT key, value FROM src_txn_2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_mv_2
 POSTHOOK: Output: default@partition_mv_2
 POSTHOOK: Output: default@partition_mv_2@value=val_201
 POSTHOOK: Output: default@partition_mv_2@value=val_202
@@ -299,6 +301,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_3
+POSTHOOK: Output: default@partition_mv_3
 POSTHOOK: Output: default@partition_mv_3@key=221
 POSTHOOK: Output: default@partition_mv_3@key=222
 POSTHOOK: Output: default@partition_mv_3@key=223
@@ -325,6 +328,7 @@ SELECT value, key FROM src_txn_2 where key > 222 and key < 228
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_mv_4
 POSTHOOK: Output: default@partition_mv_4
 POSTHOOK: Output: default@partition_mv_4@key=223
 POSTHOOK: Output: default@partition_mv_4@key=224

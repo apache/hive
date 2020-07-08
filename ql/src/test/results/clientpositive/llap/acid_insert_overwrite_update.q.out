@@ -154,6 +154,7 @@ PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: Output: default@orc_test_txn@year=2017
 POSTHOOK: Output: default@orc_test_txn@year=2018

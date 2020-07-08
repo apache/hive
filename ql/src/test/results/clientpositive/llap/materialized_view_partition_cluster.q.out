@@ -27,6 +27,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cluster_mv_1
+POSTHOOK: Output: default@cluster_mv_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -171,6 +172,7 @@ SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_1
 POSTHOOK: Output: default@cluster_mv_1
 POSTHOOK: Output: default@cluster_mv_1@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_1@partkey=302.0
@@ -494,6 +496,7 @@ SELECT key, value, key + 100 as partkey FROM src_txn where key > 200 and key < 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_2
 POSTHOOK: Output: default@cluster_mv_2
 POSTHOOK: Output: default@cluster_mv_2@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_2@partkey=302.0
@@ -944,6 +947,7 @@ POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1056,6 +1060,7 @@ PREHOOK: Output: default@cluster_mv_1
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_1
 POSTHOOK: Output: default@cluster_mv_1@partkey=338.0
 POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
@@ -1241,6 +1246,7 @@ POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cluster_mv_3
+POSTHOOK: Output: default@cluster_mv_3
 POSTHOOK: Output: default@cluster_mv_3@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=302.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=303.0
@@ -1360,6 +1366,7 @@ ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1518,6 +1525,7 @@ POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3
 POSTHOOK: Output: default@cluster_mv_3@partkey=338.0
 POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
@@ -1613,6 +1621,7 @@ SELECT src_txn.key + 100 as partkey, value, key, key+1 as `tes"t`, key+2 as `te*
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_4
 POSTHOOK: Output: default@cluster_mv_4
 POSTHOOK: Output: default@cluster_mv_4@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=302.0
@@ -1843,6 +1852,7 @@ ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2016,6 +2026,7 @@ POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3
 POSTHOOK: Output: default@cluster_mv_3@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=302.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=303.0
@@ -2203,6 +2214,7 @@ POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2330,6 +2342,7 @@ PREHOOK: Output: default@cluster_mv_4
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_4
 POSTHOOK: Output: default@cluster_mv_4@partkey=301.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=302.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=303.0
