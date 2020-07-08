@@ -129,7 +129,7 @@ public class StringInternUtils {
           String curr = it.next();
           // Intern values only when they are not part of the String pool already
           if (curr != curr.intern()) {
-            it.set(it.next().intern());
+            it.set(curr.intern());
           }
         }
       } catch (UnsupportedOperationException e) { } // set() not implemented - ignore
