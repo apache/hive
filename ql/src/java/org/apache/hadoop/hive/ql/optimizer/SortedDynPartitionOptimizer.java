@@ -160,7 +160,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       if (destTable.isMaterializedView() &&
           (destTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS) != null ||
-          destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
+              destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
         LOG.debug("Bailing out of sort dynamic partition optimization as destination is a materialized view"
             + "with CLUSTER/SORT/DISTRIBUTE spec");
         return null;
@@ -283,7 +283,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
-        allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+          allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
       rsOp.getConf().setBucketingVersion(fsOp.getConf().getBucketingVersion());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
@@ -315,10 +315,10 @@ public class SortedDynPartitionOptimizer extends Transform {
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       if (bucketColumns!= null && !bucketColumns.isEmpty()) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-                                         ReduceField.KEY.toString()+"."+BUCKET_NUMBER_COL_NAME, null, false));
+            ReduceField.KEY.toString()+"."+BUCKET_NUMBER_COL_NAME, null, false));
         colNames.add(BUCKET_NUMBER_COL_NAME);
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
-                                       selRS.getSignature().get(0).getTabAlias(), true, true);
+            selRS.getSignature().get(0).getTabAlias(), true, true);
         selRS.getSignature().add(ci);
         fsParent.getSchema().getSignature().add(ci);
       }
@@ -327,7 +327,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create Select Operator
       SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(
-              selConf, selRS, rsOp);
+          selConf, selRS, rsOp);
 
       // link SEL to FS
       fsOp.getParentOperators().clear();
@@ -409,26 +409,54 @@ public class SortedDynPartitionOptimizer extends Transform {
       // and grand child
       if (found) {
         Operator<? extends OperatorDesc> rsParent = rsToRemove.getParentOperators().get(0);
-        Operator<? extends OperatorDesc> rsChild = rsToRemove.getChildOperators().get(0);
-        Operator<? extends OperatorDesc> rsGrandChild = rsChild.getChildOperators().get(0);
+        List<Operator<? extends OperatorDesc>> rsChildren = rsToRemove.getChildOperators();
 
-        if (rsChild instanceof SelectOperator) {
-          // if schema size cannot be matched, then it could be because of constant folding
-          // converting partition column expression to constant expression. The constant
-          // expression will then get pruned by column pruner since it will not reference to
-          // any columns.
-          if (rsParent.getSchema().getSignature().size() !=
-              rsChild.getSchema().getSignature().size()) {
+        Operator<? extends OperatorDesc> rsChildToRemove = null;
+
+        for (Operator<? extends OperatorDesc> rsChild : rsChildren) {
+          if (rsChild instanceof SelectOperator && rsParent.getSchema().getSignature().size()
+              == rsChild.getSchema().getSignature().size()) {
+            // if schema size cannot be matched, then it could be because of constant folding
+            // converting partition column expression to constant expression. The constant
+            // expression will then get pruned by column pruner since it will not reference to
+            // any columns.
+            rsChildToRemove = rsChild;
+          }
+        }
+
+        if (rsChildToRemove == null) {
+          return false;
+        }
+
+        // if child is select and contains expression which isn't column it shouldn't
+        // be removed because otherwise we will end up with different types/schema later
+        // while introducing select for RS
+        for(ExprNodeDesc expr: rsChildToRemove.getColumnExprMap().values()){
+          if(!(expr instanceof ExprNodeColumnDesc)){
             return false;
           }
+        }
 
-          rsParent.getChildOperators().remove(rsToRemove);
-          rsParent.getChildOperators().add(rsGrandChild);
+        List<Operator<? extends OperatorDesc>> rsGrandChildren = rsChildToRemove.getChildOperators();
+
+        rsParent.getChildOperators().remove(rsToRemove);
+        // add rsToRemove children beside select
+        for (Operator<? extends OperatorDesc> rsChild : rsChildren) {
+          if (!rsChild.equals(rsChildToRemove)) {
+            rsParent.getChildOperators().add(rsChild);
+            rsChild.getParentOperators().remove(rsToRemove);
+            rsChild.getParentOperators().add(rsParent);
+          }
+        }
+
+        // fix grandchildren
+        rsParent.getChildOperators().addAll(rsGrandChildren);
+        for (Operator<? extends OperatorDesc> rsGrandChild: rsGrandChildren) {
           rsGrandChild.getParentOperators().clear();
           rsGrandChild.getParentOperators().add(rsParent);
-          LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChild.getOperatorId()
-              + " as it was introduced by enforce bucketing/sorting.");
         }
+        LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChildToRemove.getOperatorId()
+            + " as it was introduced by enforce bucketing/sorting.");
       }
       return true;
     }
@@ -465,7 +493,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     // i.e. the sequence must be pRS-SEL*-fsParent
     // Returns true if columns could be inferred, false otherwise
     private void inferSortPositions(Operator<? extends OperatorDesc> fsParent,
-            List<Integer> sortPositions, List<Integer> sortOrder) throws SemanticException {
+        List<Integer> sortPositions, List<Integer> sortOrder) throws SemanticException {
       // If it is not a SEL operator, we bail out
       if (!(fsParent instanceof SelectOperator)) {
         return;
@@ -474,14 +502,14 @@ public class SortedDynPartitionOptimizer extends Transform {
       Operator<? extends OperatorDesc> parent = pSel;
       while (!(parent instanceof ReduceSinkOperator)) {
         if (parent.getNumParent() != 1 ||
-                !(parent instanceof SelectOperator)) {
+            !(parent instanceof SelectOperator)) {
           return;
         }
         parent = parent.getParentOperators().get(0);
       }
       // Backtrack SEL columns to pRS
       List<ExprNodeDesc> selColsInPRS =
-              ExprNodeDescUtils.backtrack(pSel.getConf().getColList(), pSel, parent);
+          ExprNodeDescUtils.backtrack(pSel.getConf().getColList(), pSel, parent);
       ReduceSinkOperator pRS = (ReduceSinkOperator) parent;
       for (int i = 0; i < pRS.getConf().getKeyCols().size(); i++) {
         ExprNodeDesc col = pRS.getConf().getKeyCols().get(i);
@@ -714,7 +742,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     private boolean shouldDo(List<Integer> partitionPos, Operator<? extends OperatorDesc> fsParent) {
 
       int threshold = HiveConf.getIntVar(this.parseCtx.getConf(),
-                                         HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD);
+          HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD);
       long MAX_WRITERS = -1;
 
       switch (threshold) {
@@ -753,9 +781,9 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       if (MAX_WRITERS < 0) {
         double orcMemPool = this.parseCtx.getConf().getDouble(OrcConf.MEMORY_POOL.getHiveConfName(),
-                                                              (Double) OrcConf.MEMORY_POOL.getDefaultValue());
+            (Double) OrcConf.MEMORY_POOL.getDefaultValue());
         long orcStripSize = this.parseCtx.getConf().getLong(OrcConf.STRIPE_SIZE.getHiveConfName(),
-                                                            (Long) OrcConf.STRIPE_SIZE.getDefaultValue());
+            (Long) OrcConf.STRIPE_SIZE.getDefaultValue());
         MemoryInfo memoryInfo = new MemoryInfo(this.parseCtx.getConf());
         LOG.debug("Memory info during SDPO opt: {}", memoryInfo);
         long executorMem = memoryInfo.getMaxExecutorMemory();
