@@ -37,7 +37,6 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
   @Override
   public long initialDelay(TimeUnit unit) {
     // no delay before the first execution;
-    // after an ungracefull shutdown it might take time to notice that in-flight scheduled queries are not running anymore
     return 0;
   }
 
@@ -67,7 +66,7 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
       int maxRetainSecs = (int) MetastoreConf.getTimeVar(conf, ConfVars.REPL_METRICS_MAX_AGE, TimeUnit.SECONDS);
       LOG.info("Cleaning up Metrics older than {} ", maxRetainSecs);
       int deleteCnt = ms.deleteReplicationMetrics(maxRetainSecs);
-      if (deleteCnt > 0L){
+      if (deleteCnt > 0L) {
         LOG.info("Number of deleted entries: {} " + deleteCnt);
       }
     } catch (Exception e) {
