@@ -103,6 +103,7 @@ public abstract class CompactorTest {
     conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.cleanDb(conf);
+    TxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
