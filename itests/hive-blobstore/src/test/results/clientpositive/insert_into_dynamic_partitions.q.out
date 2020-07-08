@@ -19,6 +19,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -36,6 +37,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -81,6 +83,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -296,6 +299,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table1@country=USA/state=CA
 POSTHOOK: Input: default@table1@country=USA/state=TX
+POSTHOOK: Output: default@table2
 POSTHOOK: Output: default@table2@country=USA/state=CA
 POSTHOOK: Output: default@table2@country=USA/state=TX
 POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]

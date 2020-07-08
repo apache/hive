@@ -246,6 +246,7 @@ PREHOOK: Output: default@ext_part
 POSTHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
+POSTHOOK: Output: default@ext_part
 PREHOOK: query: SELECT count(*) FROM ext_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ext_part
@@ -276,6 +277,7 @@ PREHOOK: Output: default@ext_part
 POSTHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
+POSTHOOK: Output: default@ext_part
 POSTHOOK: Output: default@ext_part@par=1
 POSTHOOK: Lineage: ext_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
 PREHOOK: query: SELECT count(*) FROM ext_part
@@ -372,6 +374,7 @@ PREHOOK: Output: default@int_part
 POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_part
 POSTHOOK: Output: default@int_part@par=1
 POSTHOOK: Output: default@int_part@par=2
 POSTHOOK: Output: default@int_part@par=3
@@ -434,6 +437,7 @@ PREHOOK: Output: default@int_part
 POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_part
 POSTHOOK: Output: default@int_part@par=1
 POSTHOOK: Output: default@int_part@par=2
 POSTHOOK: Output: default@int_part@par=3

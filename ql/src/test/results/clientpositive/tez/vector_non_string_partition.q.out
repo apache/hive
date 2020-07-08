@@ -15,6 +15,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE non_string_part PARTITION(ctinyint) SELE
 WHERE ctinyint IS NULL AND cdouble IS NOT NULL ORDER BY cdouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@non_string_part
 POSTHOOK: Output: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]

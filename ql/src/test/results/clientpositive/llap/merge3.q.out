@@ -43,6 +43,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_src_part
 POSTHOOK: Output: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2318,6 +2319,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`merge_src_part`
 WHERE `ds` IS NOT NULL
@@ -2568,6 +2570,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-08).key SIMPLE [(merge_src_part)merge_src_part.FieldSchema(name:key, type:string, comment:null), ]
@@ -4627,6 +4630,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -4871,6 +4875,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-08).key SIMPLE [(merge_src_part)merge_src_part.FieldSchema(name:key, type:string, comment:null), ]

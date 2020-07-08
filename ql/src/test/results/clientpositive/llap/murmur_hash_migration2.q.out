@@ -17,6 +17,7 @@ PREHOOK: Output: default@acid_ptn_bucket1
 POSTHOOK: query: explain extended insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -184,6 +185,7 @@ PREHOOK: Output: default@acid_ptn_bucket1
 POSTHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
 POSTHOOK: Output: default@acid_ptn_bucket1@ds=today
 POSTHOOK: Output: default@acid_ptn_bucket1@ds=yesterday
 POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).a SCRIPT []
@@ -205,6 +207,7 @@ PREHOOK: Output: default@acid_ptn_bucket1
 POSTHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(3,2,1000,'yesterday'),(3,3,1001,'today'),(3,4,1002,'yesterday'),(4,2,1003,'today'), (4,3,1004,'yesterday'),(4,4,1005,'today')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
 POSTHOOK: Output: default@acid_ptn_bucket1@ds=today
 POSTHOOK: Output: default@acid_ptn_bucket1@ds=yesterday
 POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).a SCRIPT []
