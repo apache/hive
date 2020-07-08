@@ -121,6 +121,7 @@ public final class MetricSink {
             ObjectMapper mapper = new ObjectMapper();
             persistentMetric.setProgress(mapper.writeValueAsString(metric.getProgress()));
             persistentMetric.setMetadata(mapper.writeValueAsString(metric.getMetadata()));
+            LOG.debug("Metric to be persisted {} ", persistentMetric);
             replicationMetricsList.add(persistentMetric);
           }
           metricList.setReplicationMetricList(replicationMetricsList);
