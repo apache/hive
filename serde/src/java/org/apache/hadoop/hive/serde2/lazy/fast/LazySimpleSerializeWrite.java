@@ -277,7 +277,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
     beginPrimitive();
     byte[] toEncode = new byte[v.length];
     System.arraycopy(v, 0, toEncode, 0, v.length);
-    byte[] toWrite = Base64.getEncoder().encode(toEncode);
+    byte[] toWrite = Base64.getEncoder().withoutPadding().encode(toEncode);
     output.write(toWrite, 0, toWrite.length);
     finishPrimitive();
   }
@@ -287,7 +287,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
     beginPrimitive();
     byte[] toEncode = new byte[length];
     System.arraycopy(v, start, toEncode, 0, length);
-    byte[] toWrite = Base64.getEncoder().encode(toEncode);
+    byte[] toWrite = Base64.getEncoder().withoutPadding().encode(toEncode);
     output.write(toWrite, 0, toWrite.length);
     finishPrimitive();
   }

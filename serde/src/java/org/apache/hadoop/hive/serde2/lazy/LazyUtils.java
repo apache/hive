@@ -294,7 +294,7 @@ public final class LazyUtils {
       BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
       byte[] toEncode = new byte[bw.getLength()];
       System.arraycopy(bw.getBytes(), 0,toEncode, 0, bw.getLength());
-      byte[] toWrite = Base64.getEncoder().encode(toEncode);
+      byte[] toWrite = Base64.getEncoder().withoutPadding().encode(toEncode);
       out.write(toWrite, 0, toWrite.length);
       break;
     }

@@ -76,7 +76,8 @@ public class TestLazySimpleSerDe {
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL\t");
       t.append(new byte[]{(byte)Integer.parseInt("10111111", 2)}, 0, 1);
       StringBuilder sb = new StringBuilder("123\t456\t789\t1000\t5.3\thive and hadoop\t1\tNULL\t");
-      String s = sb.append(Base64.getEncoder().encodeToString(new byte[] { (byte) Integer.parseInt("10111111", 2) }))
+      String s = sb.append(
+          Base64.getEncoder().withoutPadding().encodeToString(new byte[] { (byte) Integer.parseInt("10111111", 2) }))
           .toString();
       Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
