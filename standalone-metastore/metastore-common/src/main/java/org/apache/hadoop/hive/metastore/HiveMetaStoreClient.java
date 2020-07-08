@@ -1981,6 +1981,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     partitionSpec.addAll(result.getPartitionsSpec());
     return !result.isSetHasUnknownPartitions() || result.isHasUnknownPartitions();
   }
+
   @Override
   public boolean listPartitionsSpecByExpr(String dbName, String tblName,
       byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
