@@ -1262,8 +1262,8 @@ public class AcidUtils {
    * @throws IOException on filesystem errors
    */
   public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
-      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+      ValidWriteIdList writeIdList, ValidTxnList validTxnList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, validTxnList, useFileIds, ignoreEmptyFiles, null);
   }
 
   /**
@@ -1275,28 +1275,34 @@ public class AcidUtils {
    * @param writeIdList the list of write ids that we are reading
    * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
    * @param ignoreEmptyFiles Ignore files with 0 length
+   * @return the state of the directory
+   * @throws IOException on filesystem errors
+   */
+  public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+      ValidWriteIdList writeIdList,  Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, null, useFileIds, ignoreEmptyFiles, null);
+  }
+
+
+  /**
+   * GetAcidState implementation which uses the provided dirSnapshot.
+   * Generates a new one if needed and the provided one is null.
+   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @param validTxnList validTxnListSnapshot
+   * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
+   * @param ignoreEmptyFiles Ignore files with 0 length
    * @param dirSnapshots The listed directory snapshot, if null new will be generated
    * @return the state of the directory
    * @throws IOException on filesystem errors
    */
   private static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
-      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
+      ValidWriteIdList writeIdList, ValidTxnList validTxnList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
       HdfsDirSnapshot> dirSnapshots) throws IOException {
-    ValidTxnList validTxnList = null;
-    String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    if(!Strings.isNullOrEmpty(s)) {
-      /*
-       * getAcidState() is sometimes called on non-transactional tables, e.g.
-       * OrcInputFileFormat.FileGenerator.callInternal().  e.g. orc_merge3.q In that case
-       * writeIdList is bogus - doesn't even have a table name.
-       * see https://issues.apache.org/jira/browse/HIVE-20856.
-       *
-       * For now, assert that ValidTxnList.VALID_TXNS_KEY is set only if this is really a read
-       * of a transactional table.
-       * see {@link #getChildState(FileStatus, HdfsFileStatusWithId, ValidWriteIdList, List, List, List, List, TxnBase, boolean, List, Map, FileSystem, ValidTxnList)}
-       */
-      validTxnList = new ValidReadTxnList();
-      validTxnList.readFromString(s);
+    if (validTxnList == null) {
+      validTxnList = readValidTxnListFromConf(conf);
     }
 
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
@@ -1432,6 +1438,25 @@ public class AcidUtils {
     // this does "Path.uri.compareTo(that.uri)"
     original.sort(Comparator.comparing(HdfsFileStatusWithId::getFileStatus));
     return new DirectoryImpl(abortedDirectories, isBaseInRawFormat, original, obsolete, deltas, base);
+  }
+
+  private static ValidTxnList readValidTxnListFromConf(Configuration conf) {
+    ValidTxnList validTxnList = null;
+    String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    if (!Strings.isNullOrEmpty(s)) {
+      /*
+       * getAcidState() is sometimes called on non-transactional tables, e.g.
+       * OrcInputFileFormat.FileGenerator.callInternal().  e.g. orc_merge3.q In that case
+       * writeIdList is bogus - doesn't even have a table name.
+       * see https://issues.apache.org/jira/browse/HIVE-20856.
+       *
+       * For now, assert that ValidTxnList.VALID_TXNS_KEY is set only if this is really a read
+       * of a transactional table.
+       * see {@link #getChildState(FileStatus, HdfsFileStatusWithId, ValidWriteIdList, List, List, List, List, TxnBase, boolean, List, Map, FileSystem, ValidTxnList)}
+       */
+      validTxnList = new ValidReadTxnList(s);
+    }
+    return validTxnList;
   }
 
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
@@ -2640,7 +2665,7 @@ public class AcidUtils {
     }
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
-    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
+    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, null, false, hdfsDirSnapshots);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -3210,14 +3235,14 @@ public class AcidUtils {
    */
   public static Directory getAcidStateFromCache(Supplier<FileSystem> fileSystem,
       Path candidateDirectory, Configuration conf,
-      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+      ValidWriteIdList writeIdList, ValidTxnList validTxnList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
 
     int dirCacheDuration = HiveConf.getIntVar(conf,
         ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION);
 
     if (dirCacheDuration < 0) {
       LOG.debug("dirCache is not enabled");
-      return getAcidState(fileSystem.get(), candidateDirectory, conf, writeIdList,
+      return getAcidState(fileSystem.get(), candidateDirectory, conf, writeIdList, validTxnList,
           useFileIds, ignoreEmptyFiles);
     } else {
       initDirCache(dirCacheDuration);
@@ -3256,7 +3281,7 @@ public class AcidUtils {
     // compute and add to cache
     if (recompute || (value == null)) {
       Directory dirInfo = getAcidState(fileSystem.get(), candidateDirectory, conf,
-          writeIdList, useFileIds, ignoreEmptyFiles);
+          writeIdList, validTxnList, useFileIds, ignoreEmptyFiles);
       value = new DirInfoValue(writeIdList.writeToString(), dirInfo);
 
       if (value.dirInfo != null && value.dirInfo.getBaseDirectory() != null

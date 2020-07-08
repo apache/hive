@@ -51,11 +51,9 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.common.NoDynamicValuesException;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -635,6 +633,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
     private final AtomicInteger numFilesCounter = new AtomicInteger(0);
     private final ValidWriteIdList writeIdList;
+    private final ValidTxnList validTxnList;
     private SplitStrategyKind splitStrategyKind;
     private final SearchArgument sarg;
     private final AcidOperationalProperties acidOperationalProperties;
@@ -730,7 +729,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           ? AcidOperationalProperties.parseString(txnProperties) : null;
 
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
+      writeIdList = new ValidReaderWriteIdList(value);
+
+      value = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      validTxnList = new ValidReadTxnList(value);
       LOG.info("Context:: " +
           "isAcid: {} " +
           "isVectorMode: {} " +
@@ -1258,9 +1260,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private Directory getAcidState() throws IOException {
       if (context.isAcid && context.splitStrategyKind == SplitStrategyKind.BI) {
         return AcidUtils.getAcidStateFromCache(fs, dir, context.conf,
-            context.writeIdList, useFileIds, true);
+            context.writeIdList, context.validTxnList, useFileIds, true);
       } else {
-        return AcidUtils.getAcidState(fs.get(), dir, context.conf, context.writeIdList,
+        return AcidUtils.getAcidState(fs.get(), dir, context.conf, context.writeIdList, context.validTxnList,
             useFileIds, true);
       }
     }
