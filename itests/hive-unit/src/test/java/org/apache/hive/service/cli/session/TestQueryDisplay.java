@@ -247,7 +247,7 @@ public class TestQueryDisplay {
               && queryInfo.getEndTime() <= System.currentTimeMillis());
       Assert.assertTrue(queryInfo.getRuntime() > 0);
     } else {
-      Assert.assertNull(queryInfo.getEndTime());
+      Assert.assertTrue(queryInfo.isRunning());
       //For runtime, query may have finished.
     }
 
