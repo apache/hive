@@ -6264,7 +6264,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
       List<Partition> partitions = null;
       if (req.getPartVals() == null) {
-        partitions = get_partitions_with_auth(req.getDbName(), req.getTblName(), req.getMaxParts(), req.getUserName(),
+        partitions = get_partitions_with_auth(dbName, req.getTblName(), req.getMaxParts(), req.getUserName(),
             req.getGroupNames());
       } else {
         partitions =
