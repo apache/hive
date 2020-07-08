@@ -112,15 +112,16 @@ public class MetricSink {
           LOG.debug("Converting metrics to thrift metrics {} ", metrics.size());
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
+          ObjectMapper mapper = new ObjectMapper();
           for (int index = 0; index < totalMetricsSize; index++) {
             ReplicationMetric metric = metrics.removeFirst();
             ReplicationMetrics persistentMetric = new ReplicationMetrics();
             persistentMetric.setDumpExecutionId(metric.getDumpExecutionId());
             persistentMetric.setScheduledExecutionId(metric.getScheduledExecutionId());
             persistentMetric.setPolicy(metric.getPolicy());
-            ObjectMapper mapper = new ObjectMapper();
             persistentMetric.setProgress(mapper.writeValueAsString(metric.getProgress()));
             persistentMetric.setMetadata(mapper.writeValueAsString(metric.getMetadata()));
+            LOG.debug("Metric to be persisted {} ", persistentMetric);
             replicationMetricsList.add(persistentMetric);
           }
           metricList.setReplicationMetricList(replicationMetricsList);

@@ -37,14 +37,13 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
   @Override
   public long initialDelay(TimeUnit unit) {
     // no delay before the first execution;
-    // after an ungracefull shutdown it might take time to notice that in-flight scheduled queries are not running anymore
     return 0;
   }
 
   @Override
   public long runFrequency(TimeUnit unit) {
     return MetastoreConf.getTimeVar(conf, ConfVars.REPL_METRICS_CLEANUP_FREQUENCY,
-      TimeUnit.DAYS);
+      unit);
   }
 
   @Override
@@ -63,13 +62,12 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
       if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
         return;
       }
-      LOG.debug("Cleaning up older Metrics");
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
-      int maxRetainSecs = (int) TimeUnit.DAYS.toSeconds(MetastoreConf.getTimeVar(conf,
-        ConfVars.REPL_METRICS_MAX_AGE, TimeUnit.DAYS));
+      int maxRetainSecs = (int) MetastoreConf.getTimeVar(conf, ConfVars.REPL_METRICS_MAX_AGE, TimeUnit.SECONDS);
+      LOG.info("Cleaning up Metrics older than {} ", maxRetainSecs);
       int deleteCnt = ms.deleteReplicationMetrics(maxRetainSecs);
-      if (deleteCnt > 0L){
-        LOG.info("Number of deleted entries: " + deleteCnt);
+      if (deleteCnt > 0L) {
+        LOG.info("Number of deleted entries: {}" + deleteCnt);
       }
     } catch (Exception e) {
       LOG.error("Exception while trying to delete: " + e.getMessage(), e);
