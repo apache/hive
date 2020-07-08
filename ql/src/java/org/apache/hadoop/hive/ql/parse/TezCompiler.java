@@ -1551,19 +1551,20 @@ public class TezCompiler extends TaskCompiler {
 
     // Single Key MJ at this point
     List<ExprNodeDesc> tsKeyDesc = mjOp.getConf().getKeys().get(mjBigTablePos);
-    ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
-
     List<ExprNodeDesc> mjKeyDesc = mjOp.getConf().getKeys().get(mjSmallTablePos);
-    ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
+    if (mjKeyDesc.get(0) instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
+      ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
 
-    ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
-    ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
+      ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
+      ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
 
-    if (canUseNDV(mjStats)) {
-      mjKeyCardinality = mjStats.getCountDistint();
-    }
-    if (canUseNDV(tsStats)) {
-      tsKeyCardinality = tsStats.getCountDistint();
+      if (canUseNDV(mjStats)) {
+        mjKeyCardinality = mjStats.getCountDistint();
+      }
+      if (canUseNDV(tsStats)) {
+        tsKeyCardinality = tsStats.getCountDistint();
+      }
     }
     return mjKeyCardinality / (double) tsKeyCardinality;
   }
@@ -1572,7 +1573,7 @@ public class TezCompiler extends TaskCompiler {
   private static boolean isValidProbeDecodeMapJoin(MapJoinOperator mapJoinOp) {
     Map<Byte, List<ExprNodeDesc>> keyExprs = mapJoinOp.getConf().getKeys();
     List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get( (byte) mapJoinOp.getConf().getPosBigTable());
-    return (bigTableKeyExprs.size() == 1)
+    return (bigTableKeyExprs.size() == 1) && (bigTableKeyExprs.get(0) instanceof ExprNodeColumnDesc)
         && !(((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
         equals(PrimitiveObjectInspector.PrimitiveCategory.STRING) ||
         ((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
