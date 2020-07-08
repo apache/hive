@@ -6262,8 +6262,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)
             throws MetaException, NoSuchObjectException, TException {
       String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
-      List<Partition> partitions = get_partitions_ps_with_auth(dbName, req.getTblName(),
-              req.getPartVals(), req.getMaxParts(), req.getUserName(), req.getGroupNames());
+      List<Partition> partitions = null;
+      if (req.getPartVals() == null) {
+        partitions = get_partitions_with_auth(req.getDbName(), req.getTblName(), req.getMaxParts(), req.getUserName(),
+            req.getGroupNames());
+      } else {
+        partitions =
+            get_partitions_ps_with_auth(dbName, req.getTblName(), req.getPartVals(), req.getMaxParts(),
+                req.getUserName(), req.getGroupNames());
+      }
       GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
       res.setPartitions(partitions);
       return res;

@@ -1846,6 +1846,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
     }
+    if(req.getCatName() == null) {
+      req.setCatName(getDefaultCatalog(conf));
+    }
+    req.setMaxParts(shrinkMaxtoShort(req.getMaxParts()));
     GetPartitionsPsWithAuthResponse res = client.get_partitions_ps_with_auth_req(req);
     List<Partition> parts = deepCopyPartitions(
         FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));

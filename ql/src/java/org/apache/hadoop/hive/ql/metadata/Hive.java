@@ -3625,7 +3625,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
       PartitionsByExprRequest req =
           new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
-      req.setDefaultPartitionName(defaultPartitionName);
+      if (defaultPartitionName != null) {
+        req.setDefaultPartitionName(defaultPartitionName);
+      }
       if (maxParts >= 0) {
         req.setMaxParts(maxParts);
       }
