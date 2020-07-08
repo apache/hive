@@ -881,7 +881,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) throws IOException {
     Path backingFile = new Path(dumpRoot, fileName);
-    return new FileList(backingFile, cacheSize, conf, true);
+    return work.getFileList(backingFile, cacheSize, conf, true);
   }
 
 

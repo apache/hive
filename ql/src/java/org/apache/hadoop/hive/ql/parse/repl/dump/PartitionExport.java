@@ -124,7 +124,7 @@ class PartitionExport {
                   .export(isExportTask, dataCopyAtLoad);
           Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
-          if (!dataCopyAtLoad) {
+          if (!(isExportTask || dataCopyAtLoad)) {
             fileList.add(new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
                     dataDumpDir).convertToString());
           }

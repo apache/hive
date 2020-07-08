@@ -173,7 +173,7 @@ public class TableExport {
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
-        if (!dataCopyAtLoad) {
+        if (!(isExportTask || dataCopyAtLoad)) {
           fileList.add(new ManagedTableCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
                   paths.dataExportDir()).convertToString());
         }

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +63,7 @@ public class ReplDumpWork implements Serializable {
   private boolean shouldOverwrite;
   private transient ReplicationMetricCollector metricCollector;
   private ReplicationSpec replicationSpec;
+  private FileList mockedFileList;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -221,5 +224,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setReplicationSpec(ReplicationSpec replicationSpec) {
     this.replicationSpec = replicationSpec;
+  }
+
+  public FileList getFileList(Path backingFile, int cacheSize, HiveConf conf, boolean b) throws IOException {
+    return (mockedFileList == null) ? new FileList(backingFile, cacheSize, conf, true) : mockedFileList;
+  }
+
+  public void setMockedFileList(FileList mockedFileList) {
+    this.mockedFileList = mockedFileList;
   }
 }

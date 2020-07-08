@@ -121,8 +121,8 @@ public class TestReplDumpTask {
     when(queryState.getConf()).thenReturn(conf);
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
     when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
-    when(HiveConf.getVar(conf,
-            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
+    when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
+    when(conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE)).thenReturn(10000);
 
     whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
     whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
@@ -147,6 +147,7 @@ public class TestReplDumpTask {
     ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
         null, "", "");
     replDumpWork.setMetricCollector(metricCollector);
+    replDumpWork.setMockedFileList(mock(FileList.class));
     task.setWork(replDumpWork);
 
     try {
