@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -924,8 +925,10 @@ public final class FileUtils {
   /**
    * delete a temporary file and remove it from delete-on-exit hook.
    */
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Intended")
   public static boolean deleteTmpFile(File tempFile) {
-    if (tempFile != null && tempFile.delete()) {
+    if (tempFile != null) {
+      tempFile.delete();
       ShutdownHookManager.cancelDeleteOnExit(tempFile);
       return true;
     }
