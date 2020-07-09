@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookRunnable;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
@@ -57,12 +57,13 @@ public class HookRunner {
   private List<ExecuteWithHookContext> preExecHooks = new ArrayList<>();
   private List<ExecuteWithHookContext> postExecHooks = new ArrayList<>();
   private List<ExecuteWithHookContext> onFailureHooks = new ArrayList<>();
+  private List<HookRunnable> hs2OomHooks = new ArrayList<>();
   private boolean initialized = false;
 
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
    */
-  HookRunner(HiveConf conf, SessionState.LogHelper console) {
+  public HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.console = console;
   }
@@ -78,6 +79,7 @@ public class HookRunner {
     preExecHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class));
     postExecHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class));
     onFailureHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class));
+    hs2OomHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, HookRunnable.class));
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       queryHooks.add(new MetricsQueryLifeTimeHook());
@@ -283,6 +285,13 @@ public class HookRunner {
     invokeGeneralHook(onFailureHooks, PerfLogger.FAILURE_HOOK, hookContext);
   }
 
+  public void runHs2OomHooks() {
+    initialize();
+    for (HookRunnable runner : hs2OomHooks) {
+      runner.run();
+    }
+  }
+
   private static void invokeGeneralHook(List<ExecuteWithHookContext> hooks, String prefix, HookContext hookContext)
       throws HiveException {
     if (hooks.isEmpty()) {
@@ -321,6 +330,10 @@ public class HookRunner {
 
   public void addSemanticAnalyzerHook(HiveSemanticAnalyzerHook hook) {
     saHooks.add(hook);
+  }
+
+  public void addHs2OomHook(HookRunnable hook) {
+    hs2OomHooks.add(hook);
   }
 
 }

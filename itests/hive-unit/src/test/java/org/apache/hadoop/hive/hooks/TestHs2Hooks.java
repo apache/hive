@@ -19,13 +19,12 @@
 //The tests here are heavily based on some timing, so there is some chance to fail.
 package org.apache.hadoop.hive.hooks;
 
+import java.io.Serializable;
 import java.lang.Override;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.hive.service.server.HiveServer2OomHookRunner;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -272,48 +271,5 @@ public class TestHs2Hooks {
     }
     stmt.close();
     connection.close();
-  }
-
-
-  public static class OomHook1 implements HiveServer2OomHookRunner.OomHookWithContext {
-    static String MSG = "OomHook1 throws exception";
-    @Override public void run(HiveServer2OomHookRunner.OomHookContext context) {
-      throw new RuntimeException(MSG);
-    }
-  }
-
-  public static class OomHook2 implements HiveServer2OomHookRunner.OomHookWithContext {
-    static String MSG = "OomHook2 throws exception";
-    @Override public void run(HiveServer2OomHookRunner.OomHookContext context) {
-      throw new RuntimeException(MSG);
-    }
-  }
-
-  @Test
-  public void testOomHooks() {
-    HiveConf hiveConf = new HiveConf();
-    String hook1 = OomHook1.class.getName(), hook2 = OomHook2.class.getName();
-
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook1 + "," + hook2);
-    HiveServer2OomHookRunner handler = new HiveServer2OomHookRunner(hiveConf);
-    verify(handler, OomHook1.MSG, Arrays.asList(OomHook1.class, OomHook2.class));
-
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_OOM_HOOKS, hook2 + "," + hook1);
-    handler = new HiveServer2OomHookRunner(hiveConf);
-    verify(handler, OomHook2.MSG, Arrays.asList(OomHook2.class, OomHook1.class));
-  }
-
-  private void verify(HiveServer2OomHookRunner handler, String expectedMsg, List<Class> expectedClass) {
-
-    Assert.assertTrue(handler.getHooks().size() == expectedClass.size());
-    for (int i = 0; i < expectedClass.size(); i++) {
-      Assert.assertTrue(handler.getHooks().get(i).getClass() == expectedClass.get(i));
-    }
-    try {
-      handler.run();
-      Assert.fail("An exception should throw");
-    } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().equals(expectedMsg));
-    }
   }
 }

@@ -16,26 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.server;
+package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.HookRunner;
+/**
+ * A type of hook which calls {@link Runnable#run()} to execute the hook.
+ */
+public interface HookRunnable extends Runnable, Hook {
 
-public class HiveServer2OomHookRunner implements Runnable {
-  private final HiveServer2 hiveServer2;
-  private final HookRunner hookRunner;
-
-  HiveServer2OomHookRunner(HiveServer2 hiveServer2, HiveConf hiveConf) {
-    this.hiveServer2 = hiveServer2;
-    this.hookRunner = new HookRunner(hiveConf, null);
-  }
-
-  @Override
-  public synchronized void run() {
-    try {
-      hookRunner.runHs2OomHooks();
-    } finally {
-      hiveServer2.stop();
-    }
-  }
 }

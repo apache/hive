@@ -3421,7 +3421,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
     HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", "",
-        "A comma separated list of hooks which implement OomHookWithContext. Will be run in the order specified \n" +
+        "A comma separated list of hooks which implement HookRunnable. Will be run in the order specified \n" +
         "before HiveServer2 stops due to OutOfMemoryError."),
 
     // HiveServer2 global init file location
