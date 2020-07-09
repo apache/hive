@@ -1427,59 +1427,11 @@ public class Hive {
       throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
     }
 
-    enhanceTable(tTable);
-
-    return new Table(tTable);
-  }
-
-    /**
-   * Returns metadata of the table.
-   *
-   * @param dbName
-   *          the name of the database
-   * @param tableName
-   *          the name of the table
-   * @param throwException
-   *          controls whether an exception is thrown or a returns a null
-   * @param getColumnStats
-   *          get column statistics if available
-   * @return the table or if throwException is false a null value.
-   * @throws HiveException
-   */
-  public Table getTableAcidWithNoCatalog(final String dbName, final String tableName,
-      boolean throwException, boolean getColumnStats) throws HiveException {
-      if (tableName == null || tableName.equals("")) {
-      throw new HiveException("empty table creation??");
-    }
-
-    // Get the table from metastore
-    org.apache.hadoop.hive.metastore.api.Table tTable = null;
-    try {
-
-        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE,
-              validWriteIdList != null ? validWriteIdList.toString() : null);
-
-    } catch (NoSuchObjectException e) {
-      if (throwException) {
-        throw new InvalidTableException(tableName);
-      }
-      return null;
-    } catch (Exception e) {
-      throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
-    }
-
-    enhanceTable(tTable);
-
-    return new Table(tTable);
-  }
-
-  private void enhanceTable(org.apache.hadoop.hive.metastore.api.Table tTable){
-      // For non-views, we need to do some extra fixes
+    // For non-views, we need to do some extra fixes
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
       Map<String, String> parameters = tTable.getSd().getParameters();
-      String sf = parameters!=null?parameters.get(SERIALIZATION_FORMAT) : null;
+      String sf = parameters != null ? parameters.get(SERIALIZATION_FORMAT) : null;
       if (sf != null) {
         char[] b = sf.toCharArray();
         if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t
@@ -1493,15 +1445,15 @@ public class Hive {
       // of type "array<string>". This happens when the table is created using
       // an
       // earlier version of Hive.
-      if (org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-          .getName().equals(
-            tTable.getSd().getSerdeInfo().getSerializationLib())
-          && tTable.getSd().getColsSize() > 0
+      if (org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName()
+          .equals(tTable.getSd().getSerdeInfo().getSerializationLib()) && tTable.getSd().getColsSize() > 0
           && tTable.getSd().getCols().get(0).getType().indexOf('<') == -1) {
-        tTable.getSd().getSerdeInfo().setSerializationLib(
-            org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+        tTable.getSd().getSerdeInfo()
+            .setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
     }
+
+    return new Table(tTable);
   }
 
   /**

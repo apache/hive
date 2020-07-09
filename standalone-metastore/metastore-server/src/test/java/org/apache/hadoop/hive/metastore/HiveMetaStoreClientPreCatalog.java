@@ -1533,11 +1533,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return fastpath ? t : deepCopy(filterHook.filterTable(t));
   }
 
-  @Override public Table getTable(String dbName, String tableName, boolean getColumnStats, String engine,
-      String validWriteIdList) throws MetaException, TException, NoSuchObjectException {
-        throw new UnsupportedOperationException();
-  }
-
   /** {@inheritDoc} */
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)

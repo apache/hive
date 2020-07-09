@@ -660,28 +660,6 @@ public interface IMetaStoreClient {
    * @param getColumnStats
    *          get the column stats, if available, when true
    * @param engine engine sending the request
-   * @param validWriteIdList applicable snapshot
-   * @return An object representing the table.
-   * @throws MetaException
-   *           Could not fetch the table
-   * @throws TException
-   *           A thrift communication error occurred
-   * @throws NoSuchObjectException
-   *           In case the table wasn't found.
-   */
-  Table getTable(String dbName, String tableName, boolean getColumnStats, String engine, String validWriteIdList)
-      throws MetaException, TException, NoSuchObjectException;
-
-            /**
-   * Get a table object in the default catalog.
-   *
-   * @param dbName
-   *          The database the table is located in.
-   * @param tableName
-   *          Name of the table to fetch.
-   * @param getColumnStats
-   *          get the column stats, if available, when true
-   * @param engine engine sending the request
    * @return An object representing the table.
    * @throws MetaException
    *           Could not fetch the table
