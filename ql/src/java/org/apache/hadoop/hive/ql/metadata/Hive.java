@@ -1410,9 +1410,15 @@ public class Hive {
     // Get the table from metastore
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
+      // Note: this is currently called w/true from StatsOptimizer only.
       if (checkTransactional) {
-        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
-
+        ValidWriteIdList validWriteIdList = null;
+        long txnId = SessionState.get().getTxnMgr() != null ?
+            SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+        if (txnId > 0) {
+          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf,
+              dbName, tableName);
+        }
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
             validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
       } else {
@@ -1431,7 +1437,7 @@ public class Hive {
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
       Map<String, String> parameters = tTable.getSd().getParameters();
-      String sf = parameters != null ? parameters.get(SERIALIZATION_FORMAT) : null;
+      String sf = parameters!=null?parameters.get(SERIALIZATION_FORMAT) : null;
       if (sf != null) {
         char[] b = sf.toCharArray();
         if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t
@@ -1445,11 +1451,13 @@ public class Hive {
       // of type "array<string>". This happens when the table is created using
       // an
       // earlier version of Hive.
-      if (org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName()
-          .equals(tTable.getSd().getSerdeInfo().getSerializationLib()) && tTable.getSd().getColsSize() > 0
+      if (org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
+          .getName().equals(
+            tTable.getSd().getSerdeInfo().getSerializationLib())
+          && tTable.getSd().getColsSize() > 0
           && tTable.getSd().getCols().get(0).getType().indexOf('<') == -1) {
-        tTable.getSd().getSerdeInfo()
-            .setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+        tTable.getSd().getSerdeInfo().setSerializationLib(
+            org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
     }
 
