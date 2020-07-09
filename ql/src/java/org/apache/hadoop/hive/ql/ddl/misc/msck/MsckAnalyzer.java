@@ -75,8 +75,7 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
       // filterPartitionsByExpr of PartitionExpressionForMetastore for partition pruning down the line.
       // Bail out early if expressionProxyClass is not configured properly.
       String expressionProxyClass = conf.get(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname());
-      if (expressionProxyClass == null || expressionProxyClass.isEmpty() ||
-          !expressionProxyClass.equals(PartitionExpressionForMetastore.class.getCanonicalName())) {
+      if (!PartitionExpressionForMetastore.class.getCanonicalName().equals(expressionProxyClass)) {
         throw new SemanticException("Invalid expression proxy class. The config metastore.expression.proxy needs " +
             "to be set to org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore");
       }
