@@ -59,7 +59,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
     try {
       return Base64.getDecoder().decode(recv);
     } catch (IllegalArgumentException e) {
-      LOG.debug("Data does not contain only Base64 characters so return original byte array");
+      LOG.debug("Data does not contain only Base64 characters so return original byte array", e);
       return recv;
     }
   }
