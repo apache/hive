@@ -5435,10 +5435,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     final String  tableName = names[1];
     final String  dbName = names[0];
     final String fullyQualName = dbName + "." + tableName;
-    boolean isTransactional = false;
     if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = isTransactional ? db.getTableAcidWithNoCatalog(dbName, tableName, false, false) : db
-          .getTable(dbName, tableName, false);
+      Table table = db.getTable(dbName, tableName, throwException);
       if (table != null) {
         tabNameToTabObject.put(fullyQualName, table);
       }

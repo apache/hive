@@ -1711,11 +1711,9 @@ public abstract class BaseSemanticAnalyzer {
   protected Table getTable(String database, String tblName, boolean throwException)
       throws SemanticException {
     Table tab;
-    boolean isTransactional = true;
     try {
-      tab = database == null ? db.getTable(tblName, false) : isTransactional ? db
-          .getTableAcidWithNoCatalog(database, tblName, throwException, false) : db
-          .getTable(database, tblName, throwException);
+      tab = database == null ? db.getTable(tblName, false)
+          : db.getTable(database, tblName, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
