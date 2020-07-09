@@ -70,7 +70,7 @@ public class Msck {
   private static final String PARTITIONS_NOT_IN_METASTORE = "Partitions not in metastore:";
   private static final String PARTITIONS_MISSING_FROM_FILESYSTEM = "Partitions missing from filesystem:";
   private static final String EXPIRED_PARTITIONS = "Expired partitions:";
-  private static final String EXPIRED_PARTITIONS_RETENTION = "Expired partitions (retention period: %s s) :";
+  private static final String EXPIRED_PARTITIONS_RETENTION = "Expired partitions (retention period: %ss) :";
   private boolean acquireLock;
   private boolean deleteData;
 
