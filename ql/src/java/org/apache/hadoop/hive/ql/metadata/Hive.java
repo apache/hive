@@ -1413,10 +1413,10 @@ public class Hive {
       if (checkTransactional) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
 
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE,
-            validWriteIdList != null ? validWriteIdList.toString() : null);
+        tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
+            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
       } else {
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE, null);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
@@ -1427,7 +1427,55 @@ public class Hive {
       throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
     }
 
-    // For non-views, we need to do some extra fixes
+    enhanceTable(tTable);
+
+    return new Table(tTable);
+  }
+
+    /**
+   * Returns metadata of the table.
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @param getColumnStats
+   *          get column statistics if available
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
+  public Table getTableAcidWithNoCatalog(final String dbName, final String tableName,
+      boolean throwException, boolean getColumnStats) throws HiveException {
+      if (tableName == null || tableName.equals("")) {
+      throw new HiveException("empty table creation??");
+    }
+
+    // Get the table from metastore
+    org.apache.hadoop.hive.metastore.api.Table tTable = null;
+    try {
+
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE,
+              validWriteIdList != null ? validWriteIdList.toString() : null);
+
+    } catch (NoSuchObjectException e) {
+      if (throwException) {
+        throw new InvalidTableException(tableName);
+      }
+      return null;
+    } catch (Exception e) {
+      throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
+    }
+
+    enhanceTable(tTable);
+
+    return new Table(tTable);
+  }
+
+  private void enhanceTable(org.apache.hadoop.hive.metastore.api.Table tTable){
+      // For non-views, we need to do some extra fixes
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
       Map<String, String> parameters = tTable.getSd().getParameters();
@@ -1454,8 +1502,6 @@ public class Hive {
             org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
     }
-
-    return new Table(tTable);
   }
 
   /**
