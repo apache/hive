@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.metastore.metrics;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.datanucleus.management.FactoryStatistics;
 
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
@@ -79,15 +78,15 @@ public class DBMetricUtils {
                 return dbStats.getConnectionActiveHigh();
             }
         });
-        metrics.register(DB_QUERY_EXECUTION_TIME_AVERAGE, new Gauge<Integer>() {
+        metrics.register(DB_QUERY_EXECUTION_TIME_AVERAGE, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getQueryExecutionTimeAverage();
             }
         });
-        metrics.register(DB_QUERY_EXECUTION_TIME_HIGH, new Gauge<Integer>() {
+        metrics.register(DB_QUERY_EXECUTION_TIME_HIGH, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getQueryExecutionTimeHigh();
             }
         });
@@ -103,9 +102,9 @@ public class DBMetricUtils {
                 return dbStats.getQueryErrorTotalCount();
             }
         });
-        metrics.register(DB_QUERY_EXECUTION_TIME_LOW, new Gauge<Integer>() {
+        metrics.register(DB_QUERY_EXECUTION_TIME_LOW, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getQueryExecutionTimeLow();
             }
         });
@@ -115,21 +114,21 @@ public class DBMetricUtils {
                 return dbStats.getQueryExecutionTotalCount();
             }
         });
-        metrics.register(DB_QUERY_EXECUTION_TOTAL_TIME, new Gauge<Integer>() {
+        metrics.register(DB_QUERY_EXECUTION_TOTAL_TIME, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getQueryExecutionTotalTime();
             }
         });
-        metrics.register(DB_TRANSACTION_EXECUTION_TIME_AVERAGE, new Gauge<Integer>() {
+        metrics.register(DB_TRANSACTION_EXECUTION_TIME_AVERAGE, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getTransactionExecutionTimeAverage();
             }
         });
-        metrics.register(DB_TRANSACTION_EXECUTION_TIME_HIGH, new Gauge<Integer>() {
+        metrics.register(DB_TRANSACTION_EXECUTION_TIME_HIGH, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getTransactionExecutionTimeHigh();
             }
         });
@@ -145,15 +144,15 @@ public class DBMetricUtils {
                 return dbStats.getTransactionCommittedTotalCount();
             }
         });
-        metrics.register(DB_TRANSACTION_EXECUTION_TIME_LOW, new Gauge<Integer>() {
+        metrics.register(DB_TRANSACTION_EXECUTION_TIME_LOW, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getTransactionExecutionTimeLow();
             }
         });
-        metrics.register(DB_TRANSACTION_EXECUTION_TOTAL_TIME, new Gauge<Integer>() {
+        metrics.register(DB_TRANSACTION_EXECUTION_TOTAL_TIME, new Gauge<Long>() {
             @Override
-            public Integer getValue() {
+            public Long getValue() {
                 return dbStats.getTransactionExecutionTotalTime();
             }
         });
