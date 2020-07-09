@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
@@ -67,7 +68,7 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     }
 
     Table table = getTable(tableName);
-    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = getFullPartitionSpecs(root, table, conf, false);
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(root, table, conf, false);
     byte[] filterExp = null;
     if (partitionSpecs != null & !partitionSpecs.isEmpty()) {
       // explicitly set expression proxy class to PartitionExpressionForMetastore since we intend to use the

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
@@ -109,7 +110,7 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
         throw se;
       }
     }
-    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = getFullPartitionSpecs(command, table,
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(command, table,
         conf, canGroupExprs);
     if (partitionSpecs.isEmpty()) { // nothing to do
       return;

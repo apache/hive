@@ -324,13 +324,6 @@ public abstract class BaseSemanticAnalyzer {
     rootTasks = new ArrayList<Task<?>>();
   }
 
-  public static String stripIdentifierQuotes(String val) {
-    if ((val.charAt(0) == '`' && val.charAt(val.length() - 1) == '`')) {
-      val = val.substring(1, val.length() - 1);
-    }
-    return val;
-  }
-
   public static String stripQuotes(String val) {
     return PlanUtils.stripQuotes(val);
   }
@@ -842,118 +835,6 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return colList;
-  }
-
-  /**
-   * Get the partition specs from the tree. This stores the full specification
-   * with the comparator operator into the output list.
-   *
-   * @return Map of partitions by prefix length. Most of the time prefix length will
-   *         be the same for all partition specs, so we can just OR the expressions.
-   */
-  public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
-      CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-    Map<String, String> colTypes = new HashMap<>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
-      colTypes.put(fs.getName().toLowerCase(), fs.getType());
-    }
-
-    Map<Integer, List<ExprNodeGenericFuncDesc>> result = new HashMap<>();
-    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) {
-        continue;
-      }
-
-      ExprNodeGenericFuncDesc expr = null;
-      Set<String> names = new HashSet<>(partSpecTree.getChildCount());
-      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
-        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
-        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
-        String operator = partSpecSingleKey.getChild(1).getText();
-        ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
-        TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-        ExprNodeConstantDesc valExpr =
-            (ExprNodeConstantDesc) ExprNodeTypeCheck.genExprNode(partValNode, typeCheckCtx).get(partValNode);
-        Object val = valExpr.getValue();
-
-        boolean isDefaultPartitionName = val.equals(defaultPartitionName);
-
-        String type = colTypes.get(key);
-        if (type == null) {
-          throw new SemanticException("Column " + key + " is not a partition key");
-        }
-        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
-        // Create the corresponding hive expression to filter on partition columns.
-        if (!isDefaultPartitionName) {
-          if (!valExpr.getTypeString().equals(type)) {
-            ObjectInspectorConverters.Converter converter = ObjectInspectorConverters.getConverter(
-                TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
-                TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
-            val = converter.convert(valExpr.getValue());
-          }
-        }
-
-        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
-        ExprNodeGenericFuncDesc op;
-        if (!isDefaultPartitionName) {
-          op = PartitionUtils.makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
-        } else {
-          GenericUDF originalOp = FunctionRegistry.getFunctionInfo(operator).getGenericUDF();
-          String fnName;
-          if (FunctionRegistry.isEq(originalOp)) {
-            fnName = "isnull";
-          } else if (FunctionRegistry.isNeq(originalOp)) {
-            fnName = "isnotnull";
-          } else {
-            throw new SemanticException(
-                "Cannot use " + operator + " in a default partition spec; only '=' and '!=' are allowed.");
-          }
-          op = PartitionUtils.makeUnaryPredicate(fnName, column);
-        }
-        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
-        expr = (expr == null) ? op : PartitionUtils.makeBinaryPredicate("and", expr, op);
-        names.add(key);
-      }
-
-      if (expr == null) {
-        continue;
-      }
-
-      // We got the expr for one full partition spec. Determine the prefix length.
-      int prefixLength = calculatePartPrefix(table, names);
-      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
-      // We have to tell apart partitions resulting from spec with different prefix lengths.
-      // So, if we already have smth for the same prefix length, we can OR the two.
-      // If we don't, create a new separate filter. In most cases there will only be one.
-      if (orExpr == null) {
-        result.put(prefixLength, Lists.newArrayList(expr));
-      } else if (canGroupExprs) {
-        orExpr.set(0, PartitionUtils.makeBinaryPredicate("or", expr, orExpr.get(0)));
-      } else {
-        orExpr.add(expr);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Calculates the partition prefix length based on the drop spec.
-   * This is used to avoid deleting archived partitions with lower level.
-   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
-   * archived A=5/, because it can contain B-s other than 6.
-   */
-  private static int calculatePartPrefix(Table tbl, Set<String> partSpecKeys) {
-    int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
-      if (!partSpecKeys.contains(fs.getName())) {
-        break;
-      }
-      ++partPrefixToDrop;
-    }
-    return partPrefixToDrop;
   }
 
   public static List<String> getColumnNames(ASTNode ast) {
@@ -1680,7 +1561,7 @@ public abstract class BaseSemanticAnalyzer {
     for (Entry<ASTNode, ExprNodeDesc> astExprNodePair : astExprNodeMap.entrySet()) {
       String astKeyName = astExprNodePair.getKey().toString().toLowerCase();
       if (astExprNodePair.getKey().getType() == HiveParser.Identifier) {
-        astKeyName = stripIdentifierQuotes(astKeyName);
+        astKeyName = ParseUtils.stripIdentifierQuotes(astKeyName);
       }
       String colType = partCols.get(astKeyName);
       ObjectInspector inputOI = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo
