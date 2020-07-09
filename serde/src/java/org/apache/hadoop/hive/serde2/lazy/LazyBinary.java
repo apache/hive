@@ -49,8 +49,6 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
     byte[] recv = new byte[length];
     System.arraycopy(bytes.getData(), start, recv, 0, length);
     byte[] decoded = decodeIfNeeded(recv);
-    // use the original bytes in case decoding should fail
-    decoded = decoded.length > 0 ? decoded : recv;
     data.set(decoded, 0, decoded.length);
   }
 
@@ -59,6 +57,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
     try {
       return Base64.getDecoder().decode(recv);
     } catch (IllegalArgumentException e) {
+      // use the original bytes in case decoding should fail
       LOG.debug("Data does not contain only Base64 characters so return original byte array", e);
       return recv;
     }
