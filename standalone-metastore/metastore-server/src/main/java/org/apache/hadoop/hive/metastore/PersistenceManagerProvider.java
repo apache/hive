@@ -240,6 +240,7 @@ public class PersistenceManagerProvider {
         dsProperties.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds);
         dsProperties.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
             "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
+        dsProperties.put(ConfVars.DATANUCLEUS_ENABLE_STATISTICS.getVarname(), conf.get(ConfVars.DATANUCLEUS_ENABLE_STATISTICS.getVarname()));
         pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
       } catch (SQLException e) {
         LOG.warn("Could not create PersistenceManagerFactory using "

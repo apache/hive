@@ -42,6 +42,7 @@ public class TestDBMetrics {
     MetastoreConf.setClass(metastoreConf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
             MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
     MetastoreConf.setBoolVar(metastoreConf, MetastoreConf.ConfVars.TRY_DIRECT_SQL_DDL, false);
+    MetastoreConf.setBoolVar(metastoreConf, MetastoreConf.ConfVars.DATANUCLEUS_ENABLE_STATISTICS, true);
     MetaStoreTestUtils.setConfForStandloneMode(metastoreConf);
     if (MetastoreConf.getBoolVar(metastoreConf, MetastoreConf.ConfVars.METRICS_ENABLED)) {
       try {
