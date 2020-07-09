@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAll
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartition;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionListByFilterExp;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
@@ -36,7 +35,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -380,10 +378,6 @@ public class HiveMetaStoreChecker {
 
     if (filterExp != null) {
       PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
-      if (expressionProxy instanceof MsckPartitionExpressionProxy) {
-        throw new MetastoreException("Unsupported expressionProxy type. " +
-            "This happens when remote metastore setup is used. Try with embedded metastore");
-      }
       List<String> paritions = new ArrayList<>();
       Set<Path> partDirs = new HashSet<Path>();
       String tablePathStr = tablePath.toString();

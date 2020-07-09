@@ -720,7 +720,7 @@ partitionVal
 
 dropPartitionSpec
     :
-    KW_PARTITION
+    KW_PARTITION | KW_PARTITIONS
      LPAREN dropPartitionVal (COMMA  dropPartitionVal )* RPAREN -> ^(TOK_PARTSPEC dropPartitionVal +)
     ;
 
@@ -730,21 +730,6 @@ dropPartitionVal
     ;
 
 dropPartitionOperator
-    :
-    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
-    ;
-
-filterPartitionSpec
-    :
-    LPAREN filterPartitionVal (COMMA  filterPartitionVal )* RPAREN -> ^(TOK_PARTSPEC filterPartitionVal +)
-    ;
-
-filterPartitionVal
-    :
-    identifier filterPartitionOperator constant -> ^(TOK_PARTVAL identifier filterPartitionOperator constant)
-    ;
-
-filterPartitionOperator
     :
     EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN | KW_LIKE
     ;

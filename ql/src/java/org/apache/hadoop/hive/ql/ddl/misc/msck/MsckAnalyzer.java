@@ -71,10 +71,15 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(root, table, conf, false);
     byte[] filterExp = null;
     if (partitionSpecs != null & !partitionSpecs.isEmpty()) {
-      // explicitly set expression proxy class to PartitionExpressionForMetastore since we intend to use the
+      // expression proxy class needs to be PartitionExpressionForMetastore since we intend to use the
       // filterPartitionsByExpr of PartitionExpressionForMetastore for partition pruning down the line.
-      conf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-          PartitionExpressionForMetastore.class.getCanonicalName());
+      // Bail out early if expressionProxyClass is not configured properly.
+      String expressionProxyClass = conf.get(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname());
+      if (expressionProxyClass == null || expressionProxyClass.isEmpty() ||
+          !expressionProxyClass.equals(PartitionExpressionForMetastore.class.getCanonicalName())) {
+        throw new SemanticException("Invalid expression proxy class. The config metastore.expression.proxy needs " +
+            "to be set to org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore");
+      }
       // fetch the first value of partitionSpecs map since it will always have one key, value pair
       filterExp = SerializationUtilities.serializeExpressionToKryo(
           (ExprNodeGenericFuncDesc) ((List) partitionSpecs.values().toArray()[0]).get(0));

@@ -1,3 +1,5 @@
+SET metastore.expression.proxy=org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore;
+
 DROP TABLE IF EXISTS repairtable_filter;
 
 CREATE TABLE repairtable_filter(col STRING) PARTITIONED BY (p1 STRING, p2 STRING);
