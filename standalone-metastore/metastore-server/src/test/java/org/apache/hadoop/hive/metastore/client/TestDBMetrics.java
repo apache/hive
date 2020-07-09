@@ -60,21 +60,6 @@ public class TestDBMetrics {
 
   @Test
   public void testGetMetrics() throws Exception {
-    Configuration metastoreConf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setBoolVar(metastoreConf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    MetastoreConf.setClass(metastoreConf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-            MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
-    MetastoreConf.setBoolVar(metastoreConf, MetastoreConf.ConfVars.TRY_DIRECT_SQL_DDL, false);
-    MetaStoreTestUtils.setConfForStandloneMode(metastoreConf);
-    if (MetastoreConf.getBoolVar(metastoreConf, MetastoreConf.ConfVars.METRICS_ENABLED)) {
-      try {
-        Metrics.initialize(metastoreConf);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-    MetaStoreServerUtils.startMetaStore(metastoreConf);
-
     MetricRegistry metrics = Metrics.getRegistry();
     SortedMap<String, Gauge> gauges = metrics.getGauges();
     assertNotNull(gauges.get(DB_NUMBER_OF_DATASTORE_READS).getValue());

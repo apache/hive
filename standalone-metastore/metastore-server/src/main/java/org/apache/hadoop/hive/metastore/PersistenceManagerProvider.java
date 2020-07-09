@@ -92,7 +92,6 @@ public class PersistenceManagerProvider {
   private static int retryLimit;
   private static long retryInterval;
   private static com.google.common.base.Supplier<String> passwordProvider;
-  public static FactoryStatistics dbStats;
 
   static {
     Map<String, Class<?>> map = new HashMap<>();
@@ -242,7 +241,6 @@ public class PersistenceManagerProvider {
         dsProperties.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds);
         dsProperties.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
             "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
-        //dsProperties.put("datanucleus.enableStatistics","true");
         pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
       } catch (SQLException e) {
         LOG.warn("Could not create PersistenceManagerFactory using "
@@ -251,8 +249,7 @@ public class PersistenceManagerProvider {
       }
     }
     JDOPersistenceManagerFactory dnpmf = (JDOPersistenceManagerFactory)pmf;
-    dbStats = dnpmf.getNucleusContext().getStatistics();
-    DBMetricUtils.register(dbStats);
+    DBMetricUtils.register(dnpmf.getNucleusContext().getStatistics());
     DataStoreCache dsc = pmf.getDataStoreCache();
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
