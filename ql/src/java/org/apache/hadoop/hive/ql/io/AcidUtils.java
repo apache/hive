@@ -2411,6 +2411,9 @@ public class AcidUtils {
     ValidTxnWriteIdList validTxnWriteIdList = null;
 
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    if ( validTxnList == null || validTxnList.isEmpty()) {
+      return null;
+    }
     List<String> tablesInput = new ArrayList<>();
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);

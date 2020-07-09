@@ -2171,6 +2171,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Table getTable(String dbname, String name, boolean getColumnStats, String engine, String validWriteIdList
+      ) throws TException {
+    return getTable(getDefaultCatalog(conf), dbname, name, validWriteIdList, getColumnStats, engine);
+  }
+
+  @Override
   public Table getTable(String catName, String dbName, String tableName) throws TException {
     return getTable(catName, dbName, tableName, false, null);
   }
@@ -2182,6 +2188,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCapabilities(version);
     req.setGetColumnStats(getColumnStats);
     req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
+
     if (getColumnStats) {
       req.setEngine(engine);
     }

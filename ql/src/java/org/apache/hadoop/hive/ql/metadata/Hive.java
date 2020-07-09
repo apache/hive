@@ -1410,13 +1410,13 @@ public class Hive {
     // Get the table from metastore
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
-      // Note: this is currently called w/true from StatsOptimizer only.
       if (checkTransactional) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
-        tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
+
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE,
+            validWriteIdList != null ? validWriteIdList.toString() : null);
       } else {
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE, null);
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
