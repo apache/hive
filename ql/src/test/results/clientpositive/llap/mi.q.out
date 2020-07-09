@@ -40,7 +40,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@nzhang_t1
 POSTHOOK: Output: default@nzhang_t1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@nzhang_t2
 POSTHOOK: Output: default@nzhang_t2@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

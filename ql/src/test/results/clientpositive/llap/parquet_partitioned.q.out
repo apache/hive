@@ -106,6 +106,7 @@ PREHOOK: Output: default@parquet_partitioned
 POSTHOOK: query: INSERT OVERWRITE TABLE parquet_partitioned PARTITION (part) SELECT * FROM parquet_partitioned_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_partitioned_staging
+POSTHOOK: Output: default@parquet_partitioned
 POSTHOOK: Output: default@parquet_partitioned@part=part1
 POSTHOOK: Output: default@parquet_partitioned@part=part2
 POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]

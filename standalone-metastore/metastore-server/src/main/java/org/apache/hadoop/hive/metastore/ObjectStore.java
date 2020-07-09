@@ -13061,7 +13061,7 @@ public class ObjectStore implements RawStore, Configurable {
         execution.setExecutorQueryId(info.getExecutorQueryId());
       }
       if (info.isSetErrorMessage()) {
-        execution.setErrorMessage(info.getErrorMessage());
+        execution.setErrorMessage(abbreviateErrorMessage(info.getErrorMessage(), 1000));
       }
 
       switch (info.getState()) {
@@ -13086,6 +13086,19 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  /**
+   * Abbreviates the error message to the given size.
+   *
+   * There might be error messages which may also contain a stack trace.
+   */
+  private String abbreviateErrorMessage(String errorMessage, int maxLength) {
+    if (errorMessage.length() < maxLength) {
+      return errorMessage;
+    }
+    String[] parts = errorMessage.split("\n", 2);
+    return StringUtils.abbreviate(parts[0], maxLength);
   }
 
   @Override

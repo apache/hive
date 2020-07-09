@@ -43,6 +43,7 @@ PREHOOK: Output: default@t2_n95
 POSTHOOK: query: insert overwrite table T2_n95 partition (val) select key, val from T1_n163
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n163
+POSTHOOK: Output: default@t2_n95
 POSTHOOK: Output: default@t2_n95@val=11
 POSTHOOK: Output: default@t2_n95@val=12
 POSTHOOK: Output: default@t2_n95@val=13
