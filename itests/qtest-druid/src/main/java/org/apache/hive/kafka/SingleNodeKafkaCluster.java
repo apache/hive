@@ -46,7 +46,6 @@ public class SingleNodeKafkaCluster extends AbstractService {
 
 
   private final KafkaServerStartable serverStartable;
-  private final String zkString;
   private final int brokerPort;
   private final String kafkaServer;
 
@@ -67,7 +66,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
         throw new RuntimeException(e);
       }
     }
-    this.zkString = String.format("localhost:%d", zkPort);
+    String zkString = String.format("localhost:%d", zkPort);
 
     this.kafkaServer = String.format("%s:%d", LOCALHOST, this.brokerPort);
 
@@ -157,24 +156,19 @@ public class SingleNodeKafkaCluster extends AbstractService {
     }
   }
 
-  public void createTopic(String topic) {
-    int sessionTimeoutMs = 1000;
-    ZkClient zkClient = new ZkClient(
-        this.zkString, sessionTimeoutMs, sessionTimeoutMs,
-        ZKStringSerializer$.MODULE$
-    );
-    ZkUtils zkUtils = new ZkUtils(zkClient, new ZkConnection(zkString, sessionTimeoutMs), false);
+  private void createTopic(String topic) {
+    Properties properties = new Properties();
+    properties.setProperty("bootstrap.servers", "localhost:9092");
+    properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    properties.setProperty("value.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+
     int numPartitions = 1;
-    int replicationFactor = 1;
-    Properties topicConfig = new Properties();
-    AdminUtils.createTopic(
-        zkUtils,
-        topic,
-        numPartitions,
-        replicationFactor,
-        topicConfig,
-        RackAwareMode.Disabled$.MODULE$
-    );
+    short replicationFactor = 1;
+    AdminClient adminClient = AdminClient.create(properties);
+    NewTopic newTopic = new NewTopic(topic, numPartitions, replicationFactor);
+
+    adminClient.createTopics(Collections.singletonList(newTopic));
+    adminClient.close();
   }
 
 }
