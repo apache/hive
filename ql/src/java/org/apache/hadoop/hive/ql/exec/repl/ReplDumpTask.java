@@ -1186,14 +1186,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           .isNotEmpty(tableConstraints.getNotNullConstraints())) {
         try (JsonWriter jsonWriter = new JsonWriter(commonConstraintsFile.getFileSystem(conf), commonConstraintsFile)) {
           ConstraintsSerializer serializer = new ConstraintsSerializer(tableConstraints.getPrimaryKeys(), null,
-              tableConstraints.getUniqueConstraints(), tableConstraints.getNotNullConstraints(), conf);
+              tableConstraints.getUniqueConstraints(), tableConstraints.getNotNullConstraints(),
+              tableConstraints.getDefaultConstraints(), tableConstraints.getCheckConstraints(), conf);
           serializer.writeTo(jsonWriter, null);
         }
       }
       if (CollectionUtils.isNotEmpty(tableConstraints.getForeignKeys())) {
         try (JsonWriter jsonWriter = new JsonWriter(fkConstraintsFile.getFileSystem(conf), fkConstraintsFile)) {
           ConstraintsSerializer serializer =
-              new ConstraintsSerializer(null, tableConstraints.getForeignKeys(), null, null, conf);
+              new ConstraintsSerializer(null, tableConstraints.getForeignKeys(), null, null, null, null, conf);
           serializer.writeTo(jsonWriter, null);
         }
       }

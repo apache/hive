@@ -736,6 +736,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    */
   @Override
   public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
+    LOG.info("Inside DBNotification listener for check constraint.");
     List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
     if (cols.size() > 0) {
       AddCheckConstraintMessage msg = MessageBuilder.getInstance()

@@ -2358,6 +2358,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_NOTNULLCONSTRAINT,
                 new AddNotNullConstraintEvent(notNullConstraints, true, this), envContext);
           }
+          if (checkConstraints != null && !checkConstraints.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_CHECKCONSTRAINT,
+                    new AddCheckConstraintEvent(checkConstraints, true, this), envContext);
+          }
+          if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_DEFAULTCONSTRAINT,
+                    new AddDefaultConstraintEvent(defaultConstraints, true, this), envContext);
+          }
         }
 
         success = ms.commitTransaction();
@@ -2388,6 +2396,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (notNullConstraints != null && !notNullConstraints.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_NOTNULLCONSTRAINT,
                 new AddNotNullConstraintEvent(notNullConstraints, success, this), envContext);
+          }
+          if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_DEFAULTCONSTRAINT,
+                    new AddDefaultConstraintEvent(defaultConstraints, success, this), envContext);
+          }
+          if (checkConstraints != null && !checkConstraints.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_CHECKCONSTRAINT,
+                    new AddCheckConstraintEvent(checkConstraints, success, this), envContext);
           }
         }
       }
@@ -2788,7 +2804,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (transactionalListeners.size() > 0) {
           if (defaultConstraintCols != null && defaultConstraintCols.size() > 0) {
-            //TODO: Even listener for default
             AddDefaultConstraintEvent addDefaultConstraintEvent = new AddDefaultConstraintEvent(defaultConstraintCols, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
               transactionalListener.onAddDefaultConstraint(addDefaultConstraintEvent);
@@ -2841,7 +2856,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (transactionalListeners.size() > 0) {
           if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
-            //TODO: Even listener for check
             AddCheckConstraintEvent addcheckConstraintEvent = new AddCheckConstraintEvent(checkConstraintCols, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
              transactionalListener.onAddCheckConstraint(addcheckConstraintEvent);
