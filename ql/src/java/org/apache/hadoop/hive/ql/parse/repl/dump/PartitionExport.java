@@ -119,7 +119,8 @@ class PartitionExport {
           // Data Copy in case of ExportTask or when dataCopyAtLoad is true
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
-          Path rootDataDumpDir = paths.partitionDataExportDir(partitionName);
+          Path rootDataDumpDir = isExportTask
+                  ? paths.partitionMetadataExportDir(partitionName) : paths.partitionDataExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
                   .export(isExportTask, dataCopyAtLoad);
           Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
