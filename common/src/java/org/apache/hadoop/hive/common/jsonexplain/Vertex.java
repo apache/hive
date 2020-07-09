@@ -160,7 +160,6 @@ public final class Vertex implements Comparable<Vertex>{
 
   /**
    * @param object
-   * @param isInput
    * @param parent
    * @return
    * @throws JSONException
@@ -311,12 +310,17 @@ public final class Vertex implements Comparable<Vertex>{
 
   @Override
   public boolean equals(Object o) {
-    return  super.equals(o);
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Vertex vertex = (Vertex) o;
+    return Objects.equals(name, vertex.name) &&
+            Objects.equals(stage, vertex.stage) &&
+            Objects.equals(vertexObject, vertex.vertexObject);
   }
 
   @Override
   public int hashCode() {
-    return super.hashCode();
+    return Objects.hash(name, stage, vertexObject);
   }
 
   // The following code should be gone after HIVE-11075 using topological order
