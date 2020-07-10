@@ -109,13 +109,13 @@ public class TestValidReadTxnList {
 
   @Test
   public void testAbortedTxnRange() throws Exception {
-    long[] exceptions = {2L, 4L, 5L, 6L, 8L, 9L, 10L};
+    long[] exceptions = {2L, 4L, 5L, 6L, 7L, 8L, 9L, 10L};
     BitSet bitSet = new BitSet(exceptions.length);
     bitSet.set(0);  // mark txn "2L" aborted
-    bitSet.set(5);  // mark txn "9L" aborted, do not create range 8-10
+    bitSet.set(6);  // mark txn "9L" aborted, do not create range 8-10
     ValidTxnList txnList = new ValidReadTxnList(exceptions, bitSet, 11, 4L);
     String str = txnList.writeToString();
-    Assert.assertEquals("11:4:4-6,8,10:2,9", str);
+    Assert.assertEquals("11:4:4-8,10:2,9", str);
     Assert.assertTrue(txnList.isTxnAborted(2L));
     Assert.assertFalse(txnList.isTxnAborted(4L));
     Assert.assertFalse(txnList.isTxnAborted(6L));

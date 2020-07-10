@@ -152,18 +152,26 @@ public class ValidReadTxnList implements ValidTxnList {
   }
 
   /**
-   * txnlist is represented in ranges like this: 10-12,14,16-19
+   * txnlist is represented in ranges like this: 10-20,14,16-50
    *
    */
-  private void writeTxnRange(StringBuilder builder, long txnMin, long abortedMax) {
-    if (abortedMax >= 0) {
+  private void writeTxnRange(StringBuilder builder, long txnMin, long txnMax) {
+    if (txnMax >= 0) {
       if (builder.length() > 0) {
         builder.append(',');
       }
-      if (txnMin == abortedMax) {
+      if (txnMin == txnMax) {
         builder.append(txnMin);
+      } else if (txnMin + 4 > txnMax) {
+        // If the range is small the overhead is not worth it
+        for (long txn = txnMin; txn <= txnMax; txn++) {
+          builder.append(txn);
+          if (txn != txnMax) {
+            builder.append(',');
+          }
+        }
       } else {
-        builder.append(txnMin).append('-').append(abortedMax);
+        builder.append(txnMin).append('-').append(txnMax);
       }
     }
   }
@@ -212,17 +220,17 @@ public class ValidReadTxnList implements ValidTxnList {
   }
 
   /**
-   * txnlist is represented in ranges like this: 10-12,14,16-19
+   * txnlist is represented in ranges like this: 10-20,14,16-50
    * @param txnListString
    * @return
    */
   private List<Long> readTxnListFromRangeString(String txnListString) {
     List<Long> txnList = new ArrayList<>();
     for (String txnRange : txnListString.split(",")) {
-      String[] parts = txnRange.split("-");
-      if (parts.length == 1) {
-        txnList.add(Long.parseLong(parts[0]));
+      if (txnRange.indexOf('-') < 0) {
+        txnList.add(Long.parseLong(txnRange));
       } else {
+        String[] parts = txnRange.split("-");
         long txn = Long.parseLong(parts[0]);
         long txnEnd = Long.parseLong(parts[1]);
         while (txn <= txnEnd) {
