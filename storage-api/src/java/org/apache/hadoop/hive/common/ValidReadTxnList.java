@@ -35,6 +35,7 @@ import java.util.List;
  */
 public class ValidReadTxnList implements ValidTxnList {
 
+  private static final int MIN_RANGE_LENGTH = 5;
   protected long[] exceptions;
   protected BitSet abortedBits; // BitSet for flagging aborted transactions. Bit is true if aborted, false if open
   //default value means there are no open txn in the snapshot
@@ -153,6 +154,7 @@ public class ValidReadTxnList implements ValidTxnList {
 
   /**
    * txnlist is represented in ranges like this: 10-20,14,16-50
+   * if the range is smaller then 5 it will not get merged, to avoid unnecessary overhead
    *
    */
   private void writeTxnRange(StringBuilder builder, long txnMin, long txnMax) {
@@ -162,7 +164,7 @@ public class ValidReadTxnList implements ValidTxnList {
       }
       if (txnMin == txnMax) {
         builder.append(txnMin);
-      } else if (txnMin + 4 > txnMax) {
+      } else if (txnMin + MIN_RANGE_LENGTH - 1 > txnMax) {
         // If the range is small the overhead is not worth it
         for (long txn = txnMin; txn <= txnMax; txn++) {
           builder.append(txn);
@@ -221,8 +223,9 @@ public class ValidReadTxnList implements ValidTxnList {
 
   /**
    * txnlist is represented in ranges like this: 10-20,14,16-50
-   * @param txnListString
-   * @return
+   * if the range is smaller then 5 it will not get merged, to avoid unnecessary overhead
+   * @param txnListString string to parse from
+   * @return txn list
    */
   private List<Long> readTxnListFromRangeString(String txnListString) {
     List<Long> txnList = new ArrayList<>();
