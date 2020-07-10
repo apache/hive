@@ -4178,6 +4178,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_serde(new GetSerdeRequest(serDeName));
   }
 
+  /**
+   * This method is called to get the ValidWriteIdList in order to send the same in HMS get_* APIs,
+   * if the validWriteIdList is not already set by HS2.
+   * This method returns the ValidWriteIdList based on the VALID_TABLES_WRITEIDS_KEY key.
+   * Since, VALID_TABLES_WRITEIDS_KEY is set during the lock acquisition phase after query compilation
+   * ( DriverTxnHandler.acquireLocks -> recordValidWriteIds -> setValidWriteIds ),
+   * this only covers a subset of cases, where we invoke get_* APIs after query compilation, where the ValidWriteIdList
+   * is not set by HS2.
+   *
+   * @param fullTableName
+   * @return
+   */
   private String getValidWriteIdList(String fullTableName) {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;

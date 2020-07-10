@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -1466,6 +1467,8 @@ public class Hive {
 
   /**
    * Get ValidWriteIdList for the current transaction.
+   * This fetches the ValidWriteIdList from the metastore for a given table if txnManager has an open transaction.
+   *
    * @param dbName
    * @param tableName
    * @return
@@ -3968,7 +3971,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> partitions) throws HiveException, TException {
 
-    assert partitions != null;
+    Preconditions.checkNotNull(partitions);
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
     List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
