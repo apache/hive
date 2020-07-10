@@ -263,6 +263,11 @@
                   <artifactId>xercesImpl</artifactId>
                   <version>${xerces.version}</version>
                 </docletArtifact>
+                <docletArtifact>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+                </docletArtifact>
               </docletArtifacts>
               <additionalOptions>
                 <additionalOption>-output ${project.build.outputDirectory}/resourcedoc.xml</additionalOption>

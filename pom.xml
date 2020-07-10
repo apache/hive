@@ -1178,6 +1178,13 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>${maven.build-helper.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <!-- Minimum required version for JDK11 -->
+          <!-- Not up to date in ASF Parent POM -->
+          <version>3.2.4</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
