@@ -1734,14 +1734,20 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     SharedCache sharedCache = CachedStore.getSharedCache();
 
     Database db = createDatabaseObject("db", "testUser");
+    Database db1 = createDatabaseObject("db1", "testUser");
     Table tbl = createUnpartitionedTableObject(db);
+    Table tbl1 = createUnpartitionedTableObject(db1);
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
+    sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db1", tbl1.getTableName(), tbl1);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 2);
 
-    List<SQLForeignKey> origKeys = createForeignKeys(tbl, tbl);
+    List<SQLForeignKey> origKeys = createForeignKeys(tbl, tbl, "fk1");
+    List<SQLForeignKey> extraKeys = createForeignKeys(tbl1, tbl, "fk2");
+
     sharedCache.addForeignKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), origKeys);
+    sharedCache.addForeignKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), extraKeys);
 
     // List operation
     List<SQLForeignKey> cachedKeys = sharedCache.listCachedForeignKeys(
@@ -1754,6 +1760,16 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys.get(0).getFkcolumn_name(), "col2");
     Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
 
+    cachedKeys = sharedCache.listCachedForeignKeys(
+            DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), tbl1.getDbName(), tbl1.getTableName());
+
+    Assert.assertEquals(cachedKeys.size(), 1);
+    Assert.assertEquals(cachedKeys.get(0).getFk_name(), "fk2");
+    Assert.assertEquals(cachedKeys.get(0).getFktable_db(), "db");
+    Assert.assertEquals(cachedKeys.get(0).getFktable_name(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.get(0).getFkcolumn_name(), "col1");
+    Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
+    sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "fk2");
     // List operation with different parent table
     cachedKeys = sharedCache.listCachedForeignKeys(
             DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dummyDB", "dummyTable");
@@ -1811,7 +1827,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return Arrays.asList(key);
   }
 
-  private List<SQLForeignKey> createForeignKeys(Table primaryKeytbl, Table foreignKeyTbl) {
+  private List<SQLForeignKey> createForeignKeys(Table primaryKeytbl, Table foreignKeyTbl, String fKeyName) {
     String foreignKeyColumn;
     if (primaryKeytbl == foreignKeyTbl) {
       foreignKeyColumn = "col2";
@@ -1820,7 +1836,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     }
     SQLForeignKey key = new SQLForeignKey(primaryKeytbl.getDbName(), primaryKeytbl.getTableName(), "col1",
             foreignKeyTbl.getDbName(), foreignKeyTbl.getTableName(), foreignKeyColumn,
-            1,1,1, "fk1", "pk1", false, false, false);
+            1,1,1, fKeyName, "pk1", false, false, false);
     key.setCatName(DEFAULT_CATALOG_NAME);
 
     return Arrays.asList(key);

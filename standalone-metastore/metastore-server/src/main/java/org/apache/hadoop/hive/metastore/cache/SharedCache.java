@@ -509,40 +509,41 @@ public class SharedCache {
       }
       try {
         tableLock.writeLock().lock();
-        final int[] size = {0};
-        constraintsList.forEach(constraint -> {
+        int totalSize = constraintsList.stream().mapToInt(constraint -> {
+          int size = 0;
           switch (mn) {
             case PRIMARY_KEY_CACHE:
               SQLPrimaryKey pk = (SQLPrimaryKey) constraint;
               this.primaryKeyCache.put(pk.getPk_name().toLowerCase(), pk);
-              size[0] += getObjectSize(SQLPrimaryKey.class, constraint);
+              size = getObjectSize(SQLPrimaryKey.class, constraint);
               break;
             case FOREIGN_KEY_CACHE:
               SQLForeignKey fk = (SQLForeignKey) constraint;
               this.foreignKeyCache.put(fk.getFk_name().toLowerCase(), fk);
-              size[0] += getObjectSize(SQLForeignKey.class, constraint);
+              size = getObjectSize(SQLForeignKey.class, constraint);
               break;
             case UNIQUE_CONSTRAINT_CACHE:
               SQLUniqueConstraint uc = (SQLUniqueConstraint) constraint;
               this.uniqueConstraintCache.put(uc.getUk_name().toLowerCase(), uc);
-              size[0] += getObjectSize(SQLUniqueConstraint.class, constraint);
+              size = getObjectSize(SQLUniqueConstraint.class, constraint);
               break;
             case NOTNULL_CONSTRAINT_CACHE:
               SQLNotNullConstraint nn = (SQLNotNullConstraint) constraint;
               this.notNullConstraintCache.put(nn.getNn_name().toLowerCase(), nn);
-              size[0] += getObjectSize(SQLNotNullConstraint.class, constraint);
+              size = getObjectSize(SQLNotNullConstraint.class, constraint);
               break;
             default:
               LOG.error("Should not reach here");
               break;
           }
-        });
+          return size;
+        }).sum();
 
         if (!fromPrewarm) {
           setMemberCacheUpdated(mn, true);
         }
 
-        updateMemberSize(mn, size[0], SizeMode.Delta);
+        updateMemberSize(mn, totalSize, SizeMode.Delta);
         return true;
       } finally {
         tableLock.writeLock().unlock();
@@ -674,7 +675,7 @@ public class SharedCache {
         for (SQLPrimaryKey key : keys) {
           if (compareAndSetMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, true, false)) {
             LOG.debug("Skipping primary key cache update for table: " + getTable().getTableName()
-                    + "; the primary keys we have is dirty.");
+                    + "; the primary keys are already refreshed.");
             return;
           }
           newKeys.put(key.getPk_name().toLowerCase(), key);
@@ -682,7 +683,8 @@ public class SharedCache {
         }
         primaryKeyCache = newKeys;
         updateMemberSize(MemberName.PRIMARY_KEY_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Primary keys refresh in cache was successful.");
+        LOG.debug("Primary keys refresh in cache was successful for {}.{}.{}",
+            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -696,7 +698,7 @@ public class SharedCache {
         for (SQLForeignKey key : keys) {
           if (compareAndSetMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, true, false)) {
             LOG.debug("Skipping foreign key cache update for table: " + getTable().getTableName()
-                    + "; the foreign keys we have is dirty.");
+                    + "; the foreign keys are already refreshed.");
             return;
           }
           newKeys.put(key.getFk_name().toLowerCase(), key);
@@ -704,7 +706,8 @@ public class SharedCache {
         }
         foreignKeyCache = newKeys;
         updateMemberSize(MemberName.FOREIGN_KEY_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Foreign keys refresh in cache was successful.");
+        LOG.debug("Foreign keys refresh in cache was successful for {}.{}.{}",
+            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -718,7 +721,7 @@ public class SharedCache {
         for (SQLNotNullConstraint constraint : constraints) {
           if (compareAndSetMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, true, false)) {
             LOG.debug("Skipping not null constraints cache update for table: " + getTable().getTableName()
-                    + "; the not null constraints we have is dirty.");
+                    + "; the not null constraints are already refreshed.");
             return;
           }
           newConstraints.put(constraint.getNn_name().toLowerCase(), constraint);
@@ -726,7 +729,8 @@ public class SharedCache {
         }
         notNullConstraintCache = newConstraints;
         updateMemberSize(MemberName.NOTNULL_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Not null constraints refresh in cache was successful.");
+        LOG.debug("Not null constraints refresh in cache was successful for {}.{}.{}",
+            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -740,7 +744,7 @@ public class SharedCache {
         for (SQLUniqueConstraint constraint : constraints) {
           if (compareAndSetMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, true, false)) {
             LOG.debug("Skipping unique constraints cache update for table: " + getTable().getTableName()
-                    + "; the unique costraints we have is dirty.");
+                    + "; the unique costraints are already refreshed.");
             return;
           }
           newConstraints.put(constraint.getUk_name().toLowerCase(), constraint);
@@ -748,7 +752,8 @@ public class SharedCache {
         }
         uniqueConstraintCache = newConstraints;
         updateMemberSize(MemberName.UNIQUE_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Unique constraints refresh in cache was successful.");
+        LOG.debug("Unique constraints refresh in cache was successful for {}.{}.{}",
+            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
       } finally {
         tableLock.writeLock().unlock();
       }
