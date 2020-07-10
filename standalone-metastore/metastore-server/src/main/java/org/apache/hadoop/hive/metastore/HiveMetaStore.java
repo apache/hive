@@ -2360,11 +2360,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           if (checkConstraints != null && !checkConstraints.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_CHECKCONSTRAINT,
-                    new AddCheckConstraintEvent(checkConstraints, true, this), envContext);
+                new AddCheckConstraintEvent(checkConstraints, true, this), envContext);
           }
           if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_DEFAULTCONSTRAINT,
-                    new AddDefaultConstraintEvent(defaultConstraints, true, this), envContext);
+                new AddDefaultConstraintEvent(defaultConstraints, true, this), envContext);
           }
         }
 
@@ -2399,11 +2399,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_DEFAULTCONSTRAINT,
-                    new AddDefaultConstraintEvent(defaultConstraints, success, this), envContext);
+                new AddDefaultConstraintEvent(defaultConstraints, success, this), envContext);
           }
           if (checkConstraints != null && !checkConstraints.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_CHECKCONSTRAINT,
-                    new AddCheckConstraintEvent(checkConstraints, success, this), envContext);
+                new AddCheckConstraintEvent(checkConstraints, success, this), envContext);
           }
         }
       }
