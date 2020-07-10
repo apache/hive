@@ -895,7 +895,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
             unregisterDag(dagPath.toString(), jobQ.get(0), Integer.parseInt(dagIdQ.get(0)));
           }
         } catch (IOException e) {
-          LOG.warn("Encountered exception during dag delete "+ e);
+          LOG.warn("Encountered exception during dag delete ", e);
         }
         evt.getChannel().write(new DefaultHttpResponse(HTTP_1_1, OK));
         evt.getChannel().close();

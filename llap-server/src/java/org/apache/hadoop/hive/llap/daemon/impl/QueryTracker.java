@@ -306,8 +306,6 @@ public class QueryTracker extends AbstractService {
       if (!isExternalQuery) {
         rememberCompletedDag(queryIdentifier);
         // DAG Directory clean up will be taken care by LLAP Shuffle Handler
-        //todo: Properly remove all dag directory clean up code.
-        //cleanupLocalDirs(queryInfo, deleteDelay);
         handleLogOnQueryCompletion(queryInfo.getHiveQueryIdString(), queryInfo.getDagIdString());
       } else {
         // If there's no pending fragments, queue some of the cleanup for a later point - locks, log rolling.
@@ -339,17 +337,6 @@ public class QueryTracker extends AbstractService {
       return queryInfo;
     } finally {
       dagLock.writeLock().unlock();
-    }
-  }
-
-
-  private void cleanupLocalDirs(QueryInfo queryInfo, long deleteDelay) {
-    String[] localDirs = queryInfo.getLocalDirsNoCreate();
-    if (localDirs != null) {
-      for (String localDir : localDirs) {
-        cleanupDir(localDir, deleteDelay);
-        ShuffleHandler.get().unregisterDag(localDir, queryInfo.getAppIdString(), queryInfo.getDagIdentifier());
-      }
     }
   }
 
@@ -447,33 +434,6 @@ public class QueryTracker extends AbstractService {
       LOG.warn("cannot finish QueryTracker cleanup because of InterruptedException", e);
     }
     LOG.info(getName() + " stopped");
-  }
-
-  private void cleanupDir(String dir, long deleteDelay) {
-    LOG.info("Scheduling deletion of {} after {} seconds", dir, deleteDelay);
-    executorService.schedule(new FileCleanerCallable(dir), deleteDelay, TimeUnit.SECONDS);
-  }
-
-  private class FileCleanerCallable extends CallableWithNdc<Void> {
-    private final String dirToDelete;
-
-    private FileCleanerCallable(String dirToDelete) {
-      this.dirToDelete = dirToDelete;
-    }
-
-    @Override
-    protected Void callInternal() {
-      Path pathToDelete = new Path(dirToDelete);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Deleting path: " + pathToDelete);
-      }
-      try {
-        localFs.delete(new Path(dirToDelete), true);
-      } catch (IOException e) {
-        LOG.warn("Ignoring exception while cleaning up path: " + pathToDelete, e);
-      }
-      return null;
-    }
   }
 
   private class DagMapCleanerCallable extends CallableWithNdc<Void> {
