@@ -90,6 +90,10 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
   }
 
+  public PartitionDesc(final Partition part) throws HiveException {
+    this(part, getTableDesc(part.getTable()));
+  }
+
   /**
    * @param part Partition
    * @param tblDesc Table Descriptor

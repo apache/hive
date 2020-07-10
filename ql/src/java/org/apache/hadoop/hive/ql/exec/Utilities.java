@@ -789,9 +789,9 @@ public final class Utilities {
     return new PartitionDesc(part, tableDesc);
   }
 
-  /*public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
+  public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
     return new PartitionDesc(part);
-  }*/
+  }
 
   public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part,
     boolean usePartSchemaProperties) throws HiveException {
