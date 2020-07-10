@@ -68,7 +68,7 @@ public class HookRunner {
     this.console = console;
   }
 
-  public void initialize() {
+  private void initialize() {
     if (initialized) {
       return;
     }
@@ -79,7 +79,6 @@ public class HookRunner {
     preExecHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class));
     postExecHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class));
     onFailureHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class));
-    hs2OomHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, HookRunnable.class));
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       queryHooks.add(new MetricsQueryLifeTimeHook());
@@ -286,7 +285,10 @@ public class HookRunner {
   }
 
   public void runHs2OomHooks() {
-    initialize();
+    if (!initialized) {
+      hs2OomHooks.addAll(loadHooksFromConf(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, HookRunnable.class));
+      initialized = true;
+    }
     for (HookRunnable runner : hs2OomHooks) {
       runner.run();
     }
