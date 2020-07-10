@@ -1936,6 +1936,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     assert result != null;
     PartitionsByExprRequest req = new PartitionsByExprRequest(
         db_name, tbl_name, ByteBuffer.wrap(expr));
+    if( catName == null ) {
+      req.setCatName(getDefaultCatalog(conf));
+    }else {
+      req.setCatName(catName);
+    }
     if (default_partition_name != null) {
       req.setDefaultPartitionName(default_partition_name);
     }
@@ -1964,39 +1969,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
-      throws TException {
-    assert partitionSpec != null;
-    PartitionsSpecByExprResult result;
-    try {
-      result = client.get_partitions_spec_by_expr(request);
-    } catch (TApplicationException te) {
-      if (te.getType() != TApplicationException.UNKNOWN_METHOD
-          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
-        throw te;
-      }
-      throw new IncompatibleMetastoreException(
-          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
-    }
-
-    result.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
-        isClientFilterEnabled, filterHook, result.getPartitionsSpec()));
-
-    partitionSpec.addAll(result.getPartitionsSpec());
-    return !result.isSetHasUnknownPartitions() || result.isHasUnknownPartitions();
-  }
-
-  @Override
   public boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     return listPartitionsSpecByExpr(getDefaultCatalog(conf), dbName, tblName, expr, defaultPartName,
-        maxParts, result);
+        maxParts, result, validWriteIdList);
   }
 
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     assert result != null;
     PartitionsByExprRequest req = new PartitionsByExprRequest(
@@ -2007,6 +1989,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (maxParts >= 0) {
       req.setMaxParts(maxParts);
     }
+    req.setValidWriteIdList(validWriteIdList);
     PartitionsSpecByExprResult r;
     try {
       r = client.get_partitions_spec_by_expr(req);

@@ -1182,10 +1182,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result) throws TException {
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
-      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr,
+          defaultPartitionName, maxParts, result, validWriteIdList);
     }
     assert result != null;
 

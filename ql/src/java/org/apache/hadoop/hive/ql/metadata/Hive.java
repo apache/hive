@@ -3962,30 +3962,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl The table containing the partitions.
    * @param expr A serialized expression for partition predicates.
    * @param conf Hive config.
-   * @param result the resulting list of partitions
+   * @param partitions the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
    */
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
-      List<Partition> result) throws HiveException, TException {
-    assert result != null;
-    boolean hasUnknownParts;
+      List<Partition> partitions) throws HiveException, TException {
+
+    assert partitions != null;
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts = new ArrayList<>();
-    PartitionsByExprRequest req = new PartitionsByExprRequest();
-    req.setDbName(tbl.getDbName());
-    req.setTblName((tbl.getTableName()));
-    req.setDefaultPartitionName(defaultPartitionName);
-    req.setMaxParts((short) -1);
-    req.setExpr(exprBytes);
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+        new ArrayList<>();
+    ValidWriteIdList validWriteIdList = null;
     if (AcidUtils.isTransactionalTable(tbl)) {
-      ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-      req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+      validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
     }
-    hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
-
-    result.addAll(convertFromPartSpec(msParts.iterator(), tbl));
+    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
+        tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts,
+        validWriteIdList != null ? validWriteIdList.toString() : null);
+    partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
     return hasUnknownParts;
+
   }
 
   /**

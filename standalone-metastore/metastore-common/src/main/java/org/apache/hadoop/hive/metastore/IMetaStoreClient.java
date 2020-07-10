@@ -1390,17 +1390,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
-          throws TException;
-
-    /**
-   * Get list of {@link PartitionSpec} matching specified serialized expression.
-   * @param request request
-   * @param partitionSpec the resulting list of partitions
-   * @return whether the resulting list contains partitions which may or may not match the expr
-   * @throws TException thrift transport error or error executing the filter.
-   */
-  boolean listPartitionsSpecByExpr(PartitionsByExprRequest request, List<PartitionSpec> partitionSpec)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
           throws TException;
 
   /**
@@ -1418,7 +1408,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException;
 
   /**
