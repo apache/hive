@@ -131,24 +131,14 @@ public class SharedCache {
   }
 
   private enum MemberName {
-    TABLE_COL_STATS_CACHE(0),
-    PARTITION_CACHE(1),
-    PARTITION_COL_STATS_CACHE(2),
-    AGGR_COL_STATS_CACHE(3),
-    PRIMARY_KEY_CACHE(4),
-    FOREIGN_KEY_CACHE(5),
-    NOTNULL_CONSTRAINT_CACHE(6),
-    UNIQUE_CONSTRAINT_CACHE(7);
-
-    private int value;
-
-    MemberName(int value) {
-      this.value = value;
-    }
-
-    public int getValue() {
-      return this.value;
-    }
+    TABLE_COL_STATS_CACHE,
+    PARTITION_CACHE,
+    PARTITION_COL_STATS_CACHE,
+    AGGR_COL_STATS_CACHE,
+    PRIMARY_KEY_CACHE,
+    FOREIGN_KEY_CACHE,
+    NOTNULL_CONSTRAINT_CACHE,
+    UNIQUE_CONSTRAINT_CACHE;
   }
 
   static {
@@ -320,18 +310,18 @@ public class SharedCache {
       this.location = location;
       this.parameters = parameters;
       for(MemberName mn : MemberName.values()) {
-        this.memberObjectsSize[mn.getValue()] = 0;
-        this.memberCacheUpdated[mn.getValue()] = new AtomicBoolean(false);
+        this.memberObjectsSize[mn.ordinal()] = 0;
+        this.memberCacheUpdated[mn.ordinal()] = new AtomicBoolean(false);
       }
       this.otherSize = getTableWrapperSizeWithoutMaps();
     }
 
     public boolean compareAndSetMemberCacheUpdated(MemberName mn, boolean oldValue, boolean newValue) {
-      return this.memberCacheUpdated[mn.getValue()].compareAndSet(oldValue, newValue);
+      return this.memberCacheUpdated[mn.ordinal()].compareAndSet(oldValue, newValue);
     }
 
     public void setMemberCacheUpdated(MemberName mn, boolean newValue) {
-      this.memberCacheUpdated[mn.getValue()].set(newValue);
+      this.memberCacheUpdated[mn.ordinal()].set(newValue);
     }
 
     private int getTableWrapperSizeWithoutMaps() {
@@ -373,7 +363,7 @@ public class SharedCache {
       }
       int membersSize = 0;
       for(MemberName mn : MemberName.values()) {
-        membersSize += this.memberObjectsSize[mn.getValue()];
+        membersSize += this.memberObjectsSize[mn.ordinal()];
       }
       return otherSize + membersSize;
     }
@@ -421,10 +411,10 @@ public class SharedCache {
 
       switch (mode) {
         case Delta:
-          this.memberObjectsSize[mn.getValue()] += size;
+          this.memberObjectsSize[mn.ordinal()] += size;
           break;
         case Snapshot:
-          this.memberObjectsSize[mn.getValue()] = size;
+          this.memberObjectsSize[mn.ordinal()] = size;
           break;
       }
 
