@@ -43,6 +43,7 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.HiveCompat;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,19 +225,18 @@ public class HiveConf extends Configuration {
         String nameInConf = "conf" + File.separator + name;
         result = checkConfigFile(new File(homePath, nameInConf));
         if (result == null) {
-          URI jarUri = null;
           try {
             // Handle both file:// and jar:<url>!{entry} in the case of shaded hive libs
             URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
-            jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            URI jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            // From the jar file, the parent is /lib folder
+            File parent = new File(jarUri).getParentFile();
+            if (parent != null) {
+              result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
+            }
           } catch (Throwable e) {
             LOG.info("Cannot get jar URI", e);
             System.err.println("Cannot get jar URI: " + e.getMessage());
-          }
-          // From the jar file, the parent is /lib folder
-          File parent = new File(jarUri).getParentFile();
-          if (parent != null) {
-            result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
           }
         }
       }
@@ -355,7 +355,7 @@ public class HiveConf extends Configuration {
   /**
    * User configurable Metastore vars
    */
-  public static final HiveConf.ConfVars[] metaConfVars = {
+  static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
@@ -393,7 +393,7 @@ public class HiveConf extends Configuration {
   /**
    * encoded parameter values are ;-) encoded.  Use decoder to get ;-) decoded string
    */
-  public static final HiveConf.ConfVars[] ENCODED_CONF = {
+  static final HiveConf.ConfVars[] ENCODED_CONF = {
       ConfVars.HIVEQUERYSTRING
   };
 
@@ -5425,6 +5425,7 @@ public class HiveConf extends Configuration {
     return new LoopingByteArrayInputStream(confVarByteArray);
   }
 
+  @SuppressFBWarnings(value = "NP_NULL_PARAM_DEREF", justification = "Exception before reaching NP")
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
     if (modWhiteListPattern != null) {
       Matcher wlMatcher = modWhiteListPattern.matcher(name);
@@ -6245,6 +6246,7 @@ public class HiveConf extends Configuration {
 
   //Take care of conf overrides.
   //Includes values in ConfVars as well as underlying configuration properties (ie, hadoop)
+  @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "Intended exposure")
   public static final Map<String, String> overrides = new HashMap<String, String>();
 
   /**
@@ -6550,17 +6552,11 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = StringUtils.EMPTY;
-    for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
-      if ("mr".equals(s)) {
-        continue;
-      }
-      if (!result.isEmpty()) {
-        result += ", ";
-      }
-      result += s;
-    }
-    return result;
+    Set<String> engines = new HashSet<>(ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues());
+    engines.remove("mr");
+    String validNonMrEngines = String.join(", ", engines);
+    LOG.debug("Valid non-MapReduce execution engines: {}", validNonMrEngines);
+    return validNonMrEngines;
   }
 
   public static String generateMrDeprecationWarning() {

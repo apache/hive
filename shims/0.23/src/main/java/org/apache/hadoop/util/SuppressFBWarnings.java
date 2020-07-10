@@ -15,50 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
+package org.apache.hadoop.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-/**
- * Class for deserializing the different stages of replication.
- */
-public class StageMapper {
+@Retention(RetentionPolicy.CLASS)
+public @interface SuppressFBWarnings {
+    /**
+     * The set of FindBugs warnings that are to be suppressed in
+     * annotated element. The value can be a bug category, kind or pattern.
+     *
+     */
+    String[] value() default {};
 
-  @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
-  private String name;
-
-  private Status status = Status.IN_PROGRESS;
-
-  private long startTime = 0;
-
-  private long endTime = 0;
-
-  private List<Metric> metrics = new ArrayList<>();
-
-  public StageMapper() {
-
-  }
-  public String getName() {
-    return name;
-  }
-
-  public Status getStatus() {
-    return status;
-  }
-
-  public long getStartTime() {
-    return startTime;
-  }
-
-  public long getEndTime() {
-    return endTime;
-  }
-
-  public List<Metric> getMetrics() {
-    return metrics;
-  }
-
+    /**
+     * Optional documentation of the reason why the warning is suppressed
+     */
+    String justification() default "";
 }
