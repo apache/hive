@@ -4,14 +4,17 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import org.datanucleus.management.FactoryStatistics;
 
+import java.util.SortedMap;
+
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
 
 public class DBMetricUtils {
     public static void register(final FactoryStatistics dbStats) {
         MetricRegistry metrics = Metrics.getRegistry();
-        if (metrics == null) {
+        if (metrics == null || dbStats == null) {
             return;
         }
+        SortedMap<String, Gauge> gauges = metrics.getGauges();
         metrics.register(DB_NUMBER_OF_DATASTORE_READS, new Gauge<Integer>() {
             @Override
             public Integer getValue() {
