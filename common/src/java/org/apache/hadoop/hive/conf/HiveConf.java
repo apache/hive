@@ -173,7 +173,14 @@ public class HiveConf extends Configuration {
             }
             System.err.println("Cannot get jar URI: " + e.getMessage());
           }
-          result = checkConfigFile(new File(new File(jarUri).getParentFile(), nameInConf));
+          try {
+            result = checkConfigFile(new File(new File(jarUri).getParentFile(), nameInConf));
+          } catch (IllegalArgumentException e) {
+            if (l4j.isInfoEnabled()) {
+              l4j.info("Cannot get File from jar URI " + jarUri + ": ", e);
+            }
+            System.err.println("Cannot get File from jar URI " + jarUri + ": " + e.getMessage());
+          }
         }
       }
     }
