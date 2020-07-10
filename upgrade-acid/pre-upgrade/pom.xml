@@ -79,6 +79,14 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-framework</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
