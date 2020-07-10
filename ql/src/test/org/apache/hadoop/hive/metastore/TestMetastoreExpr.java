@@ -186,15 +186,16 @@ public class TestMetastoreExpr {
     // check with partition spec as well
     List<PartitionSpec> partSpec = new ArrayList<>();
     client.listPartitionsSpecByExpr(dbName, tblName,
-        SerializationUtilities.serializeExpressionToKryo(expr), null,
-        (short)-1, partSpec, null);
+        SerializationUtilities.serializeExpressionToKryo(expr),
+        null, (short)-1, partSpec, null);
     int partSpecSize = 0;
     if(!partSpec.isEmpty()) {
       partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
     }
     assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
   }
-  
+
+
   /**
    * Helper class for building an expression.
    */
