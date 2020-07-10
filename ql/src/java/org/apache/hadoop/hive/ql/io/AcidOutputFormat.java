@@ -71,7 +71,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private long visibilityTxnId = 0;
     private boolean temporary = false;
 
-    private boolean writeVersionFile;
+    private final boolean writeVersionFile;
 
     /**
      * Create the options object.
@@ -79,7 +79,11 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      */
     public Options(Configuration conf) {
       this.configuration = conf;
-      writeVersionFile = HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+      if (conf != null) {
+        writeVersionFile = HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+      } else {
+        writeVersionFile = true;
+      }
     }
 
     /**
