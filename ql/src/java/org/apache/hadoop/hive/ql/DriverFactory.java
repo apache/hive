@@ -34,7 +34,11 @@ import com.google.common.base.Strings;
 /**
  * Constructs a driver for ql clients.
  */
-public class DriverFactory {
+public final class DriverFactory {
+
+  private DriverFactory() {
+    throw new UnsupportedOperationException("DriverFactory should not be instantiated!");
+  }
 
   public static IDriver newDriver(HiveConf conf) {
     return newDriver(getNewQueryState(conf), null);
@@ -62,13 +66,13 @@ public class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    if (name.equals("overlay")) {
+    if ("overlay".equals(name)) {
       return new ReExecutionOverlayPlugin();
     }
-    if (name.equals("reoptimize")) {
+    if ("reoptimize".equals(name)) {
       return new ReOptimizePlugin();
     }
-    if(name.equals("reexecute_lost_am")) {
+    if("reexecute_lost_am".equals(name)) {
       return new ReExecuteLostAMQueryPlugin();
     }
     throw new RuntimeException(
