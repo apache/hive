@@ -471,7 +471,9 @@ public class OrcRecordUpdater implements RecordUpdater {
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
             deleteWriterOptions.callback(deleteEventIndexBuilder));
         AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(deleteEventWriter);
-        AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        }
       }
 
       // A delete/update generates a delete event for the original row.
@@ -620,11 +622,13 @@ public class OrcRecordUpdater implements RecordUpdater {
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
       AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
-      try {
-        AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
-      } catch (Exception e) {
-        LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
-            + " different bucket within this delta/base directory", e);
+      if (options.isWriteVersionFile()) {
+        try {
+          AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+        } catch (Exception e) {
+          LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
+                        + " different bucket within this delta/base directory", e);
+        }
       }
     }
   }

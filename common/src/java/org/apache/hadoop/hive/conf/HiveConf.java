@@ -2873,6 +2873,8 @@ public class HiveConf extends Configuration {
         120, "Enable dir cache for ACID tables specified in minutes."
         + "0 indicates cache is used as read-only and no additional info would be "
         + "populated. -1 means cache is disabled"),
+    HIVE_WRITE_ACID_VERSION_FILE("hive.txn.write.acid.version.file", true,
+        "Creates an _orc_acid_version file along with acid files, to store the version data"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
