@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -1301,6 +1302,16 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     versionFromMetaFile = getAcidVersionFromMetaFile(filePath, fs);
     Assert.assertEquals("Unexpected version marker in " + filePath,
         AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, false);
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
+    //delete the bucket files so now we have empty delta dirs
+    rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
+    Optional<String> deltaDir = rs.stream().filter(p -> p.contains(AcidUtils.DELTA_PREFIX)).findAny();
+    Assert.assertTrue("Delta dir should be present", deltaDir.isPresent());
+    Assert.assertFalse("Version marker should not exists",
+        fs.exists(AcidUtils.OrcAcidVersion.getVersionFilePath(new Path(deltaDir.get()).getParent())));
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
   }
 
   private static final Charset UTF8 = Charset.forName("UTF-8");
