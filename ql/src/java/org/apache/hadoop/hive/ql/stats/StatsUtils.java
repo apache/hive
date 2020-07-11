@@ -130,6 +130,8 @@ import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 public class StatsUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsUtils.class.getName());
@@ -361,7 +363,7 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
-          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
+          aggrStats = Hive.get().getAggrColStatsFor(getDefaultCatalog(conf), table.getDbName(), table.getTableName(),
               neededColsToRetrieve, partNames, false);
         }
 

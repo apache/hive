@@ -5365,6 +5365,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
+     List<String> colNames, List<String> partName, boolean checkTransactional) {
+    String writeIdList = null;
+    try {
+      if (checkTransactional) {
+        Table tbl = getTable(dbName, tblName);
+        AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
+        writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
+      }
+      return getMSC().getAggrColStatsFor(catName, dbName, tblName, colNames, partName,
+          Constants.HIVE_ENGINE, writeIdList);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+    }
+  }
+
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
      List<String> colNames, List<String> partName, boolean checkTransactional) {
     String writeIdList = null;
