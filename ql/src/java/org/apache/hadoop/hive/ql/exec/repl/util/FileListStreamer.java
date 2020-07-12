@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +34,17 @@ import java.util.concurrent.TimeUnit;
 
 public class FileListStreamer extends Thread implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(FileListStreamer.class);
+  private static BufferedWriter backingFileWriterInTest;
   private static final long TIMEOUT_IN_SECS = 5L;
-  private volatile boolean stop;
+  private volatile boolean signalTostop;
   private final LinkedBlockingQueue<String> cache;
   private Path backingFile;
   private Configuration conf;
   private BufferedWriter backingFileWriter;
   private volatile boolean valid = true;
-  private volatile boolean asyncMode = false;
   private final Object COMPLETION_LOCK = new Object();
   private volatile boolean completed = false;
+  private volatile boolean initialized = false;
 
 
 
@@ -51,53 +52,55 @@ public class FileListStreamer extends Thread implements Closeable {
     this.cache = cache;
     this.backingFile = backingFile;
     this.conf = conf;
-    init();
   }
 
-  private void init() throws IOException {
-    FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
-    backingFileWriter = new BufferedWriter(new OutputStreamWriter(fs.create(backingFile, !asyncMode)));
-    LOG.info("Initialized a file based store to save a list at: {}, ayncMode:{}", backingFile, asyncMode);
+  private void lazyInit() throws IOException {
+    if (backingFileWriterInTest == null) {
+      FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
+      backingFileWriter = new BufferedWriter(new OutputStreamWriter(fs.create(backingFile)));
+    } else {
+      backingFileWriter = backingFileWriterInTest;
+    }
+    initialized = true;
+    LOG.info("Initialized a file based store to save a list at: {}", backingFile);
   }
 
   public boolean isValid() {
     return valid;
   }
 
+  // Blocks for remaining entries to be flushed to file.
   @Override
   public void close() throws IOException {
-    if (!asyncMode) {
-      closeBackingFile();
-      return;
-    }
-    stop = true;
+    signalTostop = true;
     synchronized (COMPLETION_LOCK) {
-      while (!completed && isValid()) {
+      while (motiveToWait()) {
         try {
           COMPLETION_LOCK.wait(TimeUnit.SECONDS.toMillis(TIMEOUT_IN_SECS));
         } catch (InterruptedException e) {
+          // no-op
         }
       }
     }
     if (!isValid()) {
       throw new IOException("File list is not in a valid state:" + backingFile);
     }
-    LOG.info("Completed close for File List backed by ", backingFile);
   }
 
-  public synchronized void writeInThread(String nextEntry) throws SemanticException {
-    try {
-      backingFileWriter.write(nextEntry);
-      backingFileWriter.newLine();
-    } catch (IOException e) {
-      throw new SemanticException(e);
-    }
+  private boolean motiveToWait() {
+    return !completed && valid;
   }
+
   @Override
   public void run() {
-    asyncMode = true;
+    try {
+      lazyInit();
+    } catch (IOException e) {
+      valid = false;
+      throw new RuntimeException("Unable to initialize the file list streamer", e);
+    }
     boolean exThrown = false;
-    while (!exThrown && (!stop || !cache.isEmpty())) {
+    while (!exThrown && (!signalTostop || !cache.isEmpty())) {
       try {
         String nextEntry = cache.poll(TIMEOUT_IN_SECS, TimeUnit.SECONDS);
         if (nextEntry != null) {
@@ -133,5 +136,15 @@ public class FileListStreamer extends Thread implements Closeable {
       LOG.error("Exception while closing the file list backing file", e);
       valid = false;
     }
+  }
+
+  @VisibleForTesting
+  public static void setBackingFileWriterInTest(BufferedWriter bufferedWriter) {
+    backingFileWriterInTest = bufferedWriter;
+  }
+
+  @VisibleForTesting
+  public boolean isInitialized() {
+    return initialized;
   }
 }

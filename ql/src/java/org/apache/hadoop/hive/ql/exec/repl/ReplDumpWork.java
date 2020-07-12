@@ -227,7 +227,7 @@ public class ReplDumpWork implements Serializable {
   }
 
   public FileList getFileList(Path backingFile, int cacheSize, HiveConf conf, boolean b) throws IOException {
-    return (mockedFileList == null) ? new FileList(backingFile, cacheSize, conf, true) : mockedFileList;
+    return (mockedFileList == null) ? new FileList(backingFile, cacheSize, conf) : mockedFileList;
   }
 
   public void setMockedFileList(FileList mockedFileList) {

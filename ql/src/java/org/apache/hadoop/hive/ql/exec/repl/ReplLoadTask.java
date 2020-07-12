@@ -333,12 +333,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
-  private void addLazyDataCopyTask(TaskTracker loadTaskTracker) {
+  private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
     boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
-        Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILES_NAME_EXTERNAL);
-        work.setExternalTableDataCopyItr(new FileList(extTableBackingFile, conf));
+        Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);
+        try(FileList fileList = new FileList(extTableBackingFile, 0, conf)) {
+          work.setExternalTableDataCopyItr(fileList);
+        }
       }
       if (childTasks == null) {
         childTasks = new ArrayList<>();
