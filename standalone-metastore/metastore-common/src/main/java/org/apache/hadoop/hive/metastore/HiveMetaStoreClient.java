@@ -2425,6 +2425,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
     }
+    if( req.getCatName() == null ) {
+      req.setCatName(getDefaultCatalog(conf));
+    }
     GetPartitionNamesPsResponse res = client.get_partition_names_ps_req(req);
     List<String> partNames = FilterUtils.filterPartitionNamesIfEnabled(
             isClientFilterEnabled, filterHook, getDefaultCatalog(conf), req.getDbName(),
@@ -2474,7 +2477,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (order != null) {
       req.setOrder(order);
     }
-    req.setCatName(catName);
+    if ( catName == null ) {
+      req.setCatName(getDefaultCatalog(conf));
+    }else {
+      req.setCatName(catName);
+    }
     return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         dbName, tblName, client.get_partition_names_req(req));
   }
