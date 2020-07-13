@@ -267,7 +267,7 @@ public class Driver implements IDriver {
    **/
   @VisibleForTesting
   public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
-    driverTxnHandler.releaseLocksAndCommitOrRollback(commit, txnManager);
+    driverTxnHandler.endTransactionAndCleanup(commit, txnManager);
   }
 
   /**
@@ -402,7 +402,7 @@ public class Driver implements IDriver {
         compile(command, true, deferClose);
       } catch (CommandProcessorException cpe) {
         try {
-          driverTxnHandler.releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } catch (LockException e) {
           LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
         }
@@ -479,7 +479,7 @@ public class Driver implements IDriver {
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry (see ReExecutionRetryLockPlugin)
           try {
-            driverTxnHandler.releaseLocksAndCommitOrRollback(false);
+            driverTxnHandler.endTransactionAndCleanup(false);
           } catch (LockException e) {
             handleHiveException(e, 12);
           }
@@ -505,15 +505,15 @@ public class Driver implements IDriver {
         //since set autocommit starts an implicit txn, close it
         if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
             driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
-          driverTxnHandler.releaseLocksAndCommitOrRollback(true);
+          driverTxnHandler.endTransactionAndCleanup(true);
         }
         else if(driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
-          driverTxnHandler.releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } else if (!driverContext.getTxnManager().isTxnOpen() &&
             driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
           // repl load during migration, commits the explicit txn and start some internal txns. Call
           // releaseLocksAndCommitOrRollback to do the clean up.
-          driverTxnHandler.releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } else {
           //txn (if there is one started) is not finished
         }
@@ -555,7 +555,7 @@ public class Driver implements IDriver {
 
   private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
     try {
-      driverTxnHandler.releaseLocksAndCommitOrRollback(false);
+      driverTxnHandler.endTransactionAndCleanup(false);
     } catch (LockException e) {
       LOG.error("rollback() FAILED: " + cpe); //make sure not to loose
       handleHiveException(e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
