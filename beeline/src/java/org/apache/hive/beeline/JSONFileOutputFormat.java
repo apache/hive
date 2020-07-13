@@ -22,13 +22,19 @@
  */
 package org.apache.hive.beeline;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 /**
- * OutputFormat for hive JSON file format
- * Removes "{ "resultset": [...] }" wrapping and prints one object per line
+ * OutputFormat for hive JSON file format.
+ * Removes "{ "resultset": [...] }" wrapping and prints one object per line.
+ * This output format matches the same format as a Hive table created with JSONFILE file format:
+ * CREATE TABLE ... STORED AS JSONFILE;
+ * e.g.
+ * {"name":"Ritchie Tiger","age":40,"is_employed":true,"college":"RIT"}
+ * {"name":"Bobby Tables","age":8,"is_employed":false,"college":null}
+ * ...
+ * 
+ * Note the lack of "," at the end of lines.
  * 
  */ 
 public class JSONFileOutputFormat extends JSONOutputFormat {
@@ -47,12 +53,6 @@ public class JSONFileOutputFormat extends JSONOutputFormat {
 
   @Override
   void printRow(Rows rows, Rows.Row header, Rows.Row row) {
-    try {
-      this.generator.writeStartObject();
-      super.printRow(rows, header, row);
-      this.generator.writeEndObject();
-    } catch (IOException e) {
-      this.beeLine.handleException(e);
-    }
+    super.printRow(rows, header, row);
   }
 }

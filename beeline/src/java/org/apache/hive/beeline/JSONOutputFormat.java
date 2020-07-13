@@ -33,7 +33,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * OutputFormat for standard JSON format.
- *
+ * 
  */ 
 public class JSONOutputFormat extends AbstractOutputFormat {
   protected final BeeLine beeLine;
@@ -46,9 +46,9 @@ public class JSONOutputFormat extends AbstractOutputFormat {
   JSONOutputFormat(BeeLine beeLine){ 
     this.beeLine = beeLine;
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
-    try{
+    try {
       this.generator = new JsonFactory().createGenerator(buf, JsonEncoding.UTF8);
-    }catch(IOException e){
+    } catch(IOException e) {
       beeLine.handleException(e);
     }
   }
@@ -58,7 +58,7 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     try {
       generator.writeStartObject();
       generator.writeArrayFieldStart("resultset");
-    } catch (IOException e) {
+    } catch(IOException e) {
       beeLine.handleException(e);
     }
   }
@@ -68,9 +68,10 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     try {
       generator.writeEndArray();
       generator.writeEndObject();
-      beeLine.output(generator.getOutputTarget().toString());
       generator.flush();
-    } catch (IOException e) {
+      String out = ((ByteArrayOutputStream) generator.getOutputTarget()).toString("UTF-8");
+      beeLine.output(out);
+    } catch(IOException e) {
       beeLine.handleException(e);
     }
   }
@@ -79,10 +80,11 @@ public class JSONOutputFormat extends AbstractOutputFormat {
   void printRow(Rows rows, Rows.Row header, Rows.Row row) {
     String[] head = header.values;
     String[] vals = row.values;
-    try{
+    try {
       for (int i = 0; (i < head.length) && (i < vals.length); i++) {
+        generator.writeStartObject();
         generator.writeFieldName(head[i]);
-        switch(rows.rsMeta.getColumnType(i)) {
+        switch(rows.rsMeta.getColumnType(i+1)) {
           case Types.TINYINT:
           case Types.SMALLINT:
           case Types.INTEGER:
@@ -92,21 +94,23 @@ public class JSONOutputFormat extends AbstractOutputFormat {
           case Types.DOUBLE:
           case Types.DECIMAL:
           case Types.NUMERIC:
+          case Types.ROWID:
             generator.writeNumber(vals[i]);
             break;
           case Types.NULL:
             generator.writeNull();
             break;
           case Types.BOOLEAN:
-            generator.writeBoolean(vals[i].equalsIgnoreCase("true"));
+            generator.writeBoolean(Boolean.parseBoolean(vals[i]));
             break;
           default:
             generator.writeString(vals[i]);
         }
+        generator.writeEndObject();
       }
-    } catch (IOException e){
+    } catch (IOException e) {
       beeLine.handleException(e);
-    } catch (SQLException e){
+    } catch (SQLException e) {
       beeLine.handleSQLException(e);
     }
   }
