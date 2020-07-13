@@ -29,7 +29,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import static org.mockito.Mockito.mock;
 
-public class TestJSONOutputFormat {
+public class TestJSONFileOutputFormat {
 
   public class BeelineMock extends BeeLine {
 
@@ -62,8 +62,8 @@ public class TestJSONOutputFormat {
   public final void testPrint() throws SQLException {
     setupMockData();
     BufferedRows bfRows = new BufferedRows(mockBeeline, mockResultSet);
-    JSONOutputFormat instance = new JSONOutputFormat(mockBeeline);
-    String expResult = "{resultSet[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null},{\"String\":\"aaa\",\"Int\":2,\"Decimal\":2.718,\"Bool\":true,\"Null\":null}]}";
+    JSONOutputFormat instance = new JSONFileOutputFormat(mockBeeline);
+    String expResult = "{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null}\n{\"String\":\"aaa\",\"Int\":2,\"Decimal\":2.718,\"Bool\":true,\"Null\":null}";
     instance.print(bfRows);
     String outPutResults = mockBeeline.getOutput();
     assertEquals(expResult, outPutResults);
