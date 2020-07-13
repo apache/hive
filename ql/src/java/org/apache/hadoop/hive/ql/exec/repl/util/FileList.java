@@ -61,6 +61,8 @@ public class FileList implements AutoCloseable, Iterator<String> {
       this.cache = new LinkedBlockingQueue<>(cacheSize);
       fileListStreamer = new FileListStreamer(cache, backingFile, conf);
       LOG.debug("File list backed by {} can be used for write operation.", backingFile);
+    } else {
+      thresholdHit = true;
     }
     this.conf = conf;
     thresholdPoint = getThreshold(cacheSize);
@@ -110,6 +112,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
     nextElement = null;
     return thresholdHit ? retVal : cache.poll();
   }
+
   private synchronized void initStoreToFile(int cacheSize) {
     if (!thresholdHit) {
       fileListStreamer.setName(getNextID());
@@ -138,7 +141,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
 
   @Override
   public void close() throws IOException {
-    if (thresholdHit) {
+    if (thresholdHit && fileListStreamer != null) {
       fileListStreamer.close();
     }
     if (backingFileReader != null) {

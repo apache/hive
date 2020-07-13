@@ -200,6 +200,7 @@ public class ReplLoadWork implements Serializable {
       tracker.addTask(task);
       LOG.debug("Added task for {}", dirCopyWork);
     }
+    LOG.info("Added total {} tasks for external table locations copy.", tasks.size());
     return tasks;
   }
 
