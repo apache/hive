@@ -25,7 +25,6 @@ import java.util.Properties;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -69,14 +68,11 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
     return new RecordWriter() {
       @Override
       public void write(Writable r) throws IOException {
-        if (r instanceof Text) {
-          Text tr = (Text) r;
-          outStream.write(tr.getBytes(), 0, tr.getLength());
-        } else {
-          // DynamicSerDe always writes out BytesWritable
-          BytesWritable bw = (BytesWritable) r;
-          outStream.write(bw.get(), 0, bw.getSize());
+        if (!(r instanceof Text)) {
+          throw new IOException("Expected Text instance, found byte array instead");
         }
+        Text tr = (Text) r;
+        outStream.write(tr.getBytes(), 0, tr.getLength());
       }
 
       @Override
