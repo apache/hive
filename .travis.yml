@@ -31,4 +31,6 @@ env:
 
 install: skip
 
-script: mvn clean install -DskipTests -q -Pitests
+before_script: mvn --version
+
+script: travis_wait 30 mvn clean install -DskipTests -q -Pitests
