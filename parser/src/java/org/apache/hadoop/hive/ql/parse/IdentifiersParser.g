@@ -606,8 +606,8 @@ precedenceSimilarExpressionAtom[CommonTree t]
 
 precedenceSimilarExpressionQuantifierPredicate[CommonTree t]
     :
-    dropPartitionOperator quantifierType subQueryExpression
-    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType dropPartitionOperator ) subQueryExpression {$t})
+    partitionSelectorOperator quantifierType subQueryExpression
+    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType partitionSelectorOperator ) subQueryExpression {$t})
     ;
 
 quantifierType
@@ -718,20 +718,19 @@ partitionVal
     identifier (EQUAL constant)? -> ^(TOK_PARTVAL identifier constant?)
     ;
 
-dropPartitionSpec
+partitionSelectorSpec
     :
-    KW_PARTITION
-     LPAREN dropPartitionVal (COMMA  dropPartitionVal )* RPAREN -> ^(TOK_PARTSPEC dropPartitionVal +)
+    LPAREN partitionSelectorVal (COMMA  partitionSelectorVal )* RPAREN -> ^(TOK_PARTSPEC partitionSelectorVal +)
     ;
 
-dropPartitionVal
+partitionSelectorVal
     :
-    identifier dropPartitionOperator constant -> ^(TOK_PARTVAL identifier dropPartitionOperator constant)
+    identifier partitionSelectorOperator constant -> ^(TOK_PARTVAL identifier partitionSelectorOperator constant)
     ;
 
-dropPartitionOperator
+partitionSelectorOperator
     :
-    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
+    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN | KW_LIKE
     ;
 
 sysFuncNames
