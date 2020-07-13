@@ -398,6 +398,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       case GROUPING:
         return new GroupingFunctionResolver(helper, op, inputs);
       case ARRAY_VALUE_CONSTRUCTOR:
+      case ARRAY_QUERY_CONSTRUCTOR:
         return new ArrayFunctionResolver(helper, op, inputs);
       case ROW:
         return new StructFunctionResolver(helper, op, inputs);
