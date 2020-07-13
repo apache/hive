@@ -245,7 +245,8 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     createTable4PartColsParts(getClient());
     TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
     getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
-        e.strCol("yyyy").val("2017").pred("=", 2).build()), null, (short)-1, null);
+        e.strCol("yyyy").val("2017").pred("=", 2).build()), null,
+        (short)-1, null);
   }
 
   @Test
