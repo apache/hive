@@ -512,16 +512,7 @@ public class MetaStoreServerUtils {
     if (p.size() > s.size()) {
       return false;
     }
-    Iterator itP = p.iterator();
-    Iterator itS = s.iterator();
-    while (itP.hasNext()) {
-      Object oP = itP.next();
-      Object oS = itS.next();
-      if (!Objects.equals(oP, oS)) {
-        return false;
-      }
-    }
-    return true;
+    return ListUtils.isEqualList(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
