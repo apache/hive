@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.llap.tezplugins.helpers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;

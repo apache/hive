@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -69,8 +69,8 @@ public class AggregateStatsCache {
   private final double maxVariance;
   // Used to determine if cleaner thread is already running
   private boolean isCleaning = false;
-  private final AtomicLong cacheHits = new AtomicLong(0);
-  private final AtomicLong cacheMisses = new AtomicLong(0);
+  private final LongAdder cacheHits = new LongAdder();
+  private final LongAdder cacheMisses = new LongAdder();
   // To track cleaner metrics
   int numRemovedTTL = 0, numRemovedLRU = 0;
 
@@ -182,12 +182,12 @@ public class AggregateStatsCache {
       if (match != null) {
         // Ok to not lock the list for this and use a volatile lastAccessTime instead
         candidateList.updateLastAccessTime();
-        cacheHits.incrementAndGet();
+        cacheHits.increment();
         LOG.info("Returning aggregate stats from the cache; total hits: " + cacheHits.longValue()
             + ", total misses: " + cacheMisses.longValue() + ", hit ratio: " + getHitRatio());
       }
       else {
-        cacheMisses.incrementAndGet();
+        cacheMisses.increment();
       }
     } catch (InterruptedException e) {
       LOG.debug("Interrupted Exception ignored ",e);

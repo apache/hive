@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -64,7 +64,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   private final KafkaProducer<byte[], byte[]> producer;
   private final Callback callback;
   private final AtomicReference<Exception> sendExceptionRef = new AtomicReference<>();
-  private final AtomicLong lostRecords = new AtomicLong(0L);
+  private final LongAdder lostRecords = new LongAdder();
   private long sentRecords = 0L;
 
   /**
@@ -81,7 +81,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
 
     this.callback = (metadata, exception) -> {
       if (exception != null) {
-        lostRecords.getAndIncrement();
+        lostRecords.increment();
         LOG.error(ACTION_ABORT, getWriterId(), topic, writeSemantic, exception.getMessage());
         sendExceptionRef.compareAndSet(null, exception);
       }
@@ -132,7 +132,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
         writerId, writeSemantic,
         topic,
         sentRecords,
-        lostRecords.get());
+        lostRecords.longValue());
     checkExceptions();
   }
 
@@ -141,7 +141,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   }
 
   @VisibleForTesting long getLostRecords() {
-    return lostRecords.get();
+    return lostRecords.longValue();
   }
 
   @VisibleForTesting long getSentRecords() {

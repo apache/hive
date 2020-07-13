@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.ObjectName;
@@ -106,7 +106,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final LlapRegistryService registry;
   private final LlapWebServices webServices;
   private final LlapLoadGeneratorService llapLoadGeneratorService;
-  private final AtomicLong numSubmissions = new AtomicLong(0);
+  private final LongAdder numSubmissions = new LongAdder();
   private final JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
   private final LlapDaemonExecutorMetrics metrics;
@@ -612,7 +612,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   @Override
   public SubmitWorkResponseProto submitWork(
       SubmitWorkRequestProto request) throws IOException {
-    numSubmissions.incrementAndGet();
+    numSubmissions.increment();
     return containerRunner.submitWork(request);
   }
 
@@ -655,7 +655,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   @VisibleForTesting
   public long getNumSubmissions() {
-    return numSubmissions.get();
+    return numSubmissions.longValue();
   }
 
   public InetSocketAddress getListenerAddress() {

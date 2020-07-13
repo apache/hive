@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 
 /**
@@ -47,17 +47,17 @@ public final class SparkMetricUtils {
 
   public static void updateSparkBytesWrittenMetrics(Logger log, FileSystem fs, Path[]
           commitPaths) {
-    AtomicLong bytesWritten = new AtomicLong();
+    LongAdder bytesWritten = new LongAdder();
     Arrays.stream(commitPaths).parallel().forEach(path -> {
       try {
-        bytesWritten.addAndGet(fs.getFileStatus(path).getLen());
+        bytesWritten.add(fs.getFileStatus(path).getLen());
       } catch (IOException e) {
         log.debug("Unable to collect stats for file: " + path + " output metrics may be inaccurate",
                 e);
       }
     });
-    if (bytesWritten.get() > 0) {
-      TaskContext.get().taskMetrics().outputMetrics().setBytesWritten(bytesWritten.get());
+    if (bytesWritten.longValue() > 0) {
+      TaskContext.get().taskMetrics().outputMetrics().setBytesWritten(bytesWritten.longValue());
     }
   }
 }

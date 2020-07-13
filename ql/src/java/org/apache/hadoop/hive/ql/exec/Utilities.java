@@ -69,7 +69,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
@@ -2610,9 +2610,9 @@ public final class Utilities {
     Preconditions.checkNotNull(executor);
 
     List<Future<?>> futures = new ArrayList<Future<?>>(pathNeedProcess.size());
-    final AtomicLong totalLength = new AtomicLong(0L);
-    final AtomicLong totalFileCount = new AtomicLong(0L);
-    final AtomicLong totalDirectoryCount = new AtomicLong(0L);
+    final LongAdder totalLength = new LongAdder();
+    final LongAdder totalFileCount = new LongAdder();
+    final LongAdder totalDirectoryCount = new LongAdder();
 
     HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
       @Override
@@ -2704,9 +2704,9 @@ public final class Utilities {
             final long csFileCount = cs.getFileCount();
             final long csDirectoryCount = cs.getDirectoryCount();
 
-            totalLength.addAndGet(csLength);
-            totalFileCount.addAndGet(csFileCount);
-            totalDirectoryCount.addAndGet(csDirectoryCount);
+            totalLength.add(csLength);
+            totalFileCount.add(csFileCount);
+            totalDirectoryCount.add(csDirectoryCount);
 
             ctx.addCS(p.toString(), cs);
 
@@ -2735,9 +2735,9 @@ public final class Utilities {
 
       HiveInterruptUtils.checkInterrupted();
 
-      summary[0] += totalLength.get();
-      summary[1] += totalFileCount.get();
-      summary[2] += totalDirectoryCount.get();
+      summary[0] += totalLength.longValue();
+      summary[1] += totalFileCount.longValue();
+      summary[2] += totalDirectoryCount.longValue();
     } finally {
       executor.shutdownNow();
       HiveInterruptUtils.remove(interrup);

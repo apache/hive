@@ -36,7 +36,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -109,7 +109,7 @@ public class SharedCache {
   private Map<ByteArrayWrapper, StorageDescriptorWrapper> sdCache = new HashMap<>();
   private static MessageDigest md;
   private static final Logger LOG = LoggerFactory.getLogger(SharedCache.class.getName());
-  private AtomicLong cacheUpdateCount = new AtomicLong(0);
+  private LongAdder cacheUpdateCount = new LongAdder();
   private long maxCacheSizeInBytes = -1;
   private HashMap<Class<?>, ObjectEstimator> sizeEstimators = null;
   private Set<String> tableToUpdateSize = new ConcurrentHashSet<>();
@@ -2552,10 +2552,10 @@ public class SharedCache {
   }
 
   public long getUpdateCount() {
-    return cacheUpdateCount.get();
+    return cacheUpdateCount.longValue();
   }
 
   public void incrementUpdateCount() {
-    cacheUpdateCount.incrementAndGet();
+    cacheUpdateCount.increment();
   }
 }
