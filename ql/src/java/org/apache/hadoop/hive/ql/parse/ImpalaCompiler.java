@@ -82,8 +82,7 @@ public class ImpalaCompiler extends TaskCompiler {
                     pCtx.getFetchTask(), requestedFetchSize);
             } else {
                 // This is the common path for a planned query
-                TExecRequest execRequest = getExecRequest(pCtx);
-                work = ImpalaWork.createPlannedWork(execRequest, pCtx.getQueryState().getQueryString(),
+                work = ImpalaWork.createPlannedWork(getCompiledPlan(pCtx), pCtx.getQueryState().getQueryString(),
                     pCtx.getFetchTask(), requestedFetchSize);
             }
         } else {
@@ -166,15 +165,13 @@ public class ImpalaCompiler extends TaskCompiler {
     protected void setInputFormat(Task<?> rootTask) {
     }
 
-    private TExecRequest getExecRequest(ParseContext pCtx) {
-        Collection<Operator<?>> tableScanOps =
-            Lists.newArrayList(pCtx.getTopOps().values());
+    private ImpalaCompiledPlan getCompiledPlan(ParseContext pCtx) {
+        Collection<Operator<?>> tableScanOps = Lists.newArrayList(pCtx.getTopOps().values());
         Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
         if (fsOps.isEmpty()) {
             throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
         }
-        ImpalaCompiledPlan compiledPlan = fsOps.iterator().next().getCompiledPlan();
-        return compiledPlan.getExecRequest();
+        return fsOps.iterator().next().getCompiledPlan();
     }
 
     @Override

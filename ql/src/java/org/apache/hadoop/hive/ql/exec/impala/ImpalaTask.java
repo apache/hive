@@ -55,12 +55,12 @@ public class ImpalaTask extends Task<ImpalaWork> {
             ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
             TOperationHandle opHandle;
             switch (work.getType()) {
-            case PLANNED_EXEC_REQUEST:
+            case COMPILED_PLAN:
                 Preconditions.checkState(isPlannedMode);
                 isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
-                opHandle = session.executePlan(work.getQuery(), work.getExecRequest());
+                opHandle = session.executePlan(work.getQuery(), work.getCompiledPlan());
                 break;
-            case PLANNED_QUERY:
+            case COMPILED_QUERY:
                 Preconditions.checkState(isPlannedMode);
                 Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE);
                 isStreaming = true;

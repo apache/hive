@@ -35,6 +35,7 @@ import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.util.EventSequence;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,11 +57,13 @@ public class ImpalaTableLoader {
   private Map<org.apache.hadoop.hive.metastore.api.Table, HdfsTable> tableMap;
   private Map<String, org.apache.hadoop.hive.metastore.api.Database> dbMap;
   private boolean loaded = false;
+  private EventSequence timeline;
 
-  public ImpalaTableLoader() {
+  public ImpalaTableLoader(EventSequence timeline) {
     this.tablePartitionMap = new HashMap<>();
     this.tableMap = new HashMap<>();
     this.dbMap = new HashMap<>();
+    this.timeline = timeline;
   }
 
   /**
@@ -69,6 +72,7 @@ public class ImpalaTableLoader {
    */
   public void loadTablesAndPartitions(Hive db, ImpalaPlanRel rootRelNode)
       throws ImpalaException, HiveException, MetaException {
+    timeline.markEvent("Metadata load started");
     List<ImpalaHdfsScanRel> tableScans = Lists.newArrayList();
     ImpalaRelUtil.gatherTableScans(rootRelNode, tableScans);
 
@@ -96,6 +100,7 @@ public class ImpalaTableLoader {
       }
     }
     loaded = true;
+    timeline.markEvent("Metadata load finished. loaded-tables=" + tableMap.entrySet().size());
   }
 
   public HdfsTable loadHdfsTable(Hive db, org.apache.hadoop.hive.metastore.api.Table msTbl) throws HiveException {

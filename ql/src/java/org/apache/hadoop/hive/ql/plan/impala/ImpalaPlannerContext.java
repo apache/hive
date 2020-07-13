@@ -42,9 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ImpalaPlannerContext extends PlannerContext {
-
   private final ImpalaQueryContext queryContext;
-  private TExecRequest execRequest;
   private List<Expr> resultExprs;
   private ImpalaTableLoader tableLoader;
   private FeTable targetTable;
@@ -53,7 +51,7 @@ public class ImpalaPlannerContext extends PlannerContext {
   public ImpalaPlannerContext(ImpalaQueryContext queryContext, EventSequence timeline) {
     super(queryContext.getTQueryCtx(), timeline);
     this.queryContext = queryContext;
-    this.tableLoader = new ImpalaTableLoader();
+    this.tableLoader = new ImpalaTableLoader(timeline);
   }
 
   public void setTargetTable(FeTable targetTable) {
@@ -74,7 +72,9 @@ public class ImpalaPlannerContext extends PlannerContext {
   }
 
   @Override
-  public Analyzer getRootAnalyzer() {return queryContext.getAnalyzer();}
+  public Analyzer getRootAnalyzer() {
+    return queryContext.getAnalyzer();
+  }
 
   @Override
   public boolean hasTableSink() {
@@ -83,14 +83,6 @@ public class ImpalaPlannerContext extends PlannerContext {
 
   public List<TNetworkAddress> getHostLocations() {
     return queryContext.getHostLocations();
-  }
-
-  public void setExecRequest(TExecRequest execRequest) {
-    this.execRequest = execRequest;
-  }
-
-  public TExecRequest getExecRequest() {
-    return execRequest;
   }
 
   public void setResultExprs(List<Expr> resultExprs) {

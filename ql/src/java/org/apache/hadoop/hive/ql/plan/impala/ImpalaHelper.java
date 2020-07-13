@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -54,6 +55,8 @@ import org.apache.impala.thrift.TQueryOptions;
 import org.apache.impala.thrift.TReservedWordsVersion;
 import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.apache.impala.thrift.TStmtType;
+import org.apache.impala.util.EventSequence;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,12 +64,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-
 public class ImpalaHelper {
 
   private final ImpalaQueryContext queryContext;
 
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaHelper.class);
+  private final EventSequence timeline = new EventSequence("Frontend Timeline");
 
   static {
     // ensure that the instance is created with the "true" parameter.
@@ -85,6 +88,10 @@ public class ImpalaHelper {
 
   public ImpalaQueryContext getQueryContext() {
     return queryContext;
+  }
+
+  public EventSequence getTimeline() {
+    return timeline;
   }
 
   public HepProgram getHepProgram(Hive db) {
@@ -129,14 +136,16 @@ public class ImpalaHelper {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, resultPath, db, qb,
-          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType));
+          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, impalaRelNode);
+
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
+      timeline.markEvent("Single node plan created");
       TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);
       LOG.debug("Impala request is {}", execRequest);
-      return new ImpalaCompiledPlan(execRequest);
+      return new ImpalaCompiledPlan(execRequest, timeline);
     } catch (ImpalaException | MetaException e) {
       throw new HiveException(e);
     }

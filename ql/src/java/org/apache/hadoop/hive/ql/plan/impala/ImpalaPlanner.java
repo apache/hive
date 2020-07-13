@@ -19,17 +19,11 @@ package org.apache.hadoop.hive.ql.plan.impala;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.QB;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.Column;
@@ -39,7 +33,6 @@ import org.apache.impala.common.AnalysisException;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.Pair;
 import org.apache.impala.planner.DataPartition;
-import org.apache.impala.common.Pair;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.ParallelPlanner;
 import org.apache.impala.planner.PlanFragment;
@@ -49,7 +42,6 @@ import org.apache.impala.planner.TableSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
-import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TColumn;
 import org.apache.impala.thrift.TExecRequest;
@@ -65,6 +57,8 @@ import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.util.EventSequence;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +71,6 @@ import java.util.Map;
  * that can be sent to backend for execution.
  */
 public class ImpalaPlanner {
-
   public final Hive db_;
   private final QB qb_;
   private TStmtType stmtType_;
@@ -90,20 +83,62 @@ public class ImpalaPlanner {
   private final Path resultPath;
 
   public ImpalaPlanner(ImpalaQueryContext queryContext, Path resultPath, Hive db, QB qb,
-      TStmtType stmtType, TStmtType resultStmtType) throws HiveException {
-
+      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline) throws HiveException {
     db_ = db;
     qb_ = qb;
     stmtType_ = stmtType;
     resultStmtType_ = resultStmtType;
-
     this.resultPath = resultPath;
-    EventSequence timeline = new EventSequence("Starting conversion of Hive plan to Impala plan.");
     ctx_ = new ImpalaPlannerContext(queryContext, timeline);
+  }
+
+  private void markEvent(String event) {
+    ctx_.getTimeline().markEvent(event);
   }
 
   public ImpalaPlannerContext getPlannerContext() {
       return ctx_;
+  }
+
+
+  List<PlanFragment> createPlans(PlanNode planNodeRoot) throws HiveException {
+    try {
+      // Create the values transfer graph in the Analyzer. Note that FENG plans
+      // don't register equijoin predicates in the Analyzer's GlobalState since
+      // Hive/Calcite should have already done the predicate inferencing analysis.
+      // Hence, the GlobalState's registeredValueTransfers will be empty. It is
+      // still necessary to instantiate the graph because otherwise
+      // RuntimeFilterGenerator tries to de-reference it and encounters NPE.
+      // TODO: CDPD-9689 tracks if we are missing any runtime filters compared
+      // to Impala
+      ctx_.getRootAnalyzer().computeValueTransferGraph();
+      Planner.checkForSmallQueryOptimization(planNodeRoot, ctx_);
+
+      // Although the Hive CBO plan creates the relative order among different
+      // joins, currently it does not swap left and right inputs if the right
+      // input has higher estimated cardinality. Do this through Impala's method
+      // since we are using Impala's cardinality estimates in the physical planning.
+      Planner.invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
+      Planner.checkParallelPlanEligibility(ctx_);
+      SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
+
+      List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
+      PlanFragment planFragmentRoot = fragments.get(0);
+      List<PlanFragment> rootFragments;
+      if (Planner.useParallelPlan(ctx_)) {
+        ParallelPlanner parallelPlanner = new ParallelPlanner(ctx_);
+        // The rootFragmentList contains the 'root' fragments of each of the parallel plans
+        rootFragments = parallelPlanner.createPlans(planFragmentRoot);
+        ctx_.getTimeline().markEvent("Parallel plans created");
+      } else {
+        rootFragments = new ArrayList(Arrays.asList(planFragmentRoot));
+      }
+      return rootFragments;
+
+    } catch (ImpalaException e) {
+      // Catch and wrap Impala exception types
+      throw new HiveException("Failed creating plan", e);
+    }
   }
 
   /**
@@ -112,54 +147,16 @@ public class ImpalaPlanner {
    * @return TExecRequest thrift structure for backend to execute
    * @throws ImpalaException
    */
-  public TExecRequest createExecRequest(PlanNode planNodeRoot, boolean isExplain) throws ImpalaException, HiveException {
-    // Create the values transfer graph in the Analyzer. Note that FENG plans
-    // don't register equijoin predicates in the Analyzer's GlobalState since
-    // Hive/Calcite should have already done the predicate inferencing analysis.
-    // Hence, the GlobalState's registeredValueTransfers will be empty. It is
-    // still necessary to instantiate the graph because otherwise
-    // RuntimeFilterGenerator tries to de-reference it and encounters NPE.
-    // TODO: CDPD-9689 tracks if we are missing any runtime filters compared
-    // to Impala
-
-    ctx_.getRootAnalyzer().computeValueTransferGraph();
-
-    Planner.checkForSmallQueryOptimization(planNodeRoot, ctx_);
-
-    // Although the Hive CBO plan creates the relative order among different
-    // joins, currently it does not swap left and right inputs if the right
-    // input has higher estimated cardinality. Do this through Impala's method
-    // since we are using Impala's cardinality estimates in the physical planning.
-    Planner.invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
-
-    Planner.checkParallelPlanEligibility(ctx_);
-
-    SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
-
-    List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
-    Preconditions.checkArgument(fragments.size() > 0);
+  public TExecRequest createExecRequest(PlanNode planNodeRoot, boolean isExplain) throws HiveException {
+    List<PlanFragment> fragments = createPlans(planNodeRoot);
     PlanFragment planFragmentRoot = fragments.get(0);
-    List<PlanFragment> rootFragmentList = new ArrayList<>();
-
-    if (Planner.useParallelPlan(ctx_)) {
-      ParallelPlanner parallelPlanner = new ParallelPlanner(ctx_);
-      List<PlanFragment> parallelPlans = parallelPlanner.createPlans(planFragmentRoot);
-      ctx_.getTimeline().markEvent("Parallel plans created");
-
-      // The rootFragmentList contains the 'root' fragments of each of the parallel plans
-      rootFragmentList.addAll(parallelPlans);
-    } else {
-      rootFragmentList.add(planFragmentRoot);
-    }
 
     TQueryExecRequest queryExecRequest = new TQueryExecRequest();
     TExecRequest result = createExecRequest(ctx_.getQueryCtx(), planFragmentRoot,
         queryExecRequest);
     queryExecRequest.setHost_list(ctx_.getHostLocations());
 
-    boolean isQuery = getResultStmtType() == TStmtType.QUERY;
-
-    if (resultStmtType_ == TStmtType.DML) {
+    if (getResultStmtType() == TStmtType.DML) {
       boolean isOverwrite_ = ctx_.getTargetTable() != null &&
           !getQB().getParseInfo().isInsertIntoTable(
               String.format("%s.%s", ctx_.getTargetTable().getTableName().getDb(),
@@ -169,19 +166,15 @@ public class ImpalaPlanner {
     }
 
     // compute resource requirements of the final plan
-    Planner.computeResourceReqs(rootFragmentList, ctx_.getQueryCtx(), queryExecRequest,
+    boolean isQuery = getResultStmtType() == TStmtType.QUERY;
+    Planner.computeResourceReqs(fragments, ctx_.getQueryCtx(), queryExecRequest,
         ctx_, isQuery);
 
-    // create the plan's exec-info
-    for (PlanFragment planRoot : rootFragmentList) {
-      TPlanExecInfo tPlanExecInfo = Frontend.createPlanExecInfo(planRoot, ctx_.getQueryCtx());
-
-      queryExecRequest.addToPlan_exec_info(tPlanExecInfo);
-    }
-
-    // assign fragment idx
+    // create the plan's exec-info and assign fragment idx
     int idx = 0;
-    for (TPlanExecInfo tPlanExecInfo : queryExecRequest.getPlan_exec_info()) {
+    for (PlanFragment planRoot : fragments) {
+      TPlanExecInfo tPlanExecInfo = Frontend.createPlanExecInfo(planRoot, ctx_.getQueryCtx());
+      queryExecRequest.addToPlan_exec_info(tPlanExecInfo);
       for (TPlanFragment fragment : tPlanExecInfo.fragments) {
         fragment.setIdx(idx++);
       }
@@ -189,36 +182,42 @@ public class ImpalaPlanner {
 
     // create EXPLAIN output after setting everything else
     queryExecRequest.setQuery_ctx(ctx_.getQueryCtx()); // needed by getExplainString()
-    List<PlanFragment> allFragments = rootFragmentList.get(0).getNodesPreOrder();
 
+    List<PlanFragment> allFragments = planFragmentRoot.getNodesPreOrder();
     // to mimic Impala's behavior, use EXTENDED mode explain except for EXPLAIN statements
     TExplainLevel explainLevel = isExplain ? ctx_.getQueryOptions().getExplain_level() :
         TExplainLevel.EXTENDED;
-    String explainStr = getExplainString(allFragments, explainLevel);
-    queryExecRequest.setQuery_plan(explainStr);
+    queryExecRequest.setQuery_plan(getExplainString(allFragments, explainLevel));
 
-    ctx_.getQueryCtx().setDesc_tbl_serialized(ctx_.getRootAnalyzer().getDescTbl().toSerializedThrift());
 
+    try {
+      ctx_.getQueryCtx().setDesc_tbl_serialized(ctx_.getRootAnalyzer().getDescTbl().toSerializedThrift());
+    } catch (ImpalaException e) {
+      throw new HiveException(e);
+    }
+
+    markEvent("Execution request created");
+    result.setTimeline(ctx_.getTimeline().toThrift());
     return result;
   }
 
   // TODO: CDPD-8176: Refactor and share Impala's getExplainString()
-  private String getExplainString(List<PlanFragment> fragments,
-      TExplainLevel explainLevel) {
-    StringBuilder str = new StringBuilder();
+  private String getExplainString(List<PlanFragment> fragments, TExplainLevel explainLevel) {
     if (explainLevel.ordinal() < TExplainLevel.VERBOSE.ordinal()) {
       // Print the non-fragmented parallel plan.
-      str.append(fragments.get(0).getExplainString(ctx_.getQueryOptions(), explainLevel));
-    } else {
-      // Print the fragmented parallel plan.
-      for (int i = 0; i < fragments.size(); ++i) {
-        PlanFragment fragment = fragments.get(i);
-        str.append(fragment.getExplainString(ctx_.getQueryOptions(), explainLevel));
-        if (i < fragments.size() - 1)
-          str.append("\n");
+      return fragments.get(0).getExplainString(ctx_.getQueryOptions(), explainLevel);
+    }
+
+    StringBuffer sb = new StringBuffer();
+    // Print the fragmented parallel plan.
+    for (int i = 0; i < fragments.size(); ++i) {
+      PlanFragment fragment = fragments.get(i);
+      sb.append(fragment.getExplainString(ctx_.getQueryOptions(), explainLevel));
+      if (i < fragments.size() - 1) {
+        sb.append("\n");
       }
     }
-    return str.toString();
+    return sb.toString();
   }
 
   void initTargetTable() throws HiveException, AnalysisException {
@@ -232,7 +231,6 @@ public class ImpalaPlanner {
       }
 
       HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, tab.getTTable());
-
       ctx_.setTargetTable(hdfsTable);
     }
   }
@@ -246,7 +244,6 @@ public class ImpalaPlanner {
    * @throws ImpalaException
    */
   private List<PlanFragment> createPlanFragments(PlanNode planNodeRoot) throws ImpalaException, HiveException {
-
     DistributedPlanner distributedPlanner = new DistributedPlanner(ctx_);
     List<PlanFragment> fragments;
 
@@ -259,7 +256,7 @@ public class ImpalaPlanner {
       // create distributed plan
       // for queries, isPartitioned is false; in the future, make this conditional
       // on whether it is an insert/CTAS etc.
-      boolean isPartitioned = false;
+      final boolean isPartitioned = false;
       distributedPlanner.createPlanFragments(planNodeRoot, isPartitioned, fragments);
     }
 
@@ -268,7 +265,7 @@ public class ImpalaPlanner {
     // Create runtime filters.
     if (ctx_.getQueryOptions().getRuntime_filter_mode() != TRuntimeFilterMode.OFF) {
       RuntimeFilterGenerator.generateRuntimeFilters(ctx_, rootFragment.getPlanRoot());
-      ctx_.getTimeline().markEvent("Runtime filters computed");
+      markEvent("Runtime filters computed");
     }
 
     rootFragment.verifyTree();
@@ -336,8 +333,7 @@ public class ImpalaPlanner {
 
 
     Collections.reverse(fragments);
-    ctx_.getTimeline().markEvent("Distributed plan created");
-
+    markEvent("Distributed plan created");
     return fragments;
   }
 

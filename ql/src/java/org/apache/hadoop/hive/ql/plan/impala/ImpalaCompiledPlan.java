@@ -19,16 +19,29 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import org.apache.impala.thrift.TExecRequest;
+import org.apache.impala.util.EventSequence;
 
 public class ImpalaCompiledPlan {
 
   private final TExecRequest execRequest;
+  private final EventSequence timeline;
 
-  public ImpalaCompiledPlan(TExecRequest execRequest) {
+  public ImpalaCompiledPlan(TExecRequest execRequest, EventSequence timeline) {
     this.execRequest = execRequest;
+    this.timeline = timeline;
+  }
+
+  public EventSequence getTimeline() {
+    return timeline;
+  }
+
+  public String getExplain() {
+    return execRequest.getQuery_exec_request().getQuery_plan();
   }
 
   public TExecRequest getExecRequest() {
+    // Update the TExecRequest with up to date timeline
+    execRequest.setTimeline(getTimeline().toThrift());
     return execRequest;
   }
 }

@@ -21,8 +21,7 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.impala.thrift.TExecRequest;
-
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import java.io.Serializable;
 
 /**
@@ -32,29 +31,29 @@ import java.io.Serializable;
 public class ImpalaWork implements Serializable {
     /* Type of Impala work. */
     private final WorkType type;
-    /* Generated query if type is PLANNED_QUERY. Otherwise, query that generated this ImpalaWork. */
+    /* Generated query if type is COMPILED_QUERY. Otherwise, query that generated this ImpalaWork. */
     private final String query;
     /* Fully formed Impala execution request (a planned Impala query). Is NULL if passing query directly to Impala. */
-    private final TExecRequest execRequest;
+    private final ImpalaCompiledPlan plan;
     /* Fetch task associated with this work. */
     private final FetchTask fetch;
     /* Desired row batch size (number of rows returned in each request) */
     private final long fetchSize;
 
-    private ImpalaWork(WorkType type, TExecRequest execRequest, String query, FetchTask fetch, long fetchSize) {
+    private ImpalaWork(WorkType type, ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize) {
         this.type = type;
-        this.execRequest = execRequest;
+        this.plan = plan;
         this.query = query;
         this.fetch = fetch;
         this.fetchSize = fetchSize;
     }
 
-    public static ImpalaWork createPlannedWork(TExecRequest execRequest, String query, FetchTask fetch, long fetchSize) {
-        return new ImpalaWork(WorkType.PLANNED_EXEC_REQUEST, execRequest, query, fetch, fetchSize);
+    public static ImpalaWork createPlannedWork(ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize) {
+        return new ImpalaWork(WorkType.COMPILED_PLAN, plan, query, fetch, fetchSize);
     }
 
     public static ImpalaWork createPlannedWork(String query, FetchTask fetch, long fetchSize) {
-        return new ImpalaWork(WorkType.PLANNED_QUERY, null, query, fetch, fetchSize);
+        return new ImpalaWork(WorkType.COMPILED_QUERY, null, query, fetch, fetchSize);
     }
 
     public static ImpalaWork createQuery(String query, FetchTask fetch, long fetchSize) {
@@ -65,9 +64,9 @@ public class ImpalaWork implements Serializable {
         return type;
     }
 
-    public TExecRequest getExecRequest() {
-        Preconditions.checkState(type == WorkType.PLANNED_EXEC_REQUEST);
-        return execRequest;
+    public ImpalaCompiledPlan getCompiledPlan() {
+        Preconditions.checkState(type == WorkType.COMPILED_PLAN);
+        return plan;
     }
 
     public String getQuery() {
@@ -84,21 +83,20 @@ public class ImpalaWork implements Serializable {
 
     @Explain(displayName = "Impala Plan")
     public String getImpalaExplain() {
-        return type == WorkType.PLANNED_EXEC_REQUEST ?
-            "\n" + execRequest.getQuery_exec_request().getQuery_plan() : null;
+        return type == WorkType.COMPILED_PLAN ? "\n" + plan.getExplain() : null;
     }
 
     @Explain(displayName = "Impala Query")
     public String getImpalaQuery() {
-        return type == WorkType.PLANNED_QUERY || type == WorkType.QUERY ? query : null;
+        return type == WorkType.COMPILED_QUERY || type == WorkType.QUERY ? query : null;
     }
 
     /**
      * Whether this is a generated plan, a generated query, or a query.
      */
     public enum WorkType {
-        PLANNED_EXEC_REQUEST,
-        PLANNED_QUERY,
+        COMPILED_PLAN,
+        COMPILED_QUERY,
         QUERY
     }
 }

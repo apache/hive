@@ -482,6 +482,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         : null;
   }
 
+  protected void markEvent(String event) {
+    // NOOP if this is not an Impala plan. Maybe in the future we will make this generic and useful
+    // for other engines.
+    if (impalaHelper == null) {
+      return;
+    }
+    impalaHelper.getTimeline().markEvent(event);
+  }
+
   @Override
   protected void reset(boolean clearCache) {
     super.reset(true);
@@ -12722,6 +12731,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
+    markEvent("Analysis finished");
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {

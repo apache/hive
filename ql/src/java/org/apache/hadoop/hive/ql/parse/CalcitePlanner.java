@@ -542,7 +542,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<ASTNode> oldHints = new ArrayList<>();
       // Cache the hints before CBO runs and removes them.
       // Use the hints later in top level QB.
-        getHintsFromQB(getQB(), oldHints);
+      getHintsFromQB(getQB(), oldHints);
 
       // Note: for now, we don't actually pass the queryForCbo to CBO, because
       // it accepts qb, not AST, and can also access all the private stuff in
@@ -576,8 +576,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (cboCtx.type == PreCboCtx.Type.VIEW) {
               saveViewDefinition();
             }
+
+            markEvent("Calcite plan generated");
             // 3. Create Impala operator
             sinkOp = getImpalaSinkOperator(newPlan, cboCtx);
+
             // 4. Generate explain plan
             if (this.ctx.isExplainPlan()) {
               doExplainPlan(newPlan);
@@ -728,6 +731,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         skipCalcitePlan = true;
       }
     }
+
+    markEvent("Planning finished");
 
     if (skipCalcitePlan) {
       sinkOp = super.genOPTree(ast, plannerCtx);
@@ -1707,6 +1712,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
           getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type);
+      markEvent("Impala plan generated");
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);
