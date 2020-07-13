@@ -91,7 +91,7 @@ class DriverTxnHandler {
   private final List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
 
   private Context context;
-  private Runnable shutdownRunner;
+  private Runnable txnRollbackRunner;
 
   DriverTxnHandler(Driver driver, DriverContext driverContext, DriverState driverState) {
     this.driverContext = driverContext;
@@ -112,19 +112,19 @@ class DriverTxnHandler {
 
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
-      ShutdownHookManager.removeShutdownHook(shutdownRunner);
-      shutdownRunner = new Runnable() {
+      ShutdownHookManager.removeShutdownHook(txnRollbackRunner);
+      txnRollbackRunner = new Runnable() {
         @Override
         public void run() {
           try {
-            releaseLocksAndCommitOrRollback(false, driverContext.getTxnManager());
+            endTransactionAndCleanup(false, driverContext.getTxnManager());
           } catch (LockException e) {
             LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
                 e.getMessage());
           }
         }
       };
-      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
+      ShutdownHookManager.addShutdownHook(txnRollbackRunner, SHUTDOWN_HOOK_PRIORITY);
     } catch (LockException e) {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
       String errorMessage = "FAILED: " + e.getClass().getSimpleName() + " [Error "  + error.getErrorCode()  + "]:";
@@ -548,19 +548,21 @@ class DriverTxnHandler {
   private void release(boolean releaseLocks) {
     if (releaseLocks) {
       try {
-        releaseLocksAndCommitOrRollback(false);
+        endTransactionAndCleanup(false);
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " + e.getMessage());
       }
     }
-    ShutdownHookManager.removeShutdownHook(shutdownRunner);
+    ShutdownHookManager.removeShutdownHook(txnRollbackRunner);
   }
 
-  void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
-    releaseLocksAndCommitOrRollback(commit, driverContext.getTxnManager());
+  void endTransactionAndCleanup(boolean commit) throws LockException {
+    endTransactionAndCleanup(commit, driverContext.getTxnManager());
+    ShutdownHookManager.removeShutdownHook(txnRollbackRunner);
+    txnRollbackRunner = null;
   }
 
-  void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
+  void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
     
