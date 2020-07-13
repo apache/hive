@@ -49,7 +49,7 @@ public class TestExprProcessorGetFuncExpr {
   public void setUp() throws Exception {
     HiveConf hiveConf = new HiveConf();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ALLOW_UDF_LOAD_ON_DEMAND, true);
-    SessionState sessionState = new SessionState(hiveConf, "dummy");
+    SessionState sessionState = new SessionState(hiveConf, System.getProperty("user.name"));
     SessionState.setCurrentSessionState(sessionState);
     Function function = new Function("myupper", sessionState.getCurrentDatabase(),
         "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper", sessionState.getUserName(),
