@@ -245,7 +245,7 @@ public class LlapOutputFormatService {
     @Override
     public void operationComplete(ChannelFuture future) throws Exception {
       RecordWriter<?, ?> writer = null;
-      synchronized (INSTANCE) {
+      synchronized (lock) {
         writer = writers.remove(id);
       }
 
