@@ -43,12 +43,14 @@ public interface LlapIo<T> {
 
   /**
    * Returns a deserialized OrcTail instance associated with the ORC file on the given path.
-   *  Raw content is either obtained from cache, or from disk if there is a cache miss.
+   * Raw content is either obtained from cache, or from disk if there is a cache miss.
    * @param path Orc file path
    * @param conf jobConf
+   * @param tag a CacheTag instance must be provided as that's needed for cache insertion
    * @return
+   * @throws IOException
    */
-  OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag t) throws IOException;
+  OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag) throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.
