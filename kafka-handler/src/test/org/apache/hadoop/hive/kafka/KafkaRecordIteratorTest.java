@@ -278,7 +278,7 @@ import java.util.stream.IntStream;
     producerProps.setProperty("bootstrap.servers", KafkaBrokerResource.BROKER_IP_PORT);
     producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
     producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-    producerProps.setProperty("max.block.ms", "10000");
+    producerProps.setProperty("max.block.ms", "20000");
     if (txId != null) {
       producerProps.setProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG, txId);
     }
