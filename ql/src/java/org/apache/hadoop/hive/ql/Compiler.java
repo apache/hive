@@ -258,7 +258,7 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen()) {
+        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
       driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
     }
