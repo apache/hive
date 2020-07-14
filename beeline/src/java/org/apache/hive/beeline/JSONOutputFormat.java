@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -65,15 +66,17 @@ public class JSONOutputFormat extends AbstractOutputFormat {
 
   @Override 
   void printFooter(Rows.Row header) {
+    ByteArrayOutputStream buf = (ByteArrayOutputStream) generator.getOutputTarget();
     try {
       generator.writeEndArray();
       generator.writeEndObject();
       generator.flush();
-      String out = ((ByteArrayOutputStream) generator.getOutputTarget()).toString("UTF-8");
+      String out = buf.toString(StandardCharsets.UTF_8.name());
       beeLine.output(out);
     } catch(IOException e) {
       beeLine.handleException(e);
     }
+    buf.reset();
   }
 
   @Override 
