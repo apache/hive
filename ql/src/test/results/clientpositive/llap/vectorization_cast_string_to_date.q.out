@@ -1,0 +1,118 @@
+PREHOOK: query: CREATE TABLE `test13`(
+  `portfolio_valuation_date` string,
+  `price_cut_off_datetime` string,
+  `portfolio_id_valuation_source` string,
+  `contributor_full_path` string,
+  `position_market_value` double,
+  `mandate_name` string)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test13
+POSTHOOK: query: CREATE TABLE `test13`(
+  `portfolio_valuation_date` string,
+  `price_cut_off_datetime` string,
+  `portfolio_id_valuation_source` string,
+  `contributor_full_path` string,
+  `position_market_value` double,
+  `mandate_name` string)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test13
+PREHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	-0.26,	"foo")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test13
+POSTHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	-0.26,	"foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test13
+POSTHOOK: Lineage: test13.contributor_full_path SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: test13.mandate_name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_id_valuation_source SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_valuation_date SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test13.position_market_value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: test13.price_cut_off_datetime SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.33,	"foo")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test13
+POSTHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.33,	"foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test13
+POSTHOOK: Lineage: test13.contributor_full_path SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: test13.mandate_name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_id_valuation_source SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_valuation_date SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test13.position_market_value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: test13.price_cut_off_datetime SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	-0.03,	"foo")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test13
+POSTHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	-0.03,	"foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test13
+POSTHOOK: Lineage: test13.contributor_full_path SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: test13.mandate_name SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_id_valuation_source SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_valuation_date SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test13.position_market_value EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: test13.price_cut_off_datetime SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.16,	"foo")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test13
+POSTHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.16,	"foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test13
+POSTHOOK: Lineage: test13.contributor_full_path SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: test13.mandate_name SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_id_valuation_source SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_valuation_date SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test13.position_market_value EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: test13.price_cut_off_datetime SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.08,	"foo")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test13
+POSTHOOK: query: INSERT INTO test13 values (
+"2020-01-31",	"2020-02-07T03:14:48.007Z",	"37",	NULL,	0.08,	"foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test13
+POSTHOOK: Lineage: test13.contributor_full_path SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: test13.mandate_name SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_id_valuation_source SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test13.portfolio_valuation_date SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test13.position_market_value EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: test13.price_cut_off_datetime SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select Cast(`test13`.`price_cut_off_datetime` AS date) from test13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test13
+#### A masked pattern was here ####
+POSTHOOK: query: select Cast(`test13`.`price_cut_off_datetime` AS date) from test13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test13
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: select Cast(`test13`.`price_cut_off_datetime` AS date) from test13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test13
+#### A masked pattern was here ####
+POSTHOOK: query: select Cast(`test13`.`price_cut_off_datetime` AS date) from test13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test13
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
