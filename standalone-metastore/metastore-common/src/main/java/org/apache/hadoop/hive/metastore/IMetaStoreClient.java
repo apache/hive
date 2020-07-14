@@ -670,6 +670,7 @@ public interface IMetaStoreClient {
    */
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
+
   /**
    * Get a table object.
    * @param catName catalog the table is in.
@@ -1253,6 +1254,17 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param request request
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException  no such table.
+   */
+  List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values
    * @param request request
    * @return reponse
@@ -1378,7 +1390,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
           throws TException;
 
   /**
@@ -1396,7 +1408,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException;
 
   /**
