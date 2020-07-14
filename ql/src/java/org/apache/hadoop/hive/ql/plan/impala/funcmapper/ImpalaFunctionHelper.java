@@ -96,7 +96,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       ) throws SemanticException {
     try {
       ImpalaFunctionResolver funcResolver = ImpalaFunctionResolverImpl.create(this,
-          functionInfo.getDisplayName(), inputs);
+          functionInfo.getDisplayName(), inputs, null);
 
       ImpalaFunctionInfo impalaFunctionInfo = (ImpalaFunctionInfo) functionInfo;
       impalaFunctionInfo.setFunctionResolver(funcResolver);
@@ -127,7 +127,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       ImpalaFunctionResolver funcResolver = impalaFunctionInfo.getFunctionResolver();
       if (funcResolver == null) {
         funcResolver =
-            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs);
+            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs, returnType);
         impalaFunctionInfo.setFunctionResolver(funcResolver);
       }
       return funcResolver.getConvertedInputs(impalaFunctionInfo.getImpalaFunctionSignature());
@@ -153,7 +153,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       ImpalaFunctionResolver funcResolver = impalaFunctionInfo.getFunctionResolver();
       if (funcResolver == null) {
         funcResolver =
-            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs);
+            ImpalaFunctionResolverImpl.create(this,functionInfo.getDisplayName(), inputs, returnType);
         impalaFunctionInfo.setFunctionResolver(funcResolver);
       }
       return funcResolver.createRexNode(impalaFunctionInfo.getImpalaFunctionSignature(),
@@ -204,7 +204,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       List<RexNode> aggregateParameters) throws SemanticException {
     try {
       ImpalaFunctionResolver funcResolver =
-          ImpalaFunctionResolverImpl.create(this, aggregateName, aggregateParameters);
+          ImpalaFunctionResolverImpl.create(this, aggregateName, aggregateParameters, null);
       ImpalaFunctionSignature function =
           funcResolver.getFunction(AggFunctionDetails.AGG_BUILTINS_MAP);
 

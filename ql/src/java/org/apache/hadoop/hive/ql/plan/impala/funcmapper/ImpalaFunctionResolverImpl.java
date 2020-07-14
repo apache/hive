@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.impala.catalog.Type;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -128,8 +129,8 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       case CHAR:
       case DECIMAL:
         // This could fail if there are Impala functions which are not mapped into Calcite
-	// and have a return type of char or decimal. We will have to figure out some way
-	// to handle these types, since it might not be wise to pick a default.
+        // and have a return type of char or decimal. We will have to figure out some way
+        // to handle these types, since it might not be wise to pick a default.
         Preconditions.checkNotNull(op);
         return op.inferReturnType(rexBuilder.getTypeFactory(), RexUtil.types(operands));
       // For the default case, we can just create a RelDataType.
@@ -366,7 +367,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   }
 
   public static ImpalaFunctionResolver create(FunctionHelper helper, String func,
-      List<RexNode> inputs) throws HiveException {
+      List<RexNode> inputs, RelDataType retType) throws HiveException {
 
     SqlOperator op = ImpalaOperatorTable.IMPALA_OPERATOR_MAP.get(func.toUpperCase());
 
@@ -377,12 +378,14 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     switch(op.getKind()) {
       case CAST:
-        // When there is no return type, the cast is passed in via the function name.
-        String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
-        SqlTypeName retSqlType = SqlTypeName.valueOf(adjustedFunc);
-        RexBuilder rexBuilder = helper.getRexNodeExprFactory().getRexBuilder();
-        RelDataType newReturnType = rexBuilder.getTypeFactory().createSqlType(retSqlType);
-        return new CastFunctionResolver(helper, op, inputs, newReturnType);
+        // if the return type is not passed in, it is derived from the function name.
+        if (retType == null) {
+          String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
+	  // Use the Impala normalized type.
+          Type impalaType = Type.parseColumnType(adjustedFunc);
+          retType = ImpalaTypeConverter.getRelDataType(impalaType);
+        }
+        return new CastFunctionResolver(helper, op, inputs, retType);
       case CASE:
         // case statements can come in as "when" or "case", see cthe Case*Resolver comment
         // for more information.
