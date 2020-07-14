@@ -3136,12 +3136,14 @@ public class AcidUtils {
           .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
       return TxnType.READ_ONLY;
     }
-
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
     }
-
+    // check if compaction request
+    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
+      return TxnType.COMPACTION;
+    }
     return TxnType.DEFAULT;
   }
 
