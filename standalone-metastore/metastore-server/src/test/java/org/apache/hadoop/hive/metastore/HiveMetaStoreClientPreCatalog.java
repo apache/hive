@@ -52,6 +52,7 @@ import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -3806,5 +3807,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
     client.scheduled_query_maintenance(request);
+  }
+
+  @Override
+  public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedTxnId(long seedTxnId) throws TException {
+    throw new NotImplementedException("");
   }
 }

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.IOException;
 
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
@@ -54,22 +55,22 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       Msck msck = new Msck(false, false);
       msck.init(Msck.getMsckConf(context.getDb().getConf()));
 
-      String[] names = Utilities.getDbTableName(desc.getTableName());
+      TableName tableName = HiveTableName.of(desc.getTableName());
 
       long partitionExpirySeconds = -1L;
       try (HiveMetaStoreClient msc = new HiveMetaStoreClient(context.getConf())) {
-        Table table = msc.getTable(SessionState.get().getCurrentCatalog(), names[0], names[1]);
-        String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
         boolean msckEnablePartitionRetention = MetastoreConf.getBoolVar(context.getConf(),
             MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION);
         if (msckEnablePartitionRetention) {
+          Table table = msc.getTable(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable());
+          String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
           partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(table);
           LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..", qualifiedTableName,
               partitionExpirySeconds);
         }
       }
 
-      MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), names[0], names[1],
+      MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
           desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       return msck.repair(msckInfo);
