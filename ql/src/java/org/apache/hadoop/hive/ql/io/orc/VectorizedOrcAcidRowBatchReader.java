@@ -56,8 +56,10 @@ import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
+import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
+import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -528,7 +530,7 @@ public class VectorizedOrcAcidRowBatchReader
       LOG.debug("findMinMaxKeys() No ORC column stats");
     }
 
-    List<StripeStatistics> stats = orcTail.getStripeStatistics();
+    List<OrcProto.StripeStatistics> stats = orcTail.getStripeStatisticsProto();
     assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
         " sta.s=" + stats.size();
 
@@ -541,7 +543,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     else {
       if(columnStatsPresent) {
-        minKey = getMinKeyFromStatistics(stats.get(firstStripeIndex).getColumnStatistics(), orcSplit, null);
+        minKey = getKeyInterval(stats.get(firstStripeIndex).getColStatsList()).getMinKey();
       }
     }
 
@@ -551,7 +553,7 @@ public class VectorizedOrcAcidRowBatchReader
       maxKey = keyIndex[lastStripeIndex];
     } else {
       if(columnStatsPresent) {
-        maxKey = getMaxKeyFromStatistics(stats.get(lastStripeIndex).getColumnStatistics(), orcSplit, null);
+        maxKey = getKeyInterval(stats.get(firstStripeIndex).getColStatsList()).getMaxKey();
       }
     }
     OrcRawRecordMerger.KeyInterval keyInterval =
@@ -579,23 +581,18 @@ public class VectorizedOrcAcidRowBatchReader
        * writeId is the same in both cases
        */
       for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
-        ColumnStatistics[] colStats = stats.get(firstStripeIndex)
-            .getColumnStatistics();
-        IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics)
-            colStats[OrcRecordUpdater.BUCKET + 1];
-        IntegerColumnStatistics rowId = (IntegerColumnStatistics)
-            colStats[OrcRecordUpdater.ROW_ID + 1];
-        if(bucketProperty.getMinimum() < minBucketProp) {
-          minBucketProp = bucketProperty.getMinimum();
+        OrcRawRecordMerger.KeyInterval key = getKeyInterval(stats.get(i).getColStatsList());
+        if(key.getMinKey().getBucketProperty() < minBucketProp) {
+          minBucketProp = key.getMinKey().getBucketProperty();
         }
-        if(bucketProperty.getMaximum() > maxBucketProp) {
-          maxBucketProp = bucketProperty.getMaximum();
+        if(key.getMaxKey().getBucketProperty() > maxBucketProp) {
+          maxBucketProp = key.getMaxKey().getBucketProperty();
         }
-        if(rowId.getMinimum() < minRowId) {
-          minRowId = rowId.getMinimum();
+        if(key.getMinKey().getRowId() < minRowId) {
+          minRowId = key.getMinKey().getRowId();
         }
-        if(rowId.getMaximum() > maxRowId) {
-          maxRowId = rowId.getMaximum();
+        if(key.getMaxKey().getRowId() > maxRowId) {
+          maxRowId = key.getMaxKey().getRowId();
         }
       }
     }
@@ -1641,10 +1638,7 @@ public class VectorizedOrcAcidRowBatchReader
         return new OrcRawRecordMerger.KeyInterval(null, null);
       }
 
-      ColumnStatistics[] statistics = orcTail.getFooter().getStatisticsList().toArray(new ColumnStatistics[0]);
-      RecordIdentifier minKey = getMinKeyFromStatistics(statistics, null, path);
-      RecordIdentifier maxKey = getMaxKeyFromStatistics(statistics, null, path);
-      return new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
+      return getKeyInterval(orcTail.getFooter().getStatisticsList());
     }
 
     /**
@@ -1853,51 +1847,33 @@ public class VectorizedOrcAcidRowBatchReader
      return deleteEventSarg;
   }
 
-  /**
-   * Calculates the min record key.
-   * Structure in data is like this:
-   * <op, owid, writerId, rowid, cwid, <f1, ... fn>>
-   * The +1 is to account for the top level struct which has a
-   * ColumnStatistics object in colsStats.  Top level struct is normally
-   * dropped by the Reader (I guess because of orc.impl.SchemaEvolution)
-   * @param colStats The statistics array
-   * @param split The split - just for printing error message
-   * @param deleteDeltaFile The delete delta file - just for printing error message
-   * @return The min record key
-   */
-  private static RecordIdentifier getMinKeyFromStatistics(ColumnStatistics[] colStats, OrcSplit split,
-      Path deleteDeltaFile) {
-    IntegerColumnStatistics origWriteId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ORIGINAL_WRITEID + 1];
-    IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics) colStats[OrcRecordUpdater.BUCKET + 1];
-    IntegerColumnStatistics rowId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ROW_ID + 1];
-    //we may want to change bucketProperty from int to long in the
-    // future(across the stack) this protects the following cast to int
-    assert bucketProperty.getMinimum() <= Integer.MAX_VALUE : "was bucketProperty changed to a long (" +
-            bucketProperty.getMinimum() + ")?!:" + split != null ? split : deleteDeltaFile;
-    return new RecordIdentifier(origWriteId.getMinimum(), (int) bucketProperty.getMinimum(), rowId.getMinimum());
+  private static IntegerColumnStatistics deserializeIntColumnStatistics(List<OrcProto.ColumnStatistics> colStats, int id) {
+    return (IntegerColumnStatistics) ColumnStatisticsImpl.deserialize(null, colStats.get(id));
   }
 
   /**
-   * Calculates the min record key.
+   * Calculates the min/max record key.
    * Structure in data is like this:
    * <op, owid, writerId, rowid, cwid, <f1, ... fn>>
    * The +1 is to account for the top level struct which has a
    * ColumnStatistics object in colsStats.  Top level struct is normally
    * dropped by the Reader (I guess because of orc.impl.SchemaEvolution)
    * @param colStats The statistics array
-   * @param split The split - just for printing error message
-   * @param deleteDeltaFile The delete delta file - just for printing error message
    * @return The min record key
    */
-  private static RecordIdentifier getMaxKeyFromStatistics(ColumnStatistics[] colStats, OrcSplit split,
-      Path deleteDeltaFile) {
-    IntegerColumnStatistics origWriteId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ORIGINAL_WRITEID + 1];
-    IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics) colStats[OrcRecordUpdater.BUCKET + 1];
-    IntegerColumnStatistics rowId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ROW_ID + 1];
-    //we may want to change bucketProperty from int to long in the
-    // future(across the stack) this protects the following cast to int
-    assert bucketProperty.getMaximum() <= Integer.MAX_VALUE : "was bucketProperty changed to a long (" +
-            bucketProperty.getMaximum() + ")?!:" + split != null ? split : deleteDeltaFile;
-    return new RecordIdentifier(origWriteId.getMaximum(), (int) bucketProperty.getMaximum(), rowId.getMaximum());
+  private static OrcRawRecordMerger.KeyInterval getKeyInterval(List<OrcProto.ColumnStatistics> colStats) {
+    IntegerColumnStatistics origWriteId = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ORIGINAL_WRITEID + 1);
+    IntegerColumnStatistics bucketProperty = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.BUCKET + 1);
+    IntegerColumnStatistics rowId = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
+
+    // We may want to change bucketProperty from int to long in the future(across the stack) this protects
+    // the following cast to int
+    assert bucketProperty.getMaximum() <= Integer.MAX_VALUE :
+        "was bucketProperty (max) changed to a long (" + bucketProperty.getMaximum() + ")?!";
+    assert bucketProperty.getMinimum() <= Integer.MAX_VALUE :
+        "was bucketProperty (min) changed to a long (" + bucketProperty.getMaximum() + ")?!";
+    RecordIdentifier maxKey = new RecordIdentifier(origWriteId.getMaximum(), (int) bucketProperty.getMaximum(), rowId.getMaximum());
+    RecordIdentifier minKey = new RecordIdentifier(origWriteId.getMinimum(), (int) bucketProperty.getMinimum(), rowId.getMinimum());
+    return new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
   }
 }
