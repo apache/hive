@@ -422,7 +422,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         mapKeysAggregationBuffers= new LRUCache();
         if (groupingSets != null && groupingSets.length > 0) {
           this.maxHtEntries = this.maxHtEntries / groupingSets.length;
-          LOG.info("Patch: new maxHtEntries: {}", maxHtEntries);
+          LOG.info("New maxHtEntries: {}", maxHtEntries);
         }
       } else {
         mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
