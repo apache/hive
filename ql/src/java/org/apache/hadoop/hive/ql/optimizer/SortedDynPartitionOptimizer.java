@@ -409,22 +409,18 @@ public class SortedDynPartitionOptimizer extends Transform {
       // and grand child
       if (found) {
         Operator<? extends OperatorDesc> rsParent = rsToRemove.getParentOperators().get(0);
-        List<Operator<? extends OperatorDesc>> rsChildren = rsToRemove.getChildOperators();
 
-        Operator<? extends OperatorDesc> rsChildToRemove = null;
+        // RS is expected to have exactly ONE child
+        assert(rsToRemove.getChildOperators().size() == 1);
 
-        for (Operator<? extends OperatorDesc> rsChild : rsChildren) {
-          if (rsChild instanceof SelectOperator && rsParent.getSchema().getSignature().size()
-              == rsChild.getSchema().getSignature().size()) {
-            // if schema size cannot be matched, then it could be because of constant folding
-            // converting partition column expression to constant expression. The constant
-            // expression will then get pruned by column pruner since it will not reference to
-            // any columns.
-            rsChildToRemove = rsChild;
-          }
-        }
+        Operator<? extends OperatorDesc> rsChildToRemove = rsToRemove.getChildOperators().get(0);
 
-        if (rsChildToRemove == null) {
+        if (!(rsChildToRemove instanceof SelectOperator) || rsParent.getSchema().getSignature().size()
+            != rsChildToRemove.getSchema().getSignature().size()) {
+          // if schema size cannot be matched, then it could be because of constant folding
+          // converting partition column expression to constant expression. The constant
+          // expression will then get pruned by column pruner since it will not reference to
+          // any columns.
           return false;
         }
 
@@ -440,17 +436,10 @@ public class SortedDynPartitionOptimizer extends Transform {
         List<Operator<? extends OperatorDesc>> rsGrandChildren = rsChildToRemove.getChildOperators();
 
         rsParent.getChildOperators().remove(rsToRemove);
-        // add rsToRemove children beside select
-        for (Operator<? extends OperatorDesc> rsChild : rsChildren) {
-          if (!rsChild.equals(rsChildToRemove)) {
-            rsParent.getChildOperators().add(rsChild);
-            rsChild.getParentOperators().remove(rsToRemove);
-            rsChild.getParentOperators().add(rsParent);
-          }
-        }
+        rsParent.getChildOperators().addAll(rsGrandChildren);
+
 
         // fix grandchildren
-        rsParent.getChildOperators().addAll(rsGrandChildren);
         for (Operator<? extends OperatorDesc> rsGrandChild: rsGrandChildren) {
           rsGrandChild.getParentOperators().clear();
           rsGrandChild.getParentOperators().add(rsParent);
