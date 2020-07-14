@@ -532,6 +532,14 @@ class AllocateTableWriteIdsRequest;
 
 class AllocateTableWriteIdsResponse;
 
+class MaxAllocatedTableWriteIdRequest;
+
+class MaxAllocatedTableWriteIdResponse;
+
+class SeedTableWriteIdsRequest;
+
+class SeedTxnIdRequest;
+
 class LockComponent;
 
 class LockRequest;
@@ -8415,6 +8423,181 @@ class AllocateTableWriteIdsResponse {
 void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class MaxAllocatedTableWriteIdRequest {
+ public:
+
+  MaxAllocatedTableWriteIdRequest(const MaxAllocatedTableWriteIdRequest&);
+  MaxAllocatedTableWriteIdRequest& operator=(const MaxAllocatedTableWriteIdRequest&);
+  MaxAllocatedTableWriteIdRequest() : dbName(), tableName() {
+  }
+
+  virtual ~MaxAllocatedTableWriteIdRequest() throw();
+  std::string dbName;
+  std::string tableName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const MaxAllocatedTableWriteIdRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const MaxAllocatedTableWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MaxAllocatedTableWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MaxAllocatedTableWriteIdRequest &a, MaxAllocatedTableWriteIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const MaxAllocatedTableWriteIdRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class MaxAllocatedTableWriteIdResponse {
+ public:
+
+  MaxAllocatedTableWriteIdResponse(const MaxAllocatedTableWriteIdResponse&);
+  MaxAllocatedTableWriteIdResponse& operator=(const MaxAllocatedTableWriteIdResponse&);
+  MaxAllocatedTableWriteIdResponse() : maxWriteId(0) {
+  }
+
+  virtual ~MaxAllocatedTableWriteIdResponse() throw();
+  int64_t maxWriteId;
+
+  void __set_maxWriteId(const int64_t val);
+
+  bool operator == (const MaxAllocatedTableWriteIdResponse & rhs) const
+  {
+    if (!(maxWriteId == rhs.maxWriteId))
+      return false;
+    return true;
+  }
+  bool operator != (const MaxAllocatedTableWriteIdResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MaxAllocatedTableWriteIdResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MaxAllocatedTableWriteIdResponse &a, MaxAllocatedTableWriteIdResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const MaxAllocatedTableWriteIdResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class SeedTableWriteIdsRequest {
+ public:
+
+  SeedTableWriteIdsRequest(const SeedTableWriteIdsRequest&);
+  SeedTableWriteIdsRequest& operator=(const SeedTableWriteIdsRequest&);
+  SeedTableWriteIdsRequest() : dbName(), tableName(), seedWriteId(0) {
+  }
+
+  virtual ~SeedTableWriteIdsRequest() throw();
+  std::string dbName;
+  std::string tableName;
+  int64_t seedWriteId;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_seedWriteId(const int64_t val);
+
+  bool operator == (const SeedTableWriteIdsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(seedWriteId == rhs.seedWriteId))
+      return false;
+    return true;
+  }
+  bool operator != (const SeedTableWriteIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SeedTableWriteIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SeedTableWriteIdsRequest &a, SeedTableWriteIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SeedTableWriteIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class SeedTxnIdRequest {
+ public:
+
+  SeedTxnIdRequest(const SeedTxnIdRequest&);
+  SeedTxnIdRequest& operator=(const SeedTxnIdRequest&);
+  SeedTxnIdRequest() : seedTxnId(0) {
+  }
+
+  virtual ~SeedTxnIdRequest() throw();
+  int64_t seedTxnId;
+
+  void __set_seedTxnId(const int64_t val);
+
+  bool operator == (const SeedTxnIdRequest & rhs) const
+  {
+    if (!(seedTxnId == rhs.seedTxnId))
+      return false;
+    return true;
+  }
+  bool operator != (const SeedTxnIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SeedTxnIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SeedTxnIdRequest &a, SeedTxnIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SeedTxnIdRequest& obj)
 {
   obj.printTo(out);
   return out;

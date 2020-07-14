@@ -49,12 +49,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreException;
 import org.apache.thrift.TException;
@@ -75,11 +77,18 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveMetaStoreChecker {
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreChecker.class);
+  // These constants must be the same as in AcidUtils
+  public static final String BASE_PREFIX = "base_";
+  public static final String DELTA_PREFIX = "delta_";
+  public static final String DELETE_DELTA_PREFIX = "delete_delta_";
+  public static final String VISIBILITY_PREFIX = "_v";
 
   private final IMetaStoreClient msc;
   private final Configuration conf;
   private final long partitionExpirySeconds;
   private final Interner<Path> pathInterner = Interners.newStrongInterner();
+  public static final PathFilter HIDDEN_FILES_PATH_FILTER =
+      p -> !p.getName().startsWith("_") && !p.getName().startsWith(".");
 
   public HiveMetaStoreChecker(IMetaStoreClient msc, Configuration conf) {
     this(msc, conf, -1);
@@ -110,23 +119,23 @@ public class HiveMetaStoreChecker {
    * @param partitions
    *          List of partition name value pairs, if null or empty check all
    *          partitions
-   * @param result
-   *          Fill this with the results of the check
+   * @return Results of the check
    * @throws MetastoreException
    *           Failed to get required information from the metastore.
    * @throws IOException
    *           Most likely filesystem related
    */
-  public void checkMetastore(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, CheckResult result)
+  public CheckResult checkMetastore(String catName, String dbName, String tableName,
+      List<? extends Map<String, String>> partitions)
       throws MetastoreException, IOException {
-
+    CheckResult result = new CheckResult();
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
       dbName = Warehouse.DEFAULT_DATABASE_NAME;
     }
 
     try {
       if (tableName == null || "".equals(tableName)) {
+        // TODO: I do not think this is used by anything other than tests
         // no table specified, check all tables and all partitions.
         List<String> tables = getMsc().getTables(catName, dbName, ".*");
         for (String currentTableName : tables) {
@@ -149,6 +158,7 @@ public class HiveMetaStoreChecker {
     } catch (TException e) {
       throw new MetastoreException(e);
     }
+    return result;
   }
 
   /**
@@ -174,8 +184,8 @@ public class HiveMetaStoreChecker {
   void findUnknownTables(String catName, String dbName, List<String> tables, CheckResult result)
       throws IOException, MetaException, TException {
 
-    Set<Path> dbPaths = new HashSet<Path>();
-    Set<String> tableNames = new HashSet<String>(tables);
+    Set<Path> dbPaths = new HashSet<>();
+    Set<String> tableNames = new HashSet<>(tables);
 
     for (String tableName : tables) {
       Table table = getMsc().getTable(catName, dbName, tableName);
@@ -194,7 +204,7 @@ public class HiveMetaStoreChecker {
       FileStatus[] statuses = fs.listStatus(dbPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       for (FileStatus status : statuses) {
 
-        if (status.isDir() && !tableNames.contains(status.getPath().getName())) {
+        if (status.isDirectory() && !tableNames.contains(status.getPath().getName())) {
 
           result.getTablesNotInMs().add(status.getPath().getName());
         }
@@ -267,7 +277,7 @@ public class HiveMetaStoreChecker {
         parts = new PartitionIterable(loadedPartitions);
       }
     } else {
-      parts = new PartitionIterable(Collections.<Partition>emptyList());
+      parts = new PartitionIterable(Collections.emptyList());
     }
 
     checkTable(table, parts, findUnknownPartitions, result);
@@ -304,7 +314,7 @@ public class HiveMetaStoreChecker {
       return;
     }
 
-    Set<Path> partPaths = new HashSet<Path>();
+    Set<Path> partPaths = new HashSet<>();
 
     // check that the partition folders exist on disk
     for (Partition partition : parts) {
@@ -352,6 +362,13 @@ public class HiveMetaStoreChecker {
     if (findUnknownPartitions) {
       findUnknownPartitions(table, partPaths, result);
     }
+    if (!isPartitioned(table) && TxnUtils.isTransactionalTable(table)) {
+      // Check for writeIds in the table directory
+      CheckResult.PartitionResult tableResult = new CheckResult.PartitionResult();
+      setMaxTxnAndWriteIdFromPartition(tablePath, tableResult);
+      result.setMaxWriteId(tableResult.getMaxWriteId());
+      result.setMaxTxnId(tableResult.getMaxTxnId());
+    }
   }
 
   /**
@@ -365,7 +382,7 @@ public class HiveMetaStoreChecker {
    *          Result object
    * @throws IOException
    *           Thrown if we fail at fetching listings from the fs.
-   * @throws MetastoreException
+   * @throws MetastoreException ex
    */
   void findUnknownPartitions(Table table, Set<Path> partPaths,
       CheckResult result) throws IOException, MetastoreException {
@@ -374,9 +391,10 @@ public class HiveMetaStoreChecker {
     if (tablePath == null) {
       return;
     }
+    boolean transactionalTable = TxnUtils.isTransactionalTable(table);
     // now check the table folder and see if we find anything
     // that isn't in the metastore
-    Set<Path> allPartDirs = new HashSet<Path>();
+    Set<Path> allPartDirs = new HashSet<>();
     checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
     // don't want the table dir
     allPartDirs.remove(tablePath);
@@ -400,11 +418,60 @@ public class HiveMetaStoreChecker {
         CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
         pr.setPartitionName(partitionName);
         pr.setTableName(table.getTableName());
-
+        if (transactionalTable) {
+          setMaxTxnAndWriteIdFromPartition(partPath, pr);
+        }
         result.getPartitionsNotInMs().add(pr);
       }
     }
     LOG.debug("Number of partitions not in metastore : " + result.getPartitionsNotInMs().size());
+  }
+  /**
+   * Calculate the maximum seen writeId from the acid directory structure
+   * @param partPath Path of the partition directory
+   * @param res Partition result to write the max ids
+   * @throws IOException ex
+   */
+  private void setMaxTxnAndWriteIdFromPartition(Path partPath, CheckResult.PartitionResult res) throws IOException {
+    FileSystem fs = partPath.getFileSystem(conf);
+    FileStatus[] deltaOrBaseFiles = fs.listStatus(partPath, HIDDEN_FILES_PATH_FILTER);
+
+    // Read the writeIds from every base and delta directory and find the max
+    long maxWriteId = 0L;
+    long maxVisibilityId = 0L;
+    for (FileStatus fileStatus : deltaOrBaseFiles) {
+      if (!fileStatus.isDirectory()) {
+        continue;
+      }
+      long writeId = 0L;
+      long visibilityId = 0L;
+      String folder = fileStatus.getPath().getName();
+      String visParts[] = folder.split(VISIBILITY_PREFIX);
+      if (visParts.length > 1) {
+        visibilityId = Long.parseLong(visParts[1]);
+        folder = visParts[0];
+      }
+      if (folder.startsWith(BASE_PREFIX)) {
+        writeId = Long.parseLong(folder.substring(BASE_PREFIX.length()));
+      } else if (folder.startsWith(DELTA_PREFIX) || folder.startsWith(DELETE_DELTA_PREFIX)) {
+        // See AcidUtils.parseDelta
+        boolean isDeleteDelta = folder.startsWith(DELETE_DELTA_PREFIX);
+        String rest = folder.substring((isDeleteDelta ? DELETE_DELTA_PREFIX : DELTA_PREFIX).length());
+        String[] nameParts = rest.split("_");
+        // We always want the second part (it is either the same or greater if it is a compacted delta)
+        writeId = Long.parseLong(nameParts.length > 1 ? nameParts[1] : nameParts[0]);
+      }
+      if (writeId > maxWriteId) {
+        maxWriteId = writeId;
+      }
+      if (visibilityId > maxVisibilityId) {
+        maxVisibilityId = visibilityId;
+      }
+    }
+    LOG.debug("Max writeId {}, max txnId {} found in partition {}", maxWriteId, maxVisibilityId,
+        partPath.toUri().toString());
+    res.setMaxWriteId(maxWriteId);
+    res.setMaxTxnId(maxVisibilityId);
   }
 
   /**
@@ -423,10 +490,11 @@ public class HiveMetaStoreChecker {
    *          Partition column names
    * @throws IOException
    *           Thrown if we can't get lists from the fs.
-   * @throws MetastoreException
+   * @throws MetastoreException ex
    */
 
-  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, final List<String> partColNames) throws IOException, MetastoreException {
+  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, final List<String> partColNames)
+      throws IOException, MetastoreException {
     // Here we just reuse the THREAD_COUNT configuration for
     // METASTORE_FS_HANDLER_THREADS_COUNT since this results in better performance
     // The number of missing partitions discovered are later added by metastore using a
@@ -536,7 +604,7 @@ public class HiveMetaStoreChecker {
       final Path basePath, final Set<Path> result,
       final FileSystem fs, final List<String> partColNames) throws MetastoreException {
     try {
-      Queue<Future<Path>> futures = new LinkedList<Future<Path>>();
+      Queue<Future<Path>> futures = new LinkedList<>();
       ConcurrentLinkedQueue<PathDepthInfo> nextLevel = new ConcurrentLinkedQueue<>();
       nextLevel.add(new PathDepthInfo(basePath, 0));
       //Uses level parallel implementation of a bfs. Recursive DFS implementations

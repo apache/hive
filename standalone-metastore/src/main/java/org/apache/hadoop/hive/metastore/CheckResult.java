@@ -26,11 +26,13 @@ import java.util.TreeSet;
 public class CheckResult {
 
   // tree sets to preserve ordering in qfile tests
-  private Set<String> tablesNotOnFs = new TreeSet<String>();
-  private Set<String> tablesNotInMs = new TreeSet<String>();
-  private Set<PartitionResult> partitionsNotOnFs = new TreeSet<PartitionResult>();
-  private Set<PartitionResult> partitionsNotInMs = new TreeSet<PartitionResult>();
+  private Set<String> tablesNotOnFs = new TreeSet<>();
+  private Set<String> tablesNotInMs = new TreeSet<>();
+  private Set<PartitionResult> partitionsNotOnFs = new TreeSet<>();
+  private Set<PartitionResult> partitionsNotInMs = new TreeSet<>();
   private Set<PartitionResult> expiredPartitions = new TreeSet<>();
+  private long maxWriteId;
+  private long maxTxnId;
 
   /**
    * @return a list of tables not found on the filesystem.
@@ -101,6 +103,22 @@ public class CheckResult {
     this.expiredPartitions = expiredPartitions;
   }
 
+  public long getMaxWriteId() {
+    return maxWriteId;
+  }
+
+  public void setMaxWriteId(long maxWriteId) {
+    this.maxWriteId = maxWriteId;
+  }
+
+  public long getMaxTxnId() {
+    return maxTxnId;
+  }
+
+  public void setMaxTxnId(long maxTxnId) {
+    this.maxTxnId = maxTxnId;
+  }
+
   /**
    * A basic description of a partition that is missing from either the fs or
    * the ms.
@@ -108,6 +126,8 @@ public class CheckResult {
   public static class PartitionResult implements Comparable<PartitionResult> {
     private String partitionName;
     private String tableName;
+    private long maxWriteId;
+    private long maxTxnId;
 
     /**
      * @return name of partition
@@ -137,6 +157,22 @@ public class CheckResult {
      */
     public void setTableName(String tableName) {
       this.tableName = tableName;
+    }
+
+    public long getMaxWriteId() {
+      return maxWriteId;
+    }
+
+    public void setMaxWriteId(long maxWriteId) {
+      this.maxWriteId = maxWriteId;
+    }
+
+    public long getMaxTxnId() {
+      return maxTxnId;
+    }
+
+    public void setMaxTxnId(long maxTxnId) {
+      this.maxTxnId = maxTxnId;
     }
 
     @Override

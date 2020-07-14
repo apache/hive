@@ -100,7 +100,9 @@ public abstract class AbstractJdbcTriggersTest {
   @After
   public void tearDown() throws Exception {
     LlapBaseInputFormat.closeAll();
-    hs2Conn.close();
+    if (hs2Conn != null) {
+      hs2Conn.close();
+    }
   }
 
   @AfterClass

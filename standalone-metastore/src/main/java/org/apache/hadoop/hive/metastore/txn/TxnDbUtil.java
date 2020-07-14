@@ -66,6 +66,15 @@ public final class TxnDbUtil {
         put(SQLSERVER, "datediff_big(millisecond, '19700101', sysutcdatetime())");
       }};
 
+  private static final EnumMap<DatabaseProduct, String> DB_SEED_FN =
+      new EnumMap<DatabaseProduct, String>(DatabaseProduct.class) {{
+        put(DERBY, "UPDATE \"NEXT_TXN_ID\" SET \"NTXN_NEXT\" = %s");
+        put(MYSQL, "UPDATE \"NEXT_TXN_ID\" SET \"NTXN_NEXT\" = %s");
+        put(POSTGRES, "UPDATE \"NEXT_TXN_ID\" SET \"NTXN_NEXT\" = %s");
+        put(ORACLE, "UPDATE \"NEXT_TXN_ID\" SET \"NTXN_NEXT\" = %s");
+        put(SQLSERVER, "UPDATE \"NEXT_TXN_ID\" SET \"NTXN_NEXT\" = %s");
+      }};
+
   private static int deadlockCnt = 0;
 
   private TxnDbUtil() {
@@ -490,6 +499,20 @@ public final class TxnDbUtil {
     }
     LOG.error("Failed to drop table, don't know why");
     return false;
+  }
+
+  /**
+   * Restarts the txnId sequence with the given seed value.
+   * It is the responsibility of the caller to not set the sequence backward.
+   * @param conn database connection
+   * @param stmt sql statement
+   * @param seedTxnId the seed value for the sequence
+   * @throws SQLException ex
+   */
+  public static void seedTxnSequence(Connection conn, Statement stmt, long seedTxnId) throws SQLException {
+    String dbProduct = conn.getMetaData().getDatabaseProductName();
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+    stmt.execute(String.format(DB_SEED_FN.get(databaseProduct), seedTxnId));
   }
 
   /**

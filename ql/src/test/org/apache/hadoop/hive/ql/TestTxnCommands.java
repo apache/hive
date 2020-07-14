@@ -103,7 +103,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Override
-  void initHiveConf() {
+  protected void initHiveConf() {
     super.initHiveConf();
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
@@ -1184,7 +1184,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     //run Compaction
     runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
@@ -1273,7 +1273,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("insert into T" + makeValuesClause(data));
     runStatementOnDriver("alter table T compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     //check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);

@@ -179,10 +179,25 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
+   * Reads the maximum allocated writeId for the given table
+   * @param rqst table for which the maximum writeId is requested
+   * @return the maximum allocated writeId
+   */
+  MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst)
+      throws MetaException;
+
+  /**
    * Called on conversion of existing table to full acid.  Sets initial write ID to a high
    * enough value so that we can assign unique ROW__IDs to data in existing files.
    */
-  void seedWriteIdOnAcidConversion(InitializeTableWriteIdsRequest rqst) throws MetaException;
+  void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException;
+
+  /**
+   * Sets the next txnId to the given value.
+   * If the actual txnId is greater it will throw an exception.
+   * @param rqst
+   */
+  void seedTxnId(SeedTxnIdRequest rqst) throws MetaException;
 
   /**
    * Obtain a lock.
