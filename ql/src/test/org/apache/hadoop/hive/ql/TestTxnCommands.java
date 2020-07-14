@@ -25,9 +25,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -40,13 +42,16 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -74,6 +79,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -1248,7 +1254,19 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(expected), r);
   }
   @Test
-  public void testVersioning() throws Exception {
+  public void testVersioningVersionFileEnabled() throws Exception {
+    acidVersionTest(true);
+  }
+
+  @Test
+  public void testVersioningVersionFileDisabled() throws Exception {
+    acidVersionTest(false);
+  }
+
+  private void acidVersionTest(boolean enableVersionFile) throws Exception {
+    boolean originalEnableVersionFile = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, enableVersionFile);
+
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
@@ -1257,105 +1275,48 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     int[][] data = {{1, 2}};
     //create 1 delta file bucket_00000
     runStatementOnDriver("insert into T" + makeValuesClause(data));
+    runStatementOnDriver("update T set a=3 where b=2");
 
-    //delete the bucket files so now we have empty delta dirs
-    List<String> rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
     FileSystem fs = FileSystem.get(hiveConf);
-    Assert.assertTrue(rs != null && rs.size() == 1 && rs.get(0).contains(AcidUtils.DELTA_PREFIX));
-    Path  filePath = new Path(rs.get(0));
-    int version = getAcidVersionFromDataFile(filePath, fs);
-    //check it has expected version marker
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, version);
+    RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX });
 
-    //check that delta dir has a version file with expected value
-    filePath = filePath.getParent();
-    Assert.assertTrue(filePath.getName().startsWith(AcidUtils.DELTA_PREFIX));
-    int versionFromMetaFile = getAcidVersionFromMetaFile(filePath, fs);
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
-
-    runStatementOnDriver("insert into T" + makeValuesClause(data));
-    runStatementOnDriver("alter table T compact 'major'");
+    runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
 
-    //check status of compaction job
+    // Check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state",
         TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
     Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+    Assert.assertTrue(resp.getCompacts().get(0).getType().equals(CompactionType.MINOR));
 
-    rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
-    Assert.assertTrue(rs != null && rs.size() == 1 && rs.get(0).contains(AcidUtils.BASE_PREFIX));
+    // Check the files after minor compaction
+    files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX });
 
-    filePath = new Path(rs.get(0));
-    version = getAcidVersionFromDataFile(filePath, fs);
-    //check that files produced by compaction still have the version marker
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, version);
-
-    //check that compacted base dir has a version file with expected value
-    filePath = filePath.getParent();
-    Assert.assertTrue(filePath.getName().startsWith(AcidUtils.BASE_PREFIX));
-    versionFromMetaFile = getAcidVersionFromMetaFile(filePath, fs);
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
-
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, false);
     runStatementOnDriver("insert into T" + makeValuesClause(data));
-    //delete the bucket files so now we have empty delta dirs
-    rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
-    Optional<String> deltaDir = rs.stream().filter(p -> p.contains(AcidUtils.DELTA_PREFIX)).findAny();
-    Assert.assertTrue("Delta dir should be present", deltaDir.isPresent());
-    Assert.assertFalse("Version marker should not exists",
-        fs.exists(AcidUtils.OrcAcidVersion.getVersionFilePath(new Path(deltaDir.get()).getParent())));
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
-  }
 
-  private static final Charset UTF8 = Charset.forName("UTF-8");
-  private static final int ORC_ACID_VERSION_DEFAULT = 0;
-  /**
-   * This is smart enough to handle streaming ingest where there could be a
-   * {@link AcidUtils#DELTA_SIDE_FILE_SUFFIX} side file.
-   * @param dataFile - ORC acid data file
-   * @return version property from file if there,
-   *          {@link #ORC_ACID_VERSION_DEFAULT} otherwise
-   */
-  private static int getAcidVersionFromDataFile(Path dataFile, FileSystem fs) throws IOException {
-    FileStatus fileStatus = fs.getFileStatus(dataFile);
-    Reader orcReader = OrcFile.createReader(dataFile,
-        OrcFile.readerOptions(fs.getConf())
-            .filesystem(fs)
-            //make sure to check for side file in case streaming ingest died
-            .maxLength(AcidUtils.getLogicalLength(fs, fileStatus)));
-    if (orcReader.hasMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)) {
-      char[] versionChar =
-          UTF8.decode(orcReader.getMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)).array();
-      String version = new String(versionChar);
-      return Integer.valueOf(version);
-    }
-    return ORC_ACID_VERSION_DEFAULT;
-  }
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
 
-  private static int getAcidVersionFromMetaFile(Path deltaOrBaseDir, FileSystem fs)
-      throws IOException {
-    Path formatFile = AcidUtils.OrcAcidVersion.getVersionFilePath(deltaOrBaseDir);
-    try (FSDataInputStream inputStream = fs.open(formatFile)) {
-      byte[] bytes = new byte[1];
-      int read = inputStream.read(bytes);
-      if (read != -1) {
-        String version = new String(bytes, UTF8);
-        return Integer.valueOf(version);
-      }
-      return ORC_ACID_VERSION_DEFAULT;
-    } catch (FileNotFoundException fnf) {
-      LOG.debug(formatFile + " not found, returning default: " + ORC_ACID_VERSION_DEFAULT);
-      return ORC_ACID_VERSION_DEFAULT;
-    } catch(IOException ex) {
-      LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
-      throw ex;
-    }
+    // Check status of compaction job
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 1 compaction state",
+        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(1).getState());
+    Assert.assertTrue(resp.getCompacts().get(1).getHadoopJobId().startsWith("job_local"));
+
+    // Check the files after major compaction
+    files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.BASE_PREFIX });
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
   }
 }
