@@ -3171,6 +3171,33 @@ public interface IMetaStoreClient {
    */
   List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                                     List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
+
+  /**
+   * Get the maximum allocated writeId for the given table
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table from which the writeId is queried
+   * @return the maximum allocated writeId
+   * @throws TException
+   */
+  long getMaxAllocatedWriteId(String dbName, String tableName) throws TException;
+
+  /**
+   * Seed an ACID table with the given writeId. If the table already contains writes it will fail.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the writeId will be set
+   * @param seedWriteId the start value of writeId
+   * @throws TException
+   */
+  void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException;
+
+  /**
+   * Seed or increment the global txnId to the given value.
+   * If the actual txnId is greater or equal than the seed value, it wil fail
+   * @param seedTxnId The seed value for the next transactions
+   * @throws TException
+   */
+  void seedTxnId(long seedTxnId) throws TException;
+
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.

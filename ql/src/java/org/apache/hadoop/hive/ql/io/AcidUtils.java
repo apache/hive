@@ -378,7 +378,7 @@ public class AcidUtils {
    * Since Hive 4.0, compactor produces directories with {@link #VISIBILITY_PATTERN} suffix.
    * _v0 is equivalent to no suffix, for backwards compatibility.
    */
-  static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
+  public static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
     if(visibilityTxnId == 0) {
       return baseOrDeltaDir;
     }
@@ -2358,33 +2358,29 @@ public class AcidUtils {
     long writeId = -1;
     ValidWriteIdList validWriteIdList = null;
 
-    HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
-    String fullTableName = getFullTableName(dbName, tblName);
-    if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
-      validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
-      if (isStatsUpdater) {
-        writeId = SessionState.get().getTxnMgr() != null ?
-                SessionState.get().getTxnMgr().getAllocatedTableWriteId(
-                  dbName, tblName) : -1;
-        if (writeId < 1) {
-          // TODO: this is not ideal... stats updater that doesn't have write ID is currently
-          //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
-          LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})",
-              dbName, tblName, writeId);
+    if (SessionState.get() != null) {
+      HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+      String fullTableName = getFullTableName(dbName, tblName);
+      if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
+        validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
+        if (isStatsUpdater) {
+          writeId = sessionTxnMgr.getAllocatedTableWriteId(dbName, tblName);
+          if (writeId < 1) {
+            // TODO: this is not ideal... stats updater that doesn't have write ID is currently
+            //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
+            LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})", dbName, tblName, writeId);
+          }
         }
-      }
 
-
-      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
-          && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
-        return null;
-      }
-      if (validWriteIdList == null) {
-        validWriteIdList = getTableValidWriteIdListWithTxnList(
-            conf, dbName, tblName);
-      }
-      if (validWriteIdList == null) {
-        throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
+          return null;
+        }
+        if (validWriteIdList == null) {
+          validWriteIdList = getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+        }
+        if (validWriteIdList == null) {
+          throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        }
       }
     }
     return new TableSnapshot(writeId,

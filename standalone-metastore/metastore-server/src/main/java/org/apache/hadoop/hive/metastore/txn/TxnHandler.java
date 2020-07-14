@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,13 +97,14 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.InitializeTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Materialization;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -111,6 +113,8 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -235,6 +239,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
+
   private static DataSource connPool;
   private static DataSource connPoolMutex;
 
@@ -265,6 +270,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "WHERE \"HL_LAST_HEARTBEAT\" < %s - ? AND \"HL_TXNID\" = 0";
   private static final String TXN_TO_WRITE_ID_INSERT_QUERY = "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\", " +
       "\"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)";
+  private static final String SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID =
+      "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
 
 
   private List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -2014,14 +2021,50 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return allocateTableWriteIds(rqst);
     }
   }
+
   @Override
-  public void seedWriteIdOnAcidConversion(InitializeTableWriteIdsRequest rqst)
+  public MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst) throws MetaException {
+    String dbName = rqst.getDbName();
+    String tableName = rqst.getTableName();
+    try {
+      Connection dbConn = null;
+      PreparedStatement pStmt = null;
+      ResultSet rs = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID,
+            Arrays.asList(dbName, tableName));
+        LOG.debug("Going to execute query <" + SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID.replaceAll("\\?", "{}") + ">",
+            quoteString(dbName), quoteString(tableName));
+        rs = pStmt.executeQuery();
+        // If there is no record, we never allocated anything
+        long maxWriteId = 0l;
+        if (rs.next()) {
+          // The row contains the nextId not the previously allocated
+          maxWriteId = rs.getLong(1) - 1;
+        }
+        return new MaxAllocatedTableWriteIdResponse(maxWriteId);
+      } catch (SQLException e) {
+        LOG.error(
+            "Exception during reading the max allocated writeId for dbName={}, tableName={}. Will retry if possible.",
+            dbName, tableName, e);
+        checkRetryable(dbConn, e, "getMaxAllocatedTableWrited(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, pStmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return getMaxAllocatedTableWrited(rqst);
+    }
+  }
+
+  @Override
+  public void seedWriteId(SeedTableWriteIdsRequest rqst)
       throws MetaException {
     try {
       Connection dbConn = null;
       PreparedStatement pst = null;
       try {
-        lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
 
         //since this is on conversion from non-acid to acid, NEXT_WRITE_ID should not have an entry
@@ -2031,28 +2074,60 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // The initial value for write id should be 1 and hence we add 1 with number of write ids
         // allocated here
         String s = "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") VALUES (?, ?, "
-                + Long.toString(rqst.getSeeWriteId() + 1) + ")";
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(rqst.getDbName(), rqst.getTblName()));
+                + Long.toString(rqst.getSeedWriteId() + 1) + ")";
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(rqst.getDbName(), rqst.getTableName()));
         LOG.debug("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">",
-                quoteString(rqst.getDbName()), quoteString(rqst.getTblName()));
+                quoteString(rqst.getDbName()), quoteString(rqst.getTableName()));
         pst.execute();
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "seedWriteIdOnAcidConversion(" + rqst + ")");
-        throw new MetaException("Unable to update transaction database "
-            + StringUtils.stringifyException(e));
+        checkRetryable(dbConn, e, "seedWriteId(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(null, pst, dbConn);
+      }
+    } catch (RetryException e) {
+      seedWriteId(rqst);
+    }
+  }
+
+  @Override
+  public void seedTxnId(SeedTxnIdRequest rqst) throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        /*
+         * Locking the txnLock an exclusive way, we do not want to set the txnId backward accidentally
+         * if there are concurrent open transactions
+         */
+        acquireTxnLock(stmt, false);
+        long highWaterMark = getHighWaterMark(stmt);
+        if (highWaterMark >= rqst.getSeedTxnId()) {
+          throw new MetaException(MessageFormat
+              .format("Invalid txnId seed {}, the highWaterMark is {}", rqst.getSeedTxnId(), highWaterMark));
+        }
+        TxnDbUtil.seedTxnSequence(dbConn, stmt, rqst.getSeedTxnId());
+        dbConn.commit();
+
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "seedTxnId(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
         unlockInternal();
       }
     } catch (RetryException e) {
-      seedWriteIdOnAcidConversion(rqst);
+      seedTxnId(rqst);
     }
-
   }
+
   @Override
   @RetrySemantics.Idempotent
   public void addWriteNotificationLog(AcidWriteEvent acidWriteEvent)
