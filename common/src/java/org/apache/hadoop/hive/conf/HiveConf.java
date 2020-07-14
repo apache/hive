@@ -4065,6 +4065,9 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000,
         "Max number of entries in the vector group by aggregation hashtables. \n" +
         "Exceeding this will trigger a flush irrelevant of memory pressure condition."),
+    HIVE_VECTORIZATION_GROUPBY_ENABLE_LRU_FOR_AGGR(
+        "hive.vectorized.groupby.agg.enable.lrucache",
+        false, "Whether to enable LRUCache for aggregation buffers in group by."),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
     HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED("hive.vectorized.execution.reducesink.new.enabled", true,
