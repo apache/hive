@@ -15,11 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * This source file is based on code taken from SQLLine 1.9
- * See SQLLine notice in LICENSE
- */
 package org.apache.hive.beeline;
 
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
