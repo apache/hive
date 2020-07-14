@@ -50,9 +50,4 @@ public class JSONFileOutputFormat extends JSONOutputFormat {
 
   @Override
   void printFooter(Rows.Row header) {}
-
-  @Override
-  void printRow(Rows rows, Rows.Row header, Rows.Row row) {
-    super.printRow(rows, header, row);
-  }
 }

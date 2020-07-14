@@ -63,7 +63,7 @@ public class TestJSONOutputFormat {
     setupMockData();
     BufferedRows bfRows = new BufferedRows(mockBeeline, mockResultSet);
     JSONOutputFormat instance = new JSONOutputFormat(mockBeeline);
-    String expResult = "{resultSet[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null},{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null}]}";
+    String expResult = "{\"resultset\":[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null},{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null}]}";
     instance.print(bfRows);
     String outPutResults = mockBeeline.getOutput();
     assertEquals(expResult, outPutResults);
