@@ -3668,8 +3668,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
-        tParts = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-            (short) -1, getUserName(), getGroupNames());
+        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+        req.setTblName(tbl.getTableName());
+        req.setDbName(tbl.getDbName());
+        req.setUserName(getUserName());
+        req.setMaxParts((short) -1);
+        req.setGroupNames(getGroupNames());
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        }
+        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+        tParts = res.getPartitions();
 
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
