@@ -51,6 +51,9 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,6 +67,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
+  private Executor cleanerExecutor;
 
   private ReplChangeManager replChangeManager;
 
@@ -71,6 +75,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
+    cleanerExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE));
   }
 
   @Override
@@ -89,9 +94,12 @@ public class Cleaner extends MetaStoreCompactorThread {
         handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
         startedAt = System.currentTimeMillis();
         long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+        List<CompletableFuture> cleanerList = new ArrayList<>();
         for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-          clean(compactionInfo, minOpenTxnId);
+          cleanerList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+            clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
         }
+        CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
             StringUtils.stringifyException(t));

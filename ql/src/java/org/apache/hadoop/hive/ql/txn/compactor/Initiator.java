@@ -222,20 +222,6 @@ public class Initiator extends MetaStoreCompactorThread {
     return cache.get(fullTableName);
   }
 
-  private interface ThrowingRunnable<E extends Exception> {
-    void run() throws E;
-
-    static Runnable unchecked(ThrowingRunnable<?> r) {
-      return () -> {
-        try {
-          r.run();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      };
-    }
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
