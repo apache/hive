@@ -87,7 +87,9 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Hive hiveDb) {
+    List<EximUtil.FunctionBinaryCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
+                                                               Hive hiveDb) {
+      return Collections.emptyList();
     }
 
     @Override

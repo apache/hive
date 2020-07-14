@@ -253,6 +253,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
     childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
+    childTasks.addAll(work.functionsBinariesCopyTasks(taskTracker, conf));
     if (childTasks.isEmpty()) {
       //All table data copy work finished.
       finishRemainingTasks();
@@ -792,6 +793,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       //We can't reuse the previous write id as it might be invalid due to compaction
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
     }
+    List<EximUtil.FunctionBinaryCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
          FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
@@ -818,7 +820,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         work.getMetricCollector().reportStageStart(getName(), metricMap);
         Path dbRoot = dumpDbMetadata(dbName, metadataPath, bootDumpBeginReplId, hiveDb);
         Path dbDataRoot = new Path(new Path(dumpRoot, EximUtil.DATA_PATH_NAME), dbName);
-        dumpFunctionMetadata(dbName, dbRoot, hiveDb);
+        functionsBinaryCopyPaths = dumpFunctionMetadata(dbName, dbRoot, dbDataRoot, hiveDb);
 
         String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
         Exception caught = null;
@@ -878,6 +880,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
       dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId);
       dmd.write(true);
+      work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
       setDataCopyIterators(extTableFileList, managedTblList);
       return bootDumpBeginReplId;
     }
@@ -1108,24 +1111,30 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return null;
   }
 
-  void dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Hive hiveDb) throws Exception {
-    Path functionsRoot = new Path(dbMetadataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+  List<EximUtil.FunctionBinaryCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
+                                                             Hive hiveDb) throws Exception {
+    List<EximUtil.FunctionBinaryCopyPath> functionsBinaryCopyPaths = new ArrayList<>();
+    Path functionsMetaRoot = new Path(dbMetadataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+    Path functionsDataRoot = new Path(dbDataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     List<String> functionNames = hiveDb.getFunctions(dbName, "*");
     for (String functionName : functionNames) {
       HiveWrapper.Tuple<Function> tuple = functionTuple(functionName, dbName, hiveDb);
       if (tuple == null) {
         continue;
       }
-      Path functionRoot = new Path(functionsRoot, functionName);
-      Path functionMetadataFile = new Path(functionRoot, FUNCTION_METADATA_FILE_NAME);
+      Path functionMetaRoot = new Path(functionsMetaRoot, functionName);
+      Path functionMetadataFile = new Path(functionMetaRoot, FUNCTION_METADATA_FILE_NAME);
+      Path functionDataRoot = new Path(functionsDataRoot, functionName);
       try (JsonWriter jsonWriter =
           new JsonWriter(functionMetadataFile.getFileSystem(conf), functionMetadataFile)) {
-        FunctionSerializer serializer = new FunctionSerializer(tuple.object, conf);
+        FunctionSerializer serializer = new FunctionSerializer(tuple.object, functionDataRoot, conf);
         serializer.writeTo(jsonWriter, tuple.replicationSpec);
+        functionsBinaryCopyPaths.addAll(serializer.getFunctionBinaryCopyPaths());
       }
       work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.FUNCTIONS.name(), 1);
       replLogger.functionLog(functionName);
     }
+    return functionsBinaryCopyPaths;
   }
 
   void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) throws Exception {

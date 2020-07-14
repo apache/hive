@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 
 import java.io.IOException;
@@ -193,10 +194,8 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
 
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-          metadata.getReplicationSpec(), new Path(sourceUri), qualifiedDestinationPath,
-          context.hiveConf
-      );
+      Task<?> copyTask = TaskFactory.get(
+              new CopyWork(new Path(sourceUri), qualifiedDestinationPath, true, true), context.hiveConf);
       replCopyTasks.add(copyTask);
       ResourceUri destinationUri =
           new ResourceUri(resourceUri.getResourceType(), qualifiedDestinationPath.toString());

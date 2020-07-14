@@ -116,6 +116,42 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testCreateFunctionOnHDFSIncrementalReplication() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1"})
+            .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
+            .verifyResults(new String[] { "MyName"});
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc2 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
+
+    WarehouseInstance.Tuple incrementalDump =
+            primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1",
+                    replicatedDbName + ".idFunc2" })
+            .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
+            .verifyResults(new String[] { "YourName"});
+  }
+
+  @Test
   public void testBootstrapReplLoadRetryAfterFailureForFunctions() throws Throwable {
     String funcName1 = "f1";
     String funcName2 = "f2";
@@ -1684,5 +1720,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private String quote(String str) {
     return "'" + str + "'";
+  }
+
+  private void setupUDFJarOnHDFS(Path identityUdfLocalPath, Path identityUdfHdfsPath) throws IOException {
+    FileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
   }
 }

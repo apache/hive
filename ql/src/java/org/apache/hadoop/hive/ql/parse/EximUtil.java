@@ -245,6 +245,52 @@ public class EximUtil {
     }
   }
 
+
+  /**
+   * Wrapper class for mapping source and target path for copying function binaries.
+   */
+  public static class FunctionBinaryCopyPath {
+    private ReplicationSpec replicationSpec;
+    private Path srcPath;
+    private Path tgtPath;
+
+    public FunctionBinaryCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
+      if (srcPath == null) {
+        throw new IllegalArgumentException("Source path can not be null.");
+      }
+      this.srcPath = srcPath;
+      if (tgtPath == null) {
+        throw new IllegalArgumentException("Target path can not be null.");
+      }
+      this.tgtPath = tgtPath;
+    }
+
+    public Path getSrcPath() {
+      return srcPath;
+    }
+
+    public Path getTargetPath() {
+      return tgtPath;
+    }
+
+    @Override
+    public String toString() {
+      return "FunctionBinaryCopyPath{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+  }
+
   private EximUtil() {
   }
 
