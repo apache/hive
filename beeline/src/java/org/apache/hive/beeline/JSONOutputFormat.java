@@ -82,15 +82,8 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     String[] vals = row.values;
     
     try {
-      int colCount = rows.rsMeta.getColumnCount();
-      boolean objStartFlag = true;
-
+      generator.writeStartObject();
       for (int i = 0; (i < head.length) && (i < vals.length); i++) {
-        if (objStartFlag) {
-          generator.writeStartObject();
-          objStartFlag = false;
-        }
-
         generator.writeFieldName(head[i]);
         switch(rows.rsMeta.getColumnType(i+1)) {
           case Types.TINYINT:
@@ -114,12 +107,8 @@ public class JSONOutputFormat extends AbstractOutputFormat {
           default:
             generator.writeString(vals[i]);
         }
-
-        if ((i+1) % colCount == 0) {
-          generator.writeEndObject();
-          objStartFlag = true;
-        }
       }
+      generator.writeEndObject();
     } catch (IOException e) {
       beeLine.handleException(e);
     } catch (SQLException e) {
