@@ -58,7 +58,6 @@ import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
-import org.apache.orc.StripeStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
@@ -145,7 +144,7 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * Skip using Llap IO cache for checking delete_delta files if the configuration is not correct
    */
-  private static boolean skipLlapCache = true;
+  private static boolean skipLlapCache = false;
 
   //OrcInputFormat c'tor
   VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
@@ -156,7 +155,7 @@ public class VectorizedOrcAcidRowBatchReader
   VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
         Reporter reporter, VectorizedRowBatchCtx rbCtx) throws IOException {
     this(conf, inputSplit, reporter,
-        rbCtx == null ? Utilities.getVectorizedRowBatchCtx(conf) : rbCtx, false);
+        rbCtx == null ? Utilities.getVectorizedRowBatchCtx(conf) : rbCtx, false, null);
 
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, inputSplit);
     // Careful with the range here now, we do not want to read the whole base file like deltas.
@@ -207,15 +206,15 @@ public class VectorizedOrcAcidRowBatchReader
    */
   public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
     org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
-    VectorizedRowBatchCtx rbCtx, boolean isFlatPayload) throws IOException {
-    this(conf, inputSplit, reporter, rbCtx, isFlatPayload);
+    VectorizedRowBatchCtx rbCtx, boolean isFlatPayload, MapWork mapWork) throws IOException {
+    this(conf, inputSplit, reporter, rbCtx, isFlatPayload, mapWork);
     if (baseReader != null) {
       setBaseAndInnerReader(baseReader);
     }
   }
 
   private VectorizedOrcAcidRowBatchReader(JobConf conf, OrcSplit orcSplit, Reporter reporter,
-      VectorizedRowBatchCtx rowBatchCtx, boolean isFlatPayload) throws IOException {
+      VectorizedRowBatchCtx rowBatchCtx, boolean isFlatPayload, MapWork mapWork) throws IOException {
     this.isFlatPayload = isFlatPayload;
     this.rbCtx = rowBatchCtx;
     final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
@@ -253,7 +252,9 @@ public class VectorizedOrcAcidRowBatchReader
     if (LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon()
             && HiveConf.getBoolVar(conf, ConfVars.LLAP_TRACK_CACHE_USAGE))
     {
-      MapWork mapWork = LlapHiveUtils.findMapWork(conf);
+      if (mapWork == null) {
+        mapWork = LlapHiveUtils.findMapWork(conf);
+      }
       PartitionDesc partitionDesc =
           LlapHiveUtils.partitionDescForPath(orcSplit.getPath(), mapWork.getPathToPartitionInfo());
       cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(orcSplit.getPath(), true, partitionDesc);
@@ -692,13 +693,8 @@ public class VectorizedOrcAcidRowBatchReader
         skipLlapCache = true;
       }
     } else {
-      try {
-        readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-        readerData.orcTail = new OrcTail(readerData.reader.getFileTail(), readerData.reader.getSerializedFileFooter());
-      } catch (IOException ioe) {
-        LOG.info("Exception when opening the file", ioe);
-        return null;
-      }
+      readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+      readerData.orcTail = new OrcTail(readerData.reader.getFileTail(), readerData.reader.getSerializedFileFooter());
     }
     return readerData;
   }
@@ -1592,7 +1588,7 @@ public class VectorizedOrcAcidRowBatchReader
                 new OrcRawRecordMerger.Options().isCompacting(false), null);
             for (Path deleteDeltaFile : deleteDeltaFiles) {
               try {
-                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag);
+                  ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag);
                 OrcTail orcTail = readerData.orcTail;
                 if (orcTail.getFooter().getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
@@ -1602,7 +1598,8 @@ public class VectorizedOrcAcidRowBatchReader
                   // If there is no intersection between data and delete delta, do not read delete file
                   continue;
                 }
-                // Create the reader if we got the OrcTail from cache
+                // Reader can be reused if it was created before for getting orcTail: mostly for non-LLAP cache cases.
+                // For LLAP cases we need to create it here.
                 Reader deleteDeltaReader = readerData.reader != null ? readerData.reader :
                     OrcFile.createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
                 totalDeleteEventCount += deleteDeltaReader.getNumberOfRows();

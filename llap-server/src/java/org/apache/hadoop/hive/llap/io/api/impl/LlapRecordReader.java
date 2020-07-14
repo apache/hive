@@ -191,7 +191,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (isAcidScan) {
       OrcSplit orcSplit = (OrcSplit) split;
       this.acidReader = new VectorizedOrcAcidRowBatchReader(
-          orcSplit, jobConf, Reporter.NULL, null, rbCtx, true);
+          orcSplit, jobConf, Reporter.NULL, null, rbCtx, true, mapWork);
       isAcidFormat = !orcSplit.isOriginal();
     } else {
       isAcidFormat = false;
