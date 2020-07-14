@@ -25,7 +25,8 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -34,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... ADD PARTITION ... commands.
  */
 @Explain(displayName = "Add Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
+public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -167,6 +168,7 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
   private final String tableName;
   private final boolean ifNotExists;
   private final List<PartitionDesc> partitions;
+  private Long writeId;
 
   private ReplicationSpec replicationSpec = null; // TODO: make replicationSpec final too
 
@@ -217,4 +219,20 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
     }
     return replicationSpec;
   }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return AcidUtils.getFullTableName(dbName,tableName);
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true;
+  }
+
 }

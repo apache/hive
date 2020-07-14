@@ -25,6 +25,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acid
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
@@ -605,6 +606,7 @@ POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acid
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
@@ -696,6 +698,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidb
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
@@ -1156,6 +1159,7 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidb
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
@@ -1247,6 +1251,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidv
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
@@ -1737,6 +1742,7 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidv
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
@@ -2027,6 +2033,7 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidv
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
@@ -2118,6 +2125,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidvb
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
@@ -2608,6 +2616,7 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidvb
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
@@ -2907,6 +2916,7 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidvb
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11

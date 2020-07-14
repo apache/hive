@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -408,16 +409,6 @@ public class TestHiveMetaStoreChecker {
     assertEquals(partToRemove.getTable().getTableName(),
         result.getPartitionsNotOnFs().iterator().next().getTableName());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
-
-    List<Map<String, String>> partsCopy = new ArrayList<>();
-    partsCopy.add(partitions.get(1).getSpec());
-    // check only the partition that exists, all should be well
-    result = checker.checkMetastore(catName, dbName, tableName, partsCopy, null);
-    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
-    assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
-
     // old test is moved to msck_repair_2.q
 
     // cleanup

@@ -26,6 +26,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.apache.logging.log4j.Level;
 
 /**
@@ -131,6 +132,7 @@ public class CommonCliOptions {
    * Parse the arguments.
    * @param args
    */
+  @SuppressFBWarnings(value = "DM_EXIT", justification = "Expected")
   public void parse(String[] args) {
     try {
       commandLine = new GnuParser().parse(OPTIONS, args);

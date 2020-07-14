@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -1192,10 +1193,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000020/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000019/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
@@ -1301,6 +1302,16 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     versionFromMetaFile = getAcidVersionFromMetaFile(filePath, fs);
     Assert.assertEquals("Unexpected version marker in " + filePath,
         AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, false);
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
+    //delete the bucket files so now we have empty delta dirs
+    rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
+    Optional<String> deltaDir = rs.stream().filter(p -> p.contains(AcidUtils.DELTA_PREFIX)).findAny();
+    Assert.assertTrue("Delta dir should be present", deltaDir.isPresent());
+    Assert.assertFalse("Version marker should not exists",
+        fs.exists(AcidUtils.OrcAcidVersion.getVersionFilePath(new Path(deltaDir.get()).getParent())));
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
   }
 
   private static final Charset UTF8 = Charset.forName("UTF-8");

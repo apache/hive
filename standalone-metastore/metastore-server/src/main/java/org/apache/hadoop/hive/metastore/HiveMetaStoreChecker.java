@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartition;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionListByFilterExp;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
@@ -34,7 +35,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -117,10 +117,10 @@ public class HiveMetaStoreChecker {
    * @param tableName
    *          Table we want to run the check for. If null we'll check all the
    *          tables in the database.
-   * @param partitions
-   *          List of partition name value pairs, if null or empty check all
-   *          partitions
-   * @param table Table we want to run the check for.
+   * @param filterExp
+   *          Filter expression which is used to prune th partition from the
+   *          metastore and FileSystem.
+   * @param table
    * @return Results of the check
    * @throws MetastoreException
    *           Failed to get required information from the metastore.
@@ -128,7 +128,7 @@ public class HiveMetaStoreChecker {
    *           Most likely filesystem related
    */
   public CheckResult checkMetastore(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, Table table)
+                             byte[] filterExp, Table table)
       throws MetastoreException, IOException {
     CheckResult result = new CheckResult();
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
@@ -145,13 +145,14 @@ public class HiveMetaStoreChecker {
         }
 
         findUnknownTables(catName, dbName, tables, result);
-      } else if (partitions == null || partitions.isEmpty()) {
+      } else if (filterExp != null) {
+        // check for specified partitions which matches filter expression
+        checkTable(catName, dbName, tableName, filterExp, table, result);
+      } else {
         // only one table, let's check all partitions
         checkTable(catName, dbName, tableName, null, table, result);
-      } else {
-        // check the specified partitions
-        checkTable(catName, dbName, tableName, partitions, table, result);
       }
+
       LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
               + ", partitionsNotOnFs=" + result.getPartitionsNotOnFs()
               + ", tablesNotInMs=" + result.getTablesNotInMs()
@@ -224,8 +225,9 @@ public class HiveMetaStoreChecker {
    *          Name of the database
    * @param tableName
    *          Name of the table
-   * @param partitions
-   *          Partitions to check, if null or empty get all the partitions.
+   * @param filterExp
+   *          Filter expression which is used to prune th partition from the
+   *          metastore and FileSystem.
    * @param table Table we want to run the check for.
    * @param result
    *          Result object
@@ -236,8 +238,7 @@ public class HiveMetaStoreChecker {
    * @throws MetaException
    *           Failed to get required information from the metastore.
    */
-  void checkTable(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, Table table, CheckResult result)
+  void checkTable(String catName, String dbName, String tableName, byte[] filterExp, Table table, CheckResult result)
       throws MetaException, IOException, MetastoreException {
 
     if (table == null) {
@@ -250,10 +251,14 @@ public class HiveMetaStoreChecker {
     }
 
     PartitionIterable parts;
-    boolean findUnknownPartitions = true;
 
     if (isPartitioned(table)) {
-      if (partitions == null || partitions.isEmpty()) {
+      if (filterExp != null) {
+        List<Partition> results = new ArrayList<>();
+        getPartitionListByFilterExp(getMsc(), table, filterExp,
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
+        parts = new PartitionIterable(results);
+      } else {
         int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         if (batchSize > 0) {
           parts = new PartitionIterable(getMsc(), table, batchSize);
@@ -261,30 +266,12 @@ public class HiveMetaStoreChecker {
           List<Partition> loadedPartitions = getAllPartitionsOf(getMsc(), table);
           parts = new PartitionIterable(loadedPartitions);
         }
-      } else {
-        // we're interested in specific partitions,
-        // don't check for any others
-        findUnknownPartitions = false;
-        List<Partition> loadedPartitions = new ArrayList<>();
-        for (Map<String, String> map : partitions) {
-          Partition part = getPartition(getMsc(), table, map);
-          if (part == null) {
-            CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
-            pr.setTableName(tableName);
-            pr.setPartitionName(Warehouse.makePartPath(map));
-            result.getPartitionsNotInMs().add(pr);
-          } else {
-            loadedPartitions.add(part);
-          }
-        }
-        parts = new PartitionIterable(loadedPartitions);
       }
     } else {
       parts = new PartitionIterable(Collections.emptyList());
-      findUnknownPartitions = false;
     }
 
-    checkTable(table, parts, findUnknownPartitions, result);
+    checkTable(table, parts, filterExp, result);
   }
 
   /**
@@ -297,16 +284,16 @@ public class HiveMetaStoreChecker {
    *          Partitions to check
    * @param result
    *          Result object
-   * @param findUnknownPartitions
-   *          Should we try to find unknown partitions?
+   * @param filterExp
+   *          Filter expression which is used to prune th partition from the
+   *          metastore and FileSystem.
    * @throws IOException
    *           Could not get information from filesystem
    * @throws MetastoreException
    *           Could not create Partition object
    */
-  void checkTable(Table table, PartitionIterable parts,
-      boolean findUnknownPartitions, CheckResult result) throws IOException,
-    MetastoreException {
+  void checkTable(Table table, PartitionIterable parts, byte[] filterExp, CheckResult result) throws IOException,
+    MetastoreException, MetaException {
 
     Path tablePath = getPath(table);
     if (tablePath == null) {
@@ -366,9 +353,8 @@ public class HiveMetaStoreChecker {
       }
     }
 
-    if (findUnknownPartitions) {
-      findUnknownPartitions(table, partPaths, result);
-    }
+    findUnknownPartitions(table, partPaths, filterExp, result);
+
     if (!isPartitioned(table) && TxnUtils.isTransactionalTable(table)) {
       // Check for writeIds in the table directory
       CheckResult.PartitionResult tableResult = new CheckResult.PartitionResult();
@@ -385,14 +371,17 @@ public class HiveMetaStoreChecker {
    *          Table where the partitions would be located
    * @param partPaths
    *          Paths of the partitions the ms knows about
+   * @param filterExp
+   *          Filter expression which is used to prune th partition from the
+   *          metastore and FileSystem.
    * @param result
    *          Result object
    * @throws IOException
    *           Thrown if we fail at fetching listings from the fs.
    * @throws MetastoreException ex
    */
-  void findUnknownPartitions(Table table, Set<Path> partPaths, CheckResult result)
-      throws IOException, MetastoreException {
+  void findUnknownPartitions(Table table, Set<Path> partPaths, byte[] filterExp,
+      CheckResult result) throws IOException, MetastoreException, MetaException {
 
     Path tablePath = getPath(table);
     if (tablePath == null) {
@@ -402,7 +391,34 @@ public class HiveMetaStoreChecker {
     // now check the table folder and see if we find anything
     // that isn't in the metastore
     Set<Path> allPartDirs = new HashSet<>();
+    List<FieldSchema> partColumns = table.getPartitionKeys();
     checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
+
+    if (filterExp != null) {
+      PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
+      List<String> paritions = new ArrayList<>();
+      Set<Path> partDirs = new HashSet<Path>();
+      String tablePathStr = tablePath.toString();
+      for (Path path : allPartDirs) {
+        // remove the table's path from the partition path
+        // eg: <tablePath>/p1=1/p2=2/p3=3 ---> p1=1/p2=2/p3=3
+        if (tablePathStr.endsWith("/")) {
+          paritions.add(path.toString().substring(tablePathStr.length()));
+        } else {
+          paritions.add(path.toString().substring(tablePathStr.length() + 1));
+        }
+      }
+      // Remove all partition paths which does not matches the filter expression.
+      expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
+          conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), paritions);
+
+      // now the partition list will contain all the paths that matches the filter expression.
+      // add them back to partDirs.
+      for (String path : paritions) {
+        partDirs.add(new Path(tablePath, path));
+      }
+      allPartDirs = partDirs;
+    }
     // don't want the table dir
     allPartDirs.remove(tablePath);
 

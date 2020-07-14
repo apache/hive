@@ -99,7 +99,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     wait: while (true) {
       //double wait time until 5min
       waitTimeMs = waitTimeMs*2;
-      waitTimeMs = Math.max(waitTimeMs, waitTimeOut);
+      waitTimeMs = Math.min(waitTimeMs, waitTimeOut);
       try {
         Thread.sleep(waitTimeMs);
       } catch (InterruptedException ex) {

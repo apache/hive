@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -91,6 +92,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -750,11 +752,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private List<DirCopyWork> dirLocationsToCopy(List<Path> sourceLocations)
           throws HiveException {
+    if (sourceLocations.isEmpty()) {
+      return Collections.emptyList();
+    }
     List<DirCopyWork> list = new ArrayList<>(sourceLocations.size());
     String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     // this is done to remove any scheme related information that will be present in the base path
     // specifically when we are replicating to cloud storage
-    Path basePath = new Path(baseDir);
+    Path basePath = ReplExternalTables.getExternalTableBaseDir(conf);
     for (Path sourcePath : sourceLocations) {
       Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
       list.add(new DirCopyWork(sourcePath, targetPath));
@@ -860,6 +865,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
       replLogger.endLog(bootDumpBeginReplId.toString());
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
     }
     Long bootDumpEndReplId = currentNotificationId(hiveDb);
     LOG.info("Preparing to return {},{}->{}",
@@ -870,7 +876,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     work.setDirCopyIterator(extTableCopyWorks.iterator());
     work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
-    work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
     return bootDumpBeginReplId;
   }
 

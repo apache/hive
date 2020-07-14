@@ -68,7 +68,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String GET_PMF = "pmf";
   private static final String GET_QUANTILES = "quantiles";
   public static final String GET_QUANTILE = "quantile";
-  private static final String GET_RANK = "rank";
+  public static final String GET_RANK = "rank";
   private static final String INTERSECT_SKETCH = "intersect";
   private static final String INTERSECT_SKETCH1 = "intersect_f";
   private static final String EXCLUDE_SKETCH = "exclude";
@@ -130,6 +130,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
       registerAsHiveFunction(sd.fnMap.get(GET_QUANTILE));
       registerAsHiveFunction(sd.fnMap.get(GET_CDF));
       registerAsHiveFunction(sd.fnMap.get(GET_N));
+      registerAsHiveFunction(sd.fnMap.get(GET_RANK));
 
       // Mergability is exposed to Calcite; which enables to use it during rollup.
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);

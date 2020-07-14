@@ -66,7 +66,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
 
-  private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
   String extraPrimaryDb;
 
   @BeforeClass
@@ -96,10 +95,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void replicationWithoutExternalTables() throws Throwable {
-    List<String> loadWithClause = externalTableBasePathWithClause();
-    List<String> dumpWithClause = Collections.singletonList
-        ("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
-
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -109,7 +105,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into table t2 partition(country='india') values ('bangalore')")
         .run("insert into table t2 partition(country='us') values ('austin')")
         .run("insert into table t2 partition(country='france') values ('paris')")
-        .dump(primaryDbName, dumpWithClause);
+        .dump(primaryDbName, withClause);
 
     // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
     Path metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
@@ -117,7 +113,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertFalse(primary.miniDFSCluster.getFileSystem()
         .exists(new Path(metadataPath + relativeExtInfoPath(primaryDbName))));
 
-    replica.load(replicatedDbName, primaryDbName, loadWithClause)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)
         .run("use " + replicatedDbName)
@@ -131,7 +127,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("create external table t3 (id int)")
         .run("insert into table t3 values (10)")
         .run("insert into table t3 values (20)")
-        .dump(primaryDbName, dumpWithClause);
+        .dump(primaryDbName, withClause);
 
     // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
     metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
@@ -139,7 +135,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertFalse(primary.miniDFSCluster.getFileSystem()
         .exists(new Path(metadataPath + relativeExtInfoPath(null))));
 
-    replica.load(replicatedDbName, primaryDbName, loadWithClause)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't3'")
         .verifyFailure(new String[] { "t3" })
@@ -148,7 +144,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void externalTableReplicationWithDefaultPaths() throws Throwable {
-    List<String> withClauseOptions = externalTableBasePathWithClause();
     //creates external tables with partitions
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
@@ -159,14 +154,14 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into table t2 partition(country='india') values ('bangalore')")
         .run("insert into table t2 partition(country='us') values ('austin')")
         .run("insert into table t2 partition(country='france') values ('paris')")
-        .dump(primaryDbName, withClauseOptions);
+        .dump(primaryDbName);
 
     // verify that the external table info is written correctly for bootstrap
     assertExternalFileInfo(Arrays.asList("t1", "t2"), tuple.dumpLocation, primaryDbName, false);
 
 
 
-    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables like 't1'")
         .verifyResult("t1")
@@ -191,12 +186,12 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("create external table t3 (id int)")
         .run("insert into table t3 values (10)")
         .run("create external table t4 as select id from t3")
-        .dump(primaryDbName, withClauseOptions);
+        .dump(primaryDbName);
 
     // verify that the external table info is written correctly for incremental
     assertExternalFileInfo(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, true);
 
-    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables like 't3'")
         .verifyResult("t3")
@@ -209,7 +204,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     tuple = primary.run("use " + primaryDbName)
         .run("drop table t1")
-        .dumpWithCommand("repl dump " + primaryDbName);
+        .dump(primaryDbName);
 
     // verify that the external table info is written correctly for incremental
     assertExternalFileInfo(Arrays.asList("t2", "t3", "t4"), tuple.dumpLocation, true);
@@ -254,10 +249,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // Create base directory but use HDFS path without schema or authority details.
     // Hive should pick up the local cluster's HDFS schema/authority.
-    externalTableBasePathWithClause();
     List<String> withClause = Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + REPLICA_EXTERNAL_BASE + "'",
             "'distcp.options.update'=''"
     );
 
@@ -311,7 +303,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
-    List<String> withClause = externalTableBasePathWithClause();
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table t2 (place string) partitioned by (country string) row format "
@@ -414,7 +406,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void externalTableIncrementalCheckpointing() throws Throwable {
-    List<String> withClause = externalTableBasePathWithClause();
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -439,7 +431,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(true);
 
-    withClause = externalTableWithClause(true, true);
+    withClause = ReplicationTestUtils.externalTableWithClause(new ArrayList<>(), true, true);
     WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("insert into table t2 values (5)")
@@ -503,8 +495,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void externalTableIncrementalReplication() throws Throwable {
-    List<String> withClause = externalTableBasePathWithClause();
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
     Path externalTableLocation =
             new Path("/" + testName.getMethodName() + "/t1/");
@@ -517,7 +508,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             + "'")
         .run("alter table t1 add partition(country='india')")
         .run("alter table t1 add partition(country='us')")
-        .dump(primaryDbName, withClause);
+        .dump(primaryDbName);
 
     assertExternalFileInfo(Collections.singletonList("t1"), tuple.dumpLocation, true);
 
@@ -533,8 +524,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       outputStream.write("bangalore\n".getBytes());
     }
 
-    List<String> loadWithClause = externalTableBasePathWithClause();
-    replica.load(replicatedDbName, primaryDbName, withClause)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables like 't1'")
         .verifyResult("t1")
@@ -546,8 +536,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // The Data should be seen after next dump-and-load cycle.
     tuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, withClause);
-    replica.load(replicatedDbName, primaryDbName, withClause)
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("show tables like 't1'")
             .verifyResult("t1")
@@ -565,10 +555,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     }
 
     // Repl load with zero events but external tables location info should present.
-    tuple = primary.dump(primaryDbName, withClause);
+    tuple = primary.dump(primaryDbName);
     assertExternalFileInfo(Collections.singletonList("t1"), tuple.dumpLocation, true);
 
-    replica.load(replicatedDbName, primaryDbName, withClause)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("show tables like 't1'")
             .verifyResult("t1")
@@ -587,7 +577,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     tuple = primary
         .run("alter table t1 drop partition (country='india')")
         .run("alter table t1 drop partition (country='us')")
-        .dump(primaryDbName, withClause);
+        .dump(primaryDbName);
 
     replica.load(replicatedDbName, primaryDbName)
         .run("select * From t1")
@@ -601,7 +591,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
-    List<String> loadWithClause = externalTableBasePathWithClause();
     List<String> dumpWithClause = Collections.singletonList(
         "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
@@ -623,7 +612,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertFalse(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(metadataPath + relativeExtInfoPath(null))));
 
-    replica.load(replicatedDbName, primaryDbName, loadWithClause)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -633,7 +622,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyFailure(new String[] {"t2" })
             .verifyReplTargetProperty(replicatedDbName);
 
-    dumpWithClause = externalTableWithClause(true, true);
+    dumpWithClause = ReplicationTestUtils.externalTableWithClause(new ArrayList<>(), true, true);
 
     tuple = primary.run("use " + primaryDbName)
             .run("drop table t1")
@@ -664,7 +653,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     tblPath = new Path(dbPath, "t3");
     assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
 
-    replica.load(replicatedDbName, primaryDbName, loadWithClause)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -701,12 +690,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void retryBootstrapExternalTablesFromDifferentDump() throws Throwable {
-    List<String> loadWithClause = new ArrayList<>();
-    loadWithClause.addAll(externalTableBasePathWithClause());
-
-    List<String> dumpWithClause = Collections.singletonList(
-            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
-    );
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(false);
 
     WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
             .run("use " + primaryDbName)
@@ -728,7 +713,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult("1")
             .verifyReplTargetProperty(replicatedDbName);
 
-    dumpWithClause = externalTableWithClause(true, true);
+    dumpWithClause = ReplicationTestUtils.externalTableWithClause(new ArrayList<>(), true, true);
     primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("create external table t4 (id int)")
@@ -777,7 +762,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // Insert into existing external table and then Drop it, add another managed table with same name
     // and dump another bootstrap dump for external tables.
-    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'");
+    dumpWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='india') values ('chennai')")
             .run("drop table t2")
@@ -823,8 +808,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void testExternalTablesIncReplicationWithConcurrentDropTable() throws Throwable {
-    List<String> dumpWithClause = this.externalTableWithClause(null, true);
-    List<String> loadWithClause = externalTableBasePathWithClause();
+    List<String> dumpWithClause = ReplicationTestUtils.externalTableWithClause(new ArrayList<>(), null, true);
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
             .run("create external table t1 (id int)")
             .run("insert into table t1 values (1)")
@@ -878,10 +863,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
-    List<String> loadWithClause = externalTableBasePathWithClause();
-    List<String> dumpWithClause = Collections.singletonList(
-            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'"
-    );
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
+    List<String> dumpWithClause = ReplicationTestUtils.includeExternalTableClause(true);
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create external table t1 (id int)")
             .run("insert into table t1 values (1)")
@@ -917,7 +900,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void testExtTableBootstrapDuringIncrementalWithoutAnyEvents() throws Throwable {
-    List<String> loadWithClause = externalTableBasePathWithClause();
+    List<String> loadWithClause = ReplicationTestUtils.includeExternalTableClause(false);
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
@@ -942,13 +925,13 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // This looks like an empty dump but it has the ALTER TABLE event created by the previous
     // dump. We need it here so that the next dump won't have any events.
-    WarehouseInstance.Tuple incTuple = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple incTuple = primary.dump(primaryDbName, ReplicationTestUtils.includeExternalTableClause(true));
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(incTuple.lastReplicationId);
 
     // Take a dump with external tables bootstrapped and load it
-    dumpWithClause = externalTableWithClause(true, true);
+    dumpWithClause = ReplicationTestUtils.externalTableWithClause(new ArrayList<>(), true, true);
     WarehouseInstance.Tuple inc2Tuple = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpWithClause);
 
@@ -965,7 +948,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void replicationWithTableNameContainsKeywords() throws Throwable {
-    List<String> withClause = externalTableBasePathWithClause();
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -1008,15 +991,49 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyReplTargetProperty(replicatedDbName);
   }
 
+  @Test
+  public void testExternalTableBaseDirMandatory() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='/extTablebase'");
+    WarehouseInstance.Tuple tuple = null;
+    try {
+      primary.run("use " + primaryDbName)
+              .run("create external table t1 (id int)")
+              .run("insert into table t1 values(1)")
+              .dump(primaryDbName, withClause);
+    } catch (SemanticException ex) {
+      assertTrue(ex.getMessage().contains(
+              "Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required"));
+    }
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
+            + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+    tuple = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, withClause);
 
-  private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
-  }
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'=''");
+    try {
+      replica.load(replicatedDbName, primaryDbName, withClause);
+    } catch (SemanticException ex) {
+      assertTrue(ex.getMessage().contains(
+              "Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required"));
+    }
 
-  private List<String> externalTableWithClause(Boolean bootstrapExtTbl, Boolean includeExtTbl)
-          throws IOException, SemanticException {
-    List<String> extTblBaseDir = ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
-    return ReplicationTestUtils.externalTableWithClause(extTblBaseDir, bootstrapExtTbl, includeExtTbl);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
+            + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    replica.run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResults(new String[] {"t1"})
+            .run("select id from t1")
+            .verifyResults(new String[] {"1"})
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   private void assertExternalFileInfo(List<String> expected, String dumplocation,
@@ -1044,4 +1061,5 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       return File.separator + dbName.toLowerCase() + File.separator + FILE_NAME;
     }
   }
+
 }

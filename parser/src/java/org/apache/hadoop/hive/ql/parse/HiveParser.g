@@ -1430,9 +1430,9 @@ partitionLocation
 alterStatementSuffixDropPartitions[boolean table]
 @init { pushMsg("drop partition statement", state); }
 @after { popMsg(state); }
-    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* KW_PURGE? replicationClause?
-    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? KW_PURGE? replicationClause?)
-    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? replicationClause?)
+    : KW_DROP ifExists? KW_PARTITION partitionSelectorSpec (COMMA KW_PARTITION partitionSelectorSpec)* KW_PURGE? replicationClause?
+    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS partitionSelectorSpec+ ifExists? KW_PURGE? replicationClause?)
+    ->            ^(TOK_ALTERVIEW_DROPPARTS partitionSelectorSpec+ ifExists? replicationClause?)
     ;
 
 alterStatementSuffixProperties
@@ -1942,9 +1942,8 @@ metastoreCheck
 @after { popMsg(state); }
     : KW_MSCK (repair=KW_REPAIR)?
       (KW_TABLE tableName
-        ((add=KW_ADD | drop=KW_DROP | sync=KW_SYNC) (parts=KW_PARTITIONS))? |
-        (partitionSpec)?)
-    -> ^(TOK_MSCK $repair? tableName? $add? $drop? $sync? (partitionSpec*)?)
+        (opt=(KW_ADD|KW_DROP|KW_SYNC) (parts=KW_PARTITIONS) (partitionSelectorSpec)?)?)
+    -> ^(TOK_MSCK $repair? tableName? $opt? (partitionSelectorSpec)?)
     ;
 
 resourceList

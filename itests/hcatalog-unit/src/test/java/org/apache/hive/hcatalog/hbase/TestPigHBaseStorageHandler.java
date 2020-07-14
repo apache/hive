@@ -55,7 +55,6 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
@@ -140,7 +139,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   }
 
-  @Ignore("See HIVE-23762")
   @Test
   public void testPigHBaseSchema() throws Exception {
     Initialize();
@@ -203,8 +201,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   }
 
-
-  @Ignore("See HIVE-23762")
   @Test
   public void testPigFilterProjection() throws Exception {
     Initialize();
@@ -283,7 +279,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     assertEquals(index-1,4);
   }
 
-  @Ignore("See HIVE-23762")
   @Test
   public void testPigPopulation() throws Exception {
     Initialize();

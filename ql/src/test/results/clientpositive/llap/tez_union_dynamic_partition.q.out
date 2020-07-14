@@ -47,6 +47,7 @@ union all
 select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: default@partunion1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -206,6 +207,7 @@ union all
 select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: default@partunion1
 POSTHOOK: Output: default@partunion1@part1=2014
 POSTHOOK: Lineage: partunion1 PARTITION(part1=2014).id1 EXPRESSION []
 PREHOOK: query: select * from partunion1

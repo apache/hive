@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
@@ -2342,7 +2343,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             Path location;
             // If the CTAS query does specify a location, use the table location, else use the db location
-            if (qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
+            if (qb.isMaterializedView() && qb.getViewDesc() != null && qb.getViewDesc().getLocation() != null) {
+              location = new Path(qb.getViewDesc().getLocation());
+            } else if (qb.isCTAS() && qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
               location = new Path(qb.getTableDesc().getLocation());
             } else {
               // allocate a temporary output dir on the location of the table
@@ -2355,7 +2358,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 if (destTableDb == null) {
                   destTableDb = names[0];
                 }
-                location = wh.getDatabasePath(db.getDatabase(destTableDb));
+                boolean useExternal = false;
+                if (qb.isMaterializedView()) {
+                  useExternal = !AcidUtils.isTransactionalView(qb.getViewDesc()) && !makeAcid();
+                } else {
+                  useExternal = (qb.getTableDesc() == null || qb.getTableDesc().isTemporary()
+                    || qb.getTableDesc().isExternal() || !makeAcid());
+                }
+                if (useExternal) {
+                  location = wh.getDatabaseExternalPath(db.getDatabase(destTableDb));
+                } else {
+                  location = wh.getDatabaseManagedPath(db.getDatabase(destTableDb));
+                }
               } catch (MetaException e) {
                 throw new SemanticException(e);
               }
@@ -6866,7 +6880,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numFiles = 1;
     int totalFiles = 1;
 
-    if (dest_tab.getNumBuckets() > 0) {
+    if (dest_tab.getNumBuckets() > 0 && !dest_tab.getBucketCols().isEmpty()) {
       enforceBucketing = true;
       if (updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
@@ -7636,31 +7650,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (viewDesc != null) {
           tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
         } else if (qb.getIsQuery()) {
-          String fileFormat;
+          Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+          String fileFormat = conf.getResultFileFormat().toString();
           if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
-            fileFormat = "SequenceFile";
-            HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, fileFormat);
-            tableDescriptor =
-                PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
-                    ThriftJDBCBinarySerDe.class);
+            serdeClass = ThriftJDBCBinarySerDe.class;
+            fileFormat = ResultFileFormat.SEQUENCEFILE.toString();
             // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
             // write out formatted thrift objects to SequenceFile
             conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
-          } else {
-            fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-            Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
-            if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
-              boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
-              if(useArrow) {
-                serdeClass = ArrowColumnarBatchSerDe.class;
-              } else {
-                serdeClass = LazyBinarySerDe2.class;
-              }
-            }
-            tableDescriptor =
-                PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
-                    serdeClass);
+          } else if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
+            // If this output format is Llap, check to see if Arrow is requested
+            boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
+            serdeClass = useArrow ? ArrowColumnarBatchSerDe.class : LazyBinarySerDe2.class;
           }
+          tableDescriptor = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
+                serdeClass);
         } else {
           tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
         }
@@ -8184,7 +8188,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
       // No static partition specified
       if (dpCtx.getNumSPCols() == 0) {
-        output = new WriteEntity(dest_tab, determineWriteType(ltd, dest), false);
+        output = new WriteEntity(dest_tab, determineWriteType(ltd, dest), true);
         outputs.add(output);
         output.setDynamicPartitionWrite(true);
       }

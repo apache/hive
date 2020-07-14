@@ -20,30 +20,17 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
-import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -52,20 +39,15 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -76,7 +58,6 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,19 +69,17 @@ public class Driver implements IDriver {
   private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
-  private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+
   // Exception message that ReExecutionRetryLockPlugin will recognize
   public static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
       "snapshot was outdated when locks were acquired";
-  private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
   private ByteStream.Output bos = new ByteStream.Output();
 
   private final DriverContext driverContext;
   private final DriverState driverState = new DriverState();
-  private final List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
-  private final ValidTxnManager validTxnManager;
+  private final DriverTxnHandler driverTxnHandler;
 
   private Context context;
   private TaskQueue taskQueue;
@@ -157,7 +136,7 @@ public class Driver implements IDriver {
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
-    validTxnManager = new ValidTxnManager(this, driverContext);
+    driverTxnHandler = new DriverTxnHandler(this, driverContext, driverState);
   }
 
   /**
@@ -197,50 +176,13 @@ public class Driver implements IDriver {
   }
 
   private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
-    createTransactionManager();
+    driverTxnHandler.createTxnManager();
     DriverState.setDriverState(driverState);
     prepareContext();
     setQueryId();
 
     if (resetTaskIds) {
       TaskFactory.resetId();
-    }
-  }
-
-  private void createTransactionManager() throws CommandProcessorException {
-    try {
-      // Initialize the transaction manager.  This must be done before analyze is called.
-      HiveTxnManager queryTxnManager = (driverContext.getInitTxnManager() != null) ?
-          driverContext.getInitTxnManager() : SessionState.get().initTxnMgr(driverContext.getConf());
-
-      if (queryTxnManager instanceof Configurable) {
-        ((Configurable) queryTxnManager).setConf(driverContext.getConf());
-      }
-      driverContext.setTxnManager(queryTxnManager);
-      driverContext.getQueryState().setTxnManager(queryTxnManager);
-
-      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
-      // if compile is being called multiple times, clear the old shutdownhook
-      ShutdownHookManager.removeShutdownHook(shutdownRunner);
-      shutdownRunner = new Runnable() {
-        @Override
-        public void run() {
-          try {
-            releaseLocksAndCommitOrRollback(false, driverContext.getTxnManager());
-          } catch (LockException e) {
-            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
-                e.getMessage());
-          }
-        }
-      };
-      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
-    } catch (LockException e) {
-      ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
-      String errorMessage = "FAILED: " + e.getClass().getSimpleName() + " [Error "  + error.getErrorCode()  + "]:";
-
-      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      throw DriverUtils.createProcessorException(driverContext, error.getErrorCode(), errorMessage, error.getSQLState(),
-          e);
     }
   }
 
@@ -261,6 +203,8 @@ public class Driver implements IDriver {
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());
     context.setHDFSCleanup(true);
+
+    driverTxnHandler.setContext(context);
   }
 
   private void setQueryId() {
@@ -311,110 +255,6 @@ public class Driver implements IDriver {
     return driverContext.getFetchTask();
   }
 
-  /**
-   * Acquire read and write locks needed by the statement. The list of objects to be locked are
-   * obtained from the inputs and outputs populated by the compiler.  Locking strategy depends on
-   * HiveTxnManager and HiveLockManager configured
-   *
-   * This method also records the list of valid transactions.  This must be done after any
-   * transactions have been opened.
-   * @throws CommandProcessorException
-   **/
-  private void acquireLocks() throws CommandProcessorException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
-
-    if(!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid()) {
-      /*non acid txn managers don't support txns but fwd lock requests to lock managers
-        acid txn manager requires all locks to be associated with a txn so if we
-        end up here w/o an open txn it's because we are processing something like "use <database>
-        which by definition needs no locks*/
-      return;
-    }
-    try {
-      String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-
-      // Set the table write id in all of the acid file sinks
-      if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
-        List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
-        //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
-        //so this makes (file name -> data) mapping stable
-        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) ->
-          fsd1.getDirName().compareTo(fsd2.getDirName()));
-        for (FileSinkDesc desc : acidSinks) {
-          TableDesc tableInfo = desc.getTableInfo();
-          final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
-          long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
-          desc.setTableWriteId(writeId);
-
-          /**
-           * it's possible to have > 1 FileSink writing to the same table/partition
-           * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
-           * Insert ... Select ... Union All Select ... using
-           * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
-           */
-          desc.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
-          String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
-          if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
-              desc.isFullAcidTable()) {
-            throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
-                " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
-          }
-        }
-      }
-
-      if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
-        // Allocate write ID for the table being analyzed.
-        Table t = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-        driverContext.getTxnManager().getTableWriteId(t.getDbName(), t.getTableName());
-      }
-
-
-      DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
-      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
-      if (hasAcidDdl) {
-        String fqTableName = acidDdlDesc.getFullTableName();
-        final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
-        long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
-        acidDdlDesc.setWriteId(writeId);
-      }
-
-      /*It's imperative that {@code acquireLocks()} is called for all commands so that
-      HiveTxnManager can transition its state machine correctly*/
-      driverContext.getTxnManager().acquireLocks(driverContext.getPlan(), context, userFromUGI, driverState);
-      final List<HiveLock> locks = context.getHiveLocks();
-      LOG.info("Operation {} obtained {} locks", driverContext.getPlan().getOperation(),
-          ((locks == null) ? 0 : locks.size()));
-      // This check is for controlling the correctness of the current state
-      if (driverContext.getTxnManager().recordSnapshot(driverContext.getPlan()) &&
-          !driverContext.isValidTxnListsGenerated()) {
-        throw new IllegalStateException(
-            "Need to record valid WriteID list but there is no valid TxnID list (" +
-                JavaUtils.txnIdToString(driverContext.getTxnManager().getCurrentTxnId()) +
-                ", queryId:" + driverContext.getPlan().getQueryId() + ")");
-      }
-
-      if (driverContext.getPlan().hasAcidResourcesInQuery() || hasAcidDdl) {
-        validTxnManager.recordValidWriteIds();
-      }
-
-    } catch (Exception e) {
-      String errorMessage;
-      if (driverState.isDestroyed() || driverState.isAborted() || driverState.isClosed()) {
-        errorMessage = String.format("Ignore lock acquisition related exception in terminal state (%s): %s",
-            driverState.toString(), e.getMessage());
-        CONSOLE.printInfo(errorMessage);
-      } else {
-        errorMessage = String.format("FAILED: Error in acquiring locks: %s", e.getMessage());
-        CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      }
-      throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
-          e);
-    } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
-    }
-  }
-
   public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
     releaseLocksAndCommitOrRollback(commit, driverContext.getTxnManager());
   }
@@ -427,47 +267,7 @@ public class Driver implements IDriver {
    **/
   @VisibleForTesting
   public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
-    HiveTxnManager txnMgr;
-    if (txnManager == null) {
-      // Default to driver's txn manager if no txn manager specified
-      txnMgr = driverContext.getTxnManager();
-    } else {
-      txnMgr = txnManager;
-    }
-    // If we've opened a transaction we need to commit or rollback rather than explicitly
-    // releasing the locks.
-    driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
-    driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    if (!DriverUtils.checkConcurrency(driverContext)) {
-      return;
-    }
-    if (txnMgr.isTxnOpen()) {
-      if (commit) {
-        if (driverContext.getConf().getBoolVar(ConfVars.HIVE_IN_TEST) &&
-            driverContext.getConf().getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
-          txnMgr.rollbackTxn();
-        }
-        else {
-          txnMgr.commitTxn();//both commit & rollback clear ALL locks for this tx
-        }
-      } else {
-        txnMgr.rollbackTxn();
-      }
-    } else {
-      //since there is no tx, we only have locks for current query (if any)
-      if (context != null && context.getHiveLocks() != null) {
-        hiveLocks.addAll(context.getHiveLocks());
-      }
-      txnMgr.releaseLocks(hiveLocks);
-    }
-    hiveLocks.clear();
-    if (context != null) {
-      context.setHiveLocks(null);
-    }
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
+    driverTxnHandler.endTransactionAndCleanup(commit, txnManager);
   }
 
   /**
@@ -554,9 +354,8 @@ public class Driver implements IDriver {
       throw cpe;
     } finally {
       if (cleanupTxnList) {
-        // Valid txn list might be generated for a query compiled using this
-        // command, thus we need to reset it
-        driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
+        // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
+        driverTxnHandler.cleanupTxnList();
       }
     }
   }
@@ -568,13 +367,11 @@ public class Driver implements IDriver {
           "No previously compiled query for driver - queryId=" + driverContext.getQueryState().getQueryId());
     }
 
-    if (requiresLock()) {
-      try {
-        acquireLocks();
-      } catch (CommandProcessorException cpe) {
-        rollback(cpe);
-        throw cpe;
-      }
+    try {
+      driverTxnHandler.acquireLocksIfNeeded();
+    } catch (CommandProcessorException cpe) {
+      rollback(cpe);
+      throw cpe;
     }
   }
 
@@ -605,7 +402,7 @@ public class Driver implements IDriver {
         compile(command, true, deferClose);
       } catch (CommandProcessorException cpe) {
         try {
-          releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } catch (LockException e) {
           LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
         }
@@ -677,22 +474,21 @@ public class Driver implements IDriver {
       lockAndRespond();
 
       try {
-        if (!validTxnManager.isValidTxnListState()) {
+        if (!driverTxnHandler.isValidTxnListState()) {
           LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry (see ReExecutionRetryLockPlugin)
           try {
-            releaseLocksAndCommitOrRollback(false);
+            driverTxnHandler.endTransactionAndCleanup(false);
           } catch (LockException e) {
             handleHiveException(e, 12);
           }
-          throw handleHiveException(
-              new HiveException(
-                  "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + "."),
-              14);
+          HiveException e = new HiveException(
+              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+          handleHiveException(e, 14);
         }
       } catch (LockException e) {
-        throw handleHiveException(e, 13);
+        handleHiveException(e, 13);
       }
 
       try {
@@ -709,20 +505,20 @@ public class Driver implements IDriver {
         //since set autocommit starts an implicit txn, close it
         if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
             driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
-          releaseLocksAndCommitOrRollback(true);
+          driverTxnHandler.endTransactionAndCleanup(true);
         }
         else if(driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
-          releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } else if (!driverContext.getTxnManager().isTxnOpen() &&
             driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
           // repl load during migration, commits the explicit txn and start some internal txns. Call
           // releaseLocksAndCommitOrRollback to do the clean up.
-          releaseLocksAndCommitOrRollback(false);
+          driverTxnHandler.endTransactionAndCleanup(false);
         } else {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {
-        throw handleHiveException(e, 12);
+        handleHiveException(e, 12);
       }
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
@@ -759,77 +555,27 @@ public class Driver implements IDriver {
 
   private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
     try {
-      releaseLocksAndCommitOrRollback(false);
+      driverTxnHandler.endTransactionAndCleanup(false);
     } catch (LockException e) {
       LOG.error("rollback() FAILED: " + cpe); //make sure not to loose
       handleHiveException(e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
     }
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret) throws CommandProcessorException {
-    return handleHiveException(e, ret, null);
+  private void handleHiveException(HiveException e, int ret) throws CommandProcessorException {
+    handleHiveException(e, ret, null);
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret, String rootMsg)
+  private void handleHiveException(HiveException e, int ret, String rootMsg)
       throws CommandProcessorException {
     String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-    if(rootMsg != null) {
+    if (rootMsg != null) {
       errorMessage += "\n" + rootMsg;
     }
     String sqlState = e.getCanonicalErrorMsg() != null ?
         e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
     CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
     throw DriverUtils.createProcessorException(driverContext, ret, errorMessage, sqlState, e);
-  }
-
-  private boolean requiresLock() {
-    if (!DriverUtils.checkConcurrency(driverContext)) {
-      LOG.info("Concurrency mode is disabled, not creating a lock manager");
-      return false;
-    }
-    // Lock operations themselves don't require the lock.
-    if (isExplicitLockOperation()) {
-      return false;
-    }
-    if (!HiveConf.getBoolVar(driverContext.getConf(), ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
-      return true;
-    }
-    if (driverContext.getConf().get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK) != null) {
-      return true;
-    }
-    Queue<Task<?>> tasks = new LinkedList<Task<?>>();
-    tasks.addAll(driverContext.getPlan().getRootTasks());
-    while (tasks.peek() != null) {
-      Task<?> tsk = tasks.remove();
-      if (tsk.requireLock()) {
-        return true;
-      }
-      if (tsk instanceof ConditionalTask) {
-        tasks.addAll(((ConditionalTask)tsk).getListTasks());
-      }
-      if (tsk.getChildTasks() != null) {
-        tasks.addAll(tsk.getChildTasks());
-      }
-      // does not add back up task here, because back up task should be the same
-      // type of the original task.
-    }
-    return false;
-  }
-
-  private boolean isExplicitLockOperation() {
-    HiveOperation currentOpt = driverContext.getPlan().getOperation();
-    if (currentOpt != null) {
-      switch (currentOpt) {
-      case LOCKDB:
-      case UNLOCKDB:
-      case LOCKTABLE:
-      case UNLOCKTABLE:
-        return true;
-      default:
-        return false;
-      }
-    }
-    return false;
   }
 
   @Override
@@ -964,7 +710,7 @@ public class Driver implements IDriver {
         }
         context.clear(deleteResultDir);
         if (context.getHiveLocks() != null) {
-          hiveLocks.addAll(context.getHiveLocks());
+          driverTxnHandler.addHiveLocksFromContext();
           context.setHiveLocks(null);
         }
         context = null;
@@ -1034,15 +780,7 @@ public class Driver implements IDriver {
     releaseResStream();
     releaseContext();
     if (destroyed) {
-      if (!hiveLocks.isEmpty()) {
-        try {
-          releaseLocksAndCommitOrRollback(false);
-        } catch (LockException e) {
-          LOG.warn("Exception when releasing locking in destroy: " +
-              e.getMessage());
-        }
-      }
-      ShutdownHookManager.removeShutdownHook(shutdownRunner);
+      driverTxnHandler.release();
     }
     return 0;
   }
@@ -1085,18 +823,7 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
-    boolean isTxnOpen = driverContext != null
-        && driverContext.getTxnManager() != null
-        && driverContext.getTxnManager().isTxnOpen();
-    if (!hiveLocks.isEmpty() || isTxnOpen) {
-      try {
-        releaseLocksAndCommitOrRollback(false);
-      } catch (LockException e) {
-        LOG.warn("Exception when releasing locking in destroy: " +
-            e.getMessage());
-      }
-    }
-    ShutdownHookManager.removeShutdownHook(shutdownRunner);
+    driverTxnHandler.destroy();
   }
 
   @Override

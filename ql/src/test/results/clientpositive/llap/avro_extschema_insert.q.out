@@ -50,6 +50,7 @@ POSTHOOK: query: insert overwrite table avro_extschema_insert2 partition (p1) se
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@avro_extschema_insert1
 POSTHOOK: Input: default@avro_extschema_insert1@p1=part1
+POSTHOOK: Output: default@avro_extschema_insert2
 POSTHOOK: Output: default@avro_extschema_insert2@p1=part1
 POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col1 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col1, type:string, comment:), ]
 POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col2 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col2, type:bigint, comment:), ]
