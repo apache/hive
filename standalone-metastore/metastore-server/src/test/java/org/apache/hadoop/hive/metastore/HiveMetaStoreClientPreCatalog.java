@@ -1377,15 +1377,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     return listPartitionsSpecByExpr(getDefaultCatalog(conf), dbName, tblName, expr, defaultPartName,
-        maxParts, result);
+        maxParts, result, validWriteIdList);
   }
 
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     assert result != null;
     PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName, ByteBuffer.wrap(expr));
@@ -1395,6 +1395,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     if (maxParts >= 0) {
       req.setMaxParts(maxParts);
     }
+    req.setValidWriteIdList(validWriteIdList);
     PartitionsSpecByExprResult r;
     try {
       r = client.get_partitions_spec_by_expr(req);
@@ -1483,6 +1484,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       String defaultPartName, byte[] exprBytes, String order,
       short maxParts) throws MetaException, TException, NoSuchObjectException {
 
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException {
     throw new UnsupportedOperationException();
   }
 
