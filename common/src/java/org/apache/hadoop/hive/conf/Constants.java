@@ -83,5 +83,4 @@ public class Constants {
   public static final String SCHEDULED_QUERY_EXECUTIONID = "scheduled.query.executionid";
   public static final String SCHEDULED_QUERY_USER = "scheduled.query.user";
 
-  public static final String WRITE_ENTITY_PATH = "WRITE_ENTITY_PATH";
 }
