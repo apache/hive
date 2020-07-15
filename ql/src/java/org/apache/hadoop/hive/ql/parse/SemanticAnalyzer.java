@@ -12571,7 +12571,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
-        return;
       }
     }
 
