@@ -292,9 +292,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             }
         }
       }
-      if (conf.isCompactionTable() && HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE)) {
-        AcidUtils.OrcAcidVersion.writeVersionFile(finalPaths[idx].getParent(), fs);
-      }
       updateProgress();
     }
 
