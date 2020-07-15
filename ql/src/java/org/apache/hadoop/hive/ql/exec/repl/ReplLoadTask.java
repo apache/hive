@@ -381,17 +381,21 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
     TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
     String dbDotView = tableName.getNotEmptyDbTable();
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+        table.getPartColNames(), false, false, false, table.getSd().getInputFormat(),
+        table.getSd().getOutputFormat(),
+        table.getSd().getSerdeInfo().getSerializationLib());
+    String originalText = table.getViewOriginalText();
+    String expandedText = table.getViewExpandedText();
 
-    String viewOriginalText = table.getViewOriginalText();
-    String viewExpandedText = table.getViewExpandedText();
     if (!dbName.equals(table.getDbName())) {
       // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
       // texts using new DB name. Currently it refers to the source database name.
     }
 
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
-        table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
-
+    desc.setViewOriginalText(originalText);
+    desc.setViewExpandedText(expandedText);
+    desc.setPartCols(table.getPartCols());
     desc.setReplicationSpec(metaData.getReplicationSpec());
     desc.setOwnerName(table.getOwner());
 

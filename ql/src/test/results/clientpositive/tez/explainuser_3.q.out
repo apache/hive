@@ -541,8 +541,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_n1
 Plan optimized by CBO.
 
-Stage-0
-  Create View{"original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte","name:":"default.v_n1"}
+Stage-1
+  Create View{"name:":"default.v_n1","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
 
 PREHOOK: query: explain with cte as (select * from src  order by key limit 5)
 select * from cte

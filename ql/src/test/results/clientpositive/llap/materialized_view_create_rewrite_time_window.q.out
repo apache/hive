@@ -213,7 +213,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create Materialized View
+    Create View
       columns: a int, c decimal(10,2)
       table properties:
         rewriting.time.window 5min

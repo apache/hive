@@ -2,4 +2,4 @@ PREHOOK: query: DROP VIEW xxx17
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx17
 POSTHOOK: type: DROPVIEW
-FAILED: SemanticException [Error 10093]: Rightmost columns in view output do not match PARTITIONED ON clause
+FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException: Rightmost columns in view output do not match PARTITIONED ON clause

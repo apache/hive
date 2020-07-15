@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -410,7 +410,7 @@ public final class PlanUtils {
  /**
    * Generate a table descriptor from a createViewDesc.
    */
-  public static TableDesc getTableDesc(CreateMaterializedViewDesc crtViewDesc, String cols, String colTypes) {
+  public static TableDesc getTableDesc(CreateViewDesc crtViewDesc, String cols, String colTypes) {
     TableDesc ret;
 
     try {
@@ -444,7 +444,7 @@ public final class PlanUtils {
                 crtViewDesc.getStorageHandler());
       }
 
-      if (crtViewDesc.getViewName() != null) {
+      if (crtViewDesc.getViewName() != null && crtViewDesc.isMaterialized()) {
         properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             crtViewDesc.getViewName());
       }
