@@ -314,11 +314,14 @@ public class ImpalaRexCall {
    */
   public static RexNode removeRedundantCast(RexCall rexCall) {
     RexNode returnRexCall = rexCall;
+    if (rexCall.getKind() != SqlKind.CAST) {
+      return returnRexCall;
+    }
     SqlTypeName s1 = rexCall.getType().getSqlTypeName();
     SqlTypeName s2 = rexCall.getOperands().get(0).getType().getSqlTypeName();
     // Impala has a CAST DECIMAL AS DECIMAL function for when the precision or scale
     // is different.
-    if (rexCall.getKind() == SqlKind.CAST && s1.equals(s2) && s1 != SqlTypeName.DECIMAL) {
+    if (s1.equals(s2) && s1 != SqlTypeName.DECIMAL) {
       returnRexCall = rexCall.getOperands().get(0);
     }
     return returnRexCall;

@@ -1,0 +1,67 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  f.`year`,
+  a.iata,
+  a.airport,
+  a.city,
+  a.state,
+  a.country
+FROM
+  impala_flights f,
+  impala_airports a
+WHERE
+  f.origin = a.iata
+  AND f.`month` = month(current_date())
+GROUP BY
+  f.`year`,
+  a.iata,
+  a.airport,
+  a.city,
+  a.state,
+  a.country
+HAVING COUNT(*) > 10000
+ORDER BY APPX_MEDIAN(f.DepDelay) DESC
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_airports
+PREHOOK: Input: default@impala_flights
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  f.`year`,
+  a.iata,
+  a.airport,
+  a.city,
+  a.state,
+  a.country
+FROM
+  impala_flights f,
+  impala_airports a
+WHERE
+  f.origin = a.iata
+  AND f.`month` = month(current_date())
+GROUP BY
+  f.`year`,
+  a.iata,
+  a.airport,
+  a.city,
+  a.state,
+  a.country
+HAVING COUNT(*) > 10000
+ORDER BY APPX_MEDIAN(f.DepDelay) DESC
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_airports
+POSTHOOK: Input: default@impala_flights
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(year=[$0], iata=[$1], airport=[$2], city=[$3], state=[$4], country=[$5])
+  ImpalaSortRel(sort0=[$6], dir0=[DESC], fetch=[10])
+    ImpalaProjectRel(year=[$0], iata=[$1], airport=[$2], city=[$3], state=[$4], country=[$5], _o__col20=[$7])
+      ImpalaAggregateRel(group=[{2, 3, 4, 5, 6, 7}], agg#0=[count()], agg#1=[APPX_MEDIAN($0)], condition=[>($6, 10000)])
+        ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
+          ImpalaProjectPassthroughRel(depdelay=[$14], origin=[$15], year=[$28])
+            ImpalaHdfsScanRel(table=[[default, impala_flights]], condition=[=($0, MONTH(FLAG(MONTH), CURRENT_DATE))])
+          ImpalaProjectPassthroughRel(iata=[$0], airport=[$1], city=[$2], state=[$3], country=[$4])
+            ImpalaHdfsScanRel(table=[[default, impala_airports]])
+
