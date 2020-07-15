@@ -269,7 +269,6 @@ TOK_ALTERVIEW_DROPPROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
-TOK_ALTERVIEW_AS;
 TOK_CREATE_MATERIALIZED_VIEW;
 TOK_DROP_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW;
@@ -1260,7 +1259,7 @@ alterViewStatementSuffix
     | alterStatementSuffixRename[false]
     | alterStatementSuffixAddPartitions[false]
     | alterStatementSuffixDropPartitions[false]
-    | selectStatementWithCTE -> ^(TOK_ALTERVIEW_AS selectStatementWithCTE)
+    | selectStatementWithCTE
     ;
 
 alterMaterializedViewStatementSuffix[CommonTree tableNameTree]

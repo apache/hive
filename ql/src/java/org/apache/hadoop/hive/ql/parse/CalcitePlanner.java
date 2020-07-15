@@ -567,12 +567,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
 
             // 2. Regen OP plan from optimized AST
-            if (forViewCreation) {
-              // the reset would remove the translations
-              executeUnparseTranlations();
-              // save the resultSchema before rewriting it
-              originalResultSchema = resultSchema;
-            }
             if (cboCtx.type == PreCboCtx.Type.VIEW) {
               try {
                 viewSelect = handleCreateViewDDL(newAST);
@@ -1855,7 +1849,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calciteGenPlan),
-            (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
+            getQB().isView() || getQB().isMaterializedView() ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
         semanticException = e;

@@ -4718,22 +4718,22 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
     Create View
+      if not exists: true
+      columns: p_mfgr string, p_brand string, s double
       expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`),2) as `s` 
 from `default`.`part` 
 group by `part`.`p_mfgr`, `part`.`p_brand`
-      if not exists: true
+      name: default.mfgr_price_view_n2
       original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand
-      columns: p_mfgr string, p_brand string, s double
-      name: default.mfgr_price_view_n2
 
 PREHOOK: query: create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
@@ -5053,22 +5053,22 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
     Create View
+      if not exists: true
+      columns: p_mfgr string, p_brand string, s double
       expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`) over w1,2) as `s`
 from `default`.`part` 
 window w1 as (distribute by `part`.`p_mfgr` sort by `part`.`p_name` rows between 2 preceding and current row)
-      if not exists: true
+      name: default.mfgr_brand_price_view_n0
       original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
-      columns: p_mfgr string, p_brand string, s double
-      name: default.mfgr_brand_price_view_n0
 
 PREHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 

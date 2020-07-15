@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -118,7 +118,7 @@ public class ParseContext {
 
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
-  private CreateMaterializedViewDesc createViewDesc;
+  private CreateViewDesc createViewDesc;
   private MaterializedViewUpdateDesc materializedViewUpdateDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
@@ -193,7 +193,7 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      CreateMaterializedViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
+      CreateViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
       QueryProperties queryProperties,
       Map<SelectOperator, Table> viewProjectToTableSchema) {
     this.queryState = queryState;
@@ -591,7 +591,7 @@ public class ParseContext {
     this.createTableDesc = createTableDesc;
   }
 
-  public CreateMaterializedViewDesc getCreateViewDesc() {
+  public CreateViewDesc getCreateViewDesc() {
     return createViewDesc;
   }
 

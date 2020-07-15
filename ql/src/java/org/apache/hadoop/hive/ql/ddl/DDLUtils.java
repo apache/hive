@@ -32,11 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
@@ -239,16 +236,5 @@ public final class DDLUtils {
     } else {
       return null;
     }
-  }
-
-  public static void addDbAndTableToOutputs(Database database, TableName tableName, TableType type, boolean isTemporary,
-      Map<String, String> properties, Set<WriteEntity> outputs) {
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
-
-    Table table = new Table(tableName.getDb(), tableName.getTable());
-    table.setParameters(properties);
-    table.setTableType(type);
-    table.setTemporary(isTemporary);
-    outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

@@ -125,7 +125,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create Materialized View
+    Create View
       distribute columns: key string
       partition columns: partkey double
       columns: value string, key string
