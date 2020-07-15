@@ -40,12 +40,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 public class JSONOutputFormat extends AbstractOutputFormat {
   protected final BeeLine beeLine;
   protected JsonGenerator generator;
-  
 
   /**
    * @param beeLine
    */
-  JSONOutputFormat(BeeLine beeLine){ 
+  JSONOutputFormat(BeeLine beeLine) { 
     this.beeLine = beeLine;
     try {
       this.generator = new JsonFactory().createGenerator(new ByteArrayOutputStream(), JsonEncoding.UTF8);
@@ -83,7 +82,7 @@ public class JSONOutputFormat extends AbstractOutputFormat {
   void printRow(Rows rows, Rows.Row header, Rows.Row row) {
     String[] head = header.values;
     String[] vals = row.values;
-    
+
     try {
       generator.writeStartObject();
       for (int i = 0; (i < head.length) && (i < vals.length); i++) {
