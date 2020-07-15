@@ -1,0 +1,73 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  a.description,
+  o.airport,
+  MAX(f.DepDelay) AS MaxDepDelay
+FROM
+  impala_flights f,
+  impala_airports o,
+  impala_airlines a
+WHERE
+  f.origin = o.iata
+  AND f.uniquecarrier = a.code
+GROUP BY
+  a.code,
+  a.description,
+  o.iata,
+  o.airport
+HAVING MAX(f.DepDelay) > ALL (SELECT CAST(AVG(DepDelay) AS BIGINT)
+                              FROM impala_flights
+                              GROUP BY impala_flights.origin)
+ORDER BY MaxDepDelay DESC
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_airlines
+PREHOOK: Input: default@impala_airports
+PREHOOK: Input: default@impala_flights
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  a.description,
+  o.airport,
+  MAX(f.DepDelay) AS MaxDepDelay
+FROM
+  impala_flights f,
+  impala_airports o,
+  impala_airlines a
+WHERE
+  f.origin = o.iata
+  AND f.uniquecarrier = a.code
+GROUP BY
+  a.code,
+  a.description,
+  o.iata,
+  o.airport
+HAVING MAX(f.DepDelay) > ALL (SELECT CAST(AVG(DepDelay) AS BIGINT)
+                              FROM impala_flights
+                              GROUP BY impala_flights.origin)
+ORDER BY MaxDepDelay DESC
+LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_airlines
+POSTHOOK: Input: default@impala_airports
+POSTHOOK: Input: default@impala_flights
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$2], dir0=[DESC], fetch=[50])
+  ImpalaProjectRel($f1=[$4], $f3=[$5], $f4=[$6])
+    ImpalaJoinRel(condition=[AND(OR(IS NOT TRUE(<=($6, $0)), $1), OR($2, $1, <=($6, $0)), OR(>($6, $0), $1, <=($6, $0), $3))], joinType=[inner])
+      ImpalaProjectPassthroughRel(m=[$0], ==[=($1, 0)], <==[true], >=[false])
+        ImpalaAggregateRel(group=[{}], m=[MAX($0)], c=[COUNT()])
+          ImpalaProjectPassthroughRel(_o__c0=[CAST($1):BIGINT NOT NULL])
+            ImpalaAggregateRel(group=[{15}], agg#0=[avg($14)])
+              ImpalaHdfsScanRel(table=[[default, impala_flights]])
+      ImpalaProjectPassthroughRel($f1=[$3], $f3=[$1], $f4=[$4])
+        ImpalaAggregateRel(group=[{3, 4, 5, 6}], agg#0=[max($1)])
+          ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($2, $3)], joinType=[inner])
+              ImpalaProjectPassthroughRel(uniquecarrier=[$7], depdelay=[$14], origin=[$15])
+                ImpalaHdfsScanRel(table=[[default, impala_flights]])
+              ImpalaProjectPassthroughRel(iata=[$0], airport=[$1])
+                ImpalaHdfsScanRel(table=[[default, impala_airports]])
+            ImpalaHdfsScanRel(table=[[default, impala_airlines]])
+

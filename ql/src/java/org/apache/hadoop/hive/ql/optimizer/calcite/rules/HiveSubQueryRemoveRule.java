@@ -263,8 +263,11 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
               .min("m", builder.field(0)) : builder.max("m", builder.field(0)),
           builder.count(false, "c"), builder.count(false, "d", builder.field(0))).as("q")
           .join(JoinRelType.INNER);
+      RexNode field = builder.field("q", "c");
+      RexBuilder rexBuilder = e.rel.getCluster().getRexBuilder();
+      RexNode literalZero = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0), field.getType());
       return builder.call(SqlStdOperatorTable.CASE,
-          builder.call(SqlStdOperatorTable.EQUALS, builder.field("q", "c"), builder.literal(0)),
+          builder.call(SqlStdOperatorTable.EQUALS, field, literalZero),
           builder.literal(false), builder.call(SqlStdOperatorTable.IS_TRUE, builder
               .call(RelOptUtil.op(op.comparisonKind, null), e.operands.get(0),
                   builder.field("q", "m"))), builder.literal(true), builder
@@ -305,10 +308,13 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       parentQueryFields.add(builder.alias(builder.literal(true), indicator));
       builder.project(parentQueryFields).as("q");
       builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+      RexNode field = builder.field("q", "c");
+      RexBuilder rexBuilder = e.rel.getCluster().getRexBuilder();
+      RexNode literalZero = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0), field.getType());
       return builder.call(SqlStdOperatorTable.CASE,
           builder.call(SqlStdOperatorTable.IS_NULL, builder.field(indicator)),
           builder.literal(false),
-          builder.call(SqlStdOperatorTable.EQUALS, builder.field("q", "c"), builder.literal(0)),
+          builder.call(SqlStdOperatorTable.EQUALS, field, literalZero),
           builder.literal(false), builder.call(SqlStdOperatorTable.IS_TRUE, builder
               .call(RelOptUtil.op(op.comparisonKind, null), e.operands.get(0),
                   builder.field("q", "m"))), builder.literal(true), builder

@@ -1003,3 +1003,113 @@ DROP TABLE IF EXISTS impala_hive_tpcds_promotion;
 ) STORED AS PARQUET
 TBLPROPERTIES ("transactional"="false");
 
+DROP TABLE IF EXISTS impala_flights;
+CREATE TABLE impala_flights (
+  Month int,
+  DayofMonth int,
+  DayOfWeek int,
+  DepTime bigint,
+  CRSDepTime bigint,
+  ArrTime bigint,
+  CRSArrTime bigint,
+  UniqueCarrier string,
+  FlightNum int,
+  TailNum string,
+  ActualElapsedTime bigint,
+  CRSElapsedTime bigint,
+  AirTime bigint,
+  ArrDelay bigint,
+  DepDelay bigint,
+  Origin string,
+  Dest string,
+  Distance bigint,
+  TaxiIn bigint,
+  TaxiOut bigint,
+  Cancelled int,
+  CancellationCode varchar(1),
+  Diverted varchar(1),
+  CarrierDelay bigint,
+  WeatherDelay bigint,
+  NASDelay bigint,
+  SecurityDelay bigint,
+  LateAircraftDelay bigint
+)
+PARTITIONED BY (Year int)
+STORED AS PARQUET
+TBLPROPERTIES ("transactional"="false");
+
+DROP TABLE IF EXISTS impala_airports;
+CREATE TABLE impala_airports (
+	iata string,
+	airport string,
+	city string,
+	state string,
+	country string,
+	lat double,
+	lon double
+)
+STORED AS PARQUET
+TBLPROPERTIES ("transactional"="false");
+
+DROP TABLE IF EXISTS impala_airlines;
+CREATE TABLE impala_airlines (
+	code string,
+	description string
+)
+STORED AS PARQUET
+TBLPROPERTIES ("transactional"="false");
+
+DROP TABLE IF EXISTS impala_planes;
+CREATE TABLE impala_planes (
+	tailnum string,
+	owner_type string,
+	manufacturer string,
+	issue_date string,
+	model string,
+	status string,
+	aircraft_type string,
+	engine_type string,
+	year int
+)
+STORED AS PARQUET
+TBLPROPERTIES ("transactional"="false");
+
+-- Primary keys
+ALTER TABLE impala_airports
+  ADD CONSTRAINT airline_ontime_parquet_pk_airports
+  PRIMARY KEY (iata) DISABLE RELY;
+ALTER TABLE impala_airlines
+  ADD CONSTRAINT airline_ontime_parquet_pk_airlines
+  PRIMARY KEY (code) DISABLE RELY;
+ALTER TABLE impala_planes
+  ADD CONSTRAINT airline_ontime_parquet_pk_planes
+  PRIMARY KEY (tailnum) DISABLE RELY;
+
+-- Not null
+ALTER TABLE impala_flights
+  CHANGE COLUMN origin origin STRING
+  CONSTRAINT airline_ontime_parquet_nn_flights_origin NOT NULL DISABLE RELY;
+ALTER TABLE impala_flights
+  CHANGE COLUMN dest dest STRING
+  CONSTRAINT airline_ontime_parquet_nn_flights_dest NOT NULL DISABLE RELY;
+ALTER TABLE impala_flights
+  CHANGE COLUMN uniquecarrier uniquecarrier STRING
+  CONSTRAINT airline_ontime_parquet_nn_flights_uniquecarrier NOT NULL DISABLE RELY;
+ALTER TABLE impala_flights
+  CHANGE COLUMN tailnum tailnum STRING
+  CONSTRAINT airline_ontime_parquet_nn_flights_tailnum NOT NULL DISABLE RELY;
+
+-- Foreign keys
+ALTER TABLE impala_flights
+  ADD CONSTRAINT airline_ontime_parquet_flights_airports1
+  FOREIGN KEY (origin) REFERENCES impala_airports (iata) DISABLE RELY;
+ALTER TABLE impala_flights
+  ADD CONSTRAINT airline_ontime_parquet_flights_airports2
+  FOREIGN KEY (dest) REFERENCES impala_airports (iata) DISABLE RELY;
+ALTER TABLE impala_flights
+  ADD CONSTRAINT airline_ontime_parquet_flights_airlines
+  FOREIGN KEY (uniquecarrier) REFERENCES impala_airlines (code) DISABLE RELY;
+ALTER TABLE impala_flights
+  ADD CONSTRAINT airline_ontime_parquet_flights_planes
+  FOREIGN KEY (tailnum) REFERENCES impala_planes (tailnum) DISABLE RELY;
+
