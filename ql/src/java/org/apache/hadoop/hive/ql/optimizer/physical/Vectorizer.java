@@ -3379,6 +3379,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         case INT:
           hashTableKeyType = HashTableKeyType.INT;
           break;
+        case DATE:
+          hashTableKeyType = HashTableKeyType.DATE;
+          break;
         case LONG:
           hashTableKeyType = HashTableKeyType.LONG;
           break;
@@ -3427,6 +3430,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     case BYTE:
     case SHORT:
     case INT:
+    case DATE:
     case LONG:
       switch (vectorMapJoinVariation) {
       case INNER:
@@ -3973,11 +3977,12 @@ public class Vectorizer implements PhysicalPlanResolver {
           case BYTE:
           case SHORT:
           case INT:
+          case DATE:
           case LONG:
             reduceSinkKeyType = VectorReduceSinkDesc.ReduceSinkKeyType.LONG;
             break;
           default:
-            // Other integer types not supported yet.
+            // Other integer types not supported yet -- default multi-key
             break;
           }
         }

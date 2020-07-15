@@ -236,6 +236,9 @@ public class VectorKeySeriesLongSerialized<T extends SerializeWrite>
     case INT:
       serializeWrite.writeInt((int) value);
       break;
+    case DATE:
+      serializeWrite.writeDate((int) value);
+      break;
     case LONG:
       serializeWrite.writeLong(value);
       break;
