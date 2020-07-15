@@ -495,7 +495,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkMultiKeyOperator
+                            className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1533,7 +1533,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkMultiKeyOperator
+                            className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3164,7 +3164,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkMultiKeyOperator
+                            className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4202,7 +4202,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkMultiKeyOperator
+                            className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
