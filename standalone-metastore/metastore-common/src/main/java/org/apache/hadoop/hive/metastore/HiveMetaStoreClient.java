@@ -1974,7 +1974,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_partitions_by_expr(req);
   }
 
-
   @Override
   public boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr,
       String default_partition_name, int max_parts, List<Partition> result)

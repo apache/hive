@@ -40,15 +40,19 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
         cacheInitialized = true;
         LOG.debug("Initializing local cache in HiveMetaStoreClient...");
         // initialize a size estimator with this class and all other classes in KeyType.
-        sizeEstimator = IncrementalObjectSizeEstimator.createEstimators(HiveMetaStoreClientWithLocalCache.class);
-        Arrays.stream(KeyType.values()).forEach(e -> {
-            IncrementalObjectSizeEstimator.createEstimators(e.keyClass, sizeEstimator);
-            IncrementalObjectSizeEstimator.createEstimators(e.valueClass, sizeEstimator);}
-          );
+        initSizeEstimator();
         initCache();
         LOG.debug("Local cache initialized in HiveMetaStoreClient: " + mscLocalCache);
       }
     }
+  }
+
+  private static void initSizeEstimator() {
+    sizeEstimator = IncrementalObjectSizeEstimator.createEstimators(HiveMetaStoreClientWithLocalCache.class);
+    Arrays.stream(KeyType.values()).forEach(e -> {
+      IncrementalObjectSizeEstimator.createEstimators(e.keyClass, sizeEstimator);
+      IncrementalObjectSizeEstimator.createEstimators(e.valueClass, sizeEstimator);}
+    );
   }
 
   public enum KeyType {
@@ -87,6 +91,30 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     }
   }
 
+  private static int getWeight(CacheKey key, Object val) {
+    if (val instanceof Exception) return 0;
+    ObjectEstimator keySizeEstimator = sizeEstimator.get(key.IDENTIFIER.keyClass);
+    ObjectEstimator valSizeEstimator = sizeEstimator.get(key.IDENTIFIER.valueClass);
+    int keySize = keySizeEstimator.estimate(key, sizeEstimator);
+    int valSize = valSizeEstimator.estimate(val, sizeEstimator);
+    LOG.debug("Cache entry weight - key: {}, value: {}, total: {}", keySize, valSize, keySize+valSize);
+    return keySize + valSize;
+  }
+
+  private Object getOrLoad(CacheKey key) {
+    Object val;
+    try {
+      val = getResultObject(key);
+    } catch (Exception e) {
+      LOG.debug("Exception in MSC local cache: " + e.toString());
+      if (e instanceof MetaException) {
+        val = new MetaException(e.getMessage());
+      } else {
+        val = new Exception(e.getMessage());
+      }
+    }
+    return val;
+  }
 
   private synchronized void initCache() {
     int maxSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
@@ -94,33 +122,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     mscLocalCache = Caffeine.newBuilder()
             .initialCapacity(initSize)
             .maximumWeight(maxSize)
-            .weigher((CacheKey key, Object val) -> {
-              if (val instanceof Exception) return 0;
-              ObjectEstimator keySizeEstimator = sizeEstimator.get(key.IDENTIFIER.keyClass);
-              ObjectEstimator valSizeEstimator = sizeEstimator.get(key.IDENTIFIER.valueClass);
-              int keySize = keySizeEstimator.estimate(key, sizeEstimator);
-              int valSize = valSizeEstimator.estimate(val, sizeEstimator);
-              LOG.debug("Cache entry weight - key: {}, value: {}, total: {}", keySize, valSize, keySize+valSize);
-              return keySize + valSize;
-            })
+            .weigher(HiveMetaStoreClientWithLocalCache::getWeight)
             .removalListener((key, val, cause) ->
                     LOG.debug(String.format("Caffeine - (%s, %s) was removed (%s)", key, val, cause)))
             .recordStats()
-            .build(key -> {
-              Object val;
-              try {
-                val = getResultObject(key);
-              } catch (Exception e) {
-                LOG.debug("Exception in MSC local cache: " + e.toString());
-                if (e instanceof MetaException) {
-                  val = new MetaException(e.getMessage());
-                } else {
-                  val = new Exception(e.getMessage());
-                }
-              }
-              return val;
-            });
-    cacheInitialized = true;
+            .build(this::getOrLoad);
   }
 
 
