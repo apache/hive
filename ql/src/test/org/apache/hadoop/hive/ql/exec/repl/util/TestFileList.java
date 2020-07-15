@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -34,27 +33,28 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
+/**
+ * Tests the File List implementation.
+ */
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LoggerFactory.class})
 public class TestFileList {
 
   @Mock
-  private HiveConf hiveConf;
+  private BufferedWriter bufferedWriter;
 
-  @Mock
-  BufferedWriter bufferedWriter;
 
   @Test
   public void testNoStreaming() throws Exception {
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(false);
-    Path backingFile  = new Path("/tmp/backingFile");
-    FileList fileList = new FileList(backingFile, 100, hiveConf);
+    FileList fileList = setupFileList(100, false);
     fileList.add("Entry1");
     fileList.add("Entry2");
     assertFalse(fileList.isStreamingToFile());
@@ -62,10 +62,7 @@ public class TestFileList {
 
   @Test
   public void testAlwaysStreaming() throws Exception {
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(true);
-    FileListStreamer.setBackingFileWriterInTest(bufferedWriter);
-    Path backingFile  = new Path("/tmp/backingFile");
-    FileList fileList = new FileList(backingFile, 100, hiveConf);
+    FileList fileList = setupFileList(100, true);
     assertFalse(fileList.isStreamingInitialized());
     fileList.add("Entry1");
     waitForStreamingInitialization(fileList);
@@ -76,10 +73,7 @@ public class TestFileList {
 
   @Test
   public void testStreaminOnCacheHit() throws Exception {
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(false);
-    FileListStreamer.setBackingFileWriterInTest(bufferedWriter);
-    Path backingFile  = new Path("/tmp/backingFile");
-    FileList fileList = new FileList(backingFile, 5, hiveConf);
+    FileList fileList = setupFileList(5, false);
     fileList.add("Entry1");
     fileList.add("Entry2");
     fileList.add("Entry3");
@@ -94,10 +88,7 @@ public class TestFileList {
 
   @Test
   public void testConcurrentAdd() throws Exception {
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(false);
-    FileListStreamer.setBackingFileWriterInTest(bufferedWriter);
-    Path backingFile  = new Path("/tmp/backingFile");
-    FileList fileList = new FileList(backingFile, 100, hiveConf);
+    FileList fileList = setupFileList(100, false);
     int numOfEntries = 1000;
     int numOfThreads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
@@ -141,5 +132,16 @@ public class TestFileList {
         throw new IllegalStateException("File Streamer not getting closed till 5s.");
       }
     }
+  }
+
+  private FileList setupFileList(int cacheSize, boolean lazyDataCopy) throws Exception {
+    HiveConf hiveConf = Mockito.mock(HiveConf.class);
+    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(lazyDataCopy);
+    Path backingFile = new Path("/tmp/backingFile");
+    LinkedBlockingQueue<String> cache =  new LinkedBlockingQueue<>(cacheSize);
+    FileListStreamer fileListStreamer = Mockito.spy(new FileListStreamer(cache, backingFile, hiveConf));
+    FileList fileList = new FileList(backingFile, fileListStreamer, cache, hiveConf);
+    Mockito.doReturn(bufferedWriter).when(fileListStreamer).lazyInitWriter();
+    return fileList;
   }
 }

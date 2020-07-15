@@ -147,7 +147,6 @@ public class TestReplDumpTask {
     ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
         null, "", "");
     replDumpWork.setMetricCollector(metricCollector);
-    replDumpWork.setMockedFileList(mock(FileList.class));
     task.setWork(replDumpWork);
 
     try {

@@ -54,18 +54,27 @@ public class FileList implements AutoCloseable, Iterator<String> {
   private BufferedReader backingFileReader;
 
 
-  public FileList(Path backingFile, int cacheSize, HiveConf conf) throws IOException {
+  public FileList(Path backingFile, int cacheSize, HiveConf conf) {
     this.backingFile = backingFile;
+    this.conf = conf;
     if (cacheSize > 0) {
       // Cache size must be > 0 for this list to be used for the write operation.
       this.cache = new LinkedBlockingQueue<>(cacheSize);
       fileListStreamer = new FileListStreamer(cache, backingFile, conf);
+      thresholdPoint = getThreshold(cacheSize);
       LOG.debug("File list backed by {} can be used for write operation.", backingFile);
     } else {
       thresholdHit = true;
     }
+  }
+
+  @VisibleForTesting
+  FileList(Path backingFile, FileListStreamer fileListStreamer, LinkedBlockingQueue<String> cache, HiveConf conf) {
+    this.backingFile = backingFile;
+    this.fileListStreamer = fileListStreamer;
+    this.cache = cache;
     this.conf = conf;
-    thresholdPoint = getThreshold(cacheSize);
+    thresholdPoint = getThreshold(cache.remainingCapacity());
   }
 
   /**
@@ -165,17 +174,17 @@ public class FileList implements AutoCloseable, Iterator<String> {
   }
 
   @VisibleForTesting
-  public boolean isStreamingToFile() {
+  boolean isStreamingToFile() {
     return isStreamingInitialized() && fileListStreamer.isAlive();
   }
 
   @VisibleForTesting
-  public boolean isStreamingInitialized() {
+  boolean isStreamingInitialized() {
     return fileListStreamer.isInitialized();
   }
 
   @VisibleForTesting
-  public boolean isStreamingClosedProperly() {
+  boolean isStreamingClosedProperly() {
     return fileListStreamer.isInitialized() && !fileListStreamer.isAlive() && fileListStreamer.isValid();
   }
 }

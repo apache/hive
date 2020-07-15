@@ -270,6 +270,61 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult("10");
   }
 
+  @Test
+  public void externalTableReplicationWithCustomPathsLazyCopy() throws Throwable {
+    Path externalTableLocation =
+            new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    List<String> withClause = Arrays.asList(
+            "'distcp.options.update'=''",
+            "'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'"
+    );
+
+    primary.run("use " + primaryDbName)
+            .run("create external table a (i int, j int) "
+                    + "row format delimited fields terminated by ',' "
+                    + "location '" + externalTableLocation.toUri() + "'")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 'a'")
+            .verifyResults(Collections.singletonList("a"))
+            .run("select * From a").verifyResults(Collections.emptyList());
+
+    assertTablePartitionLocation(primaryDbName + ".a", replicatedDbName + ".a");
+
+    //externally add data to location
+    try (FSDataOutputStream outputStream =
+                 fs.create(new Path(externalTableLocation, "file1.txt"))) {
+      outputStream.write("1,2\n".getBytes());
+      outputStream.write("13,21\n".getBytes());
+    }
+    WarehouseInstance.Tuple incrementalTuple = primary.run("create table b (i int)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("select i From a")
+            .verifyResults(new String[] { "1", "13" })
+            .run("select j from a")
+            .verifyResults(new String[] { "2", "21" });
+
+    // alter table location to something new.
+    externalTableLocation =
+            new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/new_location/a/");
+    primary.run("use " + primaryDbName)
+            .run("alter table a set location '" + externalTableLocation + "'")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select i From a")
+            .verifyResults(Collections.emptyList());
+    assertTablePartitionLocation(primaryDbName + ".a", replicatedDbName + ".a");
+  }
+
   /**
    * @param sourceTableName  -- Provide the fully qualified table name
    * @param replicaTableName -- Provide the fully qualified table name

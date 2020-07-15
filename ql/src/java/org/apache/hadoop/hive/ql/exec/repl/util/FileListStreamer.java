@@ -32,37 +32,33 @@ import java.io.OutputStreamWriter;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Streams the entries from a cache to the backed file.
+ */
+
 public class FileListStreamer extends Thread implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(FileListStreamer.class);
-  private static BufferedWriter backingFileWriterInTest;
   private static final long TIMEOUT_IN_SECS = 5L;
   private volatile boolean signalTostop;
-  private final LinkedBlockingQueue<String> cache;
+  private LinkedBlockingQueue<String> cache;
   private Path backingFile;
   private Configuration conf;
   private BufferedWriter backingFileWriter;
   private volatile boolean valid = true;
   private final Object COMPLETION_LOCK = new Object();
   private volatile boolean completed = false;
-  private volatile boolean initialized = false;
 
-
-
-  public FileListStreamer(LinkedBlockingQueue<String> cache, Path backingFile, Configuration conf) throws IOException {
+  public FileListStreamer(LinkedBlockingQueue<String> cache, Path backingFile, Configuration conf) {
     this.cache = cache;
     this.backingFile = backingFile;
     this.conf = conf;
   }
 
-  private void lazyInit() throws IOException {
-    if (backingFileWriterInTest == null) {
-      FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
-      backingFileWriter = new BufferedWriter(new OutputStreamWriter(fs.create(backingFile)));
-    } else {
-      backingFileWriter = backingFileWriterInTest;
-    }
-    initialized = true;
+  BufferedWriter lazyInitWriter() throws IOException {
+    FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
+    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fs.create(backingFile)));
     LOG.info("Initialized a file based store to save a list at: {}", backingFile);
+    return writer;
   }
 
   public boolean isValid() {
@@ -94,7 +90,7 @@ public class FileListStreamer extends Thread implements Closeable {
   @Override
   public void run() {
     try {
-      lazyInit();
+      backingFileWriter = lazyInitWriter();
     } catch (IOException e) {
       valid = false;
       throw new RuntimeException("Unable to initialize the file list streamer", e);
@@ -139,12 +135,7 @@ public class FileListStreamer extends Thread implements Closeable {
   }
 
   @VisibleForTesting
-  public static void setBackingFileWriterInTest(BufferedWriter bufferedWriter) {
-    backingFileWriterInTest = bufferedWriter;
-  }
-
-  @VisibleForTesting
   public boolean isInitialized() {
-    return initialized;
+    return backingFileWriter != null;
   }
 }
