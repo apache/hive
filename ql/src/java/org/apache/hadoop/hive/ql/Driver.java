@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -64,6 +63,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 
+/**
+ * Compiles and executes HQL commands.
+ */
 public class Driver implements IDriver {
 
   private static final String CLASS_NAME = Driver.class.getName();
@@ -99,7 +101,7 @@ public class Driver implements IDriver {
   }
 
   /**
-   * Set the maximum number of rows returned by getResults
+   * Set the maximum number of rows returned by getResults.
    */
   @Override
   public void setMaxRows(int maxRows) {
@@ -111,8 +113,7 @@ public class Driver implements IDriver {
     this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build());
   }
 
-  // Pass lineageState when a driver instantiates another Driver to run
-  // or compile another query
+  // Pass lineageState when a driver instantiates another Driver to run or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
     this(QueryState.getNewQueryState(conf, lineageState), null);
     context = ctx;
@@ -140,8 +141,9 @@ public class Driver implements IDriver {
   }
 
   /**
-   * Compile a new query, but potentially reset taskID counter.  Not resetting task counter
-   * is useful for generating re-entrant QL queries.
+   * Compiles a new HQL command, but potentially resets taskID counter. Not resetting task counter is useful for
+   * generating re-entrant QL queries.
+   * 
    * @param command  The HiveQL query to compile
    * @param resetTaskIds Resets taskID counter if true.
    * @return 0 for ok
@@ -155,9 +157,14 @@ public class Driver implements IDriver {
     }
   }
 
-  // deferClose indicates if the close/destroy should be deferred when the process has been
-  // interrupted, it should be set to true if the compile is called within another method like
-  // runInternal, which defers the close to the called in that method.
+  /**
+   * Compiles an HQL command, creates an execution plan for it.
+   * 
+   * @param deferClose indicates if the close/destroy should be deferred when the process has been interrupted, it
+   *        should be set to true if the compile is called within another method like runInternal, which defers the
+   *        close to the called in that method.
+   * @param resetTaskIds Resets taskID counter if true.
+   */
   @VisibleForTesting
   public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
     preparForCompile(resetTaskIds);
@@ -279,18 +286,23 @@ public class Driver implements IDriver {
     releaseTaskQueue();
   }
 
+  /**
+   * Compiles and executes an HQL command.
+   */
   @Override
   public CommandProcessorResponse run(String command) throws CommandProcessorException {
     return run(command, false);
   }
 
+  /**
+   * Executes a previously compiled HQL command.
+   */
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     return run(null, true);
   }
 
-  public CommandProcessorResponse run(String command, boolean alreadyCompiled) throws CommandProcessorException {
-
+  private CommandProcessorResponse run(String command, boolean alreadyCompiled) throws CommandProcessorException {
     try {
       runInternal(command, alreadyCompiled);
       return new CommandProcessorResponse(getSchema(), null);
@@ -370,7 +382,7 @@ public class Driver implements IDriver {
     try {
       driverTxnHandler.acquireLocksIfNeeded();
     } catch (CommandProcessorException cpe) {
-      rollback(cpe);
+      driverTxnHandler.rollback(cpe);
       throw cpe;
     }
   }
@@ -472,54 +484,19 @@ public class Driver implements IDriver {
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
-
-      try {
-        if (!driverTxnHandler.isValidTxnListState()) {
-          LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
-          // Snapshot was outdated when locks were acquired, hence regenerate context,
-          // txn list and retry (see ReExecutionRetryLockPlugin)
-          try {
-            driverTxnHandler.endTransactionAndCleanup(false);
-          } catch (LockException e) {
-            handleHiveException(e, 12);
-          }
-          HiveException e = new HiveException(
-              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
-          handleHiveException(e, 14);
-        }
-      } catch (LockException e) {
-        handleHiveException(e, 13);
-      }
+      driverTxnHandler.validateTxnListState();
 
       try {
         taskQueue = new TaskQueue(context); // for canceling the query (should be bound to session?)
         Executor executor = new Executor(context, driverContext, driverState, taskQueue);
         executor.execute();
       } catch (CommandProcessorException cpe) {
-        rollback(cpe);
+        driverTxnHandler.rollback(cpe);
         throw cpe;
       }
 
       //if needRequireLock is false, the release here will do nothing because there is no lock
-      try {
-        //since set autocommit starts an implicit txn, close it
-        if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
-            driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
-          driverTxnHandler.endTransactionAndCleanup(true);
-        }
-        else if(driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
-          driverTxnHandler.endTransactionAndCleanup(false);
-        } else if (!driverContext.getTxnManager().isTxnOpen() &&
-            driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
-          // repl load during migration, commits the explicit txn and start some internal txns. Call
-          // releaseLocksAndCommitOrRollback to do the clean up.
-          driverTxnHandler.endTransactionAndCleanup(false);
-        } else {
-          //txn (if there is one started) is not finished
-        }
-      } catch (LockException e) {
-        handleHiveException(e, 12);
-      }
+      driverTxnHandler.handleTransactionAfterExecution();
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
       driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
@@ -542,40 +519,10 @@ public class Driver implements IDriver {
         releaseResources();
       }
 
-      driverState.lock();
-      try {
-        driverState.executionFinished(isFinishedWithError);
-      } finally {
-        driverState.unlock();
-      }
+      driverState.executionFinishedWithLocking(isFinishedWithError);
     }
 
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
-  }
-
-  private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
-    try {
-      driverTxnHandler.endTransactionAndCleanup(false);
-    } catch (LockException e) {
-      LOG.error("rollback() FAILED: " + cpe); //make sure not to loose
-      handleHiveException(e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
-    }
-  }
-
-  private void handleHiveException(HiveException e, int ret) throws CommandProcessorException {
-    handleHiveException(e, ret, null);
-  }
-
-  private void handleHiveException(HiveException e, int ret, String rootMsg)
-      throws CommandProcessorException {
-    String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-    if (rootMsg != null) {
-      errorMessage += "\n" + rootMsg;
-    }
-    String sqlState = e.getCanonicalErrorMsg() != null ?
-        e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
-    CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-    throw DriverUtils.createProcessorException(driverContext, ret, errorMessage, sqlState, e);
   }
 
   @Override
@@ -583,7 +530,7 @@ public class Driver implements IDriver {
     return driverContext.getFetchTask() != null;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public boolean getResults(List res) throws IOException {
     if (driverState.isDestroyed() || driverState.isClosed()) {
@@ -832,7 +779,7 @@ public class Driver implements IDriver {
   }
 
   /**
-   * Set the HS2 operation handle's guid string
+   * Set the HS2 operation handle's guid string.
    * @param operationId base64 encoded guid string
    */
   @Override

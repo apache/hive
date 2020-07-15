@@ -302,7 +302,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
 
     // actually create the permanent function
-    driver.run(null, true);
+    driver.run();
 
     // Verify privilege objects
     reset(mockedAuthorizer);

@@ -550,12 +550,7 @@ public class Executor {
       SessionState.get().getSparkSession().onQueryCompletion(driverContext.getQueryId());
     }
 
-    driverState.lock();
-    try {
-      driverState.executionFinished(executionError);
-    } finally {
-      driverState.unlock();
-    }
+    driverState.executionFinishedWithLocking(executionError);
 
     if (driverState.isAborted()) {
       LOG.info("Executing command(queryId={}) has been interrupted after {} seconds", driverContext.getQueryId(),
