@@ -33,7 +33,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
- * OutputFormat for standard JSON format.
+ * OutputFormat for standard JSON.
+ * {"resultset":[{"String":"a","Int":1,"Decimal":3.14,"Bool":true,"Null":null},{"String":"b","Int":2,"Decimal":2.718,"Bool":false,"Null":null}]}
  * 
  */ 
 public class JSONOutputFormat extends AbstractOutputFormat {
@@ -101,6 +102,12 @@ public class JSONOutputFormat extends AbstractOutputFormat {
           case Types.ROWID:
             generator.writeNumber(vals[i]);
             break;
+          case Types.BINARY:
+          case Types.BLOB:
+          case Types.VARBINARY:
+          case Types.LONGVARBINARY:
+            generatore.writeString(parseBinaryTypes(vals[i]))
+            break;
           case Types.NULL:
             generator.writeNull();
             break;
@@ -117,5 +124,19 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     } catch (SQLException e) {
       beeLine.handleSQLException(e);
     }
+  }
+
+  // Binary types come in as toStringed byte[].
+  // This function converts that string into a base64 string
+  // Since base64 is more standard for binary types in JSON than printing a byte[].
+  // e.g. "SGVsbG8sIFdvcmxkIQ==" vs "[72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]"
+  private String parseBinaryTypes(String byteString){
+    if (vals[i].charAt(0) != '[') {
+      return byteString;
+    }
+    ByteArrayOutputStream byteValues = new ByteArrayOutputStream();
+    // toArray() is necessary for peek(...) to work since it requires a terminal operation
+    Arrays.stream(byteString.substring(1,byteString.length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).peek(buf::write).toArray();
+    return Base64.getEncoder().encodeToString(byteValues.toByteArray());
   }
 }

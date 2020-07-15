@@ -49,8 +49,8 @@ public class TestJSONOutputFormat {
   }
 
   private final String[][] mockRowData = {
-    {"aaa","1","3.14","t",""},
-    {"bbb","2","2.718","f","Null"}
+    {"aaa","1","3.14","true","","[72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]"},
+    {"bbb","2","2.718","false","Null","[69, 97, 115, 116, 101, 114, 10, 9, 101, 103, 103, 46]"}
   };
   private BeelineMock mockBeeline;
   private ResultSet mockResultSet;
@@ -65,7 +65,7 @@ public class TestJSONOutputFormat {
     setupMockData();
     BufferedRows bfRows = new BufferedRows(mockBeeline, mockResultSet);
     JSONOutputFormat instance = new JSONOutputFormat(mockBeeline);
-    String expResult = "{\"resultset\":[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null},{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null}]}";
+    String expResult = "{\"resultset\":[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null,\"Binary\":\"SGVsbG8sIFdvcmxkIQ==\"},{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null,\"Binary\":\"RWFzdGVyCgllZ2cu\"}]}";
     instance.print(bfRows);
     String outPutResults = mockBeeline.getOutput();
     assertEquals(expResult, outPutResults);
@@ -76,18 +76,21 @@ public class TestJSONOutputFormat {
     mockResultSet = mock(ResultSet.class);
 
     ResultSetMetaData mockResultSetMetaData = mock(ResultSetMetaData.class);
-    when(mockResultSetMetaData.getColumnCount()).thenReturn(5);
+    when(mockResultSetMetaData.getColumnCount()).thenReturn(6);
     when(mockResultSetMetaData.getColumnLabel(1)).thenReturn("String");
     when(mockResultSetMetaData.getColumnLabel(2)).thenReturn("Int");
     when(mockResultSetMetaData.getColumnLabel(3)).thenReturn("Decimal");
     when(mockResultSetMetaData.getColumnLabel(4)).thenReturn("Bool");
     when(mockResultSetMetaData.getColumnLabel(5)).thenReturn("Null");
+    when(mockResultSetMetaData.getColumnLabel(6)).thenReturn("Binary");
 
     when(mockResultSetMetaData.getColumnType(1)).thenReturn(Types.VARCHAR);
     when(mockResultSetMetaData.getColumnType(2)).thenReturn(Types.INTEGER);
     when(mockResultSetMetaData.getColumnType(3)).thenReturn(Types.DECIMAL);
     when(mockResultSetMetaData.getColumnType(4)).thenReturn(Types.BOOLEAN);
     when(mockResultSetMetaData.getColumnType(5)).thenReturn(Types.NULL);
+    when(mockResultSetMetaData.getColumnType(6)).thenReturn(Types.BINARY);
+
 
     when(mockResultSet.getMetaData()).thenReturn(mockResultSetMetaData);
 
