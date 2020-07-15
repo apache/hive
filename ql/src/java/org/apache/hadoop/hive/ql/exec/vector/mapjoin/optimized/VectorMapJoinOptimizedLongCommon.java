@@ -79,6 +79,9 @@ public class VectorMapJoinOptimizedLongCommon {
     case INT:
       keyBinarySortableSerializeWrite.writeInt((int) key);
       break;
+    case DATE:
+      keyBinarySortableSerializeWrite.writeDate((int) key);
+        break;
     case LONG:
       keyBinarySortableSerializeWrite.writeLong(key);
       break;

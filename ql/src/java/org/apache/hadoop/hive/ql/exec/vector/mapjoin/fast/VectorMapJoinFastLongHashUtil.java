@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeseriali
 public class VectorMapJoinFastLongHashUtil {
 
   public static long deserializeLongKey(BinarySortableDeserializeRead keyBinarySortableDeserializeRead,
-      HashTableKeyType hashTableKeyType) throws IOException {
+      HashTableKeyType hashTableKeyType) throws RuntimeException {
     long key = 0;
     switch (hashTableKeyType) {
     case BOOLEAN:
@@ -40,6 +40,9 @@ public class VectorMapJoinFastLongHashUtil {
       break;
     case INT:
       key = (long) keyBinarySortableDeserializeRead.currentInt;
+      break;
+    case DATE:
+      key = (long) keyBinarySortableDeserializeRead.currentDateWritable.getDays();
       break;
     case LONG:
       key = keyBinarySortableDeserializeRead.currentLong;
