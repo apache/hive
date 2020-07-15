@@ -1576,7 +1576,6 @@ public class VectorizedOrcAcidRowBatchReader
       try {
         final Path[] deleteDeltaDirs = getDeleteDeltaDirsFromSplit(orcSplit);
         if (deleteDeltaDirs.length > 0) {
-          FileSystem fs = orcSplit.getPath().getFileSystem(conf);
           AcidOutputFormat.Options orcSplitMinMaxWriteIds =
               AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf);
           int totalDeleteEventCount = 0;
@@ -1588,7 +1587,7 @@ public class VectorizedOrcAcidRowBatchReader
                 new OrcRawRecordMerger.Options().isCompacting(false), null);
             for (Path deleteDeltaFile : deleteDeltaFiles) {
               try {
-                  ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag);
+                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag);
                 OrcTail orcTail = readerData.orcTail;
                 if (orcTail.getFooter().getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
@@ -1650,6 +1649,21 @@ public class VectorizedOrcAcidRowBatchReader
         Path deleteDeltaDir)
     {
       AcidUtils.ParsedDelta deleteDelta = AcidUtils.parsedDelta(deleteDeltaDir, false);
+      // We allow equal writeIds so we are prepared for multi statement transactions.
+      // In this case we have to check the stmt id.
+      if (orcSplitMinMaxWriteIds.getMinimumWriteId() == deleteDelta.getMaxWriteId()) {
+        int orcSplitStmtId = orcSplitMinMaxWriteIds.getStatementId();
+        int deltaStmtId = deleteDelta.getStatementId();
+        // StatementId -1 and 0 is also used as the default one if it is not provided.
+        // Not brave enough to fix generally, so just fix here.
+        if (orcSplitStmtId == -1) {
+          orcSplitStmtId = 0;
+        }
+        if (deltaStmtId == -1) {
+          deltaStmtId = 0;
+        }
+        return orcSplitStmtId < deltaStmtId;
+      }
       // For delta_0000012_0000014_0000, no need to read delete delta folders < 12.
       return orcSplitMinMaxWriteIds.getMinimumWriteId() < deleteDelta.getMaxWriteId();
     }

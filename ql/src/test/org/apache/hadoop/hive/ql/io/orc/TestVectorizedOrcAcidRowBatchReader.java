@@ -1131,6 +1131,14 @@ public class TestVectorizedOrcAcidRowBatchReader {
     checkPath("delta_0000002_0000005_124/bucket_00001", "delete_delta_0000002_0000005", true);
     checkPath("delta_0000002_0000005_124/bucket_00001", "delete_delta_0000002_0000002", false);
     checkPath("delta_0000002_0000005_124/bucket_00001", "delete_delta_0000001_0000001_0001", false);
+
+    // Multi statement transaction check
+    checkPath("delta_0000002_0000002_0000/bucket_00001", "delete_delta_0000002_0000002_0000", false);
+    checkPath("delta_0000002_0000002_0001/bucket_00001", "delete_delta_0000002_0000002_0000", false);
+    checkPath("delta_0000002_0000002_0001/bucket_00001", "delete_delta_0000002_0000002_0002", true);
+    checkPath("delta_0000002_0000002_0001/bucket_00001", "delete_delta_0000002_0000002", false);
+    checkPath("delta_0000002_0000002/bucket_00001", "delete_delta_0000002_0000002", false);
+    checkPath("delta_0000002_0000002/bucket_00001", "delete_delta_0000002_0000002_0001", true);
   }
 
   private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
