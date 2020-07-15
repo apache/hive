@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rewrite.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -366,7 +366,7 @@ public abstract class TaskCompiler {
           CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
-      CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
+      CreateMaterializedViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<?> crtViewTask = TaskFactory.get(new DDLWork(
           inputs, outputs, viewDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtViewTask,
@@ -454,7 +454,7 @@ public abstract class TaskCompiler {
       txnId = ctd.getInitialMmWriteId();
       loc = ctd.getLocation();
     } else {
-      CreateViewDesc cmv = pCtx.getCreateViewDesc();
+      CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
       dataSink = cmv.getAndUnsetWriter();
       txnId = cmv.getInitialMmWriteId();
       loc = cmv.getLocation();
@@ -555,16 +555,14 @@ public abstract class TaskCompiler {
       DDLTask ddlTask = (DDLTask)createTask;
       DDLWork work = ddlTask.getWork();
       DDLDesc desc = work.getDDLDesc();
-      if (desc instanceof CreateViewDesc) {
-        CreateViewDesc createViewDesc = (CreateViewDesc)desc;
-        if (createViewDesc.isMaterialized()) {
-          String tableName = createViewDesc.getViewName();
-          boolean retrieveAndInclude = createViewDesc.isRewriteEnabled();
-          MaterializedViewUpdateDesc materializedViewUpdateDesc =
-              new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, false, false);
-          DDLWork ddlWork = new DDLWork(inputs, outputs, materializedViewUpdateDesc);
-          targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
-        }
+      if (desc instanceof CreateMaterializedViewDesc) {
+        CreateMaterializedViewDesc createViewDesc = (CreateMaterializedViewDesc)desc;
+        String tableName = createViewDesc.getViewName();
+        boolean retrieveAndInclude = createViewDesc.isRewriteEnabled();
+        MaterializedViewUpdateDesc materializedViewUpdateDesc =
+            new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, false, false);
+        DDLWork ddlWork = new DDLWork(inputs, outputs, materializedViewUpdateDesc);
+        targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
       } else if (desc instanceof AlterMaterializedViewRewriteDesc) {
         AlterMaterializedViewRewriteDesc alterMVRewriteDesc = (AlterMaterializedViewRewriteDesc)desc;
         String tableName = alterMVRewriteDesc.getMaterializedViewName();

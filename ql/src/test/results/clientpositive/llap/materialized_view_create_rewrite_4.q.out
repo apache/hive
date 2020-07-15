@@ -217,7 +217,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       columns: a int, c decimal(10,2), _c2 bigint
       table properties:
         transactional true
