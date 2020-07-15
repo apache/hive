@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -112,7 +112,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
+public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
 
   SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {

@@ -21,4 +21,7 @@
     <Match>
         <Class name="~org.apache.hadoop.hive.metastore.api.*" />
     </Match>
+    <Match>
+        <Class name="~org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache" />
+    </Match>
 </FindBugsFilter>
