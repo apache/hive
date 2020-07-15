@@ -1,0 +1,74 @@
+PREHOOK: query: explain cbo
+select l_quantity from `impala_tpch_lineitem` limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select l_quantity from `impala_tpch_lineitem` limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(fetch=[10])
+  ImpalaProjectRel(l_quantity=[$4])
+    ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
+
+PREHOOK: query: explain
+select l_quantity from `impala_tpch_lineitem` limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select l_quantity from `impala_tpch_lineitem` limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.01KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: l_quantity
+  |  mem-estimate=8B mem-reservation=0B thread-reservation=0
+  |
+  02:EXCHANGE [UNPARTITIONED]
+     limit: 10
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=8B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=02, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:UNION
+  |  pass-through-operands: all
+  |  limit: 10
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

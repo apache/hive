@@ -88,6 +88,17 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     long offset = sortLimit.getOffsetExpr() != null ?
         ((BigDecimal) RexLiteral.value(sortLimit.getOffsetExpr())).longValue() : 0L;
 
+    // If there's limit without order-by, we don't need to generate
+    // a sort or top-n node..just set the limit on the child
+    if (sortExprs.size() == 0 && filter == null) {
+      Preconditions.checkArgument(limit >= 0);
+      Preconditions.checkArgument(offset == 0);
+      sortInputNode.setLimit(limit);
+      this.outputExprs = sortInputRel.getOutputExprsMap();
+      retNode = sortInputNode;
+      return retNode;
+    }
+
     SortInfo sortInfo = new SortInfo(sortExprs, isAscOrder, nullsFirstParams);
     sortInfo.createSortTupleInfo(sortInputRel.getOutputExprs(), ctx.getRootAnalyzer());
 
