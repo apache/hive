@@ -1157,26 +1157,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
-  public List<String> listPartitionNames(PartitionsByExprRequest request)
-      throws MetaException, TException, NoSuchObjectException {
-
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(request.getDbName(), request.getTblName());
-    if (table == null) {
-      return super.listPartitionNames(request.getCatName(), request.getDbName(), request.getTblName(),
-          request.getMaxParts());
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    List<Partition> partitions = tt.listPartitions();
-    List<String> result = new ArrayList<>();
-    for (int i = 0; i < ((request.getMaxParts() < 0 || request.getMaxParts() > partitions.size()) ? partitions.size()
-        : request.getMaxParts()); i++) {
-      result.add(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()));
-    }
-    Collections.sort(result);
-    return result;
-  }
-
-  @Override
   public List<Partition> listPartitions(String catName, String dbName, String tblName, int maxParts)
       throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
