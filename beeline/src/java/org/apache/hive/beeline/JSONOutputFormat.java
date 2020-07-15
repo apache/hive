@@ -47,9 +47,8 @@ public class JSONOutputFormat extends AbstractOutputFormat {
    */
   JSONOutputFormat(BeeLine beeLine){ 
     this.beeLine = beeLine;
-    ByteArrayOutputStream buf = new ByteArrayOutputStream();
     try {
-      this.generator = new JsonFactory().createGenerator(buf, JsonEncoding.UTF8);
+      this.generator = new JsonFactory().createGenerator(new ByteArrayOutputStream(), JsonEncoding.UTF8);
     } catch(IOException e) {
       beeLine.handleException(e);
     }
@@ -106,7 +105,7 @@ public class JSONOutputFormat extends AbstractOutputFormat {
           case Types.BLOB:
           case Types.VARBINARY:
           case Types.LONGVARBINARY:
-            generatore.writeString(parseBinaryTypes(vals[i]))
+            generator.writeString(vals[i]);
             break;
           case Types.NULL:
             generator.writeNull();
@@ -124,19 +123,5 @@ public class JSONOutputFormat extends AbstractOutputFormat {
     } catch (SQLException e) {
       beeLine.handleSQLException(e);
     }
-  }
-
-  // Binary types come in as toStringed byte[].
-  // This function converts that string into a base64 string
-  // Since base64 is more standard for binary types in JSON than printing a byte[].
-  // e.g. "SGVsbG8sIFdvcmxkIQ==" vs "[72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]"
-  private String parseBinaryTypes(String byteString){
-    if (vals[i].charAt(0) != '[') {
-      return byteString;
-    }
-    ByteArrayOutputStream byteValues = new ByteArrayOutputStream();
-    // toArray() is necessary for peek(...) to work since it requires a terminal operation
-    Arrays.stream(byteString.substring(1,byteString.length()-1).split(",")).map(String::trim).mapToInt(Integer::parseInt).peek(buf::write).toArray();
-    return Base64.getEncoder().encodeToString(byteValues.toByteArray());
   }
 }
