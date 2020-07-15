@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+@org.junit.Ignore("HIVE-23855 TestQueryShutdownHooks is flaky")
 public class TestQueryShutdownHooks {
 
   private EmbeddedThriftBinaryCLIService service;
