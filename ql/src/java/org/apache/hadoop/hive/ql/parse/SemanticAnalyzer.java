@@ -12546,7 +12546,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           pCtx = t.transform(pCtx);
         }
       }
-      return;
     }
 
     // 5. Take care of view creation
@@ -12598,6 +12597,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    }
+
+    if (forViewCreation) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
