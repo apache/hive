@@ -72,7 +72,7 @@ public class BasicStats {
     }
 
     public List<BasicStats> buildAll(HiveConf conf, Collection<Partish> parts) {
-      LOG.info("Number of partitions : {}", parts.size());
+      LOG.info("Number of partitions/unpartitioned tables: {}", parts.size());
 
       if (parts.isEmpty()) {
         return Collections.emptyList();
