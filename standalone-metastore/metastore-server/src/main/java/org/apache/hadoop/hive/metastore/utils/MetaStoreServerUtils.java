@@ -1426,7 +1426,6 @@ public class MetaStoreServerUtils {
       // key value pairs - thrift cannot handle null return values, hence
       // getPartition() throws NoSuchObjectException to indicate null partition
     } catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new MetastoreException(e);
     }
 

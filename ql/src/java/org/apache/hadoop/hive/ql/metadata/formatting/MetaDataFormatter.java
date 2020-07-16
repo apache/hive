@@ -52,7 +52,7 @@ public interface MetaDataFormatter {
    * @param sqlState if {@code null}, will be skipped in output
    * @param errorDetail usually string version of some Exception, if {@code null}, will be ignored
    */
-  void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
+  void error(OutputStream out, String errorMessage, int errorCode, String sqlState, Throwable cause)
       throws HiveException;
 
   /**

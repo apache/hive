@@ -38,7 +38,6 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
 import org.apache.hadoop.util.Daemon;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -303,8 +302,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
               rollMasterKeyExt();
               lastMasterKeyUpdate = now;
             } catch (IOException e) {
-              LOGGER.error("Master key updating failed. "
-                  + StringUtils.stringifyException(e));
+              LOGGER.error("Master key updating failed", e);
             }
           }
           if (lastTokenCacheCleanup + tokenRemoverScanInterval < now) {

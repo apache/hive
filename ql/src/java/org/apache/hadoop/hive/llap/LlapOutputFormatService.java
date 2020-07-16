@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.LlapOutputSocketInitMessage;
@@ -68,7 +67,7 @@ public class LlapOutputFormatService {
   // TODO: the global lock might be to coarse here.
   private final Object lock = new Object();
   private final Map<String, RecordWriter<?,?>> writers = new HashMap<String, RecordWriter<?,?>>();
-  private final Map<String, String> errors = new HashMap<String, String>();
+  private final Map<String, Throwable> errors = new HashMap<>();
   private final Configuration conf;
   private static final int WAIT_TIME = 5;
 
@@ -142,7 +141,7 @@ public class LlapOutputFormatService {
       long startTime = System.nanoTime();
       boolean isFirst = true;
       while ((writer = writers.get(id)) == null) {
-        String error = errors.remove(id);
+        Throwable error = errors.remove(id);
         if (error != null) {
           throw new IOException(error);
         }
@@ -182,7 +181,7 @@ public class LlapOutputFormatService {
       } catch (Throwable t) {
         // Make sure we fail the channel if something goes wrong.
         // We internally handle all the "expected" exceptions, so log a lot of information here.
-        failChannel(ctx, id, StringUtils.stringifyException(t));
+        failChannel(ctx, id, t);
       }
     }
 
@@ -191,7 +190,7 @@ public class LlapOutputFormatService {
         try {
           sm.verifyToken(tokenBytes);
         } catch (SecurityException | IOException ex) {
-          failChannel(ctx, id, ex.getMessage());
+          failChannel(ctx, id, ex);
           return;
         }
       }
@@ -219,19 +218,19 @@ public class LlapOutputFormatService {
         }
       }
       if (isFailed) {
-        failChannel(ctx, id, "Writer already registered for " + id);
+        failChannel(ctx, id, new IOException("Writer already registered for " + id));
       }
     }
 
     /** Do not call under lock. */
-    private void failChannel(ChannelHandlerContext ctx, String id, String error) {
+    private void failChannel(ChannelHandlerContext ctx, String id, Throwable cause) {
       // TODO: write error to the channel? there's no mechanism for that now.
       ctx.close();
       synchronized (lock) {
-        errors.put(id, error);
+        errors.put(id, cause);
         lock.notifyAll();
       }
-      LOG.error(error);
+      LOG.error("Error", cause);
     }
   }
 

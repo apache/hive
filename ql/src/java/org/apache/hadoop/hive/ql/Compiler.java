@@ -378,7 +378,7 @@ public class Compiler {
         try {
           lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()));
         } catch (Exception e) {
-          LOG.warn("Error getting schema: " + StringUtils.stringifyException(e));
+          LOG.warn("Error getting schema", e);
         }
         if (lst != null) {
           schema = new Schema(lst, null);

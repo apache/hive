@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.util.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -96,7 +95,7 @@ public class QTestDruidSerDe extends DruidSerDe {
           DruidStorageHandlerUtils.JSON_MAPPER.readValue(RESPONSE, new TypeReference<List<SegmentAnalysis>>() {
           });
     } catch (Exception e) {
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException("Failed to submit metadata request", e);
     }
     return resultsList.get(0);
   }

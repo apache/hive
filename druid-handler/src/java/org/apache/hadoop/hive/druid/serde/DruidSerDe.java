@@ -66,7 +66,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -255,7 +254,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
           DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
               DruidStorageHandlerUtils.createSmileRequest(address, query));
     } catch (Exception e) {
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException("Failed to submit metadata request", e);
     }
 
     // Retrieve results
@@ -268,7 +267,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
           });
     } catch (Exception e) {
       response.close();
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException("Failed to submit metadata request", e);
     }
     if (resultsList == null || resultsList.isEmpty()) {
       throw new SerDeException("Connected to Druid but could not retrieve datasource information");

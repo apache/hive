@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * JdbcRecordWriter is wrapper class to write data to the underlying database.
@@ -54,12 +53,12 @@ public class JdbcRecordWriter implements RecordWriter {
       try {
         conn.rollback();
       } catch (SQLException ex) {
-        LOG.warn(StringUtils.stringifyException(ex));
+        LOG.warn("Failed to close", ex);
       } finally {
         try {
           conn.close();
         } catch (SQLException ex) {
-          throw new IOException(ex.getMessage());
+          throw new IOException(ex);
         }
       }
     } else {

@@ -107,10 +107,14 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     error(out, msg, errorCode, sqlState, null);
       }
   @Override
-  public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail) throws HiveException {
+  public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, Throwable cause) throws HiveException {
     MapBuilder mb = MapBuilder.create().put("error", errorMessage);
-    if(errorDetail != null) {
-      mb.put("errorDetail", errorDetail);
+    if (cause != null) {
+      java.io.StringWriter sw = new java.io.StringWriter(1024);
+      java.io.PrintWriter pwst = new java.io.PrintWriter(sw);
+      cause.printStackTrace(pwst);
+      pwst.close();
+      mb.put("errorDetail", sw.toString());
     }
     mb.put("errorCode", errorCode);
     if(sqlState != null) {

@@ -22,6 +22,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -88,17 +89,21 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       }
 
   @Override
-  public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
+  public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, Throwable cause)
       throws HiveException
       {
     try {
-      out.write(errorMessage.getBytes("UTF-8"));
-      if(errorDetail != null) {
-        out.write(errorDetail.getBytes("UTF-8"));
+      out.write(errorMessage.getBytes(StandardCharsets.UTF_8));
+      if (cause != null) {
+        java.io.StringWriter sw = new java.io.StringWriter(1024);
+        java.io.PrintWriter pwst = new java.io.PrintWriter(sw);
+        cause.printStackTrace(pwst);
+        pwst.close();
+        out.write(sw.toString().getBytes(StandardCharsets.UTF_8));
       }
       out.write(errorCode);
-      if(sqlState != null) {
-        out.write(sqlState.getBytes("UTF-8"));//this breaks all the tests in .q files
+      if (sqlState != null) {
+        out.write(sqlState.getBytes(StandardCharsets.UTF_8));//this breaks all the tests in .q files
       }
       out.write(terminator);
     } catch (Exception e) {

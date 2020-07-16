@@ -179,7 +179,6 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ShutdownHookManager;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TException;
@@ -10626,8 +10625,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             startCompactorWorkers(conf);
           }
         } catch (Throwable e) {
-          LOG.error("Failure when starting the compactor, compactions may not happen, " +
-              StringUtils.stringifyException(e));
+          LOG.error("Failure when starting the compactor, compactions may not happen", e);
         } finally {
           startLock.unlock();
         }

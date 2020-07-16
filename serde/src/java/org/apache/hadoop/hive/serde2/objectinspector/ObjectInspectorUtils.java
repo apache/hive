@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -1295,7 +1294,7 @@ public final class ObjectInspectorUtils {
           ObjectInspectorOptions.JAVA);
       return oi.getTypeName();
     } catch (Throwable e) {
-      LOG.info(StringUtils.stringifyException(e));
+      LOG.info("Unknown java class type", e);
       return "unknown";
     }
   }

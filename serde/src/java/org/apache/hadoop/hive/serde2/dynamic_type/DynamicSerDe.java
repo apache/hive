@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TIOStreamTransport;
@@ -226,7 +225,6 @@ public class DynamicSerDe extends AbstractSerDe {
 
       bt.initialize();
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
       throw new SerDeException(e);
     }
   }

@@ -1011,11 +1011,11 @@ class CompactionTxnHandler extends TxnHandler {
         return numFailed == failedThreshold;
       }
       catch (SQLException e) {
-        LOG.error("Unable to check for failed compactions " + e.getMessage());
+        LOG.error("Unable to check for failed compactions", e);
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkFailedCompactions(" + ci + ")");
-        LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+        LOG.error("Unable to connect to transaction database", e);
         return false;//weren't able to check
       } finally {
         close(rs, pStmt, dbConn);

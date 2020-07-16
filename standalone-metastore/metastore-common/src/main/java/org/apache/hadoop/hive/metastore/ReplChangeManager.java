@@ -264,7 +264,7 @@ public class ReplChangeManager {
           try {
             success = retriable.run();
           } catch (Exception e) {
-            throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+            throw new IOException("Failed to move", e);
           }
           break;
         }
@@ -598,7 +598,7 @@ public class ReplChangeManager {
     try {
       retriable.run();
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException("Failed to create CM root", e);
     }
   }
 
