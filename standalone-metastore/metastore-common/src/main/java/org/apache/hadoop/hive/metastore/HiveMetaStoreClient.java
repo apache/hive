@@ -2013,7 +2013,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
 
-  protected void rethrowException(TApplicationException te) throws TException{
+  private void rethrowException(TApplicationException te) throws TException{
     // TODO: backward compat for Hive <= 0.12. Can be removed later.
     if (te.getType() != TApplicationException.UNKNOWN_METHOD
             && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
@@ -2021,6 +2021,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     throw new IncompatibleMetastoreException(
             "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+  }
+
+
+  protected PartitionsSpecByExprResult getPartitionsSpecByExprResult(PartitionsByExprRequest req) throws TException {
+    return client.get_partitions_spec_by_expr(req);
   }
 
   @Override
@@ -2035,34 +2040,36 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
       String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
-    assert result != null;
-    PartitionsByExprRequest req = new PartitionsByExprRequest(
-        dbName, tblName, ByteBuffer.wrap(expr));
-    if (defaultPartitionName != null) {
-      req.setDefaultPartitionName(defaultPartitionName);
-    }
-    if (maxParts >= 0) {
-      req.setMaxParts(maxParts);
-    }
-    req.setValidWriteIdList(validWriteIdList);
-    PartitionsSpecByExprResult r;
+    long t1 = System.nanoTime();
     try {
-      r = client.get_partitions_spec_by_expr(req);
-    } catch (TApplicationException te) {
-      if (te.getType() != TApplicationException.UNKNOWN_METHOD
-          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
-        throw te;
+      assert result != null;
+      PartitionsByExprRequest req = new PartitionsByExprRequest(
+              dbName, tblName, ByteBuffer.wrap(expr));
+      if (defaultPartitionName != null) {
+        req.setDefaultPartitionName(defaultPartitionName);
       }
-      throw new IncompatibleMetastoreException(
-          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+      if (maxParts >= 0) {
+        req.setMaxParts(maxParts);
+      }
+      req.setValidWriteIdList(validWriteIdList);
+      PartitionsSpecByExprResult r = null;
+      try {
+        r = getPartitionsSpecByExprResult(req);
+      } catch (TApplicationException te) {
+        rethrowException(te);
+      }
+
+      assert r != null;
+      // do client side filtering
+      r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
+              isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
+
+      result.addAll(r.getPartitionsSpec());
+      return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "listPartitionsSpecByExpr", diff, dbName, tblName));
     }
-
-    // do client side filtering
-    r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
-        isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
-
-    result.addAll(r.getPartitionsSpec());
-    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 
   @Override
