@@ -19,7 +19,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   private static LoadingCache<CacheKey, Object> mscLocalCache;
   private static volatile boolean cacheInitialized = false;
-  private boolean isCacheEnabled = false;
+  private boolean isCacheEnabled = true;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
