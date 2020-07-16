@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -124,7 +125,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
@@ -132,7 +132,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsUtils {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StatsUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsUtils.class);
 
   // Range lower limit for date type when not defined (days, heuristic): '1999-01-01'
   private static final int DATE_RANGE_LOWER_LIMIT = 10593;
@@ -203,7 +203,6 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
 
-    List<BasicStats> results = new ArrayList<>();
     for (Partish pi : inputs) {
       BasicStats bStats = new BasicStats(pi);
       long nr = bStats.getNumRows();
@@ -214,7 +213,7 @@ public class StatsUtils {
       }
     }
 
-    results = basicStatsFactory.buildAll(conf, inputs);
+    List<BasicStats> results = basicStatsFactory.buildAll(conf, inputs);
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
 
@@ -224,19 +223,19 @@ public class StatsUtils {
   }
 
   private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
-                                           Table table, HiveConf conf, long nr, List<ColumnInfo> schema) {
+      Table table, HiveConf conf, long nr, List<ColumnInfo> schema) {
 
     Set<String> neededCols = new HashSet<>(neededColumns);
-    Set<String> colsWithStats = new HashSet<>();
+    Set<String> colsWithStats = new HashSet<>(columnStats.size());
 
     for (ColStatistics cstats : columnStats) {
       colsWithStats.add(cstats.getColumnName());
     }
 
-    List<String> missingColStats = new ArrayList<String>(Sets.difference(neededCols, colsWithStats));
+    neededCols.removeAll(colsWithStats);
 
-    if(missingColStats.size() > 0) {
-      List<ColStatistics> estimatedColStats = estimateStats(table, schema, missingColStats, conf, nr);
+    if (!neededCols.isEmpty()) {
+      List<ColStatistics> estimatedColStats = estimateStats(table, schema, neededCols, conf, nr);
       for (ColStatistics estColStats : estimatedColStats) {
         columnStats.add(estColStats);
       }
@@ -983,14 +982,15 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> estimateStats(Table table, List<ColumnInfo> schema,
-      List<String> neededColumns, HiveConf conf, long nr) {
+      Collection<String> neededColumns, HiveConf conf, long nr) {
 
     List<ColStatistics> stats = new ArrayList<ColStatistics>(neededColumns.size());
 
-    for (int i = 0; i < neededColumns.size(); i++) {
-      ColStatistics cs = estimateColStats(nr, neededColumns.get(i), conf, schema);
+    for (String neededColumn : neededColumns) {
+      ColStatistics cs = estimateColStats(nr, neededColumn, conf, schema);
       stats.add(cs);
     }
+
     return stats;
   }
 

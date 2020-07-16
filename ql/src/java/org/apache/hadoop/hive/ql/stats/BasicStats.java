@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class BasicStats {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class);
 
   public static class Factory {
 
@@ -71,17 +72,18 @@ public class BasicStats {
     }
 
     public List<BasicStats> buildAll(HiveConf conf, Collection<Partish> parts) {
-      LOG.info("Number of partishes : " + parts.size());
+      LOG.info("Number of partitions : {}", parts.size());
 
-      final List<BasicStats> ret = new ArrayList<>(parts.size());
-      if (parts.size() <= 1) {
-        for (Partish partish : parts) {
-          ret.add(build(partish));
-        }
-        return ret;
+      if (parts.isEmpty()) {
+        return Collections.emptyList();
       }
 
-      List<Future<BasicStats>> futures = new ArrayList<>();
+      if (parts.size() == 1) {
+        return Collections.singletonList(build(parts.iterator().next()));
+      }
+
+      final List<BasicStats> ret = new ArrayList<>(parts.size());
+      final List<Future<BasicStats>> futures = new ArrayList<>(parts.size());
 
       int threads = conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
 
@@ -102,14 +104,15 @@ public class BasicStats {
       }
 
       try {
-        for (int i = 0; i < futures.size(); i++) {
-          ret.add(i, futures.get(i).get());
+        for (Future<BasicStats> future : futures) {
+          ret.add(future.get());
         }
       } catch (InterruptedException | ExecutionException e) {
-        LOG.warn("Exception in processing files ", e);
+        LOG.warn("Exception in processing files", e);
       } finally {
         pool.shutdownNow();
       }
+
       return ret;
     }
   }
