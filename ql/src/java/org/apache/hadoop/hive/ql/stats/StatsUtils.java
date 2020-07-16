@@ -1267,6 +1267,9 @@ public class StatsUtils {
    */
   public static long getAvgColLenOfFixedLengthTypes(final String colType) {
     String colTypeLowerCase = Objects.requireNonNull(colType).toLowerCase();
+    if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      return JavaDataModel.get().lengthOfDecimal();
+    }
     switch (colTypeLowerCase) {
     case serdeConstants.TINYINT_TYPE_NAME:
     case serdeConstants.SMALLINT_TYPE_NAME:
@@ -1285,8 +1288,6 @@ public class StatsUtils {
       return JavaDataModel.get().lengthOfTimestamp();
     case serdeConstants.DATE_TYPE_NAME:
       return JavaDataModel.get().lengthOfDate();
-    case serdeConstants.DECIMAL_TYPE_NAME:
-      return JavaDataModel.get().lengthOfDecimal();
     case serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME:
       return JavaDataModel.JAVA32_META;
     default:
