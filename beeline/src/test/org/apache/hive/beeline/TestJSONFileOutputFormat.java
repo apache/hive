@@ -49,8 +49,8 @@ public class TestJSONFileOutputFormat {
   }
 
   private final String[][] mockRowData = {
-    {"aaa","1","3.14","true","","[72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]"},
-    {"bbb","2","2.718","false","Null","[69, 97, 115, 116, 101, 114, 10, 9, 101, 103, 103, 46]"}
+    {"aaa","1","3.14","true","","SGVsbG8sIFdvcmxkIQ"},
+    {"bbb","2","2.718","false","Null","RWFzdGVyCgllZ2cu"}
   };
   private BeelineMock mockBeeline;
   private ResultSet mockResultSet;
@@ -65,7 +65,7 @@ public class TestJSONFileOutputFormat {
     setupMockData();
     BufferedRows bfRows = new BufferedRows(mockBeeline, mockResultSet);
     JSONOutputFormat instance = new JSONFileOutputFormat(mockBeeline);
-    String expResult = "{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null,\"Binary\":\"SGVsbG8sIFdvcmxkIQ==\"}\n{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null,\"Binary\":\"RWFzdGVyCgllZ2cu\"}";
+    String expResult = "{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null,\"Binary\":\"SGVsbG8sIFdvcmxkIQ\"}\n{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null,\"Binary\":\"RWFzdGVyCgllZ2cu\"}";
     instance.print(bfRows);
     String outPutResults = mockBeeline.getOutput();
     assertEquals(expResult, outPutResults);
