@@ -175,7 +175,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
-            log.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
+            log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);
           }
           return null;
         }, queryTimeout, TimeUnit.SECONDS);
@@ -233,7 +233,7 @@ public class SQLOperation extends ExecuteStatementOperation {
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
       if (getStatus().getState().isTerminal()) {
-        log.warn("Ignore exception in terminal state: " + getStatus().getState(), e);
+        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -343,7 +343,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
         setOperationException(new HiveSQLException(e));
-        log.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+        log.error("Error running hive query as user : {}", currentUGI.getShortUserName(), e);
       } finally {
         /**
          * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
