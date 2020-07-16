@@ -65,17 +65,6 @@ public class MergeJoinWork extends BaseWork {
     return getMainWork().getAnyRootOperator();
   }
 
-  @Override
-  public void configureJobConf(JobConf job) {
-    for(Operator rootOp : getAllRootOperators()) {
-      for (FileSinkOperator fs : OperatorUtils.findOperators(rootOp, FileSinkOperator.class)) {
-        LOG.debug("Configuring JobConf in MergeJoinWork for table {}.{} in {}", fs.getConf().getTableInfo().getDbName(),
-            fs.getConf().getTableInfo().getTableName(), rootOp.getClass().getCanonicalName());
-        PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
-      }
-    }
-  }
-
   public CommonMergeJoinOperator getMergeJoinOperator() {
     return this.mergeJoinOp;
   }
