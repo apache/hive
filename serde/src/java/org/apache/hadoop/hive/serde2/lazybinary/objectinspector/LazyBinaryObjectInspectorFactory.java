@@ -57,9 +57,6 @@ public final class LazyBinaryObjectInspectorFactory {
     List<Object> signature = structFieldComments == null ? Arrays.asList(structFieldNames, structFieldObjectInspectors)
         : Arrays.asList(structFieldNames, structFieldObjectInspectors, structFieldComments);
 
-    if (structFieldComments != null) {
-      signature.add(structFieldComments);
-    }
     LazyBinaryStructObjectInspector result = cachedLazyBinaryStructObjectInspector
         .get(signature);
     if (result == null) {
