@@ -231,6 +231,7 @@ import org.slf4j.LoggerFactory;
 public class Hive {
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
+  private String logString = "HS2 %s call took %d nano seconds - dbName: %s, tblName: %s";
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -1611,6 +1612,7 @@ public class Hive {
    */
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
+    long t1 = System.nanoTime();
     if (dbName == null) {
       dbName = SessionState.get().getCurrentDatabase();
     }
@@ -1631,6 +1633,9 @@ public class Hive {
       }
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getTablesByType", diff, dbName, ""));
     }
   }
 
@@ -2131,12 +2136,16 @@ public class Hive {
    * @throws HiveException
    */
   public Database getDatabase(String dbName) throws HiveException {
+    long t1 = System.nanoTime();
     try {
       return getMSC().getDatabase(dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getDatabase", diff, dbName, "N/A"));
     }
   }
 
@@ -2148,12 +2157,16 @@ public class Hive {
    * @throws HiveException
    */
   public Database getDatabase(String catName, String dbName) throws HiveException {
+    long t1 = System.nanoTime();
     try {
       return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getDatabase", diff, dbName, "N/A"));
     }
   }
 
@@ -3665,33 +3678,39 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
-    if (tbl.isPartitioned()) {
-      List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-      try {
-        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
-        req.setTblName(tbl.getTableName());
-        req.setDbName(tbl.getDbName());
-        req.setUserName(getUserName());
-        req.setMaxParts((short) -1);
-        req.setGroupNames(getGroupNames());
-        if (AcidUtils.isTransactionalTable(tbl)) {
-          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        }
-        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
-        tParts = res.getPartitions();
+    long t1 = System.nanoTime();
+    try {
+      if (tbl.isPartitioned()) {
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+        try {
+          GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+          req.setTblName(tbl.getTableName());
+          req.setDbName(tbl.getDbName());
+          req.setUserName(getUserName());
+          req.setMaxParts((short) -1);
+          req.setGroupNames(getGroupNames());
+          if (AcidUtils.isTransactionalTable(tbl)) {
+            ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+            req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+          }
+          GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+          tParts = res.getPartitions();
 
-      } catch (Exception e) {
-        LOG.error(StringUtils.stringifyException(e));
-        throw new HiveException(e);
+        } catch (Exception e) {
+          LOG.error(StringUtils.stringifyException(e));
+          throw new HiveException(e);
+        }
+        List<Partition> parts = new ArrayList<>(tParts.size());
+        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+          parts.add(new Partition(tbl, tpart));
+        }
+        return parts;
+      } else {
+        return Collections.singletonList(new Partition(tbl));
       }
-      List<Partition> parts = new ArrayList<>(tParts.size());
-      for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-        parts.add(new Partition(tbl, tpart));
-      }
-      return parts;
-    } else {
-      return Collections.singletonList(new Partition(tbl));
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getPartitions(Table)", diff, tbl.getDbName(), tbl.getTableName()));
     }
   }
 
@@ -3733,26 +3752,32 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec,
       short limit)
   throws HiveException {
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
-    }
-
-    List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
+    long t1 = System.nanoTime();
     try {
-      partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-          partialPvals, limit, getUserName(), getGroupNames());
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
+      if (!tbl.isPartitioned()) {
+        throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+      }
 
-    List<Partition> qlPartitions = new ArrayList<Partition>();
-    for (org.apache.hadoop.hive.metastore.api.Partition p : partitions) {
-      qlPartitions.add( new Partition(tbl, p));
-    }
+      List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
 
-    return qlPartitions;
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
+      try {
+        partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
+            partialPvals, limit, getUserName(), getGroupNames());
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+
+      List<Partition> qlPartitions = new ArrayList<Partition>();
+      for (org.apache.hadoop.hive.metastore.api.Partition p : partitions) {
+        qlPartitions.add( new Partition(tbl, p));
+      }
+
+      return qlPartitions;
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getPartitions(Table, Map, short)", diff, tbl.getDbName(), tbl.getTableName()));
+    }
   }
 
   /**
@@ -3968,21 +3993,26 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> partitions) throws HiveException, TException {
 
-    Preconditions.checkNotNull(partitions);
-    byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
-    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
-        new ArrayList<>();
-    ValidWriteIdList validWriteIdList = null;
-    if (AcidUtils.isTransactionalTable(tbl)) {
-      validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+    long t1 = System.nanoTime();
+    try {
+      Preconditions.checkNotNull(partitions);
+      byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+          new ArrayList<>();
+      ValidWriteIdList validWriteIdList = null;
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+      }
+      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
+          tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts,
+          validWriteIdList != null ? validWriteIdList.toString() : null);
+      partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
+      return hasUnknownParts;
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getPartitionsByExpr", diff, tbl.getDbName(), tbl.getTableName()));
     }
-    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
-        tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts,
-        validWriteIdList != null ? validWriteIdList.toString() : null);
-    partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
-    return hasUnknownParts;
-
   }
 
   /**
@@ -5329,6 +5359,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       String dbName, String tableName, List<String> colNames, boolean checkTransactional)
       throws HiveException {
 
+    long t1 = System.nanoTime();
     List<ColumnStatisticsObj> retv = null;
     try {
       if (checkTransactional) {
@@ -5343,6 +5374,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getTableColumnStatistics", diff, dbName, tableName));
     }
   }
 
@@ -5368,6 +5402,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
      List<String> colNames, List<String> partName, boolean checkTransactional) {
+    long t1 = System.nanoTime();
     String writeIdList = null;
     try {
       if (checkTransactional) {
@@ -5379,6 +5414,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getAggrColStatsFor", diff, dbName, tblName));
     }
   }
 
@@ -5748,6 +5786,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
+    long t1 = System.nanoTime();
     try {
       List<SQLPrimaryKey> primaryKeys = getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
       if (onlyReliable && primaryKeys != null && !primaryKeys.isEmpty()) {
@@ -5758,6 +5797,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return new PrimaryKeyInfo(primaryKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getPrimaryKeys", diff, dbName, tblName));
     }
   }
 
@@ -5787,6 +5829,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private ForeignKeyInfo getForeignKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
+    long t1 = System.nanoTime();
     try {
       List<SQLForeignKey> foreignKeys = getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
       if (onlyReliable && foreignKeys != null && !foreignKeys.isEmpty()) {
@@ -5797,6 +5840,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return new ForeignKeyInfo(foreignKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getForeignKeys", diff, dbName, tblName));
     }
   }
 
@@ -5826,6 +5872,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private UniqueConstraint getUniqueConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
+    long t1 = System.nanoTime();
     try {
       List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
               new UniqueConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5837,6 +5884,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return new UniqueConstraint(uniqueConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getUniqueConstraints", diff, dbName, tblName));
     }
   }
 
@@ -5937,6 +5987,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
+    long t1 = System.nanoTime();
     try {
       List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
               new NotNullConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5948,6 +5999,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return new NotNullConstraint(notNullConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      long diff = System.nanoTime() - t1;
+      LOG.debug(String.format(logString, "getNotNullConstraints", diff, dbName, tblName));
     }
   }
 
