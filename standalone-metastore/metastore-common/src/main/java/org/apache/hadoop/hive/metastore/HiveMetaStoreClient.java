@@ -2023,7 +2023,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
   }
 
-
   protected PartitionsSpecByExprResult getPartitionsSpecByExprResult(PartitionsByExprRequest req) throws TException {
     return client.get_partitions_spec_by_expr(req);
   }
