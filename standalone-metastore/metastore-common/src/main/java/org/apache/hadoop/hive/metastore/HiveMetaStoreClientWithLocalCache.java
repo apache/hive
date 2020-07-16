@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -21,6 +22,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   private static volatile boolean cacheInitialized = false;
   private boolean isCacheEnabled = true;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
+  private String cacheObjName = null;
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
     this(conf, null, true);
@@ -56,7 +58,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   }
 
   public enum KeyType {
-    PARTITIONS_BY_EXPR_REQUEST(PartitionsByExprRequest.class, PartitionsByExprResult.class);
+    PARTITIONS_BY_EXPR(PartitionsByExprRequest.class, PartitionsByExprResult.class),
+    PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class);
 
     private final Class<?> keyClass;
     private final Class<?> valueClass;
@@ -127,15 +130,20 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
                     LOG.debug(String.format("Caffeine - (%s, %s) was removed (%s)", key, val, cause)))
             .recordStats()
             .build(this::getOrLoad);
+
+    cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("LoadingCache"));
   }
 
 
-  protected Object getResultObject(CacheKey cacheKey) throws TException {
+  private Object getResultObject(CacheKey cacheKey) throws TException {
     Object result = null;
 
     switch (cacheKey.IDENTIFIER) {
-      case PARTITIONS_BY_EXPR_REQUEST:
+      case PARTITIONS_BY_EXPR:
         result = super.getPartitionsByExprResult((PartitionsByExprRequest)cacheKey.obj);
+        break;
+      case PARTITIONS_SPEC_BY_EXPR:
+        result = super.getPartitionsSpecByExprResult((PartitionsByExprRequest)cacheKey.obj);
         break;
       default:
         break;
@@ -149,25 +157,22 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsByExprResult r = null;
 
     if (isCacheEnabled) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR_REQUEST, req);
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       Object val;
       try {
         val = mscLocalCache.get(cacheKey); // get either the result or an Exception
 
         if (val instanceof PartitionsByExprResult) {
           r = (PartitionsByExprResult) val;
-          LOG.debug(mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("LoadingCache")) + ": " +
-                  mscLocalCache.stats().toString());
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         } else if (val instanceof Exception) {
           mscLocalCache.invalidate(cacheKey);
           throw (Exception)val;
         }
+      } catch (MetaException me) {
+        throw me;
       } catch (Exception e) {
-        if (e instanceof MetaException) {
-          throw new MetaException(e.getMessage());
-        } else {
-          throw new TException(e.getMessage());
-        }
+        throw new TException(e.getMessage());
       }
     } else {
          r = client.get_partitions_by_expr(req);
@@ -176,4 +181,32 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return r;
   }
 
+  @Override
+  protected PartitionsSpecByExprResult getPartitionsSpecByExprResult(PartitionsByExprRequest req) throws TException {
+    PartitionsSpecByExprResult r = null;
+
+    if (isCacheEnabled) {
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
+      Object val;
+      try {
+        val = mscLocalCache.get(cacheKey);
+
+        if (val instanceof PartitionsSpecByExprResult) {
+          r = (PartitionsSpecByExprResult) val;
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        } else if (val instanceof Exception) {
+          mscLocalCache.invalidate(cacheKey);
+          throw (Exception)val;
+        }
+      } catch (MetaException me) {
+        throw me;
+      } catch (Exception e) {
+        throw new TException(e.getMessage());
+      }
+    } else {
+        r = client.get_partitions_spec_by_expr(req);
+    }
+
+    return r;
+  }
 }
