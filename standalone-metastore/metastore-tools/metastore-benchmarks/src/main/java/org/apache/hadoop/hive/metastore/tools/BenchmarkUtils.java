@@ -20,8 +20,8 @@ public class BenchmarkUtils {
 
 
   static void createManyTables(HMSClient client, int howMany, String dbName, String format) {
-    List<FieldSchema> columns = createSchema(new ArrayList<>(Arrays.asList("name", "string")));
-    List<FieldSchema> partitions = createSchema(new ArrayList<>(Arrays.asList("date", "string")));
+    List<FieldSchema> columns = createSchema(Arrays.asList("name", "string"));
+    List<FieldSchema> partitions = createSchema(Arrays.asList("date", "string"));
     IntStream.range(0, howMany)
         .forEach(i ->
             throwingSupplierWrapper(() -> client.createTable(
