@@ -172,7 +172,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(() -> {
           try {
             final String queryId = queryState.getQueryId();
-            log.info("Query timed out after: " + queryTimeout + " seconds. Cancelling the execution now: " + queryId);
+            log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
             log.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
@@ -206,6 +206,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw toSQLException("Error while compiling statement", e);
     } catch (Throwable e) {
       setState(OperationState.ERROR);
+      if (e instanceof OutOfMemoryError) {
+        throw e;
+      }
       throw new HiveSQLException("Error running query", e);
     }
   }
@@ -229,11 +232,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if ((getStatus().getState() == OperationState.CANCELED)
-          || (getStatus().getState() == OperationState.TIMEDOUT)
-          || (getStatus().getState() == OperationState.CLOSED)
-          || (getStatus().getState() == OperationState.FINISHED)) {
-        log.warn("Ignore exception in terminal state", e);
+      if (getStatus().getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: " + getStatus().getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -241,6 +241,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
       } else if (e instanceof HiveSQLException) {
         throw (HiveSQLException) e;
+      } else if (e instanceof OutOfMemoryError) {
+        throw (OutOfMemoryError) e;
       } else {
         throw new HiveSQLException("Error running query", e);
       }
@@ -383,9 +385,9 @@ public class SQLOperation extends ExecuteStatementOperation {
         boolean success = backgroundHandle.cancel(true);
         String queryId = queryState.getQueryId();
         if (success) {
-          log.info("The running operation has been successfully interrupted: " + queryId);
-        } else if (state == OperationState.CANCELED) {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
+          log.info("The running operation has been successfully interrupted: {}", queryId);
+        } else {
+          log.info("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
@@ -415,12 +417,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     String queryId = null;
     if (stateAfterCancel == OperationState.CANCELED) {
       queryId = queryState.getQueryId();
-      log.info("Cancelling the query execution: " + queryId);
+      log.info("Cancelling the query execution: {}", queryId);
     }
     cleanup(stateAfterCancel);
     cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
-      log.info("Successfully cancelled the query: " + queryId);
+      log.info("Successfully cancelled the query: {}", queryId);
     }
   }
 
