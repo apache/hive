@@ -8851,7 +8851,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = getMS();
       if (!ms.isFileMetadataSupported()) {
         result.setIsSupported(false);
-        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
         return result;
       }
       result.setIsSupported(true);
@@ -8880,13 +8880,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         result.putToMetadata(fileIds.get(i), mpr);
       }
       if (!result.isSetMetadata()) {
-        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
       }
       return result;
     }
-
-    private final static Map<Long, ByteBuffer> EMPTY_MAP_FM1 = new HashMap<>(1);
-    private final static Map<Long, MetadataPpdResult> EMPTY_MAP_FM2 = new HashMap<>(1);
 
     @Override
     public GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req) throws TException {
@@ -8894,7 +8891,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = getMS();
       if (!ms.isFileMetadataSupported()) {
         result.setIsSupported(false);
-        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
         return result;
       }
       result.setIsSupported(true);
@@ -8910,7 +8907,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         result.putToMetadata(fileIds.get(i), bb);
       }
       if (!result.isSetMetadata()) {
-        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
       }
       return result;
     }

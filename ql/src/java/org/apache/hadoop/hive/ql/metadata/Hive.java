@@ -3685,16 +3685,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
       }
-      List<Partition> parts = new ArrayList<Partition>(tParts.size());
+      List<Partition> parts = new ArrayList<>(tParts.size());
       for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
         parts.add(new Partition(tbl, tpart));
       }
       return parts;
     } else {
-      Partition part = new Partition(tbl);
-      ArrayList<Partition> parts = new ArrayList<Partition>(1);
-      parts.add(part);
-      return parts;
+      return Collections.singletonList(new Partition(tbl));
     }
   }
 

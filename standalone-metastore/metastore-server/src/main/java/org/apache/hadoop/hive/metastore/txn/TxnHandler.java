@@ -662,9 +662,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>(numTxns);
-        List<String> params = new ArrayList<>(1);
+        List<String> params = Collections.singletonList(rqst.getReplPolicy());
         List<List<String>> paramsList = new ArrayList<>(numTxns);
-        params.add(rqst.getReplPolicy());
         for (int i = 0; i < numTxns; i++) {
           rowsRepl.add("?," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
           paramsList.add(params);

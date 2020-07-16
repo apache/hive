@@ -611,9 +611,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if(isTxnOpen()) {
       // Create one dummy lock so we can go through the loop below, though we only
       //really need txnId
-      DbLockManager.DbHiveLock dummyLock = new DbLockManager.DbHiveLock(0L);
-      locks = new ArrayList<>(1);
-      locks.add(dummyLock);
+      locks = Collections.singletonList(new DbLockManager.DbHiveLock(0L));
     }
     else {
       locks = lockMgr.getLocks(false, false);

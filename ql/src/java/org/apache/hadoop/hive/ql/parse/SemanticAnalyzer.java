@@ -29,6 +29,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8653,9 +8654,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .createConversionCast(column, TypeInfoFactory.intTypeInfo);
     }
-    List<ExprNodeDesc> rlist = new ArrayList<ExprNodeDesc>(1);
-    rlist.add(column);
-    return rlist;
+    return Collections.singletonList(column);
   }
 
   private List<ExprNodeDesc> genConvertCol(String dest, QB qb, TableDesc tableDesc, Operator input,
@@ -10550,17 +10549,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo qbp = qb.getParseInfo();
 
-    SortedSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
-
-    List<List<String>> commonGroupByDestGroups = new ArrayList<List<String>>();
+    Set<String> ks = new TreeSet<>(qbp.getClauseNames());
+    List<List<String>> commonGroupByDestGroups = new ArrayList<>();
 
     // If this is a trivial query block return
-    if (ks.size() <= 1) {
-      List<String> oneList = new ArrayList<String>(1);
-      if (ks.size() == 1) {
-        oneList.add(ks.first());
-      }
-      commonGroupByDestGroups.add(oneList);
+    if (ks.isEmpty()) {
+      commonGroupByDestGroups.add(Collections.emptyList());
+      return commonGroupByDestGroups;
+    }
+    if (ks.size() == 1) {
+      commonGroupByDestGroups.add(Collections.singletonList(ks.iterator().next()));
       return commonGroupByDestGroups;
     }
 
@@ -10731,8 +10729,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (commonGroupByDestGroups == null) {
-      commonGroupByDestGroups = new ArrayList<List<String>>();
-      commonGroupByDestGroups.add(new ArrayList<String>(ks));
+      commonGroupByDestGroups = Collections.singletonList(new ArrayList<>(ks));
     }
 
     if (!commonGroupByDestGroups.isEmpty()) {
