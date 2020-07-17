@@ -24,57 +24,44 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class TestJSONOutputFormat {
-
-  public class BeelineMock extends BeeLine {
-
-    private String output;
-
-    @Override
-    final void output(String out) {
-      output = out;
-      super.output(out);
-    }
-
-    private String getOutput() {
-      return output;
-    }
-  }
-
   private final String[][] mockRowData = {
     {"aaa","1","3.14","true","","SGVsbG8sIFdvcmxkIQ"},
     {"bbb","2","2.718","false","Null","RWFzdGVyCgllZ2cu"}
   };
-  private BeelineMock mockBeeline;
-  private ResultSet mockResultSet;
-  private TestBufferedRows.MockRow mockRow;
-
-  /**
-   * Test of print method, of class TableOutputFormat. There was an empty extra column after the
-   * last one.
-   */
+  
+  public ResultSet mockResultSet;
+  public TestBufferedRows.MockRow mockRow;
+  
   @Test
   public final void testPrint() throws SQLException {
-    setupMockData();
+	BeeLine mockBeeline = spy(BeeLine.class);
+	ArgumentCaptor<String> captureOutput = ArgumentCaptor.forClass(String.class);
+	Mockito.doNothing().when(mockBeeline).output(captureOutput.capture());
+	//when(mockBeeline.getOpts().getNumberFormat()).thenReturn("default");
+	//when(mockBeeline.getOpts().getConvertBinaryArrayToString()).thenReturn(true);
     BufferedRows bfRows = new BufferedRows(mockBeeline, mockResultSet);
     JSONOutputFormat instance = new JSONOutputFormat(mockBeeline);
+	instance.print(bfRows);
     String expResult = "{\"resultset\":[{\"String\":\"aaa\",\"Int\":1,\"Decimal\":3.14,\"Bool\":true,\"Null\":null,\"Binary\":\"SGVsbG8sIFdvcmxkIQ\"},{\"String\":\"bbb\",\"Int\":2,\"Decimal\":2.718,\"Bool\":false,\"Null\":null,\"Binary\":\"RWFzdGVyCgllZ2cu\"}]}";
-    instance.print(bfRows);
-    String outPutResults = mockBeeline.getOutput();
-    assertEquals(expResult, outPutResults);
+    assertEquals(expResult, captureOutput.getValue());
   }
-
-  private void setupMockData() throws SQLException {
-    mockBeeline = new BeelineMock();
-    mockResultSet = mock(ResultSet.class);
-
+  
+  @Before
+  public void setupMockData() throws SQLException {
+	mockResultSet = mock(ResultSet.class);
     ResultSetMetaData mockResultSetMetaData = mock(ResultSetMetaData.class);
     when(mockResultSetMetaData.getColumnCount()).thenReturn(6);
     when(mockResultSetMetaData.getColumnLabel(1)).thenReturn("String");
@@ -91,11 +78,9 @@ public class TestJSONOutputFormat {
     when(mockResultSetMetaData.getColumnType(5)).thenReturn(Types.NULL);
     when(mockResultSetMetaData.getColumnType(6)).thenReturn(Types.BINARY);
 
-
     when(mockResultSet.getMetaData()).thenReturn(mockResultSetMetaData);
 
     mockRow = new TestBufferedRows.MockRow();
-    // returns true as long as there is more data in mockResultData array
     when(mockResultSet.next()).thenAnswer(new Answer<Boolean>() {
       private int mockRowDataIndex = 0;
 

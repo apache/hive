@@ -17,6 +17,10 @@
  */
 package org.apache.hive.beeline;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 /**
@@ -37,12 +41,22 @@ public class JSONFileOutputFormat extends JSONOutputFormat {
 
   JSONFileOutputFormat(BeeLine beeLine) {
     super(beeLine);
-    this.generator.setPrettyPrinter(new MinimalPrettyPrinter("\n"));
+    this.generator.setPrettyPrinter(new MinimalPrettyPrinter("\n"));    
   }
 
   @Override
   void printHeader(Rows.Row header) {}
 
   @Override
-  void printFooter(Rows.Row header) {}
+  void printFooter(Rows.Row header) {
+    ByteArrayOutputStream buf = (ByteArrayOutputStream) generator.getOutputTarget();
+    try {
+      generator.flush();
+      String out = buf.toString(StandardCharsets.UTF_8.name());
+      beeLine.output(out);
+    } catch(IOException e) {
+      beeLine.handleException(e);
+    }
+    buf.reset();
+  }
 }
