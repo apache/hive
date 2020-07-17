@@ -44,6 +44,11 @@ public class LockComponentBuilder {
     return this;
   }
 
+  @Deprecated
+  public LockComponentBuilder setSemiShared() {
+    return setExclWrite();
+  }
+
   /**
    * Set the lock to be excl_write.
    * @return reference to this builder
@@ -60,6 +65,11 @@ public class LockComponentBuilder {
   public LockComponentBuilder setSharedWrite() {
     component.setType(LockType.SHARED_WRITE);
     return this;
+  }
+
+  @Deprecated
+  public LockComponentBuilder setShared() {
+    return setSharedRead();
   }
 
   /**
