@@ -1198,14 +1198,6 @@ dropTableStatement
     -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE? replicationClause?)
     ;
 
-fileFormat
-@init { pushMsg("file format specification", state); }
-@after { popMsg(state); }
-    : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
-      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
-    | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
-    ;
-
 inputFileFormat
 @init { pushMsg("Load Data input file format specification", state); }
 @after { popMsg(state); }

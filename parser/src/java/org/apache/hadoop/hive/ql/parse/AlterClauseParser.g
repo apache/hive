@@ -442,3 +442,11 @@ alterStatementSuffixSetOwner
     : KW_SET KW_OWNER principalName
     -> ^(TOK_ALTERTABLE_OWNER principalName)
     ;
+
+fileFormat
+@init { gParent.pushMsg("file format specification", state); }
+@after { gParent.popMsg(state); }
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
+    | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
+    ;
