@@ -792,39 +792,39 @@ public final class OpProcFactory {
       return null;
     }
 
+    private void getGBYKeyPosFromExpr(ExprNodeDesc expr, List<ExprNodeDesc> groupByKeys,
+        List<Integer> gbyKeyPos) {
+      for (int i = 0; i < groupByKeys.size(); i++) {
+        if (groupByKeys.get(i).isSame(expr)) {
+          gbyKeyPos.add(i);
+          return;
+        }
+      }
+      if (expr.getChildren() != null) {
+        for (int i = 0; i < expr.getChildren().size(); i++) {
+          getGBYKeyPosFromExpr(expr.getChildren().get(i), groupByKeys, gbyKeyPos);
+        }
+      }
+    }
+
     private boolean canPredPushdown(ExprNodeDesc expr, List<ExprNodeDesc> groupByKeys,
         FastBitSet[] bitSets, int groupingSetPosition) {
-      List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
-      extractCols(expr, columns);
-      for (ExprNodeDesc col : columns) {
-        int index = groupByKeys.indexOf(col);
-        assert index >= 0;
+      List<Integer> gbyKeyPos = new ArrayList<Integer>();
+      getGBYKeyPosFromExpr(expr, groupByKeys, gbyKeyPos);
+      // gbyKeysInExpr can be empty, maybe the expr is a boolean constant, let the expr push down
+      for (Integer pos : gbyKeyPos) {
         for (FastBitSet bitset : bitSets) {
           int keyPos = bitset.nextClearBit(0);
-          while (keyPos < groupingSetPosition && keyPos != index) {
+          while (keyPos < groupingSetPosition && keyPos != pos) {
             keyPos = bitset.nextClearBit(keyPos + 1);
           }
-          // If the column has not be found in grouping sets, the expr should not be pushed down
-          if (keyPos != index) {
+          // If the gbyKey has not be found in grouping sets, the expr should not be pushed down
+          if (keyPos != pos) {
             return false;
           }
         }
       }
       return true;
-    }
-
-    // Extract columns from expression
-    private void extractCols(ExprNodeDesc expr, List<ExprNodeDesc> columns) {
-      if (expr instanceof ExprNodeColumnDesc) {
-        columns.add(expr);
-      }
-
-      if (expr instanceof ExprNodeGenericFuncDesc) {
-        List<ExprNodeDesc> children = expr.getChildren();
-        for (int i = 0; i < children.size(); ++i) {
-          extractCols(children.get(i), columns);
-        }
-      }
     }
   }
 
