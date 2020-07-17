@@ -661,10 +661,11 @@ class MetaStoreDirectSql {
    * Gets partitions by using direct SQL queries.
    * @param filter The filter.
    * @param max The maximum number of partitions to return.
+   * @param isAcidTable True if the table is ACID
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(String catName, String dbName, String tableName,
-      SqlFilterForPushdown filter, Integer max, boolean isTxnTable) throws MetaException {
+      SqlFilterForPushdown filter, Integer max, boolean isAcidTable) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
         dbName, tableName, filter.filter, filter.params,
         filter.joins, max);
@@ -675,7 +676,7 @@ class MetaStoreDirectSql {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsFromPartitionIds(catName, dbName,
-            tableName, null, input, Collections.emptyList(), isTxnTable);
+            tableName, null, input, Collections.emptyList(), isAcidTable);
       }
     });
   }
@@ -926,7 +927,7 @@ class MetaStoreDirectSql {
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Long> partIdList, List<String> projectionFields,
-      boolean isTxnTable) throws MetaException {
+      boolean isAcidTable) throws MetaException {
 
     boolean doTrace = LOG.isDebugEnabled();
 
@@ -1062,19 +1063,19 @@ class MetaStoreDirectSql {
     String serdeIds = trimCommaList(serdeSb);
     String colIds = trimCommaList(colsSb);
 
-    if (!isTxnTable) {
+    if (!isAcidTable) {
       // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
       MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
     }
 
     boolean hasSkewedColumns = false;
-    if (!isTxnTable) {
+    if (!isAcidTable) {
       MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
     }
 
     MetastoreDirectSqlUtils.setSDBucketCols(BUCKETING_COLS, pm, sds, sdIds);
 
-    if (!isTxnTable) {
+    if (!isAcidTable) {
       // Skewed columns stuff.
       hasSkewedColumns = MetastoreDirectSqlUtils.setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
     }
@@ -1097,7 +1098,7 @@ class MetaStoreDirectSql {
     }
 
     // Finally, get all the stuff for serdes - just the params.
-    if (!isTxnTable) {
+    if (!isAcidTable) {
       MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
     }
 
