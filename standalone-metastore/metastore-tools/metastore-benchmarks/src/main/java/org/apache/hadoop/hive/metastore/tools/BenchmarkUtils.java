@@ -54,17 +54,7 @@ public class BenchmarkUtils {
     List<Long> notCleanedTxns = new ArrayList<>();
     throwingSupplierWrapper(() -> {
       List<TxnInfo> txnInfos = client.getOpenTxnsInfo();
-      txnsOpenedByBenchmark.forEach(txnId -> {
-        txnInfos.forEach(txnInfo -> {
-          if (txnInfo.getId() == txnId) {
-            notCleanedTxns.add(txnId);
-          }
-        });
-      });
-
-      if (notCleanedTxns.size() != 0) {
-        return false;
-      } else return true;
+      return txnInfos.stream().anyMatch(txnsOpenedByBenchmark::contains);
     });
 
     return false;

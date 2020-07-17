@@ -181,13 +181,18 @@ public class BenchmarkTool implements Runnable {
         + nThreads);
     HMSConfig.getInstance().init(host, port, confDir);
 
-    if (runMode == RunModes.ALL) {
-      runAcidBenchmarks();
-      runNonAcidBenchmarks();
-    } else if (runMode == RunModes.ACID) {
-      runAcidBenchmarks();
-    } else {
-      runNonAcidBenchmarks();
+    switch (runMode) {
+      case ACID:
+        runAcidBenchmarks();
+        break;
+      case NONACID:
+        runNonAcidBenchmarks();
+        break;
+      case ALL:
+      default:
+        runNonAcidBenchmarks();
+        runAcidBenchmarks();
+        break;
     }
   }
 
