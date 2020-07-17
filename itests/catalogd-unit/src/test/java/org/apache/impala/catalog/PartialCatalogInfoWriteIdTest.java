@@ -19,9 +19,11 @@
 package org.apache.impala.catalog;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.impala.catalog.MetaStoreClientPool.MetaStoreClient;
+import org.apache.impala.catalog.GetPartialCatalogObjectRequestBuilder;
 import org.apache.impala.common.InternalException;
 import org.apache.impala.common.Reference;
 import org.apache.impala.compat.MetastoreShim;
@@ -33,11 +35,13 @@ import org.apache.impala.thrift.TCatalogObject;
 import org.apache.impala.thrift.TCatalogObjectType;
 import org.apache.impala.thrift.TGetPartialCatalogObjectRequest;
 import org.apache.impala.thrift.TGetPartialCatalogObjectResponse;
+import org.apache.impala.thrift.THdfsFileDesc;
 import org.apache.impala.thrift.THdfsTable;
 import org.apache.impala.thrift.TPartialPartitionInfo;
 import org.apache.impala.thrift.TTable;
 import org.apache.impala.thrift.TTableInfoSelector;
 import org.apache.impala.thrift.TTableName;
+import org.apache.impala.util.AcidUtils;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -144,7 +148,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     long prevVersion =
       catalog_.getOrLoadTable(testDbName, testTblName, "test", null).getCatalogVersion();
     ValidWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
-    TGetPartialCatalogObjectRequest req = new RequestBuilder()
+    TGetPartialCatalogObjectRequest req = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testTblName)
       .writeId(validWriteIdList)
@@ -175,7 +179,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     executeHiveSql("insert into " + getTestTblName() + " values (2)");
     // get the latest validWriteIdList
     ValidWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
-    TGetPartialCatalogObjectRequest req = new RequestBuilder()
+    TGetPartialCatalogObjectRequest req = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testTblName)
       .writeId(validWriteIdList)
@@ -209,7 +213,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Table tblAfterReload = catalog_.getOrLoadTable(testDbName, testTblName, "test", null);
     long tblVersion = tblAfterReload.getCatalogVersion();
     // issue a request which is older than what we have in catalog
-    TGetPartialCatalogObjectRequest req = new RequestBuilder()
+    TGetPartialCatalogObjectRequest req = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testTblName)
       .writeId(validWriteIdList)
@@ -247,7 +251,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
       testPartitionedTbl);
     // client requests olderWriteIdList which is not loaded in Catalog, this is still a
     // cache hit scenario since catalog can satisfy what client requires without reloading
-    TGetPartialCatalogObjectRequest request = new RequestBuilder()
+    TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testPartitionedTbl)
       .writeId(olderWriteIdList)
@@ -261,7 +265,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
       response.getTable_info().getPartitions().get(0).getHms_partition());
 
     // skipping request for file-metadata should not affect the result
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testPartitionedTbl)
       .writeId(olderWriteIdList)
@@ -275,7 +279,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     }
 
     // we request a newer WriteIdList now, and catalog needs to reload
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testPartitionedTbl)
       .writeId(currentWriteIdList)
@@ -293,7 +297,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
       .getCatalogVersion();
     Assert.assertTrue(newerVersion > olderVersion);
 
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testPartitionedTbl)
       .writeId(olderWriteIdList)
@@ -326,6 +330,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
    * @throws Exception
    */
   @Test
+  @Ignore("Ignored until CDPD-13874 is fixed")
   public void fetchAfterMajorCompaction() throws Exception {
     Assume.assumeTrue(MetastoreShim.getMajorVersion() >= 3);
     Table tbl = catalog_.getOrLoadTable(testDbName, testPartitionedTbl, "test", null);
@@ -349,7 +354,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     ValidWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
         testPartitionedTbl);
     // issue a get request at latest writeIdList to trigger a load
-    TGetPartialCatalogObjectRequest request = new RequestBuilder()
+    TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
         .db(testDbName)
         .tbl(testPartitionedTbl)
         .writeId(currentWriteIdList)
@@ -368,7 +373,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Assert.assertEquals(numHits + 2, numHitsAfter);
     Assert.assertEquals(numMisses, numMissesAfter);
     // now issue a request with older writeId
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
         .db(testDbName)
         .tbl(testPartitionedTbl)
         .writeId(olderWriteIdList)
@@ -397,7 +402,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     // should be 1 higher
     Assert.assertEquals(numMissesAfter+1, numMisses);
     // issue a request with current writeId to make we didn't mess up the table's metadata
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
         .db(testDbName)
         .tbl(testPartitionedTbl)
         .writeId(currentWriteIdList)
@@ -415,7 +420,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
    * @throws Exception
    */
   @Test
-  @Ignore("Ignored until CDPD-13874 is fixed.")
+  @Ignore("Ignored until CDPD-13874 is fixed")
   public void testFetchAfterMinorCompaction() throws Exception {
     Assume.assumeTrue(MetastoreShim.getMajorVersion() >= 3);
     Table tbl = catalog_.getOrLoadTable(testDbName, testTblName, "test", null);
@@ -436,7 +441,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     long numHits = getMetricCount(testDbName, testTblName,
         HdfsTable.FILEMETADATA_CACHE_HIT_METRIC);
     // issue a get request at latest writeIdList to trigger a load
-    TGetPartialCatalogObjectRequest request = new RequestBuilder()
+    TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
         .db(testDbName)
         .tbl(testTblName)
         .writeId(currentWriteIdList)
@@ -456,7 +461,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Assert.assertEquals(numHits + 1, numHitsAfter);
     Assert.assertEquals(numMisses, numMissesAfter);
     // issue a request with writeId before the minor compaction
-    request = new RequestBuilder()
+    request = new GetPartialCatalogObjectRequestBuilder()
         .db(testDbName)
         .tbl(testTblName)
         .writeId(olderWriteIdList)
@@ -478,81 +483,92 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Assert.assertEquals(numHitsAfter, numHits1 );
   }
 
-  private void executeHiveSql(String query) throws Exception {
-    try (HiveJdbcClient hiveClient = hiveClientPool_.getClient()) {
-      hiveClient.executeSql(query);
+  /**
+   * This test make sure that the table returned is consistent with given writeId list
+   * even if the table was dropped and recreated from outside.
+   * @throws Exception
+   */
+  @Test
+  public void testFetchAfterDropAndRecreate() throws Exception {
+    Assume.assumeTrue(MetastoreShim.getMajorVersion() >= 3);
+    // row 2, first row is in the setup method
+    executeImpalaSql("insert into " + getTestTblName() + " values (2)");
+    Table tbl = catalog_.getOrLoadTable(testDbName, testTblName, "test", null);
+    Assert.assertFalse("Table must be loaded",
+        tbl instanceof IncompleteTable);
+    ValidWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
+        testTblName);
+    Assert.assertEquals(olderWriteIdList.toString(), tbl.getValidWriteIds().toString());
+    TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
+        .db(testDbName)
+        .tbl(testTblName)
+        .writeId(olderWriteIdList)
+        .wantFiles()
+        .build();
+    TGetPartialCatalogObjectResponse response = sendRequest(request);
+    Assert.assertEquals(1, response.getTable_info().getPartitionsSize());
+    List<THdfsFileDesc> oldFds = response.getTable_info().getPartitions()
+        .get(0).file_descriptors;
+    Assert.assertEquals(2, oldFds.size());
+    // now recreate the table from hive so that Impala is not aware of it
+    executeHiveSql("drop table " + getTestTblName());
+    executeHiveSql("create table " + getTestTblName() + " like "
+        + "functional.insert_only_transactional_table stored as parquet");
+    // we do 2 more inserts into the table so that the high-watermark is same
+    // as olderWriteIdList.
+    executeHiveSql("insert into " + getTestTblName() + " values (1)");
+    executeHiveSql("insert into " + getTestTblName() + " values (2)");
+    ValidWriteIdList newerWriteIdList = getValidWriteIdList(testDbName, testTblName);
+    // the validWriteIdList itself is compatible
+    Assert.assertTrue(AcidUtils.compare(newerWriteIdList, olderWriteIdList) == 0);
+    // now a client with the newerValidWriteIdList must re-trigger a load
+    request = new GetPartialCatalogObjectRequestBuilder()
+        .db(testDbName)
+        .tbl(testTblName)
+        .writeId(newerWriteIdList)
+        .tableId(getTableId(testDbName, testTblName))
+        .wantFiles()
+        .build();
+    response = sendRequest(request);
+    Assert.assertEquals(1, response.getTable_info().getPartitionsSize());
+    List<THdfsFileDesc> newFds = response.getTable_info().getPartitions()
+        .get(0).file_descriptors;
+    Assert.assertEquals(2, newFds.size());
+    for (int i=0; i<newFds.size(); i++) {
+      // we expect that table was reloaded and hence the file descriptors should be
+      // different
+      Assert.assertNotEquals("Found the new file descriptor same as old one",
+          newFds.get(i), oldFds.get(i));
     }
   }
 
   /**
-   * Simple Request builder class. Assumes all the metadata at higher granularity is
-   * required if a specific level is requested. For examples, if files are requested,
-   * assumes that partitions names and partitions are also requested.
+   * Gets the table id from the HMS.
    */
-  private static class RequestBuilder {
-
-    boolean wantFileMetadata;
-    boolean wantPartitionMeta;
-    boolean wantPartitionNames;
-    String tblName, dbName;
-    ValidWriteIdList writeIdList;
-
-    RequestBuilder db(String db) {
-      this.dbName = db;
-      return this;
-    }
-
-    RequestBuilder tbl(String tbl) {
-      this.tblName = tbl;
-      return this;
-    }
-
-    RequestBuilder writeId(ValidWriteIdList validWriteIdList) {
-      this.writeIdList = validWriteIdList;
-      return this;
-    }
-
-    RequestBuilder wantFiles() {
-      wantFileMetadata = true;
-      wantPartitionMeta = true;
-      wantPartitionNames = true;
-      return this;
-    }
-
-    RequestBuilder wantPartitions() {
-      wantPartitionMeta = true;
-      wantFileMetadata = true;
-      return this;
-    }
-
-    RequestBuilder wantPartitionNames() {
-      wantPartitionNames = true;
-      return this;
-    }
-
-    TGetPartialCatalogObjectRequest build() {
-      TGetPartialCatalogObjectRequest req = new TGetPartialCatalogObjectRequest();
-      req.object_desc = new TCatalogObject();
-      req.object_desc.setType(TCatalogObjectType.TABLE);
-      req.object_desc.table = new TTable(dbName, tblName);
-      req.object_desc.table.hdfs_table = new THdfsTable();
-      req.table_info_selector = new TTableInfoSelector();
-      req.table_info_selector.valid_write_ids =
-        MetastoreShim.convertToTValidWriteIdList(writeIdList);
-      req.table_info_selector.want_hms_table = true;
-      if (wantPartitionNames) {
-        req.table_info_selector.want_partition_names = true;
-      }
-      if (wantPartitionMeta) {
-        req.table_info_selector.want_partition_metadata = true;
-      }
-      if (wantFileMetadata) {
-        req.table_info_selector.want_partition_files = true;
-      }
-      return req;
+  private long getTableId(String db, String tbl) throws TException {
+    try (MetaStoreClient client = catalog_.getMetaStoreClient()) {
+      return client.getHiveClient().getTable(db, tbl).getId();
     }
   }
 
+  private void executeHiveSql(String query) throws Exception {
+    try (HiveJdbcClient hiveClient = hiveClientPool_.getClient()) {
+      // make sure that execution engine is tez
+      hiveClient.executeSql("set hive.execution.engine=tez");
+      hiveClient.executeSql(query);
+    }
+  }
+
+  private void executeImpalaSql(String query) throws Exception {
+    ImpalaJdbcClient client = ImpalaJdbcClient
+        .createClientUsingHiveJdbcDriver();
+    client.connect();
+    try {
+      client.execStatement(query);
+    } finally {
+      client.close();
+    }
+  }
 
   private ValidWriteIdList getValidWriteIdList(String db, String tbl) throws TException {
     try (MetaStoreClient client = catalog_.getMetaStoreClient()) {
