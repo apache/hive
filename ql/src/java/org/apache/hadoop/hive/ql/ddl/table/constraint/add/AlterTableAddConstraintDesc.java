@@ -41,6 +41,6 @@ public class AlterTableAddConstraintDesc extends AbstractAlterTableWithConstrain
 
   @Override
   public boolean mayNeedWriteId() {
-    return false;
+    return true;
   }
 }

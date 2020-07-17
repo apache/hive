@@ -40,6 +40,6 @@ public class AlterTableNotSortedDesc extends AbstractAlterTableDesc {
 
   @Override
   public boolean mayNeedWriteId() {
-    return false;
+    return true;
   }
 }
