@@ -339,11 +339,11 @@ public class Driver implements IDriver {
         if (cpe.getCause() instanceof HiveException) {
           HiveException rc = (HiveException)cpe.getCause();
           mdf.error(ss.out, cpe.getMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpe.getSqlState(),
-              rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ? StringUtils.stringifyException(rc) : null);
+              rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ? rc : null);
         } else {
           ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getCause().getMessage());
           mdf.error(ss.out, cpe.getMessage(), canonicalMsg.getErrorCode(), cpe.getSqlState(),
-              StringUtils.stringifyException(cpe.getCause()));
+              cpe.getCause());
         }
       } catch (HiveException ex) {
         CONSOLE.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));
