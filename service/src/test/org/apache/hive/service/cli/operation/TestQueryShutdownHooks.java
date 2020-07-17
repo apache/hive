@@ -28,6 +28,7 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,8 +43,11 @@ import static org.junit.Assert.fail;
 
 public class TestQueryShutdownHooks {
 
+  private static final long ASYNC_QUERY_TIMEOUT_MS = 600000;
   private EmbeddedThriftBinaryCLIService service;
   private ThriftCLIServiceClient client;
+  private SessionHandle sessionHandle;
+  private final Map<String, String> confOverlay = new HashMap<>();
 
   @Before
   public void setUp() throws Exception {
@@ -56,21 +60,23 @@ public class TestQueryShutdownHooks {
     hiveConf.setVar(ConfVars.HIVE_LOCK_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     service.init(hiveConf);
     client = new ThriftCLIServiceClient(service);
-    SessionHandle tempSession = client.openSession("anonymous", "anonymous", new HashMap<>());
+    sessionHandle = client.openSession("anonymous", "anonymous", new HashMap<>());
     // any job causes creation of HadoopJobExecHelper's shutdown hook. It is once per JVM
     // We want it to be created before we count the hooks so it does not cause off by one error in our count
-    client.executeStatement(tempSession, "select reflect(\"java.lang.System\", \"currentTimeMillis\")", new HashMap<>());
-    client.closeSession(tempSession);
+    client.executeStatement(sessionHandle, "select reflect(\"java.lang.System\", \"currentTimeMillis\")", new HashMap<>());
+  }
+
+  @After
+  public void cleanup() throws HiveSQLException {
+    if (sessionHandle != null) {
+      client.closeSession(sessionHandle);
+    }
+    service.stop();
   }
 
   @Test
   public void testSync() throws Exception {
-    Map<String, String> opConf = new HashMap<String, String>();
-
-    SessionHandle sessHandle = client.openSession("anonymous",
-            "anonymous", opConf);
-
-    int shutdownHooksBeforeQueries = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
+    int shutdownHooksBeforeQueries = ShutdownHookManagerInspector.getShutdownHookCount();
 
     String[] someQueries = {
             "CREATE TABLE sample_shutdown_hook (sample_id int, sample_value string)",
@@ -85,7 +91,7 @@ public class TestQueryShutdownHooks {
             "DROP TABLE sample_shutdown_hook",
     };
     for (String queryStr : someQueries) {
-      OperationHandle opHandle = client.executeStatement(sessHandle, queryStr, opConf);
+      OperationHandle opHandle = client.executeStatement(sessionHandle, queryStr, confOverlay);
       assertNotNull(opHandle);
       OperationStatus opStatus = client.getOperationStatus(opHandle, false);
       assertNotNull(opStatus);
@@ -93,19 +99,12 @@ public class TestQueryShutdownHooks {
       assertEquals("Query should be finished", OperationState.FINISHED, state);
     }
 
-    int shutdownHooksAfterFinished = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
-
-    assertEquals(shutdownHooksBeforeQueries, shutdownHooksAfterFinished);
-
-    client.closeSession(sessHandle);
+    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQueries);
   }
 
   @Test
   public void testAsync() throws Exception {
-    Map<String, String> opConf = new HashMap<String, String>();
-
-    SessionHandle sessHandle = client.openSession("anonymous", "anonymous", opConf);
-    int shutdownHooksBeforeQueries = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
+    int shutdownHooksBeforeQueries = ShutdownHookManagerInspector.getShutdownHookCount();
 
     String[] someQueries = {
             "select reflect(\"java.lang.Thread\", \"sleep\", bigint(1000))",
@@ -116,14 +115,14 @@ public class TestQueryShutdownHooks {
 
     List<OperationHandle> operationHandles = new ArrayList<>();
     for (String queryStr : someQueries) {
-      OperationHandle opHandle = client.executeStatementAsync(sessHandle, queryStr, opConf);
+      OperationHandle opHandle = client.executeStatementAsync(sessionHandle, queryStr, confOverlay);
       assertNotNull(opHandle);
       operationHandles.add(opHandle);
     }
 
     boolean allComplete = false;
     final long step = 200;
-    final long timeout = System.currentTimeMillis() + 60000;
+    final long timeout = System.currentTimeMillis() + ASYNC_QUERY_TIMEOUT_MS;
 
     while (!allComplete) {
       allComplete = true;
@@ -140,27 +139,21 @@ public class TestQueryShutdownHooks {
       }
     }
 
-    int shutdownHooksAfterFinished = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
-
-    assertEquals(shutdownHooksBeforeQueries, shutdownHooksAfterFinished);
-    client.closeSession(sessHandle);
+    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQueries);
   }
 
   @Test
   public void testShutdownHookManagerIsRegistered() throws HiveSQLException, InterruptedException {
-    Map<String, String> opConf = new HashMap<String, String>();
-
-    SessionHandle sessHandle = client.openSession("anonymous", "anonymous", opConf);
-    int shutdownHooksBeforeQuery = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
+    int shutdownHooksBeforeQuery = ShutdownHookManagerInspector.getShutdownHookCount();
 
     String queryStr = "select reflect(\"java.lang.Thread\", \"sleep\", bigint(5000))";
-    OperationHandle opHandle = client.executeStatementAsync(sessHandle, queryStr, opConf);
+    OperationHandle opHandle = client.executeStatementAsync(sessionHandle, queryStr, confOverlay);
     assertNotNull(opHandle);
 
-    assertEquals(shutdownHooksBeforeQuery + 1, ShutdownHookManagerInspector.getShutdownHooksInOrder().size());
+    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQuery + 1);
 
     final long step = 200;
-    final long timeout = System.currentTimeMillis() + 60000;
+    final long timeout = System.currentTimeMillis() + ASYNC_QUERY_TIMEOUT_MS;
 
     while (true) {
       OperationStatus operationStatus = client.getOperationStatus(opHandle, false);
@@ -172,10 +165,6 @@ public class TestQueryShutdownHooks {
       }
       Thread.sleep(step);
     }
-
-    int shutdownHooksAfterFinished = ShutdownHookManagerInspector.getShutdownHooksInOrder().size();
-
-    assertEquals(shutdownHooksBeforeQuery, shutdownHooksAfterFinished);
-    client.closeSession(sessHandle);
+    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQuery);
   }
 }
