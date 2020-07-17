@@ -657,13 +657,11 @@ public class MapWork extends BaseWork {
 
   @Override
   public void configureJobConf(JobConf job) {
+    super.configureJobConf(job);
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
       PlanUtils.configureJobConf(partition.getTableDesc(), job);
     }
     Collection<Operator<?>> mappers = aliasToWork.values();
-    for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
-      PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
-    }
     for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {
       icjc.configureJobConf(job);
     }
