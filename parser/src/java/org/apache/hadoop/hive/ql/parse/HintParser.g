@@ -32,6 +32,7 @@ tokens {
   TOK_STREAMTABLE;
   TOK_HINTARGLIST;
   TOK_LEFTSEMIJOIN;
+  TOK_PKFK_JOIN;
 }
 
 @header {
@@ -72,6 +73,7 @@ hintName
     KW_MAPJOIN -> TOK_MAPJOIN
     | KW_SEMI -> TOK_LEFTSEMIJOIN
     | KW_STREAMTABLE -> TOK_STREAMTABLE
+    | PKFK_JOIN -> TOK_PKFK_JOIN
     ;
 
 hintArgs

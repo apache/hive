@@ -472,6 +472,8 @@ Number
     (Digit)+ ( DOT (Digit)* (Exponent)? | Exponent)?
     ;
 
+PKFK_JOIN: 'PKFK_JOIN';
+
 /*
 An Identifier can be:
 - tableName
