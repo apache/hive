@@ -20,9 +20,20 @@ package org.apache.hadoop.util;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 public class ShutdownHookManagerInspector {
 
-  public static List<ShutdownHookManager.HookEntry> getShutdownHooksInOrder() {
-    return ShutdownHookManager.get().getShutdownHooksInOrder();
+  public static int getShutdownHookCount() {
+    return ShutdownHookManager.get().getShutdownHooksInOrder().size();
+  }
+
+  public static void assertShutdownHookCount(int expected) {
+    List<ShutdownHookManager.HookEntry> entries = ShutdownHookManager.get().getShutdownHooksInOrder();
+    StringBuilder errorBuilder = new StringBuilder("Shutdown hooks:\n");
+    for (ShutdownHookManager.HookEntry entry: entries) {
+      errorBuilder.append(entry.getHook()).append(" Priority:").append(entry.getPriority()).append("\n");
+    }
+    assertEquals(errorBuilder.toString(), expected, entries.size());
   }
 }
