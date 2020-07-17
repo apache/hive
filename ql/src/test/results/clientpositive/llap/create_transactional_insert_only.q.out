@@ -50,6 +50,8 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: insert into table transactional_insert_only_table partition(ds)  select key,value,ds from srcpart
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

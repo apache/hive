@@ -254,6 +254,12 @@ public class TxnUtils {
       .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
+  public static boolean isAcidTable(Map<String, String> parameters) {
+    return isTransactionalTable(parameters) &&
+            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.
+                    equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+  }
+
   /**
    * Should produce the result as <dbName>.<tableName>.
    */

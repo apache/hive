@@ -7595,7 +7595,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         checkAcidConstraints(qb, tableDescriptor, destinationTable);
       } else {
-        // Acid tables can't be list bucketed or have skewed cols
+        // Transactional tables can't be list bucketed or have skewed cols
         lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
             destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
             destinationPartition.isStoredAsSubDirectories());
