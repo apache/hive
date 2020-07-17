@@ -14357,11 +14357,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       else
       {
         int amt = Integer.parseInt(amtNode.getText());
-        if ( amt <= 0 ) {
+        if ( amt < 0 ) {
           throw new SemanticException(
-              "Window Frame Boundary Amount must be a positive integer, provided amount is: " + amt);
+              "Window Frame Boundary Amount must be a non-negative integer, provided amount is: " + amt);
+        } else if (amt == 0) {
+          // Convert 0 PRECEDING/FOLLOWING to CURRENT ROW
+          LOG.info("Converting 0 {} to CURRENT ROW", bs.getDirection());
+          bs.setDirection(Direction.CURRENT);
+          hasAmt = false;
+        } else {
+          bs.setAmt(amt);
         }
-        bs.setAmt(amt);
       }
     }
 
