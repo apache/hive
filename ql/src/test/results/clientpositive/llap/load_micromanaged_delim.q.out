@@ -107,6 +107,9 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\t                  
+	serialization.format	\t                  
 PREHOOK: query: SELECT * FROM delim_table_micro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@delim_table_micro
@@ -115,11 +118,11 @@ POSTHOOK: query: SELECT * FROM delim_table_micro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@delim_table_micro
 #### A masked pattern was here ####
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2
 PREHOOK: query: CREATE TRANSACTIONAL TABLE delim_table_trans(id INT, name STRING, safety INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -171,6 +174,9 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\t                  
+	serialization.format	\t                  
 PREHOOK: query: SELECT * FROM delim_table_trans
 PREHOOK: type: QUERY
 PREHOOK: Input: default@delim_table_trans
@@ -179,8 +185,8 @@ POSTHOOK: query: SELECT * FROM delim_table_trans
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@delim_table_trans
 #### A masked pattern was here ####
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
-NULL	NULL	NULL
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2
