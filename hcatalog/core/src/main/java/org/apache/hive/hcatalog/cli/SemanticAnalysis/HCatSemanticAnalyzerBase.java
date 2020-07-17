@@ -123,7 +123,8 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   protected void authorize(Privilege[] inputPrivs, Privilege[] outputPrivs)
     throws AuthorizationException, SemanticException {
     try {
-      getAuthProvider().authorize(inputPrivs, outputPrivs);
+      getAuthProvider().authorizeDbLevelOperations(inputPrivs, outputPrivs,
+          null, null);
     } catch (HiveException ex) {
       throw new SemanticException(ex);
     }
