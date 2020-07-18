@@ -1867,6 +1867,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -1916,6 +1918,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table stats_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_mm
@@ -1973,6 +1977,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table stats2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats2_mm
