@@ -1223,11 +1223,31 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final Configuration conf;
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
-      DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
-
       this.conf = conf;
-      this.keyProvider = dfs.getClient().getKeyProvider();
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
+      this.keyProvider = getKeyProvider();
+    }
+
+    private KeyProvider getKeyProvider() throws IOException {
+      if (isMethodExist(HdfsAdmin.class, "getKeyProvider")) {
+        // HDFS-11687 added getKeyProvider method in hdfsAdmin from Hadoop-2.9.0
+        return this.hdfsAdmin.getKeyProvider();
+      } else {
+        // Once Hive sets it's minimum Hadoop version to >2.9.0, this else part
+        // of the code can be removed.
+        DistributedFileSystem dfs =
+            (DistributedFileSystem) FileSystem.get(this.conf);
+        return dfs.getClient().getKeyProvider();
+      }
+    }
+
+    private boolean isMethodExist(final Class clazz, final String methodName) {
+      try {
+        clazz.getMethod(methodName);
+        return true;
+      } catch (NoSuchMethodException e) {
+        return false;
+      }
     }
 
     @Override
