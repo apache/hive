@@ -1223,11 +1223,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final Configuration conf;
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
-      DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
-
       this.conf = conf;
-      this.keyProvider = dfs.getClient().getKeyProvider();
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
+      this.keyProvider = this.hdfsAdmin.getKeyProvider();
     }
 
     @Override
