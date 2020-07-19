@@ -47,6 +47,9 @@ import org.apache.impala.thrift.TGetBackendConfigResp;
 import org.apache.impala.thrift.ImpalaHiveServer2Service;
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TExecutePlannedStatementReq;
+import org.apache.impala.thrift.TGetExecutorMembershipReq;
+import org.apache.impala.thrift.TGetExecutorMembershipResp;
+import org.apache.impala.thrift.TUpdateExecutorMembershipRequest;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -351,6 +354,26 @@ public class ImpalaSession {
 
         checkThriftStatus(resp.getStatus());
         return resp.getBackend_config();
+    }
+
+    /**
+     * Retrieve the executor membership from impalad
+     */
+    public TUpdateExecutorMembershipRequest getExecutorMembership() throws HiveException {
+        Preconditions.checkNotNull(client);
+        Preconditions.checkNotNull(sessionHandle);
+
+        TGetExecutorMembershipReq req = new TGetExecutorMembershipReq();
+        req.setSessionHandle(sessionHandle);
+        TGetExecutorMembershipResp resp;
+        try {
+            resp = client.GetExecutorMembership(req);
+        } catch (Exception e) {
+            throw new HiveException(e);
+        }
+
+        checkThriftStatus(resp.getStatus());
+        return resp.getExecutor_membership();
     }
 
     public boolean isOpen() {

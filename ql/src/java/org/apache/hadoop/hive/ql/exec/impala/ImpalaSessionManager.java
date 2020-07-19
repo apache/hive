@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.impala.thrift.TUpdateExecutorMembershipRequest;
+import org.apache.impala.util.ExecutorMembershipSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -71,14 +73,20 @@ public class ImpalaSessionManager {
   private ImpalaSessionManager() {
   }
 
-  private void initBackendConfig(HiveConf hiveConf) throws HiveException {
+  private void initBackendConfigAndExecMembership(HiveConf hiveConf) throws HiveException {
     try {
       if (BackendConfig.INSTANCE == null) {
         ImpalaSession session = getSession(hiveConf);
 
         final TBackendGflags cfg = session.getBackendConfig();
+
         BackendConfig.create(cfg,
             false /* don't initialize SqlScanner or AuthToLocal */);
+
+        // update the executor membership snapshot
+        // TODO: CDPD-15339: create a session level cache for this snapshot
+        final TUpdateExecutorMembershipRequest req = session.getExecutorMembership();
+        ExecutorMembershipSnapshot.update(req);
       }
       FeSupport.loadLibrary(true);
     } catch(Exception e) {
@@ -95,7 +103,7 @@ public class ImpalaSessionManager {
 
           // Do this after inited is set since it will recurse into getSession
           try {
-            initBackendConfig(hiveConf);
+            initBackendConfigAndExecMembership(hiveConf);
           } catch (Exception e) {
             inited = false;
             throw e;
