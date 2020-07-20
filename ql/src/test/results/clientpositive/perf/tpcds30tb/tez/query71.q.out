@@ -22,7 +22,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_sold_time_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:time_sk, smallTablePos:1, keyRatio:4.3992401279400425E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:ws_sold_time_sk, smallTablePos:1, keyRatio:4.3992401279400425E-9
                   Statistics: Num rows: 21594638446 Data size: 2936546600912 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_sold_time_sk is not null (type: boolean)

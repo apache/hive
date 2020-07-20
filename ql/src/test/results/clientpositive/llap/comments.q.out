@@ -104,6 +104,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: (UDFToDouble(key) > 0.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.332
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator

@@ -25,7 +25,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_store_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_231_container, bigKeyColName:store_sk, smallTablePos:1, keyRatio:1.0756178660512734
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_231_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:1.0756178660512734
                   Statistics: Num rows: 82510879939 Data size: 19351122693824 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_store_sk is not null (type: boolean)
@@ -149,7 +149,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_web_site_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_235_container, bigKeyColName:wsr_web_site_sk, smallTablePos:1, keyRatio:2.1438795429601423
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_235_container, bigKeyColName:ws_web_site_sk, smallTablePos:1, keyRatio:2.1438795429601423
                   Statistics: Num rows: 21594638446 Data size: 5182388988880 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_web_site_sk is not null (type: boolean)
@@ -485,7 +485,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: cs_catalog_page_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_233_container, bigKeyColName:page_sk, smallTablePos:1, keyRatio:1.0959547352990346
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_233_container, bigKeyColName:cs_catalog_page_sk, smallTablePos:1, keyRatio:1.0959547352990346
                   Statistics: Num rows: 43005109025 Data size: 10308315074584 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cs_catalog_page_sk is not null (type: boolean)
