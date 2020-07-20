@@ -684,16 +684,28 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
 
     LOG.info("Starting translation for transformDatabase for processor " + processorId + " with " + processorCapabilities
-        + " on database " + db.getName());
+        + " on database {} locationUri={} managedLocationUri={}", db.getName(), db.getLocationUri(), db.getManagedLocationUri());
 
-    if (!isTenantBasedStorage && (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
-            !processorCapabilities.contains(HIVEFULLACIDWRITE)))) {
-      LOG.info("Processor does not have any of ACID write capabilities, changing current location from " +
-              db.getLocationUri() + " to external warehouse location");
-      Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
-      LOG.debug("Setting DBLocation to " + extWhLocation.toString());
-      // TODO should not alter database now.
-      db.setLocationUri(extWhLocation.toString());
+    if (!isTenantBasedStorage) {
+      Path locationPath = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      if (FileUtils.isSubdirectory(whRootPath.toString(), locationPath.toString())) { // legacy path
+        if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
+            processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+          LOG.debug("Processor has atleast one of ACID write capabilities, setting current locationUri " + db.getLocationUri() + " as managedLocationUri");
+          db.setManagedLocationUri(new Path(db.getLocationUri()).toString());
+        }
+        Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
+        LOG.info("Database's location is a managed location, setting to a new default path based on external warehouse path:" + extWhLocation.toString());
+        db.setLocationUri(extWhLocation.toString());
+      } else {
+        if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
+            processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+          Path mgdWhLocation = hmsHandler.getWh().getDefaultDatabasePath(db.getName(), false);
+          LOG.debug("Processor has atleast one of ACID write capabilities, setting default managed path to " + mgdWhLocation.toString());
+          db.setManagedLocationUri(mgdWhLocation.toString());
+        }
+      }
     }
     LOG.info("Transformer returning database:" + db.toString());
     return db;
@@ -816,7 +828,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       } else {
         dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
         Path tablePath = null;
-        if (!FileUtils.isSubdirectory(whRootPath.toString(), dbLocation.toString())) {
+        if (!FileUtils.isSubdirectory(whRootPath.toString(), dbLocation.toString()) && !dbLocation.equals(whRootPath)) {
           tablePath = new Path(db.getLocationUri(), table.getTableName());
         } else {
           tablePath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
