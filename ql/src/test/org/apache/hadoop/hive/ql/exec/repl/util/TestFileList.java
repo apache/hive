@@ -54,41 +54,49 @@ public class TestFileList {
 
   @Test
   public void testNoStreaming() throws Exception {
-    FileList fileList = setupFileList(100, false);
+    Object tuple[] =  setupAndGetTuple(100, false);
+    FileList fileList = (FileList) tuple[0];
+    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
     fileList.add("Entry1");
     fileList.add("Entry2");
-    assertFalse(fileList.isStreamingToFile());
+    assertFalse(isStreamingToFile(fileListStreamer));
   }
 
   @Test
   public void testAlwaysStreaming() throws Exception {
-    FileList fileList = setupFileList(100, true);
-    assertFalse(fileList.isStreamingInitialized());
+    Object tuple[] =  setupAndGetTuple(100, true);
+    FileList fileList = (FileList) tuple[0];
+    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
+    assertFalse(fileListStreamer.isInitialized());
     fileList.add("Entry1");
-    waitForStreamingInitialization(fileList);
-    assertTrue(fileList.isStreamingToFile());
+    waitForStreamingInitialization(fileListStreamer);
+    assertTrue(isStreamingToFile(fileListStreamer));
     fileList.close();
-    waitForStreamingClosure(fileList);
+    waitForStreamingClosure(fileListStreamer);
   }
 
   @Test
   public void testStreaminOnCacheHit() throws Exception {
-    FileList fileList = setupFileList(5, false);
+    Object tuple[] =  setupAndGetTuple(5, false);
+    FileList fileList = (FileList) tuple[0];
+    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
     fileList.add("Entry1");
     fileList.add("Entry2");
     fileList.add("Entry3");
     Thread.sleep(5000L);
-    assertFalse(fileList.isStreamingInitialized());
+    assertFalse(fileListStreamer.isInitialized());
     fileList.add("Entry4");
     fileList.add("Entry5");
-    waitForStreamingInitialization(fileList);
+    waitForStreamingInitialization(fileListStreamer);
     fileList.close();
-    waitForStreamingClosure(fileList);
+    waitForStreamingClosure(fileListStreamer);
   }
 
   @Test
   public void testConcurrentAdd() throws Exception {
-    FileList fileList = setupFileList(100, false);
+    Object tuple[] =  setupAndGetTuple(100, false);
+    FileList fileList = (FileList) tuple[0];
+    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
     int numOfEntries = 1000;
     int numOfThreads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
@@ -103,17 +111,17 @@ public class TestFileList {
       });
     }
     executorService.awaitTermination(1, TimeUnit.MINUTES);
-    waitForStreamingInitialization(fileList);
+    waitForStreamingInitialization(fileListStreamer);
     fileList.close();
-    waitForStreamingClosure(fileList);
+    waitForStreamingClosure(fileListStreamer);
     ArgumentCaptor<String> entryArgs = ArgumentCaptor.forClass(String.class);
     Mockito.verify(bufferedWriter, Mockito.times(numOfEntries)).write(entryArgs.capture());
   }
 
-  private void waitForStreamingInitialization(FileList fileList) throws InterruptedException {
+  private void waitForStreamingInitialization(FileListStreamer fileListStreamer) throws InterruptedException {
     long sleepTime = 1000L;
     int iter = 0;
-    while (!fileList.isStreamingInitialized()) {
+    while (!fileListStreamer.isInitialized()) {
       Thread.sleep(sleepTime);
       iter++;
       if (iter == 5) {
@@ -122,10 +130,10 @@ public class TestFileList {
     }
   }
 
-  private void waitForStreamingClosure(FileList fileList) throws InterruptedException {
+  private void waitForStreamingClosure(FileListStreamer fileListStreamer) throws InterruptedException {
     long sleepTime = 1000L;
     int iter = 0;
-    while (!fileList.isStreamingClosedProperly()) {
+    while (!isStreamingClosedProperly(fileListStreamer)) {
       Thread.sleep(sleepTime);
       iter++;
       if (iter == 5) {
@@ -134,7 +142,7 @@ public class TestFileList {
     }
   }
 
-  private FileList setupFileList(int cacheSize, boolean lazyDataCopy) throws Exception {
+  private Object[] setupAndGetTuple(int cacheSize, boolean lazyDataCopy) throws Exception {
     HiveConf hiveConf = Mockito.mock(HiveConf.class);
     Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(lazyDataCopy);
     Path backingFile = new Path("/tmp/backingFile");
@@ -142,6 +150,15 @@ public class TestFileList {
     FileListStreamer fileListStreamer = Mockito.spy(new FileListStreamer(cache, backingFile, hiveConf));
     FileList fileList = new FileList(backingFile, fileListStreamer, cache, hiveConf);
     Mockito.doReturn(bufferedWriter).when(fileListStreamer).lazyInitWriter();
-    return fileList;
+    Object[] tuple  = new Object[] {fileList, fileListStreamer};
+    return tuple;
+  }
+
+  private boolean isStreamingToFile(FileListStreamer fileListStreamer) {
+    return fileListStreamer.isInitialized() && fileListStreamer.isAlive();
+  }
+
+  private boolean isStreamingClosedProperly(FileListStreamer fileListStreamer) {
+    return fileListStreamer.isInitialized() && !fileListStreamer.isAlive() && fileListStreamer.isValid();
   }
 }

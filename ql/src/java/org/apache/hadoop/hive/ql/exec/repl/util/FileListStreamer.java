@@ -135,7 +135,7 @@ public class FileListStreamer extends Thread implements Closeable {
   }
 
   @VisibleForTesting
-  public boolean isInitialized() {
+  boolean isInitialized() {
     return backingFileWriter != null;
   }
 }

@@ -172,19 +172,4 @@ public class FileList implements AutoCloseable, Iterator<String> {
     boolean copyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
     return copyAtLoad ? 0 : (int)(cacheSize * thresholdFactor);
   }
-
-  @VisibleForTesting
-  boolean isStreamingToFile() {
-    return isStreamingInitialized() && fileListStreamer.isAlive();
-  }
-
-  @VisibleForTesting
-  boolean isStreamingInitialized() {
-    return fileListStreamer.isInitialized();
-  }
-
-  @VisibleForTesting
-  boolean isStreamingClosedProperly() {
-    return fileListStreamer.isInitialized() && !fileListStreamer.isAlive() && fileListStreamer.isValid();
-  }
 }
