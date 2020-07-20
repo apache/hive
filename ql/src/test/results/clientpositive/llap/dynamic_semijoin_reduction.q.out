@@ -2213,6 +2213,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2342,6 +2343,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
@@ -2665,6 +2667,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -2717,6 +2720,7 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:cstring, smallTablePos:0, keyRatio:0.8212076822916666
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cstring is not null (type: boolean)
@@ -2831,6 +2835,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
@@ -2913,6 +2918,7 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc_int_n1
                   filterExpr: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:cstring, smallTablePos:0, keyRatio:0.8212076822916666
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
@@ -3238,6 +3244,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.13
                   Statistics: Num rows: 2000 Data size: 550000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -3620,6 +3627,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small_n3
                   filterExpr: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key1, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
@@ -3826,6 +3834,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small_n3
                   filterExpr: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key1, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
@@ -4010,6 +4019,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key1, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -4286,6 +4296,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.3665
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)

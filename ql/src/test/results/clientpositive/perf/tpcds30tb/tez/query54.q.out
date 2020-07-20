@@ -188,7 +188,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: cs_bill_customer_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_289_container, bigKeyColName:item_sk, smallTablePos:1, keyRatio:2.3199545882327872E-5
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_289_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:2.3199545882327872E-5
                   Statistics: Num rows: 43005109025 Data size: 1031276889552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cs_bill_customer_sk is not null (type: boolean)
