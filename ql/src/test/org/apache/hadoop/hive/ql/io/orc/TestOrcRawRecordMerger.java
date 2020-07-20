@@ -74,6 +74,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -113,6 +114,52 @@ public class TestOrcRawRecordMerger {
     assertEquals(-1, left.compareTo(ri));
     assertEquals(false, ri.equals(left));
     assertEquals(false, left.equals(ri));
+  }
+
+  @Test
+  public void testIntersect() {
+    OrcRawRecordMerger.KeyInterval ki1 = generateKeyInterval(1000L, 2000L);
+    OrcRawRecordMerger.KeyInterval ki2 = generateKeyInterval(1500L, 2500L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 1000L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 999L);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(500L, null);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(2500L, null);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(null, null);
+    checkIntersect(ki1, ki2, true);
+  }
+
+  private static OrcRawRecordMerger.KeyInterval generateKeyInterval(Long minRowId, Long maxRowId) {
+    RecordIdentifier min = null;
+    if (minRowId != null) {
+      min = new RecordIdentifier(1, 100, minRowId);
+    }
+    RecordIdentifier max = null;
+    if (maxRowId != null) {
+      max = new RecordIdentifier(1, 100, maxRowId);
+    }
+    return new OrcRawRecordMerger.KeyInterval(min, max);
+  }
+
+  private static void checkIntersect(OrcRawRecordMerger.KeyInterval ki1, OrcRawRecordMerger.KeyInterval ki2,
+      boolean isIntersect)
+  {
+    if (isIntersect) {
+      assertTrue(ki1.isIntersects(ki2));
+      assertTrue(ki2.isIntersects(ki1));
+    } else {
+      assertFalse(ki1.isIntersects(ki2));
+      assertFalse(ki2.isIntersects(ki1));
+    }
   }
 
   private static void setRow(OrcStruct event,
