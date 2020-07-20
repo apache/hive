@@ -29,7 +29,6 @@ import java.lang.reflect.Constructor;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,9 +86,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
 
 /**
  * Unit test for the vectorized GROUP BY operator.
@@ -97,26 +94,6 @@ import org.junit.runners.Parameterized;
 public class TestVectorGroupByOperator {
 
   HiveConf hconf = new HiveConf();
-
-  @Parameterized.Parameter
-  public boolean aggBufferLRUCache;
-
-  /*
-    Runs entire test suite with and without groupby lru cache setting
-   */
-  @Parameterized.Parameters(name = "test[aggBufferLRUCache:{0}]")
-  public static Collection<Object[]> getParameters() {
-    Collection<Object[]> parameters = new ArrayList<Object[]>();
-    // enable and disable lrucache config
-    parameters.add(new Object[] { true });
-    parameters.add(new Object[] { false });
-    return parameters;
-  }
-
-  @Before
-  public void setupHiveConf() {
-    hconf.setBoolean("hive.vectorized.groupby.agg.enable.lrucache", aggBufferLRUCache);
-  }
 
   private static ExprNodeDesc buildColumnDesc(
       VectorizationContext ctx,
@@ -367,11 +344,7 @@ public class TestVectorGroupByOperator {
       // Set an upper bound how much we're willing to push before it should flush
       // we've set the memory treshold at 100kb, each key is distinct
       // It should not go beyond 100k/16 (key+data)
-      if (!aggBufferLRUCache) {
-        assertTrue(countRowsProduced < 100 * 1024 / 16);
-      } else {
-        // for LRU cache, removeEldestEntry automatically takes care of flushing
-      }
+      assertTrue(countRowsProduced < 100*1024/16);
     }
 
     assertTrue(0 < outputRowCount);
@@ -461,11 +434,7 @@ public class TestVectorGroupByOperator {
         // Set an upper bound how much we're willing to push before it should flush
         // we've set the memory treshold at 100kb, each key is distinct
         // It should not go beyond 100k/16 (key+data)
-        if (!aggBufferLRUCache) {
-          assertTrue(countRowsProduced < 100 * 1024 / 16);
-        } else {
-          // for LRU cache, removeEldestEntry automatically takes care of flushing
-        }
+        assertTrue(countRowsProduced < 100 * 1024 / 16);
       }
 
       assertTrue(0 < outputRowCount);

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -122,8 +121,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   private transient Object[] forwardCache;
 
-  @VisibleForTesting
-  transient VectorizedRowBatch outputBatch;
+  private transient VectorizedRowBatch outputBatch;
   private transient VectorizedRowBatchCtx vrbCtx;
 
   /*
@@ -360,34 +358,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
      */
     private long numRowsCompareHashAggr;
 
-    /**
-     * To track current memory usage.
-     */
-    private long currMemUsed;
-
-    /**
-     * Whether to make use of LRUCache for map aggr buffers or not.
-     */
-    private boolean lruCache;
-
-    class LRUCache extends LinkedHashMap<KeyWrapper, VectorAggregationBufferRow> {
-
-      @Override
-      protected boolean removeEldestEntry(Map.Entry<KeyWrapper, VectorAggregationBufferRow> eldest) {
-        if (currMemUsed > maxHashTblMemory || size() > maxHtEntries || gcCanary.get() == null) {
-          try {
-            // flush eldest entry out of the map.
-            writeSingleRow((VectorHashKeyWrapperBase) eldest.getKey(), eldest.getValue());
-            --numEntriesHashTable;
-            return true;
-          } catch(HiveException e) {
-            throw new RuntimeException(e);
-          }
-        }
-        return false;
-      }
-    }
-
     @Override
     public void initialize(Configuration hconf) throws HiveException {
       // hconf is null in unit testing
@@ -400,8 +370,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES);
         this.numRowsCompareHashAggr = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
-        lruCache = HiveConf.getBoolVar(hconf,
-            HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_ENABLE_LRU_FOR_AGGR);
       }
       else {
         this.percentEntriesToFlush =
@@ -418,15 +386,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       sumBatchSize = 0;
 
-      if (lruCache) {
-        mapKeysAggregationBuffers= new LRUCache();
-        if (groupingSets != null && groupingSets.length > 0) {
-          this.maxHtEntries = this.maxHtEntries / groupingSets.length;
-          LOG.info("Patch: new maxHtEntries: {}", maxHtEntries);
-        }
-      } else {
-        mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
-      }
+      mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
     }
@@ -460,54 +420,33 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       //Flush if memory limits were reached
       // We keep flushing until the memory is under threshold
       int preFlushEntriesCount = numEntriesHashTable;
+      while (shouldFlush(batch)) {
+        flush(false);
 
-      if (!lruCache) {
-        while (shouldFlush(batch)) {
-          flush(false);
-
-          if(gcCanary.get() == null) {
-            gcCanaryFlushes++;
-            gcCanary = new SoftReference<Object>(new Object());
-          }
-
-          //Validate that some progress is being made
-          if (!(numEntriesHashTable < preFlushEntriesCount)) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(String.format("Flush did not progress: %d entries before, %d entries after",
-                  preFlushEntriesCount,
-                  numEntriesHashTable));
-            }
-            break;
-          }
-          preFlushEntriesCount = numEntriesHashTable;
+        if(gcCanary.get() == null) {
+          gcCanaryFlushes++;
+          gcCanary = new SoftReference<Object>(new Object());
         }
-      } else {
-        checkAndFlushLRU(batch);
+
+        //Validate that some progress is being made
+        if (!(numEntriesHashTable < preFlushEntriesCount)) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("Flush did not progress: %d entries before, %d entries after",
+                preFlushEntriesCount,
+                numEntriesHashTable));
+          }
+          break;
+        }
+        preFlushEntriesCount = numEntriesHashTable;
       }
 
       if (sumBatchSize == 0 && 0 != batch.size) {
         // Sample the first batch processed for variable sizes.
         updateAvgVariableSize(batch);
-        currMemUsed = numEntriesHashTable * (fixedHashEntrySize + avgVariableSize);
       }
 
       sumBatchSize += batch.size;
       lastModeCheckRowCount += batch.size;
-    }
-
-    void checkAndFlushLRU(VectorizedRowBatch batch) throws HiveException {
-      if(gcCanary.get() == null) {
-        gcCanaryFlushes++;
-        // During full GC, ensure to clear off entries. For rest, keys would be evicted via LRU
-        flush(false);
-        gcCanary = new SoftReference<Object>(new Object());
-      }
-
-      if (numEntriesSinceCheck >= this.checkInterval) {
-        // Were going to update the average variable row size by sampling the current batch
-        updateAvgVariableSize(batch);
-        numEntriesSinceCheck = 0;
-      }
     }
 
     @Override
