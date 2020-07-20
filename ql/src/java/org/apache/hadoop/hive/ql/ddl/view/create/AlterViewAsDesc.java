@@ -15,28 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.api;
 
-public class InitializeTableWriteIdsRequest {
-  private final String dbName;
-  private final String tblName;
-  private final long seeWriteId;
-  public InitializeTableWriteIdsRequest(String dbName, String tblName, long seeWriteId) {
-    assert dbName != null;
-    assert tblName != null;
-    assert seeWriteId > 1;
-    this.dbName = dbName;
-    this.tblName = tblName;
-    this.seeWriteId = seeWriteId;
-  }
-  public String getDbName() {
-    return dbName;
-  }
-  public String getTblName() {
-    return tblName;
-  }
+package org.apache.hadoop.hive.ql.ddl.view.create;
 
-  public long getSeeWriteId() {
-    return seeWriteId;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for ALTER VIEW ... AS ... commands.
+ */
+@Explain(displayName = "Alter View As", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterViewAsDesc extends AbstractCreateViewDesc {
+  private static final long serialVersionUID = 1L;
+
+  public AlterViewAsDesc(String viewName, List<FieldSchema> schema, String originalText, String expandedText) {
+    super(viewName, schema, originalText, expandedText);
   }
 }

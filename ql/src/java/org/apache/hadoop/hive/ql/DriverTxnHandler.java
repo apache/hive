@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -379,12 +380,32 @@ class DriverTxnHandler {
     }
   }
 
+  void validateTxnListState() throws CommandProcessorException {
+    try {
+      if (!isValidTxnListState()) {
+        LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
+        // Snapshot was outdated when locks were acquired, hence regenerate context,
+        // txn list and retry (see ReExecutionRetryLockPlugin)
+        try {
+          endTransactionAndCleanup(false);
+        } catch (LockException e) {
+          DriverUtils.handleHiveException(driverContext, e, 12, null);
+        }
+        HiveException e = new HiveException(
+            "Operation could not be executed, " + Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+        DriverUtils.handleHiveException(driverContext, e, 14, null);
+      }
+    } catch (LockException e) {
+      DriverUtils.handleHiveException(driverContext, e, 13, null);
+    }
+  }
+  
   /**
    * Checks whether txn list has been invalidated while planning the query.
    * This would happen if query requires exclusive/semi-shared lock, and there has been a committed transaction
    * on the table over which the lock is required.
    */
-  boolean isValidTxnListState() throws LockException {
+  private boolean isValidTxnListState() throws LockException {
     // 1) Get valid txn list.
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
@@ -520,6 +541,35 @@ class DriverTxnHandler {
     }
     String fullTableName = AcidUtils.getFullTableName(table.getDbName(), table.getTableName());
     tables.put(fullTableName, table);
+  }
+
+  void rollback(CommandProcessorException cpe) throws CommandProcessorException {
+    try {
+      endTransactionAndCleanup(false);
+    } catch (LockException e) {
+      LOG.error("rollback() FAILED: " + cpe); //make sure not to loose
+      DriverUtils.handleHiveException(driverContext, e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
+    }
+  }
+
+  void handleTransactionAfterExecution() throws CommandProcessorException {
+    try {
+      //since set autocommit starts an implicit txn, close it
+      if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+          driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
+        endTransactionAndCleanup(true);
+      } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
+        endTransactionAndCleanup(false);
+      } else if (!driverContext.getTxnManager().isTxnOpen() &&
+          driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
+        // repl load during migration, commits the explicit txn and start some internal txns. Call
+        // releaseLocksAndCommitOrRollback to do the clean up.
+        endTransactionAndCleanup(false);
+      }
+      // if none of the above is true, then txn (if there is one started) is not finished
+    } catch (LockException e) {
+      DriverUtils.handleHiveException(driverContext, e, 12, null);
+    }
   }
 
   private List<String> getTransactionalTables(Map<String, Table> tables) {

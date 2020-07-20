@@ -106,6 +106,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2
@@ -314,6 +316,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2
@@ -460,6 +464,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2
@@ -556,6 +562,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2
@@ -721,6 +729,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2
@@ -867,6 +877,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted stats2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2

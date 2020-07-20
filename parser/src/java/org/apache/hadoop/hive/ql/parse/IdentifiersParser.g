@@ -606,8 +606,8 @@ precedenceSimilarExpressionAtom[CommonTree t]
 
 precedenceSimilarExpressionQuantifierPredicate[CommonTree t]
     :
-    partitionSelectorOperator quantifierType subQueryExpression
-    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType partitionSelectorOperator ) subQueryExpression {$t})
+    subQuerySelectorOperator quantifierType subQueryExpression
+    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType subQuerySelectorOperator ) subQueryExpression {$t})
     ;
 
 quantifierType
@@ -730,7 +730,12 @@ partitionSelectorVal
 
 partitionSelectorOperator
     :
-    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN | KW_LIKE
+    KW_LIKE | subQuerySelectorOperator
+    ;
+
+subQuerySelectorOperator
+    :
+    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
 
 sysFuncNames
@@ -812,7 +817,7 @@ principalIdentifier
 // Here is what you have to do if you would like to add a new keyword.
 // Note that non reserved keywords are basically the keywords that can be used as identifiers.
 // (1) Add a new entry to HiveLexer, e.g., KW_TRUE : 'TRUE';
-// (2) If it is reserved, you do NOT need to change IdentifiersParser.g 
+// (2) If it is reserved, you do NOT need to change IdentifiersParser.g
 //                        because all the KW_* are automatically not only keywords, but also reserved keywords.
 //                        However, you need to add a test to TestSQL11ReservedKeyWordsNegative.java.
 //     Otherwise it is non-reserved, you need to put them in the nonReserved list below.
@@ -823,7 +828,7 @@ nonReserved
     KW_ABORT | KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
     | KW_CASCADE | KW_CBO | KW_CHANGE | KW_CHECK | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
     | KW_COMMENT | KW_COMPACT | KW_COMPACTIONS | KW_COMPUTE | KW_CONCATENATE | KW_CONTINUE | KW_COST | KW_DATA | KW_DAY
-    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY 
+    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DISTRIBUTED | KW_DOW | KW_ELEM_TYPE
     | KW_ENABLE | KW_ENFORCED | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
     | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_IGNORE

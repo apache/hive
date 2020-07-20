@@ -439,6 +439,7 @@ public enum ErrorMsg {
   LOCK_ACQUIRE_CANCELLED(10330, "Query was cancelled while acquiring locks on the underlying objects. "),
   NOT_RECOGNIZED_CONSTRAINT(10331, "Constraint not recognized"),
   INVALID_CONSTRAINT(10332, "Invalid constraint definition"),
+  @Deprecated // kept for backwards reference
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
@@ -614,7 +615,8 @@ public enum ErrorMsg {
   //========================== 40000 range starts here ========================//
 
   SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
-  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
+  REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication.")
   ;
 
   private int errorCode;

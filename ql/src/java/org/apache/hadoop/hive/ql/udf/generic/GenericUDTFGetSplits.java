@@ -350,7 +350,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
         try {
-          driver.run(ctas, false);
+          driver.run(ctas);
         } catch (CommandProcessorException e) {
           throw new HiveException("Failed to create temp table [" + tableName + "]", e);
         }

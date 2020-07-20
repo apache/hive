@@ -773,6 +773,17 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException {
+    assert isTxnOpen();
+    init();
+    try {
+      return getMS().getValidTxns(txnId, excludeTxnTypes);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
                                               String validTxnList) throws LockException {
     assert isTxnOpen();
