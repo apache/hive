@@ -2066,6 +2066,10 @@ struct GetReplicationMetricsRequest {
   3: optional i64 dumpExecutionId
 }
 
+struct GetOpenTxnsRequest {
+  1: required list<TxnType> excludeTxnTypes;
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2802,6 +2806,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
+  GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

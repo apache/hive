@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -46,26 +47,7 @@ public class OpenTxnList {
     return new GetOpenTxnsInfoResponse(getHwm(), openTxnList.stream().map(OpenTxn::toTxnInfo).collect(toList()));
   }
   public GetOpenTxnsResponse toOpenTxnsResponse() {
-    List<Long> openList = new ArrayList<>();
-    long minOpenTxn = Long.MAX_VALUE;
-    BitSet abortedBits = new BitSet();
-    for (OpenTxn openTxn : getOpenTxnList()) {
-      if (openTxn.getStatus() == OPEN) {
-        minOpenTxn = Math.min(minOpenTxn, openTxn.getTxnId());
-      }
-      if (openTxn.getType() != TxnType.READ_ONLY) {
-        openList.add(openTxn.getTxnId());
-        if (openTxn.getStatus() == ABORTED) {
-          abortedBits.set(openList.size() - 1);
-        }
-      }
-    }
-    ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
-    GetOpenTxnsResponse otr = new GetOpenTxnsResponse(getHwm(), openList, byteBuffer);
-    if (minOpenTxn < Long.MAX_VALUE) {
-      otr.setMin_open_txn(minOpenTxn);
-    }
-    return otr;
+    return toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
   }
 
   public long getHwm() {
@@ -74,5 +56,29 @@ public class OpenTxnList {
 
   public List<OpenTxn> getOpenTxnList() {
     return openTxnList;
+  }
+
+  public GetOpenTxnsResponse toOpenTxnsResponse(List<TxnType> excludeTxnTypes) {
+    List<Long> openList = new ArrayList<>();
+    long minOpenTxn = Long.MAX_VALUE;
+    BitSet abortedBits = new BitSet();
+    for (OpenTxn openTxn : getOpenTxnList()) {
+      if (openTxn.getStatus() == OPEN) {
+        minOpenTxn = Math.min(minOpenTxn, openTxn.getTxnId());
+      }
+      if (excludeTxnTypes.contains(openTxn.getType())) {
+        continue;
+      }
+      openList.add(openTxn.getTxnId());
+      if (openTxn.getStatus() == ABORTED) {
+        abortedBits.set(openList.size() - 1);
+      }
+    }
+    ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
+    GetOpenTxnsResponse otr = new GetOpenTxnsResponse(getHwm(), openList, byteBuffer);
+    if (minOpenTxn < Long.MAX_VALUE) {
+      otr.setMin_open_txn(minOpenTxn);
+    }
+    return otr;
   }
 }

@@ -81,6 +81,15 @@ public interface TxnStore extends Configurable {
   GetOpenTxnsResponse getOpenTxns() throws MetaException;
 
   /**
+   * Get list of valid transactions.  This gives just the list of transactions that are open.
+   * @param excludeTxnTypes : excludes this type of txns while getting the open txns
+   * @return list of open transactions, as well as a high water mark.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException;
+
+  /**
    * Get the count for open transactions.
    * @throws MetaException
    */

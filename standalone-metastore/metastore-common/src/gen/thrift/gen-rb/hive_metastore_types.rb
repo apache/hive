@@ -6395,6 +6395,23 @@ class GetReplicationMetricsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetOpenTxnsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EXCLUDETXNTYPES = 1
+
+  FIELDS = {
+    EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field excludeTxnTypes is unset!') unless @excludeTxnTypes
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

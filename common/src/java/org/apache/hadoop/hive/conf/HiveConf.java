@@ -550,6 +550,11 @@ public class HiveConf extends Configuration {
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
             + "If these open transactions are not closed within the timeout value, then REPL DUMP will "
             + "forcefully abort those transactions and continue with bootstrap dump."),
+    REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT("hive.repl.bootstrap.dump.abort.write.txn.after.timeout",
+      true,
+      "Indicates whether to abort write transactions belonging to the db under replication while doing a" +
+        " bootstrap dump after the timeout configured by hive.repl.bootstrap.dump.open.txn.timeout. If set to false," +
+        " bootstrap dump will fail."),
     //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
