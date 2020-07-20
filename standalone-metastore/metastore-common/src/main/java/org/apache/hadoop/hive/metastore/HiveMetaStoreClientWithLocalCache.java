@@ -1,7 +1,7 @@
 package org.apache.hadoop.hive.metastore;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -18,11 +18,22 @@ import java.util.Objects;
 
 public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
-  private static LoadingCache<CacheKey, Object> mscLocalCache;
-  private static volatile boolean cacheInitialized = false;
-  private boolean isCacheEnabled = true;
+  private static Cache<CacheKey, Object> mscLocalCache;
+  //TODO: initialize in the static block
+  private static final boolean IS_CACHE_ENABLED = true;
+  private static final int MAX_SIZE;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
   private static String cacheObjName = null;
+
+  static {
+    LOG.debug("Initializing local cache in HiveMetaStoreClient...");
+    MAX_SIZE = MetastoreConf.getIntVar(MetastoreConf.newMetastoreConf(), MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
+//    IS_CACHE_ENABLED = MetastoreConf.getBoolVar(MetastoreConf.newMetastoreConf(),
+//                        MetastoreConf.ConfVars.MSC_CACHE_ENABLED);
+    initSizeEstimator();
+    initCache();
+    LOG.debug("Local cache initialized in HiveMetaStoreClient: " + mscLocalCache);
+  }
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
     this(conf, null, true);
@@ -34,19 +45,6 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     super(conf, hookLoader, allowEmbedded);
-
-//    isCacheEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.MSC_CACHE_ENABLED);
-    if (isCacheEnabled) {
-      // if cache is not initialized, init size estimator and the cache.
-      if (!cacheInitialized) {
-        cacheInitialized = true;
-        LOG.debug("Initializing local cache in HiveMetaStoreClient...");
-        // initialize a size estimator with this class and all other classes in KeyType.
-        initSizeEstimator();
-        initCache();
-        LOG.debug("Local cache initialized in HiveMetaStoreClient: " + mscLocalCache);
-      }
-    }
   }
 
   private static void initSizeEstimator() {
@@ -112,7 +110,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     } catch (Exception e) {
       LOG.debug("Exception in MSC local cache: {}", e.toString());
       if (e instanceof MetaException) {
-        val = new MetaException(e.getMessage());
+        val = e;
       } else {
         val = new Exception(e.getMessage());
       }
@@ -120,17 +118,16 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return val;
   }
 
-  private synchronized void initCache() {
-    int maxSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
+  private static synchronized void initCache() {
     int initSize = 100;
     mscLocalCache = Caffeine.newBuilder()
             .initialCapacity(initSize)
-            .maximumWeight(maxSize)
+            .maximumWeight(MAX_SIZE)
             .weigher(HiveMetaStoreClientWithLocalCache::getWeight)
             .removalListener((key, val, cause) ->
                     LOG.debug("Caffeine - ({}, {}) was removed ({})", key, val, cause))
             .recordStats()
-            .build(this::getOrLoad);
+            .build();
 
     cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("LoadingCache"));
   }
@@ -158,11 +155,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsByExprResult r = null;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabled && req.getValidWriteIdList() != null) {
+    if (IS_CACHE_ENABLED && req.getValidWriteIdList() != null) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       Object val;
       try {
-        val = mscLocalCache.get(cacheKey); // get either the result or an Exception
+        val = mscLocalCache.get(cacheKey, this::getOrLoad); // get either the result or an Exception
 
         if (val instanceof PartitionsByExprResult) {
           r = (PartitionsByExprResult) val;
@@ -189,11 +186,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsSpecByExprResult r = null;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabled && req.getValidWriteIdList() != null) {
+    if (IS_CACHE_ENABLED && req.getValidWriteIdList() != null) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       Object val;
       try {
-        val = mscLocalCache.get(cacheKey);
+        val = mscLocalCache.get(cacheKey, this::getOrLoad);
 
         if (val instanceof PartitionsSpecByExprResult) {
           r = (PartitionsSpecByExprResult) val;
