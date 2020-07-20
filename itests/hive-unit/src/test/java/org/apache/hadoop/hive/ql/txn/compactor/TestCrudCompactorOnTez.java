@@ -870,10 +870,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       CompactorTestUtil.checkExpectedTxnsPresent(null,
           new Path[] {new Path(table.getSd().getLocation(), "delta_0000001_0000005_v0000009")}, "a,b", "int:string",
           0, 1L, 4L, null, 1);
-
-      CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
-          conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
-          new String[] { AcidUtils.DELTA_PREFIX });
     } finally {
       if (connection != null) {
         connection.close();
