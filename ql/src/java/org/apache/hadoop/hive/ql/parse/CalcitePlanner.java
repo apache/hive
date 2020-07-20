@@ -134,6 +134,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1716,7 +1717,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
       FileSinkOperator fso = (FileSinkOperator) genFileSinkPlan(dest, getQB(), tableScanOp);
       Path resultDir = null;
-      if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
+      if (getQB().isCTAS() || getQB().isMaterializedView()) {
+        String destinationPath = getQB().getMetaData().getDestFileForAlias(dest);
+        Preconditions.checkState(destinationPath != null, "CTAS/MV path");
+        resultDir = FileUtils.makeQualified(new Path(destinationPath), conf);
+      } else if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
         resultDir = fso.getConf().getDirName();
       }
       long writeId = -1;
@@ -1739,7 +1744,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           getQueryValidTxnWriteIdList());
       markEvent("Impala plan generated");
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
-    } catch (HiveException e) {
+    } catch (HiveException | java.io.IOException e) {
       throw new RuntimeException(e);
     }
   }

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.QB;
+import org.apache.hadoop.hive.ql.parse.QBMetaData;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.Column;
@@ -227,16 +228,24 @@ public class ImpalaPlanner {
     if (resultStmtType_ == TStmtType.DML) {
       ctx_.initTxnId();
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
-      org.apache.hadoop.hive.ql.metadata.Table tab = getQB().getMetaData().getDestTableForAlias(dest);
-      if (tab == null) { // Static partition case
+      Integer dest_type = getQB().getMetaData().getDestTypeForAlias(dest);
+      if (dest_type == QBMetaData.DEST_TABLE) {
+        org.apache.hadoop.hive.ql.metadata.Table tab = getQB().getMetaData().getDestTableForAlias(dest);
+        HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), tab.getTTable());
+        ctx_.setTargetTable(hdfsTable);
+      } else if (dest_type == QBMetaData.DEST_PARTITION) {
         Partition part = getQB().getMetaData().getDestPartitionForAlias(dest);
+        org.apache.hadoop.hive.ql.metadata.Table tab = part.getTable();
         ctx_.setTargetPartition(part);
-        tab = part.getTable();
+        HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), tab.getTTable());
+        ctx_.setTargetTable(hdfsTable);
+      } else if (dest_type == QBMetaData.DEST_DFS_FILE) {
+        String destinationPath = getQB().getMetaData().getDestFileForAlias(dest);
+        Preconditions.checkState(resultPath.toString().equals(destinationPath));
       }
-
-      HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_,
-          ctx_.getQueryContext().getConf(), tab.getTTable());
-      ctx_.setTargetTable(hdfsTable);
+      else {
+        throw new HiveException("Invalid target type: " + dest);
+      }
     }
   }
 
@@ -275,7 +284,7 @@ public class ImpalaPlanner {
 
     rootFragment.verifyTree();
 
-    if (resultStmtType_ == TStmtType.DML) {
+    if (ctx_.getTargetTable() != null) {
       List<Expr> partitionKeyExprs = new ArrayList<>(); // List order must match table order
       List<Integer> referencedColumns = new ArrayList<>(); // Kudu only position mapping
       boolean inputIsClustered = false; // !hasNoClusteredHint_ || !sortExprs_.isEmpty();

@@ -162,9 +162,9 @@ public class ImpalaHelper {
     switch (stmtType) {
       case NONE:
         return TStmtType.QUERY;
+      case CTAS:
       case INSERT:
         return TStmtType.DML;
-      case CTAS:
       case VIEW:
         return TStmtType.DDL;
       default:
