@@ -695,6 +695,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       return Objects.hash(minKey, maxKey);
     }
 
+    public boolean isIntersects(KeyInterval other) {
+      return (minKey == null || other.maxKey == null || minKey.compareTo(other.maxKey) <= 0) &&
+          (maxKey == null || other.minKey == null || maxKey.compareTo(other.minKey) >= 0);
+    }
   }
   /**
    * Find the key range for original bucket files.

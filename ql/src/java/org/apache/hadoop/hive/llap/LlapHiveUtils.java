@@ -106,7 +106,7 @@ public final class LlapHiveUtils {
    * @return the MapWork instance. Might be null if missing.
    * @throws HiveException
    */
-  public static MapWork findMapWork(JobConf job) throws HiveException {
+  public static MapWork findMapWork(JobConf job) {
     String inputName = job.get(Utilities.INPUT_NAME, null);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Initializing for input " + inputName);

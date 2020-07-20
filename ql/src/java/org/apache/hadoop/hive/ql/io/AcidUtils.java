@@ -506,15 +506,18 @@ public class AcidUtils {
     if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
       long minWriteId = 0;
       long maxWriteId = 0;
+      int statementId = -1;
       if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
         ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
         minWriteId = parsedDelta.getMinWriteId();
         maxWriteId = parsedDelta.getMaxWriteId();
+        statementId = parsedDelta.getStatementId();
       }
       result
           .setOldStyle(true)
           .minimumWriteId(minWriteId)
           .maximumWriteId(maxWriteId)
+          .statementId(statementId)
           .bucket(bucket)
           .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
@@ -532,6 +535,7 @@ public class AcidUtils {
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
             .maximumWriteId(parsedDelta.maxWriteId)
+            .statementId(parsedDelta.statementId)
             .bucket(bucket)
             .attemptId(attemptId);
       } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
@@ -540,6 +544,7 @@ public class AcidUtils {
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
             .maximumWriteId(parsedDelta.maxWriteId)
+            .statementId(parsedDelta.statementId)
             .bucket(bucket);
       }
     } else {
