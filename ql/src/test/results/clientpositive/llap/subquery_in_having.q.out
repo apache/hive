@@ -814,6 +814,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: (key > '8') (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.21
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > '8') (type: boolean)
