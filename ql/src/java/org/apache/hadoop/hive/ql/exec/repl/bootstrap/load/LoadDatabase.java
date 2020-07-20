@@ -156,6 +156,9 @@ public class LoadDatabase {
     // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
     // compaction may change the directory structure.
     parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
+    //This flag will be set to identify its a target of replication. Repl dump won't be allowed on a database
+    //which is a target of replication.
+    parameters.put(ReplUtils.TARGET_OF_REPLICATION, "true");
 
     return parameters;
   }
