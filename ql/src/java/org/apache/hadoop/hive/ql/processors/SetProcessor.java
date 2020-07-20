@@ -256,9 +256,6 @@ public class SetProcessor implements CommandProcessor {
     }
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
-      if (!"spark".equals(value)) {
-        ss.closeSparkSession();
-      }
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();
         LOG.warn(result);

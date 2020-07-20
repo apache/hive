@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -677,15 +676,12 @@ public class TestUtilities {
 
     CountingWrappingTask mrTask = new CountingWrappingTask(new ExecDriver());
     CountingWrappingTask tezTask = new CountingWrappingTask(new TezTask());
-    CountingWrappingTask sparkTask = new CountingWrappingTask(new SparkTask());
 
     // First check - we should not have repeats in results
     assertEquals("No repeated MRTasks from Utilities.getMRTasks", 1,
         Utilities.getMRTasks(getTestDiamondTaskGraph(mrTask)).size());
     assertEquals("No repeated TezTasks from Utilities.getTezTasks", 1,
         Utilities.getTezTasks(getTestDiamondTaskGraph(tezTask)).size());
-    assertEquals("No repeated TezTasks from Utilities.getSparkTasks", 1,
-        Utilities.getSparkTasks(getTestDiamondTaskGraph(sparkTask)).size());
 
     // Second check - the tasks we looked for must not have been accessed more than
     // once as a result of the traversal (note that we actually wind up accessing
@@ -694,7 +690,6 @@ public class TestUtilities {
 
     assertEquals("MRTasks should have been visited only once", 2, mrTask.getDepCallCount());
     assertEquals("TezTasks should have been visited only once", 2, tezTask.getDepCallCount());
-    assertEquals("SparkTasks should have been visited only once", 2, sparkTask.getDepCallCount());
 
   }
 

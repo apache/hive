@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.exec.repl.RangerLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.RangerDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.RangerDumpTask;
 import org.apache.hadoop.hive.ql.exec.schq.ScheduledQueryMaintenanceTask;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -117,7 +116,6 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
         DependencyCollectionTask.class));
     taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));
-    taskvec.add(new TaskTuple<SparkWork>(SparkWork.class, SparkTask.class));
     taskvec.add(new TaskTuple<>(ReplDumpWork.class, ReplDumpTask.class));
     taskvec.add(new TaskTuple<>(ReplLoadWork.class, ReplLoadTask.class));
     taskvec.add(new TaskTuple<>(ReplStateLogWork.class, ReplStateLogTask.class));

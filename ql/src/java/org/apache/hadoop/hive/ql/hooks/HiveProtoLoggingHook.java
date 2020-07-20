@@ -505,8 +505,6 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         return ExecutionMode.TEZ;
       } else if (mrTasks.size() > 0) {
         return ExecutionMode.MR;
-      } else if (Utilities.getSparkTasks(plan.getRootTasks()).size() > 0) {
-        return ExecutionMode.SPARK;
       } else {
         return ExecutionMode.NONE;
       }

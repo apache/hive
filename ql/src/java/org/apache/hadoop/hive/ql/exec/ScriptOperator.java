@@ -55,9 +55,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.SparkFiles;
 
 /**
  * ScriptOperator.
@@ -322,7 +319,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     // initialize the user's process only when you receive the first row
     if (firstRow) {
       firstRow = false;
-      SparkConf sparkConf = null;
       try {
         String[] cmdArgs = splitArgs(conf.getScriptCmd());
 
@@ -333,11 +329,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           PathFinder finder = new PathFinder("PATH");
           finder.prependPathComponent(currentDir.toString());
 
-          // In spark local mode, we need to search added files in root directory.
-          if (HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-            sparkConf = SparkEnv.get().conf();
-            finder.prependPathComponent(SparkFiles.getRootDirectory());
-          }
           File f = finder.getAbsolutePath(prog);
           if (f != null) {
             cmdArgs[0] = f.getAbsolutePath();
@@ -365,17 +356,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             HiveConf.ConfVars.HIVESCRIPTIDENVVAR);
         String idEnvVarVal = getOperatorId();
         env.put(safeEnvVarName(idEnvVarName), idEnvVarVal);
-
-        // For spark, in non-local mode, any added dependencies are stored at
-        // SparkFiles::getRootDirectory, which is the executor's working directory.
-        // In local mode, we need to manually point the process's working directory to it,
-        // in order to make the dependencies accessible.
-        if (sparkConf != null) {
-          String master = sparkConf.get("spark.master");
-          if (master.equals("local") || master.startsWith("local[")) {
-            pb.directory(new File(SparkFiles.getRootDirectory()));
-          }
-        }
 
         scriptPid = pb.start(); // Runtime.getRuntime().exec(wrappedCmdArgs);
 

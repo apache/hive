@@ -145,11 +145,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-spark-client</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
     </dependency>
     <!-- inter-project -->
@@ -752,52 +747,8 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-      <optional>true</optional>
-      <exclusions>
-       <exclusion>
-         <groupId>com.esotericsoftware.kryo</groupId>
-         <artifactId>kryo</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>commons-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>net.java.dev.jets3t</groupId>
-         <artifactId>jets3t</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.glassfish.jersey.containers</groupId>
-         <artifactId>*</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.glassfish.jersey.core</groupId>
-         <artifactId>*</artifactId>
-       </exclusion>
-     </exclusions>
-   </dependency>
-    <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${glassfish.jersey.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet-core</artifactId>
-      <version>${glassfish.jersey.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1074,7 +1025,6 @@
                   <include>com.fasterxml.jackson.core:jackson-databind</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
-                  <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.threeten:threeten-extra</include>
                   <include>org.apache.orc:orc-core</include>

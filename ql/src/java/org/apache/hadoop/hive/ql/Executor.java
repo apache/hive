@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -310,8 +309,7 @@ public class Executor {
 
   private int getJobCount() {
     int mrJobCount = Utilities.getMRTasks(driverContext.getPlan().getRootTasks()).size();
-    int jobCount = mrJobCount + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size()
-        + Utilities.getSparkTasks(driverContext.getPlan().getRootTasks()).size();
+    int jobCount = mrJobCount + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size();
     if (jobCount > 0) {
       if (mrJobCount > 0 && "mr".equals(HiveConf.getVar(driverContext.getConf(), ConfVars.HIVE_EXECUTION_ENGINE))) {
         LOG.warn(HiveConf.generateMrDeprecationWarning());
@@ -545,10 +543,6 @@ public class Executor {
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
 
     logExecutionResourceUsage();
-
-    if (SessionState.get().getSparkSession() != null) {
-      SessionState.get().getSparkSession().onQueryCompletion(driverContext.getQueryId());
-    }
 
     driverState.executionFinishedWithLocking(executionError);
 

@@ -473,15 +473,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <profiles>
-    <profile>
-      <id>spark-test</id>
-      <modules>
-        <module>qtest-spark</module>
-      </modules>
-    </profile>
-  </profiles>
-
   <build>
     <plugins>
       <plugin>

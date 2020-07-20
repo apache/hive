@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -218,10 +217,6 @@ public class Driver implements IDriver {
     String queryId = Strings.isNullOrEmpty(driverContext.getQueryState().getQueryId()) ?
         QueryPlan.makeQueryId() : driverContext.getQueryState().getQueryId();
 
-    SparkSession ss = SessionState.get().getSparkSession();
-    if (ss != null) {
-      ss.onQuerySubmission(queryId);
-    }
     driverContext.getQueryDisplay().setQueryId(queryId);
 
     setTriggerContext(queryId);

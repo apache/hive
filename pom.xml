@@ -56,8 +56,6 @@
     <module>llap-tez</module>
     <module>llap-server</module>
     <module>shims</module>
-    <module>spark-client</module>
-    <module>kryo-registrator</module>
     <module>kudu-handler</module>
     <module>testutils</module>
     <module>packaging</module>
@@ -96,7 +94,6 @@
 
     <!-- To add additional exclude patterns set this property -->
     <test.excludes.additional></test.excludes.additional>
-    <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*,**/TestLocalHiveSparkClient*</skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
@@ -160,8 +157,6 @@
     <jettison.version>1.1</jettison.version>
     <jetty.version>9.3.27.v20190418</jetty.version>
     <jersey.version>1.19</jersey.version>
-    <!-- Glassfish jersey is included for Spark client test only -->
-    <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
@@ -196,7 +191,6 @@
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
     <tez.version>0.9.1</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
     <scala.version>2.12.10</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -1007,18 +1001,7 @@
         <artifactId>scala-compiler</artifactId>
         <version>${scala.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.spark</groupId>
-        <artifactId>spark-core_${scala.binary.version}</artifactId>
-        <version>${spark.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
+       <dependency>
         <groupId>org.jamon</groupId>
         <artifactId>jamon-runtime</artifactId>
         <version>${jamon-runtime.version}</version>
@@ -1353,7 +1336,6 @@
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
-            <exclude>${skip.spark.files}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1370,10 +1352,6 @@
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.conf.dir}:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
-            <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
-            <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
-            <SPARK_SCALA_VERSION>2.11</SPARK_SCALA_VERSION>
-            <SPARK_HOME>${spark.home}</SPARK_HOME>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>
@@ -1396,7 +1374,6 @@
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <spark.home>${spark.home}</spark.home>
             <!-- Hadoop's minidfs class uses this -->
             <test.build.data>${test.tmp.dir}</test.build.data>
             <!-- required by QTestUtil -->
@@ -1412,7 +1389,6 @@
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables></test.src.tables>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
-            <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>
             <hadoop.version>${hadoop.version}</hadoop.version>
             <qfile>${qfile}</qfile>
@@ -1683,14 +1659,6 @@
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
         <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
         <test.log4j.scheme>file:/</test.log4j.scheme>
-      </properties>
-    </profile>
-    <profile>
-      <id>spark-test</id>
-      <properties>
-        <skip.spark.files>
-          **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java
-        </skip.spark.files>
       </properties>
     </profile>
     <profile>

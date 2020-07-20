@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -875,13 +874,6 @@ public final class GenMapRedUtils {
           ((MapWork)w).deriveExplainAttributes();
         }
       }
-    } else if (task instanceof SparkTask) {
-      SparkWork work = (SparkWork) task.getWork();
-      for (BaseWork w : work.getAllWorkUnsorted()) {
-        if (w instanceof MapWork) {
-          ((MapWork) w).deriveExplainAttributes();
-        }
-      }
     }
 
     if (task.getChildTasks() == null) {
@@ -945,18 +937,6 @@ public final class GenMapRedUtils {
       }
     }
 
-    List<SparkTask> sparkTasks = Utilities.getSparkTasks(tasks);
-    if (!sparkTasks.isEmpty()) {
-      for (SparkTask sparkTask : sparkTasks) {
-        SparkWork work = sparkTask.getWork();
-        for (BaseWork w : work.getAllWorkUnsorted()) {
-          if (w instanceof MapWork) {
-            ((MapWork) w).internTable(interner);
-            ((MapWork) w).deriveLlap(conf, false);
-          }
-        }
-      }
-    }
   }
 
   /**

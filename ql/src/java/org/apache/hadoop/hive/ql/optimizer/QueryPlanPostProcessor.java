@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.GenTezWork;
-import org.apache.hadoop.hive.ql.parse.spark.GenSparkWork;
 import org.apache.hadoop.hive.ql.plan.ArchiveWork;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
@@ -101,7 +100,6 @@ public class QueryPlanPostProcessor {
       else if(work instanceof ReplLoadWork ||
           work instanceof ReplStateLogWork ||
           work instanceof GenTezWork ||
-          work instanceof GenSparkWork ||
           work instanceof ArchiveWork ||
           work instanceof ColumnStatsUpdateWork ||
           work instanceof BasicStatsWork ||
