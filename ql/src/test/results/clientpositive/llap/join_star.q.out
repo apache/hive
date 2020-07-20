@@ -153,6 +153,7 @@ STAGE PLANS:
                 TableScan
                   alias: fact
                   filterExpr: d1 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:d1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d1 is not null (type: boolean)
@@ -262,6 +263,7 @@ STAGE PLANS:
                 TableScan
                   alias: fact
                   filterExpr: (d1 is not null and d2 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:d1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d1 is not null and d2 is not null) (type: boolean)
@@ -405,6 +407,7 @@ STAGE PLANS:
                 TableScan
                   alias: dim1
                   filterExpr: (f1 is not null and f2 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:f2, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (f1 is not null and f2 is not null) (type: boolean)
