@@ -1188,7 +1188,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	b
 6	1	hollow  	innocent crabs blushing         	ambition ebony 	liquor age	NULL	3841833197.314137090000000	new
 7	1	wig feel	social fork drum                	search bump	conclusion	8.31	NULL	new
 8	1	bubble f	drain loyal station             	racket	antique bu	0.69	22.832613278700000	new
-9	1	12345678	1234567890123456789012345       	123456789012345	1234567890	NULL	1234567890.543210987700000	new
+9	1	12345678	12345678901234567890123456789012	123456789012345	1234567890	NULL	1234567890.543210987700000	new
 PREHOOK: query: drop table part_change_same_type_different_params_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_same_type_different_params_n8
