@@ -6400,13 +6400,12 @@ class GetOpenTxnsRequest
   EXCLUDETXNTYPES = 1
 
   FIELDS = {
-    EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}}
+    EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field excludeTxnTypes is unset!') unless @excludeTxnTypes
   end
 
   ::Thrift::Struct.generate_accessors self

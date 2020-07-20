@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new GetOpenTxnsRequestTupleSchemeFactory());
   }
 
-  private List<TxnType> excludeTxnTypes; // required
+  private List<TxnType> excludeTxnTypes; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -107,10 +107,11 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.EXCLUDE_TXN_TYPES};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.EXCLUDE_TXN_TYPES, new org.apache.thrift.meta_data.FieldMetaData("excludeTxnTypes", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.EXCLUDE_TXN_TYPES, new org.apache.thrift.meta_data.FieldMetaData("excludeTxnTypes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TxnType.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -118,13 +119,6 @@ import org.slf4j.LoggerFactory;
   }
 
   public GetOpenTxnsRequest() {
-  }
-
-  public GetOpenTxnsRequest(
-    List<TxnType> excludeTxnTypes)
-  {
-    this();
-    this.excludeTxnTypes = excludeTxnTypes;
   }
 
   /**
@@ -297,23 +291,21 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("GetOpenTxnsRequest(");
     boolean first = true;
 
-    sb.append("excludeTxnTypes:");
-    if (this.excludeTxnTypes == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.excludeTxnTypes);
+    if (isSetExcludeTxnTypes()) {
+      sb.append("excludeTxnTypes:");
+      if (this.excludeTxnTypes == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.excludeTxnTypes);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetExcludeTxnTypes()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'excludeTxnTypes' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -383,16 +375,18 @@ import org.slf4j.LoggerFactory;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.excludeTxnTypes != null) {
-        oprot.writeFieldBegin(EXCLUDE_TXN_TYPES_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.excludeTxnTypes.size()));
-          for (TxnType _iter1291 : struct.excludeTxnTypes)
+        if (struct.isSetExcludeTxnTypes()) {
+          oprot.writeFieldBegin(EXCLUDE_TXN_TYPES_FIELD_DESC);
           {
-            oprot.writeI32(_iter1291.getValue());
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.excludeTxnTypes.size()));
+            for (TxnType _iter1291 : struct.excludeTxnTypes)
+            {
+              oprot.writeI32(_iter1291.getValue());
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -411,11 +405,18 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetOpenTxnsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      {
-        oprot.writeI32(struct.excludeTxnTypes.size());
-        for (TxnType _iter1292 : struct.excludeTxnTypes)
+      BitSet optionals = new BitSet();
+      if (struct.isSetExcludeTxnTypes()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetExcludeTxnTypes()) {
         {
-          oprot.writeI32(_iter1292.getValue());
+          oprot.writeI32(struct.excludeTxnTypes.size());
+          for (TxnType _iter1292 : struct.excludeTxnTypes)
+          {
+            oprot.writeI32(_iter1292.getValue());
+          }
         }
       }
     }
@@ -423,17 +424,20 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetOpenTxnsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      {
-        org.apache.thrift.protocol.TList _list1293 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-        struct.excludeTxnTypes = new ArrayList<TxnType>(_list1293.size);
-        TxnType _elem1294;
-        for (int _i1295 = 0; _i1295 < _list1293.size; ++_i1295)
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
         {
-          _elem1294 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
-          struct.excludeTxnTypes.add(_elem1294);
+          org.apache.thrift.protocol.TList _list1293 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.excludeTxnTypes = new ArrayList<TxnType>(_list1293.size);
+          TxnType _elem1294;
+          for (int _i1295 = 0; _i1295 < _list1293.size; ++_i1295)
+          {
+            _elem1294 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+            struct.excludeTxnTypes.add(_elem1294);
+          }
         }
+        struct.setExcludeTxnTypesIsSet(true);
       }
-      struct.setExcludeTxnTypesIsSet(true);
     }
   }
 
