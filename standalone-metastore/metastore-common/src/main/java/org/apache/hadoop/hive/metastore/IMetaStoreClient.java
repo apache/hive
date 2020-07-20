@@ -2977,6 +2977,16 @@ public interface IMetaStoreClient {
   ValidTxnList getValidTxns(long currentTxn) throws TException;
 
   /**
+   * Get a structure that details valid transactions.
+   * @param currentTxn The current transaction of the caller. This will be removed from the
+   *                   exceptions list so that the caller sees records from his own transaction.
+   * @param excludeTxnTypes list of transaction types that should be excluded from the valid transaction list.
+   * @return list of valid transactions and also valid write IDs for each input table.
+   * @throws TException
+   */
+  ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException;
+
+  /**
    * Get a structure that details valid write ids.
    * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @return list of valid write ids for the given table

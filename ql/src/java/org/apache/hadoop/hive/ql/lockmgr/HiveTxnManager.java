@@ -186,6 +186,18 @@ public interface HiveTxnManager {
    */
   ValidTxnList getValidTxns() throws LockException;
 
+ /**
+  * Get the transactions that are currently valid.  The resulting
+  * {@link ValidTxnList} object can be passed as string to the processing
+  * tasks for use in the reading the data.  This call should be made once up
+  * front by the planner and should never be called on the backend,
+  * as this will violate the isolation level semantics.
+  * @return list of valid transactions.
+  * @param  excludeTxnTypes list of transaction types that should be excluded.
+  * @throws LockException
+  */
+  ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException;
+
   /**
    * Get the table write Ids that are valid for the current transaction.  The resulting
    * {@link ValidTxnWriteIdList} object can be passed as string to the processing
