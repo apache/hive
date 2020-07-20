@@ -1348,6 +1348,17 @@ public class MetaStoreServerUtils {
     }
   }
 
+  public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
+                                                 String defaultPartName, List<Partition> results)
+      throws MetastoreException {
+    try {
+      msc.listPartitionsByExpr(table.getCatName(), table.getDbName(), table.getTableName(), filterExp,
+          defaultPartName, (short) -1, results);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
   public static boolean isPartitioned(Table table) {
     if (getPartCols(table) == null) {
       return false;

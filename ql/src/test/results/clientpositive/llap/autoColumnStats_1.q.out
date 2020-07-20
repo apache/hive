@@ -446,6 +446,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@value= 
 POSTHOOK: Output: default@nzhang_part14_n1@value=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value= ).key EXPRESSION []
@@ -538,6 +539,7 @@ POSTHOOK: query: insert overwrite table nzhang_part14_n1 partition(value)
 select key, value from src5_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src5_n0
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_165
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_238
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_27
@@ -1090,6 +1092,7 @@ select key, value, ds, hr from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=2
 POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=3
 POSTHOOK: Output: default@nzhang_part14_n1@ds=2/hr=1

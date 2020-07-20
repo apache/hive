@@ -104,6 +104,7 @@ public class TestTxnHandler {
 
   public TestTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     Configuration conf = ctx.getConfiguration();
     conf.getLoggerConfig(CLASS_NAME).setLevel(Level.DEBUG);

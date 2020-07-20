@@ -44,6 +44,7 @@ PREHOOK: Output: default@target
 POSTHOOK: query: insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
@@ -94,7 +95,6 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
 LOCK INFORMATION:
-default.target -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_READ
 default.source -> EXCL_WRITE
 PREHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
@@ -109,7 +109,7 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target -> SHARED_READ, default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE]"}
+{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE]"}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
@@ -133,6 +133,7 @@ POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
@@ -192,7 +193,6 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
 LOCK INFORMATION:
-default.target -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_READ
 default.source -> SHARED_WRITE
 PREHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
@@ -207,7 +207,7 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target -> SHARED_READ, default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE]"}
+{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE]"}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
@@ -231,6 +231,7 @@ POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3

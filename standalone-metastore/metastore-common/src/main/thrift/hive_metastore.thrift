@@ -1010,12 +1010,10 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
-
-    // An optional key/value to store atomically with the transaction
-    4: optional CommitTxnKeyValue keyValue,
-
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
-    5: optional ReplLastIdInfo replLastIdInfo,
+    4: optional ReplLastIdInfo replLastIdInfo,
+    // An optional key/value to store atomically with the transaction
+    5: optional CommitTxnKeyValue keyValue,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1068,6 +1066,22 @@ struct AllocateTableWriteIdsRequest {
 
 struct AllocateTableWriteIdsResponse {
     1: required list<TxnToWriteId> txnToWriteIds,
+}
+
+struct MaxAllocatedTableWriteIdRequest {
+    1: required string dbName,
+    2: required string tableName,
+}
+struct MaxAllocatedTableWriteIdResponse {
+    1: required i64 maxWriteId,
+}
+struct SeedTableWriteIdsRequest {
+    1: required string dbName,
+    2: required string tableName,
+    3: required i64 seedWriteId,
+}
+struct SeedTxnIdRequest {
+    1: required i64 seedTxnId,
 }
 
 struct LockComponent {
@@ -2052,6 +2066,10 @@ struct GetReplicationMetricsRequest {
   3: optional i64 dumpExecutionId
 }
 
+struct GetOpenTxnsRequest {
+  1: required list<TxnType> excludeTxnTypes;
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2645,6 +2663,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
+  MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(1:MaxAllocatedTableWriteIdRequest rqst)
+    throws (1:MetaException o1)
+  void seed_write_id(1:SeedTableWriteIdsRequest rqst)
+    throws (1:MetaException o1)
+  void seed_txn_id(1:SeedTxnIdRequest rqst) throws (1:MetaException o1)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)
@@ -2783,6 +2806,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
+  GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

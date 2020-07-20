@@ -53,6 +53,7 @@ union all
 select 2 as id1, '2014' as part1 from dummy_n7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dummy_n7
+POSTHOOK: Output: default@partunion1_n0
 POSTHOOK: Output: default@partunion1_n0@part1=2014
 POSTHOOK: Lineage: partunion1_n0 PARTITION(part1=2014).id1 EXPRESSION []
 PREHOOK: query: select * from partunion1_n0

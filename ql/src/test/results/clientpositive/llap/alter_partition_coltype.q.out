@@ -428,6 +428,7 @@ PREHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=1/partcol2=1
 POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol SIMPLE []
 PREHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '2', '1' from src where key=150 limit 5
@@ -437,6 +438,7 @@ PREHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '2', '1' from src where key=150 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=2,partcol2=1).intcol SIMPLE []
 PREHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select NULL, '1', '1' from src where key=150 limit 5
@@ -446,6 +448,7 @@ PREHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select NULL, '1', '1' from src where key=150 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=1/partcol2=1
 POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol EXPRESSION []
 PREHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol1 int)

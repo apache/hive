@@ -245,6 +245,11 @@ public class ProxyFileSystem extends FilterFileSystem {
   }
 
   @Override
+  public boolean mkdirs(Path f) throws IOException {
+    return mkdirs(f, FsPermission.getDirDefault());
+  }
+
+  @Override
   public void copyFromLocalFile(boolean delSrc, Path src, Path dst)
     throws IOException {
     super.copyFromLocalFile(delSrc, swizzleParamPath(src), swizzleParamPath(dst));

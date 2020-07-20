@@ -107,6 +107,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n48
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -392,6 +393,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n48
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -756,6 +758,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_small
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1042,6 +1045,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_small
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1331,6 +1335,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_small
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1618,6 +1623,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_small
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.0448045757864632
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

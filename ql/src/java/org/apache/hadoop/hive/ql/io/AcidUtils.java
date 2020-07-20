@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -80,6 +81,7 @@ import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -101,6 +103,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.concurrent.Immutable;
 import java.nio.charset.Charset;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -375,7 +378,7 @@ public class AcidUtils {
    * Since Hive 4.0, compactor produces directories with {@link #VISIBILITY_PATTERN} suffix.
    * _v0 is equivalent to no suffix, for backwards compatibility.
    */
-  static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
+  public static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
     if(visibilityTxnId == 0) {
       return baseOrDeltaDir;
     }
@@ -499,24 +502,23 @@ public class AcidUtils {
     String filename = bucketFile.getName();
     int bucket = parseBucketId(bucketFile);
     String attemptId = parseAttemptId(bucketFile);
-    if (ORIGINAL_PATTERN.matcher(filename).matches()) {
+    if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
+      long minWriteId = 0;
+      long maxWriteId = 0;
+      int statementId = -1;
+      if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
+        minWriteId = parsedDelta.getMinWriteId();
+        maxWriteId = parsedDelta.getMaxWriteId();
+        statementId = parsedDelta.getStatementId();
+      }
       result
           .setOldStyle(true)
-          .minimumWriteId(0)
-          .maximumWriteId(0)
+          .minimumWriteId(minWriteId)
+          .maximumWriteId(maxWriteId)
+          .statementId(statementId)
           .bucket(bucket)
           .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
-    }
-    else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
-      //todo: define groups in regex and use parseInt(Matcher.group(2))....
-      int copyNumber = Integer.parseInt(filename.substring(filename.lastIndexOf('_') + 1));
-      result
-        .setOldStyle(true)
-        .minimumWriteId(0)
-        .maximumWriteId(0)
-        .bucket(bucket)
-        .copyNumber(copyNumber)
-        .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
     else if (filename.startsWith(BUCKET_PREFIX)) {
       if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
@@ -527,21 +529,21 @@ public class AcidUtils {
             .bucket(bucket)
             .writingBase(true);
       } else if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELTA_PREFIX,
-          bucketFile.getFileSystem(conf), null);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
         result
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
             .maximumWriteId(parsedDelta.maxWriteId)
+            .statementId(parsedDelta.statementId)
             .bucket(bucket)
             .attemptId(attemptId);
       } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX,
-          bucketFile.getFileSystem(conf), null);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), false);
         result
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
             .maximumWriteId(parsedDelta.maxWriteId)
+            .statementId(parsedDelta.statementId)
             .bucket(bucket);
       }
     } else {
@@ -1264,9 +1266,27 @@ public class AcidUtils {
    * @return the state of the directory
    * @throws IOException on filesystem errors
    */
-  @VisibleForTesting
   public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+  }
+
+  /**
+   * GetAcidState implementation which uses the provided dirSnapshot.
+   * Generates a new one if needed and the provided one is null.
+   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
+   * @param ignoreEmptyFiles Ignore files with 0 length
+   * @param dirSnapshots The listed directory snapshot, if null new will be generated
+   * @return the state of the directory
+   * @throws IOException on filesystem errors
+   */
+  private static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
+      HdfsDirSnapshot> dirSnapshots) throws IOException {
     ValidTxnList validTxnList = null;
     String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if(!Strings.isNullOrEmpty(s)) {
@@ -1293,7 +1313,6 @@ public class AcidUtils {
     final List<Path> abortedDirectories = new ArrayList<>();
     TxnBase bestBase = new TxnBase();
     final List<HdfsFileStatusWithId> original = new ArrayList<>();
-    Map<Path, HdfsDirSnapshot> dirSnapshots = null;
 
     List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory);
 
@@ -1303,7 +1322,9 @@ public class AcidUtils {
             bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
       }
     } else {
-      dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
+      if (dirSnapshots == null) {
+        dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
+      }
       getChildState(candidateDirectory, dirSnapshots, writeIdList, working, originalDirectories, original, obsolete,
           bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
     }
@@ -1323,8 +1344,8 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
-      // If dirSnapshots != null, we would have already populated "original"
-      if (dirSnapshots == null) {
+      // If childrenWithId != null, we would have already populated "original"
+      if (childrenWithId != null) {
         for (Path origDir : originalDirectories) {
           findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles, true);
         }
@@ -1953,6 +1974,13 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
+  public static boolean isTransactionalView(CreateMaterializedViewDesc view) {
+    if (view == null || view.getTblProps() == null) {
+      return false;
+    }
+    return isTransactionalTable(view.getTblProps());
+  }
+
   /**
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
@@ -2335,33 +2363,29 @@ public class AcidUtils {
     long writeId = -1;
     ValidWriteIdList validWriteIdList = null;
 
-    HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
-    String fullTableName = getFullTableName(dbName, tblName);
-    if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
-      validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
-      if (isStatsUpdater) {
-        writeId = SessionState.get().getTxnMgr() != null ?
-                SessionState.get().getTxnMgr().getAllocatedTableWriteId(
-                  dbName, tblName) : -1;
-        if (writeId < 1) {
-          // TODO: this is not ideal... stats updater that doesn't have write ID is currently
-          //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
-          LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})",
-              dbName, tblName, writeId);
+    if (SessionState.get() != null) {
+      HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+      String fullTableName = getFullTableName(dbName, tblName);
+      if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
+        validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
+        if (isStatsUpdater) {
+          writeId = sessionTxnMgr.getAllocatedTableWriteId(dbName, tblName);
+          if (writeId < 1) {
+            // TODO: this is not ideal... stats updater that doesn't have write ID is currently
+            //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
+            LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})", dbName, tblName, writeId);
+          }
         }
-      }
 
-
-      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
-          && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
-        return null;
-      }
-      if (validWriteIdList == null) {
-        validWriteIdList = getTableValidWriteIdListWithTxnList(
-            conf, dbName, tblName);
-      }
-      if (validWriteIdList == null) {
-        throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
+          return null;
+        }
+        if (validWriteIdList == null) {
+          validWriteIdList = getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+        }
+        if (validWriteIdList == null) {
+          throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        }
       }
     }
     return new TableSnapshot(writeId,
@@ -2612,28 +2636,25 @@ public class AcidUtils {
           + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       return null;
     }
-    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false);
+    if (fs == null) {
+      fs = dir.getFileSystem(jc);
+    }
+    // Collect the all of the files/dirs
+    Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
+    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
           "Computing stats for an ACID table; stats may be inaccurate");
     }
-    if (fs == null) {
-      fs = dir.getFileSystem(jc);
-    }
     for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
       fileList.add(hfs.getFileStatus());
     }
     for (ParsedDelta delta : acidInfo.getCurrentDirectories()) {
-      for (FileStatus f : HiveStatsUtils.getFileStatusRecurse(delta.getPath(), -1, fs)) {
-        fileList.add(f);
-      }
+      fileList.addAll(hdfsDirSnapshots.get(delta.getPath()).getFiles());
     }
     if (acidInfo.getBaseDirectory() != null) {
-      for (FileStatus f : HiveStatsUtils.getFileStatusRecurse(
-          acidInfo.getBaseDirectory(), -1, fs)) {
-        fileList.add(f);
-      }
+      fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
     }
     return fileList;
   }
@@ -2840,17 +2861,20 @@ public class AcidUtils {
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
     boolean isMerge = operation == Context.Operation.MERGE;
 
+    // We don't want to acquire read locks during update or delete as we'll be acquiring write
+    // locks instead. Also, there's no need to lock temp tables since they're session wide
+    List<ReadEntity> readEntities = inputs.stream()
+      .filter(input -> !input.isDummy()
+        && input.needsLock()
+        && !input.isUpdateOrDelete()
+        && AcidUtils.needsLock(input)
+        && !skipReadLock)
+      .collect(Collectors.toList());
+
+    Set<Table> fullTableLock = getFullTableLock(readEntities, conf);
+
     // For each source to read, get a shared_read lock
-    for (ReadEntity input : inputs) {
-      if (input.isDummy()
-          || !input.needsLock()
-          || input.isUpdateOrDelete()
-          || !AcidUtils.needsLock(input)
-          || skipReadLock) {
-        // We don't want to acquire read locks during update or delete as we'll be acquiring write
-        // locks instead. Also, there's no need to lock temp tables since they're session wide
-        continue;
-      }
+    for (ReadEntity input : readEntities) {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setSharedRead();
       compBuilder.setOperationType(DataOperationType.SELECT);
@@ -2863,6 +2887,9 @@ public class AcidUtils {
 
         case TABLE:
           t = input.getTable();
+          if (!fullTableLock.contains(t)) {
+            continue;
+          }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2871,6 +2898,9 @@ public class AcidUtils {
         case DUMMYPARTITION:
           compBuilder.setPartitionName(input.getPartition().getName());
           t = input.getPartition().getTable();
+          if (fullTableLock.contains(t)) {
+            continue;
+          }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2994,12 +3024,13 @@ public class AcidUtils {
         break;
       case DDL_SHARED:
         compBuilder.setSharedRead();
-        if (!output.isTxnAnalyze()) {
+        if (output.isTxnAnalyze()) {
           // Analyze needs txn components to be present, otherwise an aborted analyze write ID
           // might be rolled under the watermark by compactor while stats written by it are
           // still present.
-          compBuilder.setOperationType(DataOperationType.NO_TXN);
+          continue;
         }
+        compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
 
       case UPDATE:
@@ -3030,6 +3061,22 @@ public class AcidUtils {
       lockComponents.add(comp);
     }
     return lockComponents;
+  }
+
+  private static Set<Table> getFullTableLock(List<ReadEntity> readEntities, HiveConf conf) {
+    int partLocksThreshold = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD);
+
+    Map<Table, Long> partLocksPerTable = readEntities.stream()
+      .filter(input -> input.getType() == Entity.Type.PARTITION)
+      .map(Entity::getPartition)
+      .collect(Collectors.groupingBy(Partition::getTable, Collectors.counting()));
+
+    return readEntities.stream()
+      .filter(input -> input.getType() == Entity.Type.TABLE)
+      .map(Entity::getTable)
+      .filter(t -> !partLocksPerTable.containsKey(t)
+        || (partLocksThreshold > 0 && partLocksThreshold <= partLocksPerTable.get(t)))
+      .collect(Collectors.toSet());
   }
 
   /**
@@ -3090,12 +3137,14 @@ public class AcidUtils {
           .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
       return TxnType.READ_ONLY;
     }
-
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
     }
-
+    // check if compaction request
+    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
+      return TxnType.COMPACTION;
+    }
     return TxnType.DEFAULT;
   }
 

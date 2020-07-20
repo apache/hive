@@ -119,7 +119,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       distribute columns: key string
       columns: value string, key string
       sort columns: key string

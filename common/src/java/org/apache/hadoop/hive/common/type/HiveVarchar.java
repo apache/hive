@@ -62,6 +62,9 @@ public class HiveVarchar extends HiveBaseChar
     if (rhs == this) {
       return true;
     }
-    return this.getValue().equals(((HiveVarchar)rhs).getValue());
+    if (rhs instanceof HiveVarchar) {
+      return this.getValue().equals(((HiveVarchar) rhs).getValue());
+    }
+    return false;
   }
 }

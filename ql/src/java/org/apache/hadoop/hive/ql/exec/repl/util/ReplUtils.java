@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,6 +131,8 @@ public class ReplUtils {
   public static final String RANGER_HIVE_SERVICE_NAME = "ranger.plugin.hive.service.name";
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
+
+  public static final String TARGET_OF_REPLICATION = "repl.target.for";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -204,6 +209,15 @@ public class ReplUtils {
       }
       throw new InvalidOperationException(ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.format(dumpRoot,
               props.get(REPL_CHECKPOINT_KEY)));
+    }
+    return false;
+  }
+
+  public static boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> m = db.getParameters();
+    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
     }
     return false;
   }

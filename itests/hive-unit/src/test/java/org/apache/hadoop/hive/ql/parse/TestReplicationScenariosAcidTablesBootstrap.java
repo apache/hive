@@ -190,11 +190,11 @@ public class TestReplicationScenariosAcidTablesBootstrap
     prepareIncNonAcidData(primaryDbName);
     prepareIncAcidData(primaryDbName);
     // Allocate write ids for tables t1 and t2 for all txns
-    // t1=5+2(insert) and t2=5+5(insert, alter add column)
+    // t1=5+2(insert) and t2=5+6(insert, alter add column), now alter also creates a transaction
     Map<String, Long> tables = new HashMap<>();
     tables.put("t1", numTxns+2L);
-    tables.put("t2", numTxns+5L);
-    allocateWriteIdsForTables(primaryDbName, tables, txnHandler, txns, primaryConf);
+    tables.put("t2", numTxns+6L);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = new LinkedList<>(dumpWithAcidBootstrapClause);
@@ -205,6 +205,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
 
     // After bootstrap dump, all the opened txns should be aborted. Verify it.
     verifyAllOpenTxnsAborted(txns, primaryConf);
+    releaseLocks(txnHandler, lockIds);
     verifyNextId(tables, primaryDbName, primaryConf);
 
     // Incremental load with ACID bootstrap should also replicate the aborted write ids on

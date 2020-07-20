@@ -147,7 +147,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       columns: _c0 string, category char(1), _c2 bigint
       expanded text: select 'no-rewrite-may-happen',`sketch_input`.`category`, count(distinct `sketch_input`.`id`) from `default`.`sketch_input` group by `sketch_input`.`category`
       name: default.mv_1
