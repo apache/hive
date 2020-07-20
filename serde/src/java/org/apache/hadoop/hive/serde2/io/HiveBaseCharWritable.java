@@ -27,12 +27,17 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 public abstract class HiveBaseCharWritable {
   protected Text value = new Text();
+  protected int charLength = -1;
 
   public HiveBaseCharWritable() {
   }
 
   public int getCharacterLength() {
-    return HiveStringUtils.getTextUtfLength(value);
+    if (charLength != -1) {
+      return charLength;
+    }
+    charLength = HiveStringUtils.getTextUtfLength(value);
+    return charLength;
   }
 
   /**
@@ -45,6 +50,7 @@ public abstract class HiveBaseCharWritable {
 
   public void readFields(DataInput in) throws IOException {
     value.readFields(in);
+    charLength = -1;
   }
 
   public void write(DataOutput out) throws IOException {
