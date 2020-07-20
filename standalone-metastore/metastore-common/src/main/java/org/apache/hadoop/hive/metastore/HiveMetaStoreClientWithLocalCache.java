@@ -22,7 +22,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   private static volatile boolean cacheInitialized = false;
   private boolean isCacheEnabled = true;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
-  private String cacheObjName = null;
+  private static String cacheObjName = null;
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
     this(conf, null, true);
@@ -51,6 +51,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   private static void initSizeEstimator() {
     sizeEstimator = IncrementalObjectSizeEstimator.createEstimators(HiveMetaStoreClientWithLocalCache.class);
+    IncrementalObjectSizeEstimator.createEstimators(CacheKey.class, sizeEstimator);
     Arrays.stream(KeyType.values()).forEach(e -> {
       IncrementalObjectSizeEstimator.createEstimators(e.keyClass, sizeEstimator);
       IncrementalObjectSizeEstimator.createEstimators(e.valueClass, sizeEstimator);}
@@ -96,7 +97,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   private static int getWeight(CacheKey key, Object val) {
     if (val instanceof Exception) return 0;
-    ObjectEstimator keySizeEstimator = sizeEstimator.get(key.IDENTIFIER.keyClass);
+    ObjectEstimator keySizeEstimator = sizeEstimator.get(key.getClass());
     ObjectEstimator valSizeEstimator = sizeEstimator.get(key.IDENTIFIER.valueClass);
     int keySize = keySizeEstimator.estimate(key, sizeEstimator);
     int valSize = valSizeEstimator.estimate(val, sizeEstimator);
@@ -109,7 +110,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     try {
       val = getResultObject(key);
     } catch (Exception e) {
-      LOG.debug("Exception in MSC local cache: " + e.toString());
+      LOG.debug("Exception in MSC local cache: {}", e.toString());
       if (e instanceof MetaException) {
         val = new MetaException(e.getMessage());
       } else {
@@ -127,7 +128,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
             .maximumWeight(maxSize)
             .weigher(HiveMetaStoreClientWithLocalCache::getWeight)
             .removalListener((key, val, cause) ->
-                    LOG.debug(String.format("Caffeine - (%s, %s) was removed (%s)", key, val, cause)))
+                    LOG.debug("Caffeine - ({}, {}) was removed ({})", key, val, cause))
             .recordStats()
             .build(this::getOrLoad);
 
@@ -156,7 +157,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   protected PartitionsByExprResult getPartitionsByExprResult(PartitionsByExprRequest req) throws TException {
     PartitionsByExprResult r = null;
 
-    if (isCacheEnabled) {
+    // table should be transactional to get responses from the cache
+    if (isCacheEnabled && req.getValidWriteIdList() != null) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       Object val;
       try {
@@ -172,6 +174,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       } catch (MetaException me) {
         throw me;
       } catch (Exception e) {
+        LOG.error("Exception in MSC local cache: {}", e.toString());
         throw new TException(e.getMessage());
       }
     } else {
@@ -185,7 +188,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   protected PartitionsSpecByExprResult getPartitionsSpecByExprResult(PartitionsByExprRequest req) throws TException {
     PartitionsSpecByExprResult r = null;
 
-    if (isCacheEnabled) {
+    // table should be transactional to get responses from the cache
+    if (isCacheEnabled && req.getValidWriteIdList() != null) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       Object val;
       try {
@@ -201,6 +205,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       } catch (MetaException me) {
         throw me;
       } catch (Exception e) {
+        LOG.error("Exception in MSC local cache: {}", e.toString());
         throw new TException(e.getMessage());
       }
     } else {
