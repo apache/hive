@@ -468,6 +468,12 @@ public class WarehouseInstance implements Closeable {
     assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
   }
 
+  public void verifyTargetOfReplProperty(String dbName) throws Exception {
+    Database db = getDatabase(dbName);
+    assertTrue(db.getParameters().containsKey(ReplUtils.TARGET_OF_REPLICATION));
+    assertTrue(Boolean.getBoolean(db.getParameters().get(ReplUtils.TARGET_OF_REPLICATION)));
+  }
+
   public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
     for (String tblName : tblNames) {
       verifyReplTargetProperty(getTable(dbName, tblName).getParameters());

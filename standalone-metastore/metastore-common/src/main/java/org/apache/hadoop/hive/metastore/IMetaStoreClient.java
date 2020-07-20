@@ -670,6 +670,7 @@ public interface IMetaStoreClient {
    */
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
+
   /**
    * Get a table object.
    * @param catName catalog the table is in.
@@ -1253,6 +1254,17 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get a list of partition names matching the specified filter and return in order if specified.
+   * @param request request
+   * @return list of matching partition names.
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error.
+   * @throws NoSuchObjectException  no such table.
+   */
+  List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values
    * @param request request
    * @return reponse
@@ -1378,7 +1390,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
           throws TException;
 
   /**
@@ -1396,7 +1408,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error or error executing the filter.
    */
   boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException;
 
   /**
@@ -2965,6 +2977,16 @@ public interface IMetaStoreClient {
   ValidTxnList getValidTxns(long currentTxn) throws TException;
 
   /**
+   * Get a structure that details valid transactions.
+   * @param currentTxn The current transaction of the caller. This will be removed from the
+   *                   exceptions list so that the caller sees records from his own transaction.
+   * @param excludeTxnTypes list of transaction types that should be excluded from the valid transaction list.
+   * @return list of valid transactions and also valid write IDs for each input table.
+   * @throws TException
+   */
+  ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException;
+
+  /**
    * Get a structure that details valid write ids.
    * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @return list of valid write ids for the given table
@@ -3171,6 +3193,33 @@ public interface IMetaStoreClient {
    */
   List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                                     List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
+
+  /**
+   * Get the maximum allocated writeId for the given table
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table from which the writeId is queried
+   * @return the maximum allocated writeId
+   * @throws TException
+   */
+  long getMaxAllocatedWriteId(String dbName, String tableName) throws TException;
+
+  /**
+   * Seed an ACID table with the given writeId. If the table already contains writes it will fail.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the writeId will be set
+   * @param seedWriteId the start value of writeId
+   * @throws TException
+   */
+  void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException;
+
+  /**
+   * Seed or increment the global txnId to the given value.
+   * If the actual txnId is greater or equal than the seed value, it wil fail
+   * @param seedTxnId The seed value for the next transactions
+   * @throws TException
+   */
+  void seedTxnId(long seedTxnId) throws TException;
+
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.

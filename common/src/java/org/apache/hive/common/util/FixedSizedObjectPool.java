@@ -310,7 +310,7 @@ public class FixedSizedObjectPool<T> implements Pool<T> {
     public synchronized void dumpLog(boolean doSleep) {
       if (doSleep) {
         try {
-          Thread.sleep(100);
+          this.wait(100);
         } catch (InterruptedException e) {
         }
       }

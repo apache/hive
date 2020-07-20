@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -378,7 +378,7 @@ public class AcidUtils {
    * Since Hive 4.0, compactor produces directories with {@link #VISIBILITY_PATTERN} suffix.
    * _v0 is equivalent to no suffix, for backwards compatibility.
    */
-  static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
+  public static String addVisibilitySuffix(String baseOrDeltaDir, long visibilityTxnId) {
     if(visibilityTxnId == 0) {
       return baseOrDeltaDir;
     }
@@ -1969,7 +1969,7 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
-  public static boolean isTransactionalView(CreateViewDesc view) {
+  public static boolean isTransactionalView(CreateMaterializedViewDesc view) {
     if (view == null || view.getTblProps() == null) {
       return false;
     }
@@ -2358,33 +2358,29 @@ public class AcidUtils {
     long writeId = -1;
     ValidWriteIdList validWriteIdList = null;
 
-    HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
-    String fullTableName = getFullTableName(dbName, tblName);
-    if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
-      validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
-      if (isStatsUpdater) {
-        writeId = SessionState.get().getTxnMgr() != null ?
-                SessionState.get().getTxnMgr().getAllocatedTableWriteId(
-                  dbName, tblName) : -1;
-        if (writeId < 1) {
-          // TODO: this is not ideal... stats updater that doesn't have write ID is currently
-          //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
-          LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})",
-              dbName, tblName, writeId);
+    if (SessionState.get() != null) {
+      HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+      String fullTableName = getFullTableName(dbName, tblName);
+      if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
+        validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
+        if (isStatsUpdater) {
+          writeId = sessionTxnMgr.getAllocatedTableWriteId(dbName, tblName);
+          if (writeId < 1) {
+            // TODO: this is not ideal... stats updater that doesn't have write ID is currently
+            //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
+            LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})", dbName, tblName, writeId);
+          }
         }
-      }
 
-
-      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
-          && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
-        return null;
-      }
-      if (validWriteIdList == null) {
-        validWriteIdList = getTableValidWriteIdListWithTxnList(
-            conf, dbName, tblName);
-      }
-      if (validWriteIdList == null) {
-        throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
+          return null;
+        }
+        if (validWriteIdList == null) {
+          validWriteIdList = getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+        }
+        if (validWriteIdList == null) {
+          throw new AssertionError("Cannot find valid write ID list for " + tblName);
+        }
       }
     }
     return new TableSnapshot(writeId,
@@ -3136,12 +3132,14 @@ public class AcidUtils {
           .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
       return TxnType.READ_ONLY;
     }
-
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
     }
-
+    // check if compaction request
+    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
+      return TxnType.COMPACTION;
+    }
     return TxnType.DEFAULT;
   }
 

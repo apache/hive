@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
@@ -34,16 +32,16 @@ public class MsckDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String tableName;
-  private final List<Map<String, String>> partitionsSpecs;
+  private final byte[] filterExp;
   private final String resFile;
   private final boolean repairPartitions;
   private final boolean addPartitions;
   private final boolean dropPartitions;
 
-  public MsckDesc(String tableName, List<Map<String, String>> partitionsSpecs, Path resFile,
-      boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
+  public MsckDesc(String tableName, byte[] filterExp, Path resFile,
+                  boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
     this.tableName = tableName;
-    this.partitionsSpecs = partitionsSpecs;
+    this.filterExp = filterExp;
     this.resFile = resFile.toString();
     this.repairPartitions = repairPartitions;
     this.addPartitions = addPartitions;
@@ -55,9 +53,9 @@ public class MsckDesc implements DDLDesc, Serializable {
     return tableName;
   }
 
-  @Explain(displayName = "partitions specs", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public List<Map<String, String>> getPartitionsSpecs() {
-    return partitionsSpecs;
+  @Explain(displayName = "filter expression", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public byte[] getFilterExp() {
+    return filterExp;
   }
 
   public String getResFile() {

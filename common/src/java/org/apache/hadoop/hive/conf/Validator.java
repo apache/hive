@@ -362,19 +362,21 @@ public interface Validator {
 
     @Override
     public String validate(String value) {
+      if (value == null) return null;
       final Path path = FileSystems.getDefault().getPath(value);
-      if (path == null && value != null) {
+      if (path == null) {
         return String.format("Path '%s' provided could not be located.", value);
+      } else {
+        final boolean isDir = Files.isDirectory(path);
+        final boolean isWritable = Files.isWritable(path);
+        if (!isDir) {
+          return String.format("Path '%s' provided is not a directory.", value);
+        }
+        if (!isWritable) {
+          return String.format("Path '%s' provided is not writable.", value);
+        }
+        return null;
       }
-      final boolean isDir = Files.isDirectory(path);
-      final boolean isWritable = Files.isWritable(path);
-      if (!isDir) {
-        return String.format("Path '%s' provided is not a directory.", value);
-      }
-      if (!isWritable) {
-        return String.format("Path '%s' provided is not writable.", value);
-      }
-      return null;
     }
 
     @Override

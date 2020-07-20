@@ -193,6 +193,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
   print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
   print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
+  print('  MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(MaxAllocatedTableWriteIdRequest rqst)')
+  print('  void seed_write_id(SeedTableWriteIdsRequest rqst)')
+  print('  void seed_txn_id(SeedTxnIdRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
   print('  LockResponse check_lock(CheckLockRequest rqst)')
   print('  void unlock(UnlockRequest rqst)')
@@ -265,6 +268,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey)')
   print('  void add_replication_metrics(ReplicationMetricList replicationMetricList)')
   print('  ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest rqst)')
+  print('  GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1348,6 +1352,24 @@ elif cmd == 'allocate_table_write_ids':
     sys.exit(1)
   pp.pprint(client.allocate_table_write_ids(eval(args[0]),))
 
+elif cmd == 'get_max_allocated_table_write_id':
+  if len(args) != 1:
+    print('get_max_allocated_table_write_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_max_allocated_table_write_id(eval(args[0]),))
+
+elif cmd == 'seed_write_id':
+  if len(args) != 1:
+    print('seed_write_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.seed_write_id(eval(args[0]),))
+
+elif cmd == 'seed_txn_id':
+  if len(args) != 1:
+    print('seed_txn_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.seed_txn_id(eval(args[0]),))
+
 elif cmd == 'lock':
   if len(args) != 1:
     print('lock requires 1 args')
@@ -1779,6 +1801,12 @@ elif cmd == 'get_replication_metrics':
     print('get_replication_metrics requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_replication_metrics(eval(args[0]),))
+
+elif cmd == 'get_open_txns_req':
+  if len(args) != 1:
+    print('get_open_txns_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_open_txns_req(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

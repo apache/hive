@@ -43,6 +43,7 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.HiveCompat;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,19 +225,18 @@ public class HiveConf extends Configuration {
         String nameInConf = "conf" + File.separator + name;
         result = checkConfigFile(new File(homePath, nameInConf));
         if (result == null) {
-          URI jarUri = null;
           try {
             // Handle both file:// and jar:<url>!{entry} in the case of shaded hive libs
             URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
-            jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            URI jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            // From the jar file, the parent is /lib folder
+            File parent = new File(jarUri).getParentFile();
+            if (parent != null) {
+              result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
+            }
           } catch (Throwable e) {
             LOG.info("Cannot get jar URI", e);
             System.err.println("Cannot get jar URI: " + e.getMessage());
-          }
-          // From the jar file, the parent is /lib folder
-          File parent = new File(jarUri).getParentFile();
-          if (parent != null) {
-            result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
           }
         }
       }
@@ -355,7 +355,7 @@ public class HiveConf extends Configuration {
   /**
    * User configurable Metastore vars
    */
-  public static final HiveConf.ConfVars[] metaConfVars = {
+  static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
@@ -393,7 +393,7 @@ public class HiveConf extends Configuration {
   /**
    * encoded parameter values are ;-) encoded.  Use decoder to get ;-) decoded string
    */
-  public static final HiveConf.ConfVars[] ENCODED_CONF = {
+  static final HiveConf.ConfVars[] ENCODED_CONF = {
       ConfVars.HIVEQUERYSTRING
   };
 
@@ -550,6 +550,11 @@ public class HiveConf extends Configuration {
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
             + "If these open transactions are not closed within the timeout value, then REPL DUMP will "
             + "forcefully abort those transactions and continue with bootstrap dump."),
+    REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT("hive.repl.bootstrap.dump.abort.write.txn.after.timeout",
+      true,
+      "Indicates whether to abort write transactions belonging to the db under replication while doing a" +
+        " bootstrap dump after the timeout configured by hive.repl.bootstrap.dump.open.txn.timeout. If set to false," +
+        " bootstrap dump will fail."),
     //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
@@ -2547,7 +2552,7 @@ public class HiveConf extends Configuration {
         "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
             "during logical optimization."),
 
-    HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", false,
+    HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", true,
         "Whether to find suitable table scan operators that could reduce the number of decoded rows at runtime by probing extra available information. \n"
             + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
             + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
@@ -2873,6 +2878,8 @@ public class HiveConf extends Configuration {
         120, "Enable dir cache for ACID tables specified in minutes."
         + "0 indicates cache is used as read-only and no additional info would be "
         + "populated. -1 means cache is disabled"),
+    HIVE_WRITE_ACID_VERSION_FILE("hive.txn.write.acid.version.file", true,
+        "Creates an _orc_acid_version file along with acid files, to store the version data"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
@@ -5425,6 +5432,7 @@ public class HiveConf extends Configuration {
     return new LoopingByteArrayInputStream(confVarByteArray);
   }
 
+  @SuppressFBWarnings(value = "NP_NULL_PARAM_DEREF", justification = "Exception before reaching NP")
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
     if (modWhiteListPattern != null) {
       Matcher wlMatcher = modWhiteListPattern.matcher(name);
@@ -6245,6 +6253,7 @@ public class HiveConf extends Configuration {
 
   //Take care of conf overrides.
   //Includes values in ConfVars as well as underlying configuration properties (ie, hadoop)
+  @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "Intended exposure")
   public static final Map<String, String> overrides = new HashMap<String, String>();
 
   /**
@@ -6550,17 +6559,11 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = StringUtils.EMPTY;
-    for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
-      if ("mr".equals(s)) {
-        continue;
-      }
-      if (!result.isEmpty()) {
-        result += ", ";
-      }
-      result += s;
-    }
-    return result;
+    Set<String> engines = new HashSet<>(ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues());
+    engines.remove("mr");
+    String validNonMrEngines = String.join(", ", engines);
+    LOG.debug("Valid non-MapReduce execution engines: {}", validNonMrEngines);
+    return validNonMrEngines;
   }
 
   public static String generateMrDeprecationWarning() {

@@ -299,6 +299,178 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   @Test
+  public void testConstraintsForUpdateUsingEvents() throws Exception {
+    long lastEventId = -1;
+    RawStore rawStore = hmsHandler.getMS();
+
+    // Prewarm CachedStore
+    CachedStore.setCachePrewarmedState(false);
+    CachedStore.prewarm(rawStore);
+
+    // Add a db via rawStore
+    String dbName = "test_table_ops";
+    String dbOwner = "user1";
+    Database db = createTestDb(dbName, dbOwner);
+    hmsHandler.create_database(db);
+    db = rawStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
+
+    String foreignDbName = "test_table_ops_foreign";
+    Database foreignDb = createTestDb(foreignDbName, dbOwner);
+    hmsHandler.create_database(foreignDb);
+    foreignDb = rawStore.getDatabase(DEFAULT_CATALOG_NAME, foreignDbName);
+    // Add a table via rawStore
+    String tblName = "tbl";
+    String tblOwner = "user1";
+    FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
+    FieldSchema col2 = new FieldSchema("col2", "string", "string column");
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(col1);
+    cols.add(col2);
+    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
+    Table tbl = createTestTbl(dbName, tblName, tblOwner, cols, ptnCols);
+    String foreignTblName = "ftbl";
+    Table foreignTbl = createTestTbl(foreignDbName, foreignTblName, tblOwner, cols, ptnCols);
+
+    SQLPrimaryKey key = new SQLPrimaryKey(dbName, tblName, col1.getName(), 1, "pk1",
+            false, false, false);
+    SQLUniqueConstraint uC = new SQLUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName,
+            col1.getName(), 2, "uc1", false, false, false);
+    SQLNotNullConstraint nN = new SQLNotNullConstraint(DEFAULT_CATALOG_NAME, dbName, tblName,
+            col1.getName(), "nn1", false, false, false);
+    SQLForeignKey foreignKey = new SQLForeignKey(key.getTable_db(), key.getTable_name(), key.getColumn_name(),
+            foreignDbName, foreignTblName, key.getColumn_name(), 2, 1,2,
+            "fk1", key.getPk_name(), false, false, false);
+
+    hmsHandler.create_table_with_constraints(tbl,
+            Arrays.asList(key), null, Arrays.asList(uC), Arrays.asList(nN), null, null);
+    hmsHandler.create_table_with_constraints(foreignTbl, null, Arrays.asList(foreignKey),
+            null, null, null, null);
+
+    tbl = rawStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
+    foreignTbl = rawStore.getTable(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName);
+
+    // Read database, table via CachedStore
+    Database dbRead= sharedCache.getDatabaseFromCache(DEFAULT_CATALOG_NAME, dbName);
+    Assert.assertEquals(db, dbRead);
+    Table tblRead = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, dbName, tblName);
+    compareTables(tblRead, tbl);
+
+    Table foreignTblRead = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName);
+    compareTables(foreignTblRead, foreignTbl);
+
+    List<SQLPrimaryKey> keys = rawStore.getPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName);
+    List<SQLPrimaryKey> keysRead = sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForPrimarkaryKey(keysRead, 1, 0, keys.get(0));
+
+    List<SQLNotNullConstraint> nNs = rawStore.getNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
+    List<SQLNotNullConstraint> nNsRead = sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForNotNullConstraints(nNsRead, 1, 0, nNs.get(0));
+
+    List<SQLUniqueConstraint> uns = rawStore.getUniqueConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
+    List<SQLUniqueConstraint> unsRead = sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForUniqueConstraints(unsRead, 1, 0, uns.get(0));
+
+    List<SQLForeignKey> fks = rawStore.getForeignKeys(DEFAULT_CATALOG_NAME, dbName, tblName, foreignDbName, foreignTblName);
+    List<SQLForeignKey> fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName,
+            foreignTblName, dbName, tblName);
+    assertsForForeignKey(fksRead, 1, 0, fks.get(0));
+
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName,
+            dbName, foreignTblName);
+    Assert.assertEquals(fksRead.size(), 0);
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName,
+            foreignDbName, tblName);
+    Assert.assertEquals(fksRead.size(), 0);
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName,
+            foreignDbName, foreignTblName);
+    Assert.assertEquals(fksRead.size(), 0);
+
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName,
+            null, null);
+    Assert.assertEquals(fksRead.size(), 1);
+
+    // Dropping the constraint
+    DropConstraintRequest dropConstraintRequest = new DropConstraintRequest(foreignDbName, foreignTblName, foreignKey.getFk_name());
+    hmsHandler.drop_constraint(dropConstraintRequest);
+    dropConstraintRequest = new DropConstraintRequest(dbName, tblName, key.getPk_name());
+    hmsHandler.drop_constraint(dropConstraintRequest);
+    dropConstraintRequest = new DropConstraintRequest(dbName, tblName, nN.getNn_name());
+    hmsHandler.drop_constraint(dropConstraintRequest);
+    dropConstraintRequest = new DropConstraintRequest(dbName, tblName, uC.getUk_name());
+    hmsHandler.drop_constraint(dropConstraintRequest);
+
+    keys = sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName);
+    nNs = sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
+    uns = sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName, dbName, tblName);
+    Assert.assertEquals(keys.size(), 0);
+    Assert.assertEquals(nNs.size(), 0);
+    Assert.assertEquals(uns.size(), 0);
+    Assert.assertEquals(fksRead.size(), 0);
+
+    // Adding keys back
+    AddPrimaryKeyRequest req = new AddPrimaryKeyRequest(Arrays.asList(key));
+    hmsHandler.add_primary_key(req);
+    keys = sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForPrimarkaryKey(keys, 1, 0, key);
+
+    AddUniqueConstraintRequest uniqueConstraintRequest = new AddUniqueConstraintRequest(Arrays.asList(uC));
+    hmsHandler.add_unique_constraint(uniqueConstraintRequest);
+    uns = sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForUniqueConstraints(uns, 1, 0, uC);
+
+    AddNotNullConstraintRequest notNullConstraintRequest = new AddNotNullConstraintRequest(Arrays.asList(nN));
+    hmsHandler.add_not_null_constraint(notNullConstraintRequest);
+    nNs = sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertsForNotNullConstraints(nNs, 1, 0, nN);
+
+    AddForeignKeyRequest foreignKeyRequest = new AddForeignKeyRequest(Arrays.asList(foreignKey));
+    hmsHandler.add_foreign_key(foreignKeyRequest);
+    fksRead = sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, foreignDbName, foreignTblName, dbName, tblName);
+    assertsForForeignKey(fksRead, 1, 0, foreignKey);
+
+    sharedCache.getDatabaseCache().clear();
+    sharedCache.clearTableCache();
+    sharedCache.getSdCache().clear();
+  }
+
+  private void assertsForPrimarkaryKey(List<SQLPrimaryKey> keys, int size, int ele, SQLPrimaryKey key) {
+    Assert.assertEquals(keys.size(), size);
+    Assert.assertEquals(keys.get(ele).getPk_name(), key.getPk_name());
+    Assert.assertEquals(keys.get(ele).getColumn_name(), key.getColumn_name());
+    Assert.assertEquals(keys.get(ele).getTable_name(), key.getTable_name());
+    Assert.assertEquals(keys.get(ele).getTable_db(), key.getTable_db());
+  }
+
+  private void assertsForForeignKey(List<SQLForeignKey> keys, int size, int ele, SQLForeignKey key) {
+    Assert.assertEquals(keys.size(), size);
+    Assert.assertEquals(keys.get(ele).getPk_name(), key.getPk_name());
+    Assert.assertEquals(keys.get(ele).getFk_name(), key.getFk_name());
+    Assert.assertEquals(keys.get(ele).getFktable_db(), key.getFktable_db());
+    Assert.assertEquals(keys.get(ele).getFktable_name(), key.getFktable_name());
+    Assert.assertEquals(keys.get(ele).getPktable_db(), key.getPktable_db());
+    Assert.assertEquals(keys.get(ele).getPktable_name(), key.getPktable_name());
+    Assert.assertEquals(keys.get(ele).getPkcolumn_name(), key.getPkcolumn_name());
+    Assert.assertEquals(keys.get(ele).getFkcolumn_name(), key.getFkcolumn_name());
+  }
+
+  private void assertsForNotNullConstraints(List<SQLNotNullConstraint> nns, int size, int ele, SQLNotNullConstraint nN) {
+    Assert.assertEquals(nns.size(), size);
+    Assert.assertEquals(nns.get(ele).getNn_name(), nN.getNn_name());
+    Assert.assertEquals(nns.get(ele).getColumn_name(), nN.getColumn_name());
+    Assert.assertEquals(nns.get(ele).getTable_name(), nN.getTable_name());
+    Assert.assertEquals(nns.get(ele).getTable_db(), nN.getTable_db());
+  }
+
+  private void assertsForUniqueConstraints(List<SQLUniqueConstraint> uks, int size, int ele, SQLUniqueConstraint uk) {
+    Assert.assertEquals(uks.size(), size);
+    Assert.assertEquals(uks.get(ele).getUk_name(), uk.getUk_name());
+    Assert.assertEquals(uks.get(ele).getColumn_name(), uk.getColumn_name());
+    Assert.assertEquals(uks.get(ele).getTable_name(), uk.getTable_name());
+    Assert.assertEquals(uks.get(ele).getTable_db(), uk.getTable_db());
+  }
+
+  @Test
   public void testPartitionOpsForUpdateUsingEvents() throws Exception {
     long lastEventId = -1;
     RawStore rawStore = hmsHandler.getMS();

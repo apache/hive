@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -68,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -76,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -1099,6 +1103,24 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     List<Partition> partitions = tt.listPartitionsWithAuthInfo(userName, groupNames);
     return getPartitionsForMaxParts(tableName, partitions, maxParts);
   }
+  
+  @Override
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(
+      GetPartitionsPsWithAuthRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(),
+        req.getTblName());
+    if (table == null) {
+      return super.listPartitionsWithAuthInfoRequest(req);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt
+        .listPartitionsWithAuthInfo(req.getUserName(), req.getGroupNames());
+    GetPartitionsPsWithAuthResponse response = new GetPartitionsPsWithAuthResponse();
+    response.setPartitions(
+        getPartitionsForMaxParts(req.getTblName(), partitions, req.getMaxParts()));
+    return response;
+  }
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
@@ -1182,10 +1204,12 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result) throws TException {
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result,
+      String validWriteIdList) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
-      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr,
+          defaultPartitionName, maxParts, result, validWriteIdList);
     }
     assert result != null;
 
