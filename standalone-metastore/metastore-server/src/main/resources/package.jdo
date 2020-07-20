@@ -346,7 +346,7 @@
         <column name="CD_ID"/>
       </datastore-identity>
       <field name="cols" persistence-modifier="persistent" table="COLUMNS_V2">
-        <collection element-type="MFieldSchema"/>
+        <collection element-type="MFieldSchema" dependent-element="true" />
         <join>
           <primary-key name="SQL110922153006740">
             <column name="CD_ID"/>
