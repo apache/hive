@@ -407,8 +407,10 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexLiteral createStringConstantExpr(String value) {
-    return rexBuilder.makeCharLiteral(
-        makeHiveUnicodeString(Interpretation.STRING, value));
+    RelDataType stringType =
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE);
+    return (RexLiteral) rexBuilder.makeLiteral(
+        makeHiveUnicodeString(Interpretation.STRING, value), stringType, true);
   }
 
   /**

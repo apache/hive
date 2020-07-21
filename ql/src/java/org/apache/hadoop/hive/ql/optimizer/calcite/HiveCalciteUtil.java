@@ -1233,8 +1233,7 @@ public class HiveCalciteUtil {
       // at parsing time but the actual type referenced is a CHAR.
       if (refType2 == rightType) {
         return new RexInputRef(ref.getIndex(), refType2);
-      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER &&
-          rightType.getSqlTypeName() == SqlTypeName.CHAR && !rightType.isNullable()) {
+      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER && !rightType.isNullable()) {
         return new RexInputRef(ref.getIndex(), rightType);
       }
       throw new AssertionError("mismatched type " + ref + " " + rightType);
