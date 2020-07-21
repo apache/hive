@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -62,9 +63,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -78,7 +80,7 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private Executor compactionExecutor;
+  private ExecutorService compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
@@ -182,6 +184,10 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
+    } finally {
+      if (compactionExecutor != null) {
+        compactionExecutor.shutdownNow();
+      }
     }
   }
 
@@ -226,7 +232,13 @@ public class Initiator extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
+    ThreadFactory threadFactory = new ThreadFactoryBuilder()
+            .setPriority(Thread.currentThread().getPriority())
+            .setDaemon(Thread.currentThread().isDaemon())
+            .setNameFormat("Initiator-executor-thread-%d")
+            .build();
+    compactionExecutor = Executors.newFixedThreadPool(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadFactory);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
