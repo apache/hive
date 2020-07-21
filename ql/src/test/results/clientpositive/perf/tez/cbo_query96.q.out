@@ -53,6 +53,6 @@ HiveAggregate(group=[{}], agg#0=[count()])
         HiveFilter(condition=[AND(=($3, 5), IS NOT NULL($0))])
           HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
     HiveProject(s_store_sk=[$0])
-      HiveFilter(condition=[AND(=($5, _UTF-16LE'ese'), IS NOT NULL($0))])
+      HiveFilter(condition=[AND(=($5, _UTF-16LE'ese':VARCHAR(2147483647)), IS NOT NULL($0))])
         HiveTableScan(table=[[default, store]], table:alias=[store])
 

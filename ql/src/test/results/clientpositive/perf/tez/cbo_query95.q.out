@@ -101,7 +101,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $6)], agg#1=[sum($7)], agg#2=[su
       HiveJoin(condition=[=($3, $9)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(ca_address_sk=[$0])
-            HiveFilter(condition=[AND(=($8, _UTF-16LE'TX'), IS NOT NULL($0))])
+            HiveFilter(condition=[AND(=($8, _UTF-16LE'TX':VARCHAR(2147483647)), IS NOT NULL($0))])
               HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
           HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ws_ship_date_sk=[$2], ws_ship_addr_sk=[$11], ws_web_site_sk=[$13], ws_order_number=[$17], ws_ext_ship_cost=[$28], ws_net_profit=[$33])
@@ -111,6 +111,6 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $6)], agg#1=[sum($7)], agg#2=[su
               HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-05-01 00:00:00:TIMESTAMP(9), 1999-06-30 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
         HiveProject(web_site_sk=[$0])
-          HiveFilter(condition=[AND(=($14, _UTF-16LE'pri'), IS NOT NULL($0))])
+          HiveFilter(condition=[AND(=($14, _UTF-16LE'pri':VARCHAR(2147483647)), IS NOT NULL($0))])
             HiveTableScan(table=[[default, web_site]], table:alias=[web_site])
 

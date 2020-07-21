@@ -77,7 +77,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
           HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
             HiveTableScan(table=[[default, customer]], table:alias=[customer])
         HiveProject(ca_address_sk=[$0])
-          HiveFilter(condition=[AND(=($8, _UTF-16LE'IL'), IS NOT NULL($0))])
+          HiveFilter(condition=[AND(=($8, _UTF-16LE'IL':VARCHAR(2147483647)), IS NOT NULL($0))])
             HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
       HiveProject($f0=[$0], $f1=[$1], $f2=[$2], _o__c0=[$3], ctr_state=[$4])
         HiveJoin(condition=[AND(=($1, $4), >($2, $3))], joinType=[inner], algorithm=[none], cost=[not available])

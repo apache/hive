@@ -28,6 +28,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
@@ -725,12 +726,16 @@ public class RexNodeConverter {
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.VARCHAR, (String) value));
+      RelDataType stringType =
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, ((HiveVarchar) value).getValue().length());
+      calciteLiteral = (RexLiteral) rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.VARCHAR, (String) value), stringType, true);
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.STRING, (String) value));
+      RelDataType stringType2 =
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE);
+      calciteLiteral = (RexLiteral) rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.STRING, (String) value), stringType2, true);
       break;
     case DATE:
       final Date date = (Date) value;

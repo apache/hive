@@ -89,7 +89,7 @@ HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[
               HiveFilter(condition=[AND(IN($12, 9, 5, 12, 4, 1, 10), IS NOT NULL($2), IS NOT NULL($0), IS NOT NULL($4))])
                 HiveTableScan(table=[[default, customer]], table:alias=[customer])
             HiveProject(ca_address_sk=[$0], ca_county=[$7], ca_state=[$8], ca_country=[$10])
-              HiveFilter(condition=[AND(IN($8, _UTF-16LE'ND':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'WI':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'AL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'NC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'OK':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MS':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'TN':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+              HiveFilter(condition=[AND(IN($8, _UTF-16LE'ND':VARCHAR(2147483647), _UTF-16LE'WI':VARCHAR(2147483647), _UTF-16LE'AL':VARCHAR(2147483647), _UTF-16LE'NC':VARCHAR(2147483647), _UTF-16LE'OK':VARCHAR(2147483647), _UTF-16LE'MS':VARCHAR(2147483647), _UTF-16LE'TN':VARCHAR(2147483647)), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
           HiveProject(cd_demo_sk=[$0])
             HiveFilter(condition=[IS NOT NULL($0)])
@@ -108,6 +108,6 @@ HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[
                   HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($0))])
                     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
               HiveProject(cd_demo_sk=[$0], CAST=[CAST($6):DECIMAL(12, 2)])
-                HiveFilter(condition=[AND(=($3, _UTF-16LE'College'), =($1, _UTF-16LE'M'), IS NOT NULL($0))])
+                HiveFilter(condition=[AND(=($3, _UTF-16LE'College':VARCHAR(2147483647)), =($1, _UTF-16LE'M':VARCHAR(2147483647)), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, customer_demographics]], table:alias=[cd1])
 
