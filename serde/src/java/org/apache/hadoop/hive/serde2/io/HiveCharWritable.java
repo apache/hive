@@ -66,7 +66,6 @@ public class HiveCharWritable extends HiveBaseCharWritable
 
   public void set(String val, int maxLength) {
     value.set(HiveBaseChar.getPaddedValue(val, maxLength));
-    charLength = maxLength;
   }
 
   public HiveChar getHiveChar() {
