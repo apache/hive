@@ -74,6 +74,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   private boolean[] needsEscape = new boolean[256];  // A flag for each byte to indicate if escape is needed.
 
   private boolean extendedBooleanLiteral;
+  private boolean decodeBinaryAsBase64;
   List<String> timestampFormats;
   
   public LazySerDeParameters(Configuration job, Properties tbl, String serdeName) throws SerDeException {
@@ -117,17 +118,18 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     extendedBooleanLiteral = (job == null ? false :
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false));
     
+    decodeBinaryAsBase64 = (job == null ? false :
+    	job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64.varname, false));
+    		
     String[] timestampFormatsArray =
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
     if (timestampFormatsArray != null) {
       timestampFormats = Arrays.asList(timestampFormatsArray);
     }
+    
 
-    LOG.debug(serdeName + " initialized with: columnNames="
-        + columnNames + " columnTypes=" + columnTypes
-        + " separator=" + Arrays.asList(separators)
-        + " nullstring=" + nullString + " lastColumnTakesRest="
-        + lastColumnTakesRest + " timestampFormats=" + timestampFormats);
+    LOG.debug("{} initialized with: columnNames={} columnTypes={} separator={} nullString={} lastColumnTakesRest={} timestampFormats={}",
+    		serdeName, columnNames, columnTypes, Arrays.asList(separators), nullString, lastColumnTakesRest, timestampFormats);
   }
 
   /**
@@ -218,6 +220,10 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     return extendedBooleanLiteral;
   }
 
+  public boolean isDecodeBinaryAsBase64() {
+    return decodeBinaryAsBase64;
+  }
+  
   public List<String> getTimestampFormats() {
     return timestampFormats;
   }

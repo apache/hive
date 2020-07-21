@@ -200,6 +200,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private final int[] escapeCounts;
   private final byte[] nullSequenceBytes;
   private final boolean isExtendedBooleanLiteral;
+  private final boolean isDecodeBinaryAsBase64;
 
   private final int fieldCount;
   private final Field[] fields;
@@ -343,6 +344,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
     nullSequenceBytes = lazyParams.getNullSequence().getBytes();
     isExtendedBooleanLiteral = lazyParams.isExtendedBooleanLiteral();
+    isDecodeBinaryAsBase64 = lazyParams.isDecodeBinaryAsBase64();
     if (lazyParams.isLastColumnTakesRest()) {
       throw new RuntimeException("serialization.last.column.takes.rest not supported");
     }
@@ -780,12 +782,16 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           {
             byte[] recv = new byte[fieldLength];
             System.arraycopy(bytes, fieldStart, recv, 0, fieldLength);
-            byte[] decoded = LazyBinary.decodeIfNeeded(recv);
-            // use the original bytes in case decoding should fail
-            decoded = decoded.length > 0 ? decoded : recv;
-            currentBytes = decoded;
-            currentBytesStart = 0;
-            currentBytesLength = decoded.length;
+            if (isDecodeBinaryAsBase64) {
+              byte[] decoded = LazyBinary.decodeIfNeeded(recv);
+              currentBytes = decoded;
+              currentBytesStart = 0;
+              currentBytesLength = decoded.length;
+            } else {
+              currentBytes = recv;
+              currentBytesStart = 0;
+              currentBytesLength = recv.length;
+            }
           }
           return true;
         case DATE:
