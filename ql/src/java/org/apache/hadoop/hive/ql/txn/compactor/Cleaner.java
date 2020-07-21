@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -121,6 +122,8 @@ public class Cleaner extends MetaStoreCompactorThread {
         }
       }
     } while (!stop.get());
+
+    ((ExecutorService)cleanerExecutor).shutdown();
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
