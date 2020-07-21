@@ -1,0 +1,75 @@
+PREHOOK: query: create table union_first_part (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_first_part
+POSTHOOK: query: create table union_first_part (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_first_part
+PREHOOK: query: insert into union_first_part values (1,2),(3,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_first_part
+POSTHOOK: query: insert into union_first_part values (1,2),(3,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_first_part
+POSTHOOK: Lineage: union_first_part.a SCRIPT []
+POSTHOOK: Lineage: union_first_part.b SCRIPT []
+PREHOOK: query: create table union_second_part (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_second_part
+POSTHOOK: query: create table union_second_part (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_second_part
+PREHOOK: query: insert into union_second_part values (4,1),(2,3),(-1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_second_part
+POSTHOOK: query: insert into union_second_part values (4,1),(2,3),(-1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_second_part
+POSTHOOK: Lineage: union_second_part.a SCRIPT []
+POSTHOOK: Lineage: union_second_part.b SCRIPT []
+PREHOOK: query: create table union_all (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_all
+POSTHOOK: query: create table union_all (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_all
+PREHOOK: query: insert overwrite table union_all
+    select * from union_first_part
+union all
+    select * from union_second_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_first_part
+PREHOOK: Input: default@union_second_part
+PREHOOK: Output: default@union_all
+POSTHOOK: query: insert overwrite table union_all
+    select * from union_first_part
+union all
+    select * from union_second_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_first_part
+POSTHOOK: Input: default@union_second_part
+POSTHOOK: Output: default@union_all
+POSTHOOK: Lineage: union_all.a EXPRESSION [(union_first_part)union_first_part.FieldSchema(name:a, type:int, comment:null), (union_second_part)union_second_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: union_all.b EXPRESSION [(union_first_part)union_first_part.FieldSchema(name:b, type:int, comment:null), (union_second_part)union_second_part.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from union_all order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_all
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union_all order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_all
+#### A masked pattern was here ####
+-1	2
+1	2
+2	3
+3	1
+4	1

@@ -1459,8 +1459,12 @@ public final class Utilities {
       }
 
       // Remove duplicates from tmpPath
-      List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(
-          tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+      int level = dpCtx == null ? 1 : dpCtx.getNumDPCols();
+      // - when execution engine is Tez and the query uses sql clause "Union"
+      //   there is an extra layer of subdirectories that contains the branches of the union;
+      boolean isUnionClauseInTez = conf.getDirName().toString().contains(AbstractFileMergeOperator.UNION_SUDBIR_PREFIX);
+      level += isUnionClauseInTez ? 1 : 0;
+      List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(tmpPath, level, fs);
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         Set<FileStatus> filesKept = new HashSet<>();
