@@ -4206,6 +4206,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
           }
           files = fileStatuses.toArray(new FileStatus[files.length]);
+
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE)) {
+            AcidUtils.OrcAcidVersion.writeVersionFile(destf, destFs);
+          }
         } catch (IOException e) {
           if (null != pool) {
             pool.shutdownNow();
