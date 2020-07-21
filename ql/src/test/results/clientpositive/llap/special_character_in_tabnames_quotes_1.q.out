@@ -236,24 +236,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
- 1	14	11
- 1	15	12
- 1 	16	13
- 1 	17	14
-1	10	7
-1	11	8
-1	12	9
-1	13	10
-1	20	17
-1	21	18
-1	4	1
-1	5	2
-1	6	3
-1	7	4
-1	8	5
-1	9	6
-1 	4	1
-1 	4	1
+ 1	4	2
+ 1 	4	2
+1	4	12
+1 	4	2
 NULL	NULL	NULL
 PREHOOK: query: explain select unionsrc.key FROM (select 'max' as key, max(c_int) as value from "cbo_/t3////" s1
 
@@ -655,7 +641,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c_int)
                       keys: c_float (type: float), c_int (type: int), key (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 10 Data size: 1010 Basic stats: COMPLETE Column stats: COMPLETE
@@ -982,13 +968,13 @@ STAGE PLANS:
                 TableScan
                   alias: c/b/o_t1
                   filterExpr: (dt = '2014') (type: boolean)
-                  Statistics: Num rows: 20 Data size: 2031 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: '2014' (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: '2014' (type: string)
-                    Statistics: Num rows: 20 Data size: 2031 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: '2014' (type: string)
                     outputColumnNames: _col0
@@ -4306,8 +4292,8 @@ POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
 #### A masked pattern was here ####
-14
-18
+1
+1
 NULL
 PREHOOK: query: select count(v1_n7.c_int)  from v1_n7 join "//cbo_t2" on v1_n7.c_int = "//cbo_t2".c_int
 PREHOOK: type: QUERY
@@ -4325,7 +4311,7 @@ POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
 #### A masked pattern was here ####
-44
+234
 PREHOOK: query: select count(v1_n7.c_int)  from v1_n7 join v2_n2 on v1_n7.c_int = v2_n2.c_int
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
@@ -4344,7 +4330,7 @@ POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v2_n2
 #### A masked pattern was here ####
-44
+234
 PREHOOK: query: select count(*) from v1_n7 a join v1_n7 b on a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -4458,7 +4444,7 @@ POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
 #### A masked pattern was here ####
-35
+2
 PREHOOK: query: with q1 as ( select "c/b/o_t1".c_int c_int from q2 join "c/b/o_t1" where q2.c_int = "c/b/o_t1".c_int  and "c/b/o_t1".dt='2014'),
 
 q2 as ( select c_int,c_boolean from v1_n7  where value = '1' or dt = '14')
@@ -4481,7 +4467,7 @@ POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v4_n0
 #### A masked pattern was here ####
-14
+31104
 PREHOOK: query: drop view v1_n7
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: db~!@@#$%^&*(),<>@v1_n7
