@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -335,7 +336,9 @@ final class HMSClient implements AutoCloseable {
   }
 
   List<Long> getOpenTxns() throws TException {
-    GetOpenTxnsResponse txns = client.get_open_txns();
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    GetOpenTxnsResponse txns = client.get_open_txns_req(getOpenTxnsRequest);
     List<Long> openTxns = new ArrayList<>();
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     int i = 0;
