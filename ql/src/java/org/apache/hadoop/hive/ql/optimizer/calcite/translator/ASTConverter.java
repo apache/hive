@@ -86,7 +86,8 @@ import com.google.common.collect.Iterables;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
-  public static final String NON_FK_FILTERED = "nonFkFiltered";
+  public static final String NON_FK_FILTERED = "NON_FK_FILTERED";
+  public static final String NON_FK_NOT_FILTERED = "NON_FK_NOT_FILTERED";
 
   private final RelNode          root;
   private final HiveAST          hiveAST;
@@ -478,7 +479,7 @@ public class ASTConverter {
     ParseDriver parseDriver = new ParseDriver();
     try {
       return parseDriver.parseHint(String.format("PKFK_JOIN(%d, %s)",
-              fkTableIndex, nonFkSideIsFiltered ? NON_FK_FILTERED : "notFiltered"));
+              fkTableIndex, nonFkSideIsFiltered ? NON_FK_FILTERED : NON_FK_NOT_FILTERED));
     } catch (ParseException e) {
       throw new RuntimeException(e);
     }

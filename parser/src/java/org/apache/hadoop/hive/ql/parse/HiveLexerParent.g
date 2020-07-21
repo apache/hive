@@ -371,6 +371,7 @@ KW_AST: 'AST';
 KW_COST: 'COST';
 KW_JOINCOST: 'JOINCOST';
 KW_WITHIN: 'WITHIN';
+KW_PKFK_JOIN: 'PKFK_JOIN';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -471,8 +472,6 @@ Number
     :
     (Digit)+ ( DOT (Digit)* (Exponent)? | Exponent)?
     ;
-
-PKFK_JOIN: 'PKFK_JOIN';
 
 /*
 An Identifier can be:

@@ -24,7 +24,6 @@ set hive.optimize.topnkey=true;
 set hive.optimize.limittranspose=false;
 
 select 'positive: order by columns are coming from child table';
--- FIXME: explain select * from customer join orders on customer.id = orders.customer_id order by customer.id limit 3;
 explain select * from orders join customer on customer.id = orders.customer_id order by orders.amount limit 3;
 explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, orders.amount limit 3;
 explain select * from customer join orders on orders.customer_id = customer.id order by orders.amount, orders.customer_id limit 3;

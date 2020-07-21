@@ -260,6 +260,14 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     }
   }
 
+  /**
+   * Tries to push the TopNKeyFilter through an inner join:
+   *  requirements:
+   *    - being PK-FK join
+   *    - PK side is not filtered
+   *    - First n TopNKey key columns (Order By) are originated from the FK side.
+   * @throws SemanticException
+   */
   private void pushdownInnerJoin(TopNKeyOperator topNKey, int fkJoinInputIndex, boolean nonFkSideIsFiltered) throws SemanticException {
     TopNKeyDesc topNKeyDesc = topNKey.getConf();
     CommonJoinOperator<? extends JoinDesc> join =
@@ -291,7 +299,16 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     }
   }
 
-  private int keyColumnPrefixLength(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, int expectedTag, List<ExprNodeDesc> keyColumns) {
+  /**
+   * Check if the first n keyColumns of the TopNKeyFilter
+   * are coming from expected side of the join (indicated by the expectedTag).
+   * @return n
+   */
+  private int keyColumnPrefixLength(
+          CommonJoinOperator<? extends JoinDesc> join,
+          TopNKeyOperator topNKeyOperator,
+          int expectedTag,
+          List<ExprNodeDesc> keyColumns) {
     int commonPrefixLength = 0;
     for (ExprNodeDesc orderByKey : keyColumns) {
       if (tag(join, topNKeyOperator, orderByKey) == expectedTag) {
