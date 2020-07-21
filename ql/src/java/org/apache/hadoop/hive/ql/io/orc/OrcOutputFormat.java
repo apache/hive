@@ -81,8 +81,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     public void write(NullWritable nullWritable,
                       OrcSerdeRow row) throws IOException {
       if (writer == null) {
-        options.inspector(row.getInspector());
-        writer = OrcFile.createWriter(path, options);
+        init(row);
       }
       writer.addRow(row.getRow());
     }
@@ -91,8 +90,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     public void write(Writable row) throws IOException {
       OrcSerdeRow serdeRow = (OrcSerdeRow) row;
       if (writer == null) {
-        options.inspector(serdeRow.getInspector());
-        writer = OrcFile.createWriter(path, options);
+        init(serdeRow);
       }
       writer.addRow(serdeRow.getRow());
     }
@@ -119,6 +117,14 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       stats.setRawDataSize(null == writer ? 0 : writer.getRawDataSize());
       stats.setRowCount(null == writer ? 0 : writer.getNumberOfRows());
       return stats;
+    }
+
+    private void init(OrcSerdeRow serdeRow) throws IOException {
+      options.inspector(serdeRow.getInspector());
+      writer = OrcFile.createWriter(path, options);
+      if (options.isCompaction()) {
+        AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
+      }
     }
   }
 

@@ -4147,6 +4147,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
         files = new FileStatus[] {src};
       }
 
+      if (isCompactionTable && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE)) {
+        try {
+          AcidUtils.OrcAcidVersion.writeVersionFile(destf, destFs);
+        } catch (IOException e) {
+          if (null != pool) {
+            pool.shutdownNow();
+          }
+          throw new HiveException(e);
+        }
+      }
+
       final SessionState parentSession = SessionState.get();
       // Sort the files
       Arrays.sort(files);

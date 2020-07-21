@@ -83,6 +83,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMajorCompactionNotPartitionedWithoutBuckets() throws Exception {
+    boolean originalEnableVersionFile = conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
+
     String dbName = "default";
     String tblName = "testMajorCompaction";
     TestDataProvider testDataProvider = new TestDataProvider();
@@ -138,6 +141,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
     checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs, true,
+        new String[] { AcidUtils.BASE_PREFIX});
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
   }
 
   /**
@@ -146,6 +153,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    */
   @Test
   public void testMajorCompactionNotPartitioned4Buckets() throws Exception {
+    boolean originalEnableVersionFile = conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, false);
+
     String dbName = "default";
     String tblName = "testMajorCompaction";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
@@ -224,6 +234,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 1);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 2);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs, false,
+        new String[] { AcidUtils.BASE_PREFIX});
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
   }
 
   @Test
@@ -310,6 +324,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000013"), 0);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000005_v0000017"), 0);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE), new String[] { AcidUtils.BASE_PREFIX});
   }
 
   @Test public void testMajorCompactionPartitionedWithBuckets() throws Exception {
@@ -417,6 +434,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionTomorrow), expectedBaseTomorrow), 1);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 0);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(new Path(tablePath, partitionYesterday), expectedBaseYesterday), 1);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE), new String[] { AcidUtils.BASE_PREFIX});
   }
 
   @Test
@@ -484,6 +504,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
     // Clean up
     dataProvider.dropTable(tableName);
   }
@@ -812,6 +837,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
     // Clean up
     dataProvider.dropTable(tableName);
   }
@@ -892,6 +922,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
     // Clean up
     dataProvider.dropTable(tableName);
   }
@@ -973,6 +1008,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
     // Clean up
     dataProvider.dropTable(tableName);
   }
@@ -1026,6 +1066,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
     // Clean up
     dataProvider.dropTable(tableName);
   }
@@ -1076,6 +1121,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Delete delta directories does not match after compaction",
         Collections.singletonList("delete_delta_0000001_0000015_v0000044"), actualDeleteDeltasAfterComp);
 
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX});
+
   }
 
   @Test
@@ -1109,7 +1158,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       CompactorTestUtil.checkExpectedTxnsPresent(null,
           new Path[] {new Path(table.getSd().getLocation(), "delta_0000001_0000005_v0000009")}, "a,b", "int:string",
           0, 1L, 4L, null, 1);
-
     } finally {
       if (connection != null) {
         connection.close();
@@ -1141,6 +1189,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.checkExpectedTxnsPresent(null,
         new Path[] {new Path(table.getSd().getLocation(), "delta_0000001_0000006_v0000009")}, "a,b", "int:string", 0,
         1L, 4L, Lists.newArrayList(5, 6), 1);
+
+    CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
+        new String[] { AcidUtils.DELTA_PREFIX });
   }
 
   @Test
@@ -1156,7 +1208,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         .newArrayList(new CompactorTestUtil.StreamingConnectionOption(false, false),
             new CompactorTestUtil.StreamingConnectionOption(true, false),
             new CompactorTestUtil.StreamingConnectionOption(false, false)));
-    // Now, copact
+    // Now, compact
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
