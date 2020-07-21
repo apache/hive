@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -45,7 +46,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -135,10 +135,10 @@ public final class ReplExternalTables {
      * table if the table is partitioned and the partition location is outside the table.
      * It returns list of all the external table locations.
      */
-    List<Path> dataLocationDump(Table table) throws InterruptedException, IOException, HiveException {
-      List<Path> extTableLocations = new LinkedList<>();
+    void dataLocationDump(Table table, FileList fileList, HiveConf conf)
+            throws InterruptedException, IOException, HiveException {
       if (!shouldWrite()) {
-        return extTableLocations;
+        return;
       }
       if (!TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
         throw new IllegalArgumentException(
@@ -148,7 +148,7 @@ public final class ReplExternalTables {
       Path fullyQualifiedDataLocation =
           PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-      extTableLocations.add(fullyQualifiedDataLocation);
+      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -157,7 +157,7 @@ public final class ReplExternalTables {
           if (e.getCause() instanceof NoSuchObjectException) {
             // If table is dropped when dump in progress, just skip partitions data location dump
             LOG.debug(e.getMessage());
-            return extTableLocations;
+            return;
           }
           throw e;
         }
@@ -170,11 +170,17 @@ public final class ReplExternalTables {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-            extTableLocations.add(fullyQualifiedDataLocation);
+            dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
           }
         }
       }
-      return extTableLocations;
+    }
+
+    private void dirLocationToCopy(FileList fileList, Path sourcePath, HiveConf conf)
+            throws HiveException {
+      Path basePath = getExternalTableBaseDir(conf);
+      Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
+      fileList.add(new DirCopyWork(sourcePath, targetPath).convertToString());
     }
 
     private static String lineFor(String tableName, Path dataLoc, HiveConf hiveConf)

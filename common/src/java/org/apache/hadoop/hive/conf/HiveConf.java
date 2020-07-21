@@ -524,6 +524,11 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
+    REPL_DATA_COPY_LAZY("hive.repl.data.copy.lazy", false,
+            "Indicates whether replication should run data copy tasks during repl load operation."),
+    REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
+        "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
+                + "When the config 'hive.repl.data.copy.lazy' is set to true, this config is not considered."),
     REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Frequency at which timer task runs to purge expired dump dirs."),
