@@ -1225,7 +1225,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
       this.conf = conf;
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
-      // HDFS-11687 added getKeyProvider method in hdfsAdmin from Hadoop-2.9.0
       this.keyProvider = this.hdfsAdmin.getKeyProvider();
     }
 
