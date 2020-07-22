@@ -63,6 +63,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.CompletableFuture;
@@ -81,6 +84,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
   private ExecutorService compactionExecutor;
+  private CompletionService<Void> completionService;
 
   private long checkInterval;
   private long prevStart = -1;
@@ -139,6 +143,7 @@ public class Initiator extends MetaStoreCompactorThread {
             conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
           }
 
+          int count = 0;
           for (CompactionInfo ci : potentials) {
             try {
               Table t = resolveTable(ci);
@@ -151,8 +156,11 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
-                  scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
+              completionService.submit(() -> {
+                ThrowingRunnable.unchecked(() -> scheduleCompactionIfRequired(ci, t, p, runAs));
+                return null;
+              });
+              count++;
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
                   "Marking failed to avoid repeated failures, {}", ci, t);
@@ -160,8 +168,13 @@ public class Initiator extends MetaStoreCompactorThread {
               txnHandler.markFailed(ci);
             }
           }
-          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0]))
-            .join();
+          for(int i=0; i<count; i++) {
+            try {
+              completionService.take().get();
+            } catch (InterruptedException| ExecutionException ignore) {
+              // What should we do here?
+            }
+          }
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
@@ -239,6 +252,7 @@ public class Initiator extends MetaStoreCompactorThread {
             .build();
     compactionExecutor = Executors.newFixedThreadPool(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadFactory);
+    completionService = new ExecutorCompletionService<>(compactionExecutor);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {

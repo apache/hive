@@ -53,6 +53,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -70,6 +73,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
   private ExecutorService cleanerExecutor;
+  private CompletionService<Void> completionService;
 
   private ReplChangeManager replChangeManager;
 
@@ -84,6 +88,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             .build();
     cleanerExecutor = Executors.newFixedThreadPool(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadFactory);
+    completionService = new ExecutorCompletionService<>(cleanerExecutor);
   }
 
   @Override
@@ -103,12 +108,22 @@ public class Cleaner extends MetaStoreCompactorThread {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-          List<CompletableFuture> cleanerList = new ArrayList<>();
+          int count = 0;
           for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-            cleanerList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
-                    clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
+            completionService.submit(() -> {
+              ThrowingRunnable.unchecked(() -> clean(compactionInfo, minOpenTxnId));
+              return null;
+            });
+            count++;
           }
-          CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
+
+          for(int i=0; i<count; i++) {
+            try {
+              completionService.take().get();
+            } catch (InterruptedException| ExecutionException ignore) {
+              // What should we do here?
+            }
+          }
         } catch (Throwable t) {
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
                   StringUtils.stringifyException(t));
