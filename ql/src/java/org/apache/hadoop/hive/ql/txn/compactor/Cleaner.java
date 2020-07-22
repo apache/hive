@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.TableName;
@@ -54,8 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,7 +66,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
-  private ExecutorService cleanerExecutor;
 
   private ReplChangeManager replChangeManager;
 
@@ -77,13 +73,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
-    ThreadFactory threadFactory = new ThreadFactoryBuilder()
-            .setPriority(Thread.currentThread().getPriority())
-            .setDaemon(Thread.currentThread().isDaemon())
-            .setNameFormat("Cleaner-executor-thread-%d")
-            .build();
-    cleanerExecutor = Executors.newFixedThreadPool(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadFactory);
   }
 
   @Override
@@ -92,49 +81,47 @@ public class Cleaner extends MetaStoreCompactorThread {
       cleanerCheckInterval = conf.getTimeVar(
           HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     }
-
-    try {
-      do {
-        TxnStore.MutexAPI.LockHandle handle = null;
-        long startedAt = -1;
-        // Make sure nothing escapes this run method and kills the metastore at large,
-        // so wrap it in a big catch Throwable statement.
-        try {
-          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-          startedAt = System.currentTimeMillis();
-          long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-          List<CompletableFuture> cleanerList = new ArrayList<>();
-          for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-            cleanerList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
-                    clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
-          }
-          CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
-        } catch (Throwable t) {
-          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-                  StringUtils.stringifyException(t));
+    String threadNameFormat = "Cleaner-executor-thread-%d";
+    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadNameFormat);
+    do {
+      TxnStore.MutexAPI.LockHandle handle = null;
+      long startedAt = -1;
+      // Make sure nothing escapes this run method and kills the metastore at large,
+      // so wrap it in a big catch Throwable statement.
+      try {
+        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+        startedAt = System.currentTimeMillis();
+        long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+        List<CompletableFuture> cleanerList = new ArrayList<>();
+        for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+          cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
+                  clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
         }
-        finally {
-          if (handle != null) {
-            handle.releaseLocks();
-          }
+        CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
+      } catch (Throwable t) {
+        LOG.error("Caught an exception in the main loop of compactor cleaner, " +
+                StringUtils.stringifyException(t));
+        if (cleanerExecutor != null) {
+          cleanerExecutor.shutdownNow();
+          cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+                  conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadNameFormat);
         }
-        // Now, go back to bed until it's time to do this again
-        long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= cleanerCheckInterval || stop.get())  {
-          continue;
-        } else {
-          try {
-            Thread.sleep(cleanerCheckInterval - elapsedTime);
-          } catch (InterruptedException ie) {
-            // What can I do about it?
-          }
+      } finally {
+        if (handle != null) {
+          handle.releaseLocks();
         }
-      } while (!stop.get());
-    } finally {
-      if (cleanerExecutor != null) {
-        cleanerExecutor.shutdownNow();
       }
-    }
+      // Now, go back to bed until it's time to do this again
+      long elapsedTime = System.currentTimeMillis() - startedAt;
+      if (!(elapsedTime >= cleanerCheckInterval || stop.get())) {
+        try {
+          Thread.sleep(cleanerCheckInterval - elapsedTime);
+        } catch (InterruptedException ie) {
+          // What can I do about it?
+        }
+      }
+    } while (!stop.get());
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {

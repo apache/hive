@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -64,9 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -80,7 +77,6 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private ExecutorService compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
@@ -89,6 +85,9 @@ public class Initiator extends MetaStoreCompactorThread {
   public void run() {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
+    String threadNameFormat = "Initiator-executor-thread-%d";
+    ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadNameFormat);
     try {
       recoverFailedCompactions(false);
 
@@ -151,7 +150,7 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+              compactionList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                   scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
@@ -168,6 +167,11 @@ public class Initiator extends MetaStoreCompactorThread {
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
+          if (compactionExecutor != null) {
+            compactionExecutor.shutdownNow();
+            compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+                conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadNameFormat);
+          }
         }
         finally {
           if(handle != null) {
@@ -184,10 +188,6 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
-    } finally {
-      if (compactionExecutor != null) {
-        compactionExecutor.shutdownNow();
-      }
     }
   }
 
@@ -232,13 +232,6 @@ public class Initiator extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    ThreadFactory threadFactory = new ThreadFactoryBuilder()
-            .setPriority(Thread.currentThread().getPriority())
-            .setDaemon(Thread.currentThread().isDaemon())
-            .setNameFormat("Initiator-executor-thread-%d")
-            .build();
-    compactionExecutor = Executors.newFixedThreadPool(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadFactory);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
