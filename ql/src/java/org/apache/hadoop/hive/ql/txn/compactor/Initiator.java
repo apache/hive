@@ -68,6 +68,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
+
 /**
  * A class to initiate compactions.  This will run in a separate thread.
  * It's critical that there exactly 1 of these in a given warehouse.
@@ -85,9 +87,9 @@ public class Initiator extends MetaStoreCompactorThread {
   public void run() {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
-    String threadNameFormat = "Initiator-executor-thread-%d";
     ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadNameFormat);
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     try {
       recoverFailedCompactions(false);
 
@@ -170,7 +172,8 @@ public class Initiator extends MetaStoreCompactorThread {
           if (compactionExecutor != null) {
             compactionExecutor.shutdownNow();
             compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-                conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE), threadNameFormat);
+                conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+                COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
           }
         }
         finally {

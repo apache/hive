@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
@@ -81,9 +82,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       cleanerCheckInterval = conf.getTimeVar(
           HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     }
-    String threadNameFormat = "Cleaner-executor-thread-%d";
     ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadNameFormat);
+        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
+        COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     do {
       TxnStore.MutexAPI.LockHandle handle = null;
       long startedAt = -1;
@@ -105,7 +106,8 @@ public class Cleaner extends MetaStoreCompactorThread {
         if (cleanerExecutor != null) {
           cleanerExecutor.shutdownNow();
           cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-                  conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE), threadNameFormat);
+                  conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
+                  COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
         }
       } finally {
         if (handle != null) {
@@ -114,7 +116,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       // Now, go back to bed until it's time to do this again
       long elapsedTime = System.currentTimeMillis() - startedAt;
-      if (!(elapsedTime >= cleanerCheckInterval || stop.get())) {
+      if (elapsedTime < cleanerCheckInterval && !stop.get()) {
         try {
           Thread.sleep(cleanerCheckInterval - elapsedTime);
         } catch (InterruptedException ie) {
