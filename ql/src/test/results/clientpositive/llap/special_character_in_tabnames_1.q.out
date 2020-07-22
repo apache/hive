@@ -1259,8 +1259,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db~!@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Output: database:db~!@#$%^&*(),<>
 POSTHOOK: Output: db~!@#$%^&*(),<>@cv1_n0
-POSTHOOK: Lineage: cv1_n0.key SIMPLE [(src/_/cbo)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: cv1_n0.value SIMPLE [(src/_/cbo)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1_n0.key EXPRESSION [(src/_/cbo)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1_n0.value EXPRESSION [(src/_/cbo)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from cv1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@cv1_n0
@@ -4071,11 +4071,13 @@ STAGE PLANS:
 PREHOOK: query: create view v1_n7 as select c_int, value, c_boolean, dt from `c/b/o_t1`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
+PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Output: database:db~!@#$%^&*(),<>
 PREHOOK: Output: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: query: create view v1_n7 as select c_int, value, c_boolean, dt from `c/b/o_t1`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
+POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Output: database:db~!@#$%^&*(),<>
 POSTHOOK: Output: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: Lineage: v1_n7.c_boolean SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
@@ -4085,11 +4087,13 @@ POSTHOOK: Lineage: v1_n7.value SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:value
 PREHOOK: query: create view v2_n2 as select c_int, value from `//cbo_t2`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
+PREHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Output: database:db~!@#$%^&*(),<>
 PREHOOK: Output: db~!@#$%^&*(),<>@v2_n2
 POSTHOOK: query: create view v2_n2 as select c_int, value from `//cbo_t2`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2
+POSTHOOK: Input: db~!@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Output: database:db~!@#$%^&*(),<>
 POSTHOOK: Output: db~!@#$%^&*(),<>@v2_n2
 POSTHOOK: Lineage: v2_n2.c_int SIMPLE [(//cbo_t2)//cbo_t2.FieldSchema(name:c_int, type:int, comment:null), ]
@@ -4184,7 +4188,7 @@ POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@#$%^&*(),<>@v1_n7
 POSTHOOK: Output: database:db~!@#$%^&*(),<>
 POSTHOOK: Output: db~!@#$%^&*(),<>@v3_n0
-POSTHOOK: Lineage: v3_n0.val SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: v3_n0.val EXPRESSION [(c/b/o_t1)c/b/o_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select count(val) from v3_n0 where val != '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
@@ -4239,6 +4243,7 @@ with q1 as ( select key,c_int from `c/b/o_t1`  where key = '1')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
+PREHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Output: database:db~!@#$%^&*(),<>
 PREHOOK: Output: db~!@#$%^&*(),<>@v4_n0
 POSTHOOK: query: create view v4_n0 as
@@ -4248,6 +4253,7 @@ with q1 as ( select key,c_int from `c/b/o_t1`  where key = '1')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1
+POSTHOOK: Input: db~!@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Output: database:db~!@#$%^&*(),<>
 POSTHOOK: Output: db~!@#$%^&*(),<>@v4_n0
 POSTHOOK: Lineage: v4_n0.c_int SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:c_int, type:int, comment:null), ]
