@@ -264,6 +264,11 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.vlkan</groupId>
+      <artifactId>flatbuffers</artifactId>
+      <version>1.2.0-3f79e055</version>
+    </dependency>
   </dependencies>
 
   <profiles>

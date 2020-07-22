@@ -1470,7 +1470,8 @@
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
             <exclude>**/test/resources/**/*.ldif</exclude>
-	  </excludes>
+        <exclude>**/fb/**</exclude>
+      </excludes>
 	</configuration>
       </plugin>
       <plugin>

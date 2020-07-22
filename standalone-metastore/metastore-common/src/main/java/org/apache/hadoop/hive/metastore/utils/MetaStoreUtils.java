@@ -122,6 +122,11 @@ public class MetaStoreUtils {
       '!', '~', '#', '@', '`'
   };
 
+  public enum FileFormat {
+    RAW,
+    ACID_V2
+  }
+
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
    *

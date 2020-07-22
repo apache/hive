@@ -860,6 +860,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function rename_partition_req(\metastore\RenamePartitionRequest $req);
     /**
+     * @param \metastore\GetFileListRequest $req
+     * @return \metastore\GetFileListResponse
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_file_list(\metastore\GetFileListRequest $req);
+    /**
      * @param string[] $part_vals
      * @param bool $throw_exception
      * @return bool
