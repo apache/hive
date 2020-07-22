@@ -1,5 +1,3 @@
-set tez.am.speculation.enabled=true;
-
 create table union_first_part (a int, b int);
 insert into union_first_part values (1,2),(3,1);
 
