@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -70,11 +71,9 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -320,8 +319,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       PrimitiveTypeInfo sourceType) {
     // Extract string value if necessary
     Object constantToInterpret = constantValue;
-    if (constantValue instanceof HiveNlsString) {
-      constantToInterpret = ((HiveNlsString) constantValue).getValue();
+    if (constantValue instanceof NlsString) {
+      constantToInterpret = ((NlsString) constantValue).getValue();
     }
 
     if (constantToInterpret instanceof Number || constantToInterpret instanceof String) {
@@ -374,7 +373,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveChar newValue = new HiveChar(constValue, length);
         HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.CHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -385,7 +384,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveVarchar newValue = new HiveVarchar(constValue, length);
         HiveVarchar maxCharConst = new HiveVarchar(constValue, HiveVarchar.MAX_VARCHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.VARCHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -407,8 +406,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexLiteral createStringConstantExpr(String value) {
-    return rexBuilder.makeCharLiteral(
-        makeHiveUnicodeString(Interpretation.STRING, value));
+    RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+        Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    // Though we pass allowCast=true as parameter, this will return a
+    // VARCHAR literal without a CAST.
+    return (RexLiteral) rexBuilder.makeLiteral(
+        makeHiveUnicodeString(value), stringType, true);
   }
 
   /**
@@ -989,22 +993,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
   }
 
-  public static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
-    return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
-  }
-
-  public static class HiveNlsString extends NlsString {
-
-    public enum Interpretation {
-      CHAR, VARCHAR, STRING;
-    }
-
-    public final Interpretation interpretation;
-
-    public HiveNlsString(Interpretation interpretation, String value, String charsetName, SqlCollation collation) {
-      super(value, charsetName, collation);
-      this.interpretation = interpretation;
-    }
+  public static NlsString makeHiveUnicodeString(String text) {
+    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
 
 }
