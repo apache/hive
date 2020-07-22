@@ -169,12 +169,6 @@ public class Initiator extends MetaStoreCompactorThread {
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
-          if (compactionExecutor != null) {
-            compactionExecutor.shutdownNow();
-            compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-                conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-                COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
-          }
         }
         finally {
           if(handle != null) {

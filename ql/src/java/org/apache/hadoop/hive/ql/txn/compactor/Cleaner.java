@@ -103,12 +103,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
                 StringUtils.stringifyException(t));
-        if (cleanerExecutor != null) {
-          cleanerExecutor.shutdownNow();
-          cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-                  conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
-                  COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
-        }
       } finally {
         if (handle != null) {
           handle.releaseLocks();
