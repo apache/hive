@@ -1,4 +1,5 @@
 /*
+
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -341,7 +342,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
-        LOG.debug(fetchReq.toString());
+        LOG.debug("HiveQueryResultsFetchReq: {}",fetchReq);
         TFetchResultsResp fetchResp;
         fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
@@ -350,7 +351,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRows = RowSetFactory.create(results, protocol);
         fetchedRowsItr = fetchedRows.iterator();
       }
-      
+
       if (!fetchedRowsItr.hasNext()) {
         return false;
       }
