@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -556,7 +556,7 @@ public class ConvertAstToSearchArg {
   };
 
   public static SearchArgument create(String kryo) {
-    return create(Base64.decodeBase64(kryo));
+    return create(Base64.getDecoder().decode(kryo));
   }
 
   public static SearchArgument create(byte[] kryoBytes) {

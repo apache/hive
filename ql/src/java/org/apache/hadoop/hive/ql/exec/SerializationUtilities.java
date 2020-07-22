@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
@@ -778,12 +778,11 @@ public class SerializationUtilities {
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)),
-        StandardCharsets.UTF_8);
+    return Base64.getEncoder().withoutPadding().encodeToString(serializeExpressionToKryo(expr));
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
-    byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
+    byte[] bytes = Base64.getDecoder().decode(s.getBytes(StandardCharsets.UTF_8));
     return deserializeExpressionFromKryo(bytes);
   }
 
@@ -814,14 +813,12 @@ public class SerializationUtilities {
   }
 
   public static String serializeObject(Serializable expr) {
-    return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
-        StandardCharsets.UTF_8);
+    return Base64.getEncoder().withoutPadding().encodeToString(serializeObjectToKryo(expr));
   }
 
   public static <T extends Serializable> T deserializeObject(String s,
       Class<T> clazz) {
-    return deserializeObjectFromKryo(
-        Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
+    return deserializeObjectFromKryo(Base64.getDecoder().decode(s.getBytes(StandardCharsets.UTF_8)), clazz);
   }
 
 }

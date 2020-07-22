@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BytesWritable;
@@ -35,7 +36,7 @@ public class UDFUnbase64 extends UDF {
     }
     byte[] bytes = new byte[value.getLength()];
     System.arraycopy(value.getBytes(), 0, bytes, 0, value.getLength());
-    byte[] decoded = Base64.decodeBase64(bytes);
+    byte[] decoded = Base64.getDecoder().decode(bytes);
     result.set(decoded, 0, decoded.length);
     return result;
   }

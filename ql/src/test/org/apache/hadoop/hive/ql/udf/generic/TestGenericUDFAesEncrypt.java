@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import static org.junit.Assert.assertEquals;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
@@ -223,6 +223,6 @@ public class TestGenericUDFAesEncrypt {
     int size = bw.getLength();
     byte[] bytes = new byte[size];
     System.arraycopy(bw.getBytes(), 0, bytes, 0, size);
-    return new String(Base64.encodeBase64(bytes));
+    return Base64.getEncoder().withoutPadding().encodeToString(bytes);
   }
 }

@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import static org.junit.Assert.assertEquals;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -205,7 +205,7 @@ public class TestGenericUDFAesDecrypt {
   private void runAndVerifyStr(String strBase64, Text keyWr, String expResult, GenericUDFAesDecrypt udf)
       throws HiveException {
     DeferredObject valueObj0 = new DeferredJavaObject(
-        strBase64 != null ? new BytesWritable(Base64.decodeBase64(strBase64)) : null);
+        strBase64 != null ? new BytesWritable(Base64.getDecoder().decode(strBase64)) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(keyWr);
     DeferredObject[] args = { valueObj0, valueObj1 };
     BytesWritable output = (BytesWritable) udf.evaluate(args);
@@ -216,7 +216,7 @@ public class TestGenericUDFAesDecrypt {
   private void runAndVerifyBin(String strBase64, BytesWritable keyWr, String expResult, GenericUDFAesDecrypt udf)
       throws HiveException {
     DeferredObject valueObj0 = new DeferredJavaObject(
-        strBase64 != null ? new BytesWritable(Base64.decodeBase64(strBase64)) : null);
+        strBase64 != null ? new BytesWritable(Base64.getDecoder().decode(strBase64)) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(keyWr);
     DeferredObject[] args = { valueObj0, valueObj1 };
     BytesWritable output = (BytesWritable) udf.evaluate(args);
