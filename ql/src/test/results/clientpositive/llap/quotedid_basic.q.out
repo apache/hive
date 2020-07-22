@@ -256,6 +256,48 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```(` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ "%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+POSTHOOK: query: create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```(` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ "%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+PREHOOK: query: describe ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+POSTHOOK: query: describe ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+ "%&'()*+,-/;<=>?[]_|{}$^!~#@`	string              	                    
+PREHOOK: query: show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+POSTHOOK: query: show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
+  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: select ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` from ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+PREHOOK: type: QUERY
+PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+#### A masked pattern was here ####
+POSTHOOK: query: select ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` from ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+#### A masked pattern was here ####
 PREHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
 PREHOOK: type: QUERY
