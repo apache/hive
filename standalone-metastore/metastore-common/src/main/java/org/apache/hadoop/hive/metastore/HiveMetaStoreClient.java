@@ -2383,6 +2383,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetFileListResponse getFileList(String catName, String dbName, String tableName, List<String> partVals,
+      String validWriteIdList) throws MetaException, TException {
+    GetFileListRequest req = new GetFileListRequest();
+    req.setCatName(catName);
+    req.setDbName(dbName);
+    req.setPartVals(partVals);
+    req.setTableName(tableName);
+    req.setValidWriteIdList(validWriteIdList);
+    try {
+      return client.get_file_list(req);
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  @Override
   public List<String> getTables(String dbname, String tablePattern) throws MetaException {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern);

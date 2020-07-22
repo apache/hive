@@ -87,13 +87,13 @@ class GetPartitionsFilterSpec
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->filters = array();
-                        $_size1036 = 0;
-                        $_etype1039 = 0;
-                        $xfer += $input->readListBegin($_etype1039, $_size1036);
-                        for ($_i1040 = 0; $_i1040 < $_size1036; ++$_i1040) {
-                            $elem1041 = null;
-                            $xfer += $input->readString($elem1041);
-                            $this->filters []= $elem1041;
+                        $_size1050 = 0;
+                        $_etype1053 = 0;
+                        $xfer += $input->readListBegin($_etype1053, $_size1050);
+                        for ($_i1054 = 0; $_i1054 < $_size1050; ++$_i1054) {
+                            $elem1055 = null;
+                            $xfer += $input->readString($elem1055);
+                            $this->filters []= $elem1055;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -125,8 +125,8 @@ class GetPartitionsFilterSpec
             }
             $xfer += $output->writeFieldBegin('filters', TType::LST, 8);
             $output->writeListBegin(TType::STRING, count($this->filters));
-            foreach ($this->filters as $iter1042) {
-                $xfer += $output->writeString($iter1042);
+            foreach ($this->filters as $iter1056) {
+                $xfer += $output->writeString($iter1056);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

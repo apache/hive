@@ -76,11 +76,15 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
+import com.google.flatbuffers.FlatBufferBuilder;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -155,6 +159,7 @@ import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.fb.FbFileStatus;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -183,6 +188,9 @@ import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.orc.FileFormatException;
+import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -240,6 +248,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   static final int UNLIMITED_MAX_PARTITIONS = -1;
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
+
+  // These constants are needed to determine if files are ACID the in get_file_list call
+  static final String OPERATION_FIELD_NAME = "operation";
+  static final String ORIGINAL_WRITEID_FIELD_NAME = "originalTransaction";
+  static final String BUCKET_FIELD_NAME = "bucket";
+  static final String ROW_ID_FIELD_NAME = "rowId";
+  static final String CURRENT_WRITEID_FIELD_NAME = "currentTransaction";
+  static final String ROW_FIELD_NAME = "row";
+  public static final Collection ALL_ACID_ROW_NAMES = Arrays.asList(
+          BUCKET_FIELD_NAME,
+          CURRENT_WRITEID_FIELD_NAME,
+          ORIGINAL_WRITEID_FIELD_NAME,
+          OPERATION_FIELD_NAME,
+          ROW_FIELD_NAME,
+          ROW_ID_FIELD_NAME);
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
@@ -5813,6 +5836,92 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("alter_table", success, ex, name);
       }
+    }
+
+    @Override
+    public GetFileListResponse get_file_list(GetFileListRequest req) throws NoSuchObjectException, MetaException {
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      String dbName = req.getDbName();
+      String tblName = req.getTableName();
+      List<String> partitions = req.getPartVals();
+      // Will be used later, when cache is introduced
+      String validWriteIdList = req.getValidWriteIdList();
+
+      startFunction("get_file_list", ": " + TableName.getQualified(catName, dbName, tblName)
+              + ", partitions: " + partitions.toString());
+
+
+      GetFileListResponse response = new GetFileListResponse();
+
+      boolean success = false;
+      Exception ex = null;
+      try {
+        Path path;
+        // In case of non-partitioned table
+        if(partitions == null || partitions.isEmpty()) {
+          Table table = getMS().getTable(catName, dbName, tblName);
+          path = new Path(table.getSd().getLocation());
+        } else {
+          Partition p = getMS().getPartition(catName, dbName, tblName, partitions);
+          path = new Path(p.getSd().getLocation());
+        }
+
+        FileSystem fs = path.getFileSystem(conf);
+        RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, true);
+        while (itr.hasNext()) {
+          FileStatus fStatus = itr.next();
+          MetaStoreUtils.FileFormat fileFormat = MetaStoreUtils.FileFormat.RAW;
+
+          try {
+            Reader reader = OrcFile.createReader(fStatus.getPath(), OrcFile.readerOptions(fs.getConf()));
+            boolean isRawFormat  = !CollectionUtils.isEqualCollection(reader.getSchema().getFieldNames(), ALL_ACID_ROW_NAMES);
+            if (!isRawFormat) {
+              fileFormat = MetaStoreUtils.FileFormat.ACID_V2;
+            }
+          } catch (FileFormatException ffe) {
+            // It is not an ORC file
+          }
+
+          response.addToFileListData(createFileStatus(fStatus, path.toString(), fileFormat.ordinal()));
+          response.setVersionNumber(1);
+          response.setType(FileMetadataType.HIVE);
+        }
+        success = true;
+      } catch (Exception e) {
+        ex = e;
+        LOG.error("Failed to list files with error: " + e.getMessage());
+        throw new MetaException(e.getMessage());
+      } finally {
+        endFunction("get_file_list", success, ex);
+      }
+      return response;
+    }
+
+    /**
+     * Create FlatBuffer FileStatus from fs.FileStatus according to FileStatus.fbs.
+     * @param fileStatus
+     * @param basePath
+     * @param fileFormat
+     * @return
+     */
+    private ByteBuffer createFileStatus(FileStatus fileStatus, String basePath, int fileFormat) {
+      FlatBufferBuilder fbb = new FlatBufferBuilder(1);
+      String relativePath = fileStatus.getPath().toString().replace(basePath, "");
+      int relPathOffset = fbb.createString(relativePath);
+      FbFileStatus.startFbFileStatus(fbb);
+
+      FbFileStatus.addRelativePath(fbb, relPathOffset);
+      FbFileStatus.addLength(fbb, fileStatus.getLen());
+      FbFileStatus.addLastModificationTime(fbb, fileStatus.getModificationTime());
+      FbFileStatus.addFileFormat(fbb, fileFormat);
+
+      fbb.finish(FbFileStatus.endFbFileStatus(fbb));
+      // To eliminate memory fragmentation, copy the contents of the FlatBuffer to the
+      // smallest possible ByteBuffer.
+      ByteBuffer bb = fbb.dataBuffer().slice();
+      ByteBuffer compressedBb = ByteBuffer.allocate(bb.capacity());
+      compressedBb.put(bb);
+      return (ByteBuffer) compressedBb.flip();
     }
 
     @Override

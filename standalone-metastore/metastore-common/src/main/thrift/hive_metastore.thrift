@@ -1862,6 +1862,25 @@ struct ScheduledQueryProgressInfo{
   4: optional string errorMessage,
 }
 
+struct GetFileListRequest {
+  1: optional string catName,
+  2: optional string dbName,
+  3: optional string tableName,
+  4: optional list<string> partVals,
+  6: optional string validWriteIdList
+}
+
+enum FileMetadataType {
+  HIVE
+}
+
+struct GetFileListResponse {
+  1: FileMetadataType type = FileMetadataType.HIVE,
+  // The version number represents what the FlatBuffer binary data contains. It is needed for future extensibility
+  3: required i32 versionNumber,
+  2: optional list<binary> fileListData
+}
+
 struct AlterPartitionsRequest {
   1: optional string catName,
   2: required string dbName,
@@ -2206,7 +2225,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_primary_key(1:AddPrimaryKeyRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_foreign_key(1:AddForeignKeyRequest req)
-      throws(1:NoSuchObjectException o1, 2:MetaException o2)  
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_unique_constraint(1:AddUniqueConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
@@ -2455,9 +2474,13 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   // partition keys in new_part should be the same as those in old partition.
   void rename_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:Partition new_part)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
-  
+
   RenamePartitionResponse rename_partition_req(1:RenamePartitionRequest req)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  // Returns a file list using FlatBuffers as serialization
+  GetFileListResponse get_file_list(1:GetFileListRequest req)
+    throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // returns whether or not the partition name is valid based on the value of the config
   // hive.metastore.partition.name.whitelist.pattern

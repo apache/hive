@@ -535,6 +535,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("rename_partition_req\n");
   }
 
+  void get_file_list(GetFileListResponse& _return, const GetFileListRequest& req) {
+    // Your implementation goes here
+    printf("get_file_list\n");
+  }
+
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) {
     // Your implementation goes here
     printf("partition_name_has_valid_characters\n");

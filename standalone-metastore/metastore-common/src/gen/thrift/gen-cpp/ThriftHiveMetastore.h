@@ -126,6 +126,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
   virtual void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req) = 0;
+  virtual void get_file_list(GetFileListResponse& _return, const GetFileListRequest& req) = 0;
   virtual bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
@@ -613,6 +614,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void rename_partition_req(RenamePartitionResponse& /* _return */, const RenamePartitionRequest& /* req */) {
+    return;
+  }
+  void get_file_list(GetFileListResponse& /* _return */, const GetFileListRequest& /* req */) {
     return;
   }
   bool partition_name_has_valid_characters(const std::vector<std::string> & /* part_vals */, const bool /* throw_exception */) {
@@ -14211,6 +14215,126 @@ class ThriftHiveMetastore_rename_partition_req_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_rename_partition_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_file_list_args__isset {
+  _ThriftHiveMetastore_get_file_list_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_get_file_list_args__isset;
+
+class ThriftHiveMetastore_get_file_list_args {
+ public:
+
+  ThriftHiveMetastore_get_file_list_args(const ThriftHiveMetastore_get_file_list_args&);
+  ThriftHiveMetastore_get_file_list_args& operator=(const ThriftHiveMetastore_get_file_list_args&);
+  ThriftHiveMetastore_get_file_list_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_list_args() noexcept;
+  GetFileListRequest req;
+
+  _ThriftHiveMetastore_get_file_list_args__isset __isset;
+
+  void __set_req(const GetFileListRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_list_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_list_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_list_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_file_list_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_file_list_pargs() noexcept;
+  const GetFileListRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_file_list_result__isset {
+  _ThriftHiveMetastore_get_file_list_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_file_list_result__isset;
+
+class ThriftHiveMetastore_get_file_list_result {
+ public:
+
+  ThriftHiveMetastore_get_file_list_result(const ThriftHiveMetastore_get_file_list_result&);
+  ThriftHiveMetastore_get_file_list_result& operator=(const ThriftHiveMetastore_get_file_list_result&);
+  ThriftHiveMetastore_get_file_list_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_list_result() noexcept;
+  GetFileListResponse success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_file_list_result__isset __isset;
+
+  void __set_success(const GetFileListResponse& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_list_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_list_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_list_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_file_list_presult__isset {
+  _ThriftHiveMetastore_get_file_list_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_file_list_presult__isset;
+
+class ThriftHiveMetastore_get_file_list_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_file_list_presult() noexcept;
+  GetFileListResponse* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_file_list_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -31041,6 +31165,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req);
   void send_rename_partition_req(const RenamePartitionRequest& req);
   void recv_rename_partition_req(RenamePartitionResponse& _return);
+  void get_file_list(GetFileListResponse& _return, const GetFileListRequest& req);
+  void send_get_file_list(const GetFileListRequest& req);
+  void recv_get_file_list(GetFileListResponse& _return);
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   void send_partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   bool recv_partition_name_has_valid_characters();
@@ -31580,6 +31707,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_alter_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_rename_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_rename_partition_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_file_list(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_has_valid_characters(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_config_value(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_vals(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -31829,6 +31957,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["alter_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_partition_with_environment_context;
     processMap_["rename_partition"] = &ThriftHiveMetastoreProcessor::process_rename_partition;
     processMap_["rename_partition_req"] = &ThriftHiveMetastoreProcessor::process_rename_partition_req;
+    processMap_["get_file_list"] = &ThriftHiveMetastoreProcessor::process_get_file_list;
     processMap_["partition_name_has_valid_characters"] = &ThriftHiveMetastoreProcessor::process_partition_name_has_valid_characters;
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
@@ -32992,6 +33121,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->rename_partition_req(_return, req);
     }
     ifaces_[i]->rename_partition_req(_return, req);
+    return;
+  }
+
+  void get_file_list(GetFileListResponse& _return, const GetFileListRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_file_list(_return, req);
+    }
+    ifaces_[i]->get_file_list(_return, req);
     return;
   }
 
@@ -34687,6 +34826,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req);
   int32_t send_rename_partition_req(const RenamePartitionRequest& req);
   void recv_rename_partition_req(RenamePartitionResponse& _return, const int32_t seqid);
+  void get_file_list(GetFileListResponse& _return, const GetFileListRequest& req);
+  int32_t send_get_file_list(const GetFileListRequest& req);
+  void recv_get_file_list(GetFileListResponse& _return, const int32_t seqid);
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   int32_t send_partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   bool recv_partition_name_has_valid_characters(const int32_t seqid);

@@ -3159,6 +3159,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetFileListResponse getFileList(String catName, String dbName, String tableName, List<String> partVals,
+                                         String validWriteIdList) throws MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<String> getTables(String catName, String dbName, String tablePattern) throws
       MetaException, TException, UnknownDBException {
     throw new UnsupportedOperationException();

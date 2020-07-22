@@ -390,6 +390,18 @@ std::ostream& operator<<(std::ostream& out, const QueryState::type& val);
 
 std::string to_string(const QueryState::type& val);
 
+struct FileMetadataType {
+  enum type {
+    HIVE = 0
+  };
+};
+
+extern const std::map<int, const char*> _FileMetadataType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const FileMetadataType::type& val);
+
+std::string to_string(const FileMetadataType::type& val);
+
 struct PartitionFilterMode {
   enum type {
     BY_NAMES = 0,
@@ -889,6 +901,10 @@ class ScheduledQuery;
 class ScheduledQueryMaintenanceRequest;
 
 class ScheduledQueryProgressInfo;
+
+class GetFileListRequest;
+
+class GetFileListResponse;
 
 class AlterPartitionsRequest;
 
@@ -14985,6 +15001,139 @@ class ScheduledQueryProgressInfo : public virtual ::apache::thrift::TBase {
 void swap(ScheduledQueryProgressInfo &a, ScheduledQueryProgressInfo &b);
 
 std::ostream& operator<<(std::ostream& out, const ScheduledQueryProgressInfo& obj);
+
+typedef struct _GetFileListRequest__isset {
+  _GetFileListRequest__isset() : catName(false), dbName(false), tableName(false), partVals(false), validWriteIdList(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool tableName :1;
+  bool partVals :1;
+  bool validWriteIdList :1;
+} _GetFileListRequest__isset;
+
+class GetFileListRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetFileListRequest(const GetFileListRequest&);
+  GetFileListRequest& operator=(const GetFileListRequest&);
+  GetFileListRequest() : catName(), dbName(), tableName(), validWriteIdList() {
+  }
+
+  virtual ~GetFileListRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string tableName;
+  std::vector<std::string>  partVals;
+  std::string validWriteIdList;
+
+  _GetFileListRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_partVals(const std::vector<std::string> & val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  bool operator == (const GetFileListRequest & rhs) const
+  {
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.partVals != rhs.__isset.partVals)
+      return false;
+    else if (__isset.partVals && !(partVals == rhs.partVals))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileListRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileListRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetFileListRequest &a, GetFileListRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetFileListRequest& obj);
+
+typedef struct _GetFileListResponse__isset {
+  _GetFileListResponse__isset() : type(true), fileListData(false) {}
+  bool type :1;
+  bool fileListData :1;
+} _GetFileListResponse__isset;
+
+class GetFileListResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetFileListResponse(const GetFileListResponse&);
+  GetFileListResponse& operator=(const GetFileListResponse&);
+  GetFileListResponse() : type((FileMetadataType::type)0), versionNumber(0) {
+    type = (FileMetadataType::type)0;
+
+  }
+
+  virtual ~GetFileListResponse() noexcept;
+  FileMetadataType::type type;
+  int32_t versionNumber;
+  std::vector<std::string>  fileListData;
+
+  _GetFileListResponse__isset __isset;
+
+  void __set_type(const FileMetadataType::type val);
+
+  void __set_versionNumber(const int32_t val);
+
+  void __set_fileListData(const std::vector<std::string> & val);
+
+  bool operator == (const GetFileListResponse & rhs) const
+  {
+    if (!(type == rhs.type))
+      return false;
+    if (!(versionNumber == rhs.versionNumber))
+      return false;
+    if (__isset.fileListData != rhs.__isset.fileListData)
+      return false;
+    else if (__isset.fileListData && !(fileListData == rhs.fileListData))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileListResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileListResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetFileListResponse &a, GetFileListResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const GetFileListResponse& obj);
 
 typedef struct _AlterPartitionsRequest__isset {
   _AlterPartitionsRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false) {}

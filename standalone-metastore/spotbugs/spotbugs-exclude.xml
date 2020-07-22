@@ -22,6 +22,9 @@
         <Class name="~org.apache.hadoop.hive.metastore.api.*" />
     </Match>
     <Match>
+        <Class name="~org.apache.hadoop.hive.metastore.fb.*" />
+    </Match>
+    <Match>
         <Or>
             <Class name="~org.apache.hadoop.hive.metastore.Metastore" />
             <Class name="~org.apache.hadoop.hive.metastore.Metastore.*" />

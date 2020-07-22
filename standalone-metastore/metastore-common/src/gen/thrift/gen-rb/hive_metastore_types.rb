@@ -220,6 +220,12 @@ module QueryState
   VALID_VALUES = Set.new([INITED, EXECUTING, FAILED, FINISHED, TIMED_OUT]).freeze
 end
 
+module FileMetadataType
+  HIVE = 0
+  VALUE_MAP = {0 => "HIVE"}
+  VALID_VALUES = Set.new([HIVE]).freeze
+end
+
 module PartitionFilterMode
   BY_NAMES = 0
   BY_VALUES = 1
@@ -713,6 +719,10 @@ class ScheduledQuery; end
 class ScheduledQueryMaintenanceRequest; end
 
 class ScheduledQueryProgressInfo; end
+
+class GetFileListRequest; end
+
+class GetFileListResponse; end
 
 class AlterPartitionsRequest; end
 
@@ -6382,6 +6392,54 @@ class ScheduledQueryProgressInfo
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field executorQueryId is unset!') unless @executorQueryId
     unless @state.nil? || ::QueryState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileListRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  TABLENAME = 3
+  PARTVALS = 4
+  VALIDWRITEIDLIST = 6
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileListResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  VERSIONNUMBER = 3
+  FILELISTDATA = 2
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>     0, :enum_class => ::FileMetadataType},
+    VERSIONNUMBER => {:type => ::Thrift::Types::I32, :name => 'versionNumber'},
+    FILELISTDATA => {:type => ::Thrift::Types::LIST, :name => 'fileListData', :element => {:type => ::Thrift::Types::STRING, :binary => true}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field versionNumber is unset!') unless @versionNumber
+    unless @type.nil? || ::FileMetadataType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
   end
 

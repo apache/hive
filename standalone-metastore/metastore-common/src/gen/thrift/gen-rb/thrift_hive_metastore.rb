@@ -1753,6 +1753,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'rename_partition_req failed: unknown result')
     end
 
+    def get_file_list(req)
+      send_get_file_list(req)
+      return recv_get_file_list()
+    end
+
+    def send_get_file_list(req)
+      send_message('get_file_list', Get_file_list_args, :req => req)
+    end
+
+    def recv_get_file_list()
+      result = receive_message(Get_file_list_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_file_list failed: unknown result')
+    end
+
     def partition_name_has_valid_characters(part_vals, throw_exception)
       send_partition_name_has_valid_characters(part_vals, throw_exception)
       return recv_partition_name_has_valid_characters()
@@ -5457,6 +5474,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'rename_partition_req', seqid)
+    end
+
+    def process_get_file_list(seqid, iprot, oprot)
+      args = read_args(iprot, Get_file_list_args)
+      result = Get_file_list_result.new()
+      begin
+        result.success = @handler.get_file_list(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_file_list', seqid)
     end
 
     def process_partition_name_has_valid_characters(seqid, iprot, oprot)
@@ -11067,6 +11097,42 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::RenamePartitionResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_list_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetFileListRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_list_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetFileListResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 

@@ -127,6 +127,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void alter_partition_with_environment_context(string db_name, string tbl_name, Partition new_part, EnvironmentContext environment_context)')
     print('  void rename_partition(string db_name, string tbl_name,  part_vals, Partition new_part)')
     print('  RenamePartitionResponse rename_partition_req(RenamePartitionRequest req)')
+    print('  GetFileListResponse get_file_list(GetFileListRequest req)')
     print('  bool partition_name_has_valid_characters( part_vals, bool throw_exception)')
     print('  string get_config_value(string name, string defaultValue)')
     print('   partition_name_to_vals(string part_name)')
@@ -978,6 +979,12 @@ elif cmd == 'rename_partition_req':
         print('rename_partition_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.rename_partition_req(eval(args[0]),))
+
+elif cmd == 'get_file_list':
+    if len(args) != 1:
+        print('get_file_list requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_file_list(eval(args[0]),))
 
 elif cmd == 'partition_name_has_valid_characters':
     if len(args) != 2:

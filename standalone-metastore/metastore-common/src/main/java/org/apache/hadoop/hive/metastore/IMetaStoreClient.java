@@ -191,6 +191,20 @@ public interface IMetaStoreClient {
   List<String> getTables(String dbName, String tablePattern)
       throws MetaException, TException, UnknownDBException;
 
+
+  /**
+   * Get the files from the filesystem that the specified table/partition contains.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tableName table name.
+   * @param partVals list of partitions.
+   * @param validWriteIdList valid write IDs.
+   * @return List of files using flatbuffer serialization.
+   * @throws TException thrift transport error
+   */
+  GetFileListResponse getFileList(String catName, String dbName, String tableName, List<String> partVals,
+                                  String validWriteIdList) throws MetaException, TException;
+
   /**
    * Get the names of all tables in the specified database that satisfy the supplied
    * table name pattern.
