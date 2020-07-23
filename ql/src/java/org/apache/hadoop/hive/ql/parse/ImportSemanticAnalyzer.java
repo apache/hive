@@ -1250,10 +1250,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (!replicationSpec.isMetadataOnly()
               && !shouldSkipDataCopyInReplScope(tblDesc, replicationSpec)) {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
-        dependentTasks = new ArrayList<>(1);
-        dependentTasks.add(loadTable(fromURI, table, replicationSpec.isReplace(),
-                                  new Path(tblDesc.getLocation()), replicationSpec,
-                                  x, writeId, stmtId));
+        dependentTasks = Collections.singletonList(loadTable(fromURI, table, replicationSpec.isReplace(),
+            new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId));
       }
 
       // During replication, by the time we replay a commit transaction event, the table should
