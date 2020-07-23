@@ -341,7 +341,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
-        LOG.debug("HiveQueryResultsFetchReq: {}",fetchReq);
+        LOG.debug("HiveQueryResultsFetchReq: {}", fetchReq);
         TFetchResultsResp fetchResp;
         fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
