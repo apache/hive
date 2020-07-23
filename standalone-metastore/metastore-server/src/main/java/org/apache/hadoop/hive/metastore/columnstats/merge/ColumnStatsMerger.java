@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class ColumnStatsMerger {
-  protected final Logger log = LoggerFactory.getLogger(getClass());
+  protected static final Logger log = LoggerFactory.getLogger(ColumnStatsMerger.class.getName());
 
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     log.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
