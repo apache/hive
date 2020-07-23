@@ -82,14 +82,12 @@ public class Initiator extends MetaStoreCompactorThread {
 
   private long checkInterval;
   private long prevStart = -1;
+  private ExecutorService compactionExecutor;
 
   @Override
   public void run() {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
-    ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     try {
       recoverFailedCompactions(false);
 
@@ -185,6 +183,10 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
+    } finally {
+      if (compactionExecutor != null) {
+        this.compactionExecutor.shutdownNow();
+      }
     }
   }
 
@@ -229,6 +231,9 @@ public class Initiator extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {

@@ -69,55 +69,62 @@ public class Cleaner extends MetaStoreCompactorThread {
   private long cleanerCheckInterval = 0;
 
   private ReplChangeManager replChangeManager;
+  private ExecutorService cleanerExecutor;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
+    if (cleanerCheckInterval == 0) {
+      cleanerCheckInterval = conf.getTimeVar(
+              HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
+    }
+    cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
+            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
   }
 
   @Override
   public void run() {
-    if (cleanerCheckInterval == 0) {
-      cleanerCheckInterval = conf.getTimeVar(
-          HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-    ExecutorService cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
-        COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
-    do {
-      TxnStore.MutexAPI.LockHandle handle = null;
-      long startedAt = -1;
-      // Make sure nothing escapes this run method and kills the metastore at large,
-      // so wrap it in a big catch Throwable statement.
-      try {
-        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-        startedAt = System.currentTimeMillis();
-        long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-        List<CompletableFuture> cleanerList = new ArrayList<>();
-        for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-          cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                  clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
-        }
-        CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
-      } catch (Throwable t) {
-        LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-                StringUtils.stringifyException(t));
-      } finally {
-        if (handle != null) {
-          handle.releaseLocks();
-        }
-      }
-      // Now, go back to bed until it's time to do this again
-      long elapsedTime = System.currentTimeMillis() - startedAt;
-      if (elapsedTime < cleanerCheckInterval && !stop.get()) {
+    try {
+      do {
+        TxnStore.MutexAPI.LockHandle handle = null;
+        long startedAt = -1;
+        // Make sure nothing escapes this run method and kills the metastore at large,
+        // so wrap it in a big catch Throwable statement.
         try {
-          Thread.sleep(cleanerCheckInterval - elapsedTime);
-        } catch (InterruptedException ie) {
-          // What can I do about it?
+          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+          startedAt = System.currentTimeMillis();
+          long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+          List<CompletableFuture> cleanerList = new ArrayList<>();
+          for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+            cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
+                    clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
+          }
+          CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
+        } catch (Throwable t) {
+          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
+                  StringUtils.stringifyException(t));
+        } finally {
+          if (handle != null) {
+            handle.releaseLocks();
+          }
         }
+        // Now, go back to bed until it's time to do this again
+        long elapsedTime = System.currentTimeMillis() - startedAt;
+        if (elapsedTime < cleanerCheckInterval && !stop.get()) {
+          try {
+            Thread.sleep(cleanerCheckInterval - elapsedTime);
+          } catch (InterruptedException ie) {
+            // What can I do about it?
+          }
+        }
+      } while (!stop.get());
+    } finally {
+      if (cleanerExecutor != null) {
+        this.cleanerExecutor.shutdownNow();
       }
-    } while (!stop.get());
+    }
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
