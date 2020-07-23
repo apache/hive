@@ -77,17 +77,20 @@ public class ImpalaPlanner {
   private TStmtType resultStmtType_;
   private ImpalaPlannerContext ctx_;
   boolean isOverwrite_ = false;
-  long writeId_ = -1;
+  private final long writeId_;
 
   // Path where result files are written when hive.impala.execution.mode is file.
   private final Path resultPath;
 
   public ImpalaPlanner(ImpalaQueryContext queryContext, Path resultPath, Hive db, QB qb,
-      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline) throws HiveException {
+      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline, long writeId) throws HiveException {
+
     db_ = db;
     qb_ = qb;
     stmtType_ = stmtType;
     resultStmtType_ = resultStmtType;
+    writeId_ = writeId;
+
     this.resultPath = resultPath;
     ctx_ = new ImpalaPlannerContext(queryContext, timeline);
   }
@@ -222,6 +225,7 @@ public class ImpalaPlanner {
 
   void initTargetTable() throws HiveException, AnalysisException {
     if (resultStmtType_ == TStmtType.DML) {
+      ctx_.initTxnId();
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
       org.apache.hadoop.hive.ql.metadata.Table tab = getQB().getMetaData().getDestTableForAlias(dest);
       if (tab == null) { // Static partition case

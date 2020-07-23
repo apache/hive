@@ -326,7 +326,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<TableScanOperator, PrunedPartitionList> opToPartList;
   protected Map<String, TableScanOperator> topOps;
   protected Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
-  private List<LoadTableDesc> loadTableWork;
+  protected List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private final List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
   private final Map<JoinOperator, QBJoinTree> joinContext;

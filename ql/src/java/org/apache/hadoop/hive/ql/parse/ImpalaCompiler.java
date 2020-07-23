@@ -168,6 +168,9 @@ public class ImpalaCompiler extends TaskCompiler {
     private ImpalaCompiledPlan getCompiledPlan(ParseContext pCtx) {
         Collection<Operator<?>> tableScanOps = Lists.newArrayList(pCtx.getTopOps().values());
         Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
+        if (pCtx.getLoadTableWork().size() > 1) {
+          throw new RuntimeException("Multi-table inserts not supported for Impala");
+        }
         if (fsOps.isEmpty()) {
             throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
         }

@@ -317,6 +317,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
@@ -1710,8 +1711,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
         resultDir = fso.getConf().getDirName();
       }
+      long writeId = -1;
+      if (!loadTableWork.isEmpty()) {
+        if (loadTableWork.size() > 1) {
+          throw new RuntimeException("Multi-table inserts not supported for Impala");
+        }
+        LoadTableDesc loadTableDesc = loadTableWork.get(0);
+        if (loadTableDesc.isWriteIdSet()) {
+          writeId = loadTableDesc.getWriteId();
+        }
+      }
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type);
+          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type, writeId);
       markEvent("Impala plan generated");
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {

@@ -24,6 +24,8 @@ import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
@@ -107,5 +109,8 @@ public class ImpalaQueryContext {
 
     return queryCtx;
   }
-}
 
+  public void initTxnId() {
+    queryCtx.setTransaction_id(SessionState.get().getTxnMgr().getCurrentTxnId());
+  }
+}

@@ -59,6 +59,10 @@ public class ImpalaPlannerContext extends PlannerContext {
     queryContext.getAnalyzer().getDescTbl().setTargetTable(targetTable);
   }
 
+  public void initTxnId() {
+    queryContext.initTxnId();
+  }
+
   public FeTable getTargetTable() {
     return targetTable;
   }

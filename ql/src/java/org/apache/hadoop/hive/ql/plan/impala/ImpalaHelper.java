@@ -131,12 +131,12 @@ public class ImpalaHelper {
   }
 
   public ImpalaCompiledPlan compilePlan(Hive db, RelNode rootRelNode, Path resultPath,
-      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType) throws HiveException {
+      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType, long writeId) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, resultPath, db, qb,
-          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline);
+          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline, writeId);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, impalaRelNode);
