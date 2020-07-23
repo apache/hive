@@ -39,7 +39,7 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing.Box;
 
 /**
- *
+ * Metadata provider implementation that is only used for MV rewriting.
  */
 public class HiveMaterializationRelMetadataProvider {
 

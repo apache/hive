@@ -48,9 +48,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
  * This class contains logic that is useful to trigger additional materialized
  * view rewritings.
  *
- * In particular, in Hive we do not combine the MV rewriting
- * rules with other rules that may generate additional rewritings in the planner,
- * e.g., join reordering rules. In fact, the rewriting has some built-in logic to add
+ * In particular, in Hive we do not combine the MV rewriting rules with other
+ * rules that may generate additional rewritings in the planner, e.g., join
+ * reordering rules. In fact, the rewriting has some built-in logic to add
  * compensation joins on top of the MV scan which make adding these rules
  * unnecessary. This leads to faster planning, however it can also lead to some
  * missing rewriting opportunities if we are not careful. For instance, the
@@ -60,39 +60,39 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
  * MV:
  *      Join
  *     /    \
- *    A     B
+ *    A      B
  *
  * Query:
  *         Join
  *        /    \
- *     Join    B
+ *     Join     B
  *    /    \
- * Union   A
+ * Union    A
  *   |
  *   S
  *
- * The rewriting can only be triggered at the root of the plan since that is the
- * operator where A and B are visible. However, after checking the operators in
- * the plan, the rewriting bails out since Union is not supported.
+ * The rewriting can only be triggered at the root of the plan since that is
+ * the operator where A and B are visible. However, after checking the
+ * operators in the plan, the rewriting bails out since Union is not supported.
  *
  * This class contains boxing/unboxing logic that aims at fixing this. The
- * boxing logic will do a traversal of the query plan and introducing Box
- * operators when it detect an unsupported operator. For the former query, this
- * will be the rewritten plan:
+ * boxing logic will do a traversal of the query plan and introduce Box
+ * operators when it detects an unsupported operator. For the former query,
+ * this will be the rewritten plan:
  * Query:
  *         Join
  *        /    \
- *     Join    B
+ *     Join     B
  *    /    \
- * Box$0   A
+ * Box$0    A
  *
- * Box extends TableScan, and thus, MV rewriting will proceed as expected.
- * In addition, the Box node keeps a internal pointer to the former subplan
- * that it replaced. During MV rewriting, we include the unboxing rule in the
- * planner, which will transform the Box node into the former subplan. The Box
- * node has an infinite cost, thus though the it helps the rewriting to be
- * triggered, it will never be part of the final plan, i.e., the former subplan
- * (possibly with other MV rewritings) will be chosen.
+ * Box extends TableScan, and thus, MV rewriting will proceed as expected. In
+ * addition, the Box node keeps a internal pointer to the former subplan that
+ * it replaced. During MV rewriting, we include the unboxing rule in the
+ * planner, which will transform the Box node into the original subplan. The
+ * Box node has an infinite cost: Though it helps the rewriting to be
+ * triggered, it will never be part of the final plan, i.e., the original
+ * subplan (possibly with other MV rewritings) will be chosen.
  */
 public class HiveMaterializedViewBoxing {
 
