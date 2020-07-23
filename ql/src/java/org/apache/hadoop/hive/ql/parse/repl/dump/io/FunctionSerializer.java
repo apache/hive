@@ -42,7 +42,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
   private Function function;
   private HiveConf hiveConf;
   private Path functionDataRoot;
-  private List<EximUtil.FunctionBinaryCopyPath> functionBinaryCopyPaths = new ArrayList<>();
+  private List<EximUtil.DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
 
   public FunctionSerializer(Function function, Path functionDataRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -66,7 +66,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
                   .encodeFileUri(qualifiedUri.toString(), checkSum, null);
           Path newBinaryPath = new Path(functionDataRoot, qualifiedUri.getName());
           resourceUris.add(new ResourceUri(uri.getResourceType(),newBinaryPath.toString()));
-          functionBinaryCopyPaths.add(new EximUtil.FunctionBinaryCopyPath(additionalPropertiesProvider,
+          functionBinaryCopyPaths.add(new EximUtil.DataCopyPath(additionalPropertiesProvider,
                                                                           new Path(encodedSrcUri), newBinaryPath));
         } else {
           resourceUris.add(uri);
@@ -92,7 +92,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
     }
   }
 
-  public List<EximUtil.FunctionBinaryCopyPath> getFunctionBinaryCopyPaths() {
+  public List<EximUtil.DataCopyPath> getFunctionBinaryCopyPaths() {
     return functionBinaryCopyPaths;
   }
 }

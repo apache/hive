@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 @Explain(displayName = "Replication Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -58,7 +57,7 @@ public class ReplDumpWork implements Serializable {
   private Integer maxEventLimit;
   private transient Iterator<String> externalTblCopyPathIterator;
   private transient Iterator<String> managedTblCopyPathIterator;
-  private transient Iterator<EximUtil.FunctionBinaryCopyPath>  functionCopyPathIterator;
+  private transient Iterator<EximUtil.DataCopyPath>  functionCopyPathIterator;
   private Path currentDumpPath;
   private List<String> resultValues;
   private boolean shouldOverwrite;
@@ -149,7 +148,7 @@ public class ReplDumpWork implements Serializable {
     this.managedTblCopyPathIterator = managedTblCopyPathIterator;
   }
 
-  public void setFunctionCopyPathIterator(Iterator<EximUtil.FunctionBinaryCopyPath> functionCopyPathIterator) {
+  public void setFunctionCopyPathIterator(Iterator<EximUtil.DataCopyPath> functionCopyPathIterator) {
     if (this.functionCopyPathIterator != null) {
       throw new IllegalStateException("Function copy path iterator has already been initialized");
     }
@@ -201,7 +200,7 @@ public class ReplDumpWork implements Serializable {
       ReplicationSpec replSpec = new ReplicationSpec();
       replSpec.setIsReplace(true);
       replSpec.setInReplicationScope(true);
-      EximUtil.ManagedTableCopyPath managedTableCopyPath = new EximUtil.ManagedTableCopyPath(replSpec);
+      EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
       managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
@@ -217,7 +216,7 @@ public class ReplDumpWork implements Serializable {
     List<Task<?>> tasks = new ArrayList<>();
     if (functionCopyPathIterator != null) {
       while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-        EximUtil.FunctionBinaryCopyPath binaryCopyPath = functionCopyPathIterator.next();
+        EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
         Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
                 binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf
         );

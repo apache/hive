@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 
-import org.apache.hadoop.hive.ql.parse.EximUtil.FunctionBinaryCopyPath;
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
@@ -55,7 +55,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
     FileSystem fileSystem = metadataPath.getFileSystem(withinContext.hiveConf);
-    List<FunctionBinaryCopyPath> functionBinaryCopyPaths = new ArrayList<>();
+    List<DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
     try (JsonWriter jsonWriter = new JsonWriter(fileSystem, metadataPath)) {
       FunctionSerializer serializer = new FunctionSerializer(eventMessage.getFunctionObj(),
               dataPath, withinContext.hiveConf);
@@ -66,12 +66,12 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
     copyFunctionBinaries(functionBinaryCopyPaths, withinContext.hiveConf);
   }
 
-  private void copyFunctionBinaries(List<FunctionBinaryCopyPath> functionBinaryCopyPaths, HiveConf hiveConf)
+  private void copyFunctionBinaries(List<DataCopyPath> functionBinaryCopyPaths, HiveConf hiveConf)
           throws MetaException, IOException, LoginException, HiveFatalException {
     if (!functionBinaryCopyPaths.isEmpty()) {
       String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
-      for (FunctionBinaryCopyPath funcBinCopyPath : functionBinaryCopyPaths) {
+      for (DataCopyPath funcBinCopyPath : functionBinaryCopyPaths) {
         String [] decodedURISplits = ReplChangeManager.decodeFileUri(funcBinCopyPath.getSrcPath().toString());
         ReplChangeManager.FileInfo fileInfo = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
                 decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);

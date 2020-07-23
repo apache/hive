@@ -793,7 +793,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       //We can't reuse the previous write id as it might be invalid due to compaction
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
     }
-    List<EximUtil.FunctionBinaryCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
+    List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
          FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
@@ -1111,9 +1111,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return null;
   }
 
-  List<EximUtil.FunctionBinaryCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
+  List<EximUtil.DataCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
                                                              Hive hiveDb) throws Exception {
-    List<EximUtil.FunctionBinaryCopyPath> functionsBinaryCopyPaths = new ArrayList<>();
+    List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = new ArrayList<>();
     Path functionsMetaRoot = new Path(dbMetadataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     Path functionsDataRoot = new Path(dbDataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     List<String> functionNames = hiveDb.getFunctions(dbName, "*");
