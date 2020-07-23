@@ -42,12 +42,14 @@ public class FunctionSerializer implements JsonWriter.Serializer {
   private Function function;
   private HiveConf hiveConf;
   private Path functionDataRoot;
+  private boolean copyAtLoad;
   private List<EximUtil.DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
 
-  public FunctionSerializer(Function function, Path functionDataRoot, HiveConf hiveConf) {
+  public FunctionSerializer(Function function, Path functionDataRoot, boolean copyAtLoad, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     this.function = function;
     this.functionDataRoot = functionDataRoot;
+    this.copyAtLoad = copyAtLoad;
   }
 
   @Override
@@ -64,10 +66,14 @@ public class FunctionSerializer implements JsonWriter.Serializer {
           String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
           String encodedSrcUri = ReplChangeManager.getInstance(hiveConf)
                   .encodeFileUri(qualifiedUri.toString(), checkSum, null);
-          Path newBinaryPath = new Path(functionDataRoot, qualifiedUri.getName());
-          resourceUris.add(new ResourceUri(uri.getResourceType(),newBinaryPath.toString()));
-          functionBinaryCopyPaths.add(new EximUtil.DataCopyPath(additionalPropertiesProvider,
-                                                                          new Path(encodedSrcUri), newBinaryPath));
+          if (copyAtLoad) {
+            resourceUris.add(new ResourceUri(uri.getResourceType(), encodedSrcUri));
+          } else {
+            Path newBinaryPath = new Path(functionDataRoot, qualifiedUri.getName());
+            resourceUris.add(new ResourceUri(uri.getResourceType(),newBinaryPath.toString()));
+            functionBinaryCopyPaths.add(new EximUtil.DataCopyPath(additionalPropertiesProvider,
+                    new Path(encodedSrcUri), newBinaryPath));
+          }
         } else {
           resourceUris.add(uri);
         }

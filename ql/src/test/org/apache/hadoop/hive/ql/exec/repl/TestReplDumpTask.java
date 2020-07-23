@@ -89,7 +89,7 @@ public class TestReplDumpTask {
 
     @Override
     List<EximUtil.DataCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
-                                                               Hive hiveDb) {
+                                                     Hive hiveDb, boolean copyAtLoad) {
       return Collections.emptyList();
     }
 

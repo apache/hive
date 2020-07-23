@@ -820,12 +820,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         work.getMetricCollector().reportStageStart(getName(), metricMap);
         Path dbRoot = dumpDbMetadata(dbName, metadataPath, bootDumpBeginReplId, hiveDb);
         Path dbDataRoot = new Path(new Path(dumpRoot, EximUtil.DATA_PATH_NAME), dbName);
-        functionsBinaryCopyPaths = dumpFunctionMetadata(dbName, dbRoot, dbDataRoot, hiveDb);
+        boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+        functionsBinaryCopyPaths = dumpFunctionMetadata(dbName, dbRoot, dbDataRoot, hiveDb, dataCopyAtLoad);
 
         String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
         Exception caught = null;
         try (Writer writer = new Writer(dbRoot, conf)) {
-          List<Path> extTableLocations = new LinkedList<>();
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
             Table table = null;
@@ -838,7 +838,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 LOG.debug("Adding table {} to external tables list", tblName);
                 writer.dataLocationDump(tableTuple.object, extTableFileList, conf);
               }
-              boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
               dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
                       bootDumpBeginReplId,
                       hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
@@ -1112,7 +1111,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   List<EximUtil.DataCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
-                                                             Hive hiveDb) throws Exception {
+                                                             Hive hiveDb, boolean copyAtLoad) throws Exception {
     List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = new ArrayList<>();
     Path functionsMetaRoot = new Path(dbMetadataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     Path functionsDataRoot = new Path(dbDataRoot, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
@@ -1127,7 +1126,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Path functionDataRoot = new Path(functionsDataRoot, functionName);
       try (JsonWriter jsonWriter =
           new JsonWriter(functionMetadataFile.getFileSystem(conf), functionMetadataFile)) {
-        FunctionSerializer serializer = new FunctionSerializer(tuple.object, functionDataRoot, conf);
+        FunctionSerializer serializer = new FunctionSerializer(tuple.object, functionDataRoot, copyAtLoad, conf);
         serializer.writeTo(jsonWriter, tuple.replicationSpec);
         functionsBinaryCopyPaths.addAll(serializer.getFunctionBinaryCopyPaths());
       }

@@ -194,13 +194,20 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
 
-      Task<?> copyTask = TaskFactory.get(
-              new CopyWork(new Path(sourceUri), qualifiedDestinationPath, true, true), context.hiveConf);
-      replCopyTasks.add(copyTask);
+      replCopyTasks.add(getCopyTask(sourceUri, qualifiedDestinationPath));
       ResourceUri destinationUri =
           new ResourceUri(resourceUri.getResourceType(), qualifiedDestinationPath.toString());
       context.log.debug("copy source uri : {} to destination uri: {}", sourceUri, destinationUri);
       return destinationUri;
+    }
+
+    private Task<?> getCopyTask(String sourceUri, Path dest) {
+      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+      if (copyAtLoad ) {
+        return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf);
+      } else {
+        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, true), context.hiveConf);
+      }
     }
   }
 }
