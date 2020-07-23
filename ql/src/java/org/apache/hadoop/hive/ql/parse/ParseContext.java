@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
@@ -536,6 +538,28 @@ public class ParseContext {
       opToPartList.put(ts, partsList);
     }
     return partsList;
+  }
+
+  public PrunedPartitionList getPrunedPartitions(TableScanOperator ts, boolean analyzeCommand)
+      throws SemanticException {
+    PrunedPartitionList partsList = opToPartList.get(ts);
+    if (partsList != null) {
+      return partsList;
+    }
+    if (analyzeCommand) {
+      Table table = ts.getConf().getTableMetadata();
+      ImmutableSet<Partition> partitions;
+      if (table.getTableSpec().partitions == null) {
+        partitions = ImmutableSet.of();
+      } else {
+        partitions = ImmutableSet.copyOf(table.getTableSpec().partitions);
+      }
+      PrunedPartitionList partList = new PrunedPartitionList(table, partitions, Collections.emptyList(), false);
+      opToPartList.put(ts, partList);
+      return partList;
+    } else {
+      return getPrunedPartitions(ts);
+    }
   }
 
   /**

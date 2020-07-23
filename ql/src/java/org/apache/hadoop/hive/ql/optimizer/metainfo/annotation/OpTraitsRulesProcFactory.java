@@ -213,8 +213,9 @@ public class OpTraitsRulesProcFactory {
       Table table = ts.getConf().getTableMetadata();
       PrunedPartitionList prunedPartList = null;
       try {
+        boolean analyzeCommand = opTraitsCtx.getParseContext().getQueryProperties().isAnalyzeCommand();
         prunedPartList =
-            opTraitsCtx.getParseContext().getPrunedPartitions(ts.getConf().getAlias(), ts);
+            opTraitsCtx.getParseContext().getPrunedPartitions(ts, analyzeCommand);
       } catch (HiveException e) {
         prunedPartList = null;
       }

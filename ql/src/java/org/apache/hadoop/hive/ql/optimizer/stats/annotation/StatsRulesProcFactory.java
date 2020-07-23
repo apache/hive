@@ -133,7 +133,8 @@ public class StatsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator tsop = (TableScanOperator) nd;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
-      PrunedPartitionList partList = aspCtx.getParseContext().getPrunedPartitions(tsop);
+      boolean analyzeCommand = aspCtx.getParseContext().getQueryProperties().isAnalyzeCommand();
+      PrunedPartitionList partList = aspCtx.getParseContext().getPrunedPartitions(tsop, analyzeCommand);
       ColumnStatsList colStatsCached = aspCtx.getParseContext().getColStatsCached(partList);
       Table table = tsop.getConf().getTableMetadata();
 
