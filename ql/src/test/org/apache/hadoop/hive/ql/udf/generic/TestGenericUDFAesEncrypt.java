@@ -223,6 +223,6 @@ public class TestGenericUDFAesEncrypt {
     int size = bw.getLength();
     byte[] bytes = new byte[size];
     System.arraycopy(bw.getBytes(), 0, bytes, 0, size);
-    return Base64.getEncoder().withoutPadding().encodeToString(bytes);
+    return Base64.getEncoder().encodeToString(bytes);
   }
 }
