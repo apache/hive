@@ -88,6 +88,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
+@org.junit.Ignore("HIVE-23925")
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
   private static String dataFileDir;
