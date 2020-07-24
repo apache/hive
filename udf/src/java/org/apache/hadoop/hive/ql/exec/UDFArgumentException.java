@@ -61,7 +61,10 @@ public class UDFArgumentException extends SemanticException {
    * @param methods
    *          All potential matches.
    */
-  public UDFArgumentException(String message, List<Method> methods) {
+  public UDFArgumentException(String message,
+      Class<?> funcClass,
+      List<TypeInfo> argTypeInfos,
+      List<Method> methods) {
     super(getMessage(message, methods));
     this.funcClass = funcClass;
     this.argTypeInfos = argTypeInfos;
