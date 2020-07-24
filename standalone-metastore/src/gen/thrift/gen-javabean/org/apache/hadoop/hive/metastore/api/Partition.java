@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)10);
   private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)11);
   private static final org.apache.thrift.protocol.TField COL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("colStats", org.apache.thrift.protocol.TType.STRUCT, (short)12);
+  private static final org.apache.thrift.protocol.TField FILE_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("fileMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)13);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -69,6 +70,7 @@ import org.slf4j.LoggerFactory;
   private long writeId; // optional
   private boolean isStatsCompliant; // optional
   private ColumnStatistics colStats; // optional
+  private FileMetadata fileMetadata; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -83,7 +85,8 @@ import org.slf4j.LoggerFactory;
     CAT_NAME((short)9, "catName"),
     WRITE_ID((short)10, "writeId"),
     IS_STATS_COMPLIANT((short)11, "isStatsCompliant"),
-    COL_STATS((short)12, "colStats");
+    COL_STATS((short)12, "colStats"),
+    FILE_METADATA((short)13, "fileMetadata");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -122,6 +125,8 @@ import org.slf4j.LoggerFactory;
           return IS_STATS_COMPLIANT;
         case 12: // COL_STATS
           return COL_STATS;
+        case 13: // FILE_METADATA
+          return FILE_METADATA;
         default:
           return null;
       }
@@ -167,7 +172,7 @@ import org.slf4j.LoggerFactory;
   private static final int __WRITEID_ISSET_ID = 2;
   private static final int __ISSTATSCOMPLIANT_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.CAT_NAME,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.CAT_NAME,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS,_Fields.FILE_METADATA};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -198,6 +203,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.COL_STATS, new org.apache.thrift.meta_data.FieldMetaData("colStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatistics.class)));
+    tmpMap.put(_Fields.FILE_METADATA, new org.apache.thrift.meta_data.FieldMetaData("fileMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FileMetadata.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Partition.class, metaDataMap);
   }
@@ -263,6 +270,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetColStats()) {
       this.colStats = new ColumnStatistics(other.colStats);
     }
+    if (other.isSetFileMetadata()) {
+      this.fileMetadata = new FileMetadata(other.fileMetadata);
+    }
   }
 
   public Partition deepCopy() {
@@ -287,6 +297,7 @@ import org.slf4j.LoggerFactory;
     setIsStatsCompliantIsSet(false);
     this.isStatsCompliant = false;
     this.colStats = null;
+    this.fileMetadata = null;
   }
 
   public int getValuesSize() {
@@ -587,6 +598,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public FileMetadata getFileMetadata() {
+    return this.fileMetadata;
+  }
+
+  public void setFileMetadata(FileMetadata fileMetadata) {
+    this.fileMetadata = fileMetadata;
+  }
+
+  public void unsetFileMetadata() {
+    this.fileMetadata = null;
+  }
+
+  /** Returns true if field fileMetadata is set (has been assigned a value) and false otherwise */
+  public boolean isSetFileMetadata() {
+    return this.fileMetadata != null;
+  }
+
+  public void setFileMetadataIsSet(boolean value) {
+    if (!value) {
+      this.fileMetadata = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case VALUES:
@@ -685,6 +719,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case FILE_METADATA:
+      if (value == null) {
+        unsetFileMetadata();
+      } else {
+        setFileMetadata((FileMetadata)value);
+      }
+      break;
+
     }
   }
 
@@ -726,6 +768,9 @@ import org.slf4j.LoggerFactory;
     case COL_STATS:
       return getColStats();
 
+    case FILE_METADATA:
+      return getFileMetadata();
+
     }
     throw new IllegalStateException();
   }
@@ -761,6 +806,8 @@ import org.slf4j.LoggerFactory;
       return isSetIsStatsCompliant();
     case COL_STATS:
       return isSetColStats();
+    case FILE_METADATA:
+      return isSetFileMetadata();
     }
     throw new IllegalStateException();
   }
@@ -886,6 +933,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_fileMetadata = true && this.isSetFileMetadata();
+    boolean that_present_fileMetadata = true && that.isSetFileMetadata();
+    if (this_present_fileMetadata || that_present_fileMetadata) {
+      if (!(this_present_fileMetadata && that_present_fileMetadata))
+        return false;
+      if (!this.fileMetadata.equals(that.fileMetadata))
+        return false;
+    }
+
     return true;
   }
 
@@ -952,6 +1008,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_colStats);
     if (present_colStats)
       list.add(colStats);
+
+    boolean present_fileMetadata = true && (isSetFileMetadata());
+    list.add(present_fileMetadata);
+    if (present_fileMetadata)
+      list.add(fileMetadata);
 
     return list.hashCode();
   }
@@ -1084,6 +1145,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetFileMetadata()).compareTo(other.isSetFileMetadata());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFileMetadata()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileMetadata, other.fileMetadata);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1193,6 +1264,16 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetFileMetadata()) {
+      if (!first) sb.append(", ");
+      sb.append("fileMetadata:");
+      if (this.fileMetadata == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.fileMetadata);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1208,6 +1289,9 @@ import org.slf4j.LoggerFactory;
     }
     if (colStats != null) {
       colStats.validate();
+    }
+    if (fileMetadata != null) {
+      fileMetadata.validate();
     }
   }
 
@@ -1250,13 +1334,13 @@ import org.slf4j.LoggerFactory;
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list256 = iprot.readListBegin();
-                struct.values = new ArrayList<String>(_list256.size);
-                String _elem257;
-                for (int _i258 = 0; _i258 < _list256.size; ++_i258)
+                org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
+                struct.values = new ArrayList<String>(_list264.size);
+                String _elem265;
+                for (int _i266 = 0; _i266 < _list264.size; ++_i266)
                 {
-                  _elem257 = iprot.readString();
-                  struct.values.add(_elem257);
+                  _elem265 = iprot.readString();
+                  struct.values.add(_elem265);
                 }
                 iprot.readListEnd();
               }
@@ -1309,15 +1393,15 @@ import org.slf4j.LoggerFactory;
           case 7: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map259 = iprot.readMapBegin();
-                struct.parameters = new HashMap<String,String>(2*_map259.size);
-                String _key260;
-                String _val261;
-                for (int _i262 = 0; _i262 < _map259.size; ++_i262)
+                org.apache.thrift.protocol.TMap _map267 = iprot.readMapBegin();
+                struct.parameters = new HashMap<String,String>(2*_map267.size);
+                String _key268;
+                String _val269;
+                for (int _i270 = 0; _i270 < _map267.size; ++_i270)
                 {
-                  _key260 = iprot.readString();
-                  _val261 = iprot.readString();
-                  struct.parameters.put(_key260, _val261);
+                  _key268 = iprot.readString();
+                  _val269 = iprot.readString();
+                  struct.parameters.put(_key268, _val269);
                 }
                 iprot.readMapEnd();
               }
@@ -1368,6 +1452,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 13: // FILE_METADATA
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.fileMetadata = new FileMetadata();
+              struct.fileMetadata.read(iprot);
+              struct.setFileMetadataIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1385,9 +1478,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-          for (String _iter263 : struct.values)
+          for (String _iter271 : struct.values)
           {
-            oprot.writeString(_iter263);
+            oprot.writeString(_iter271);
           }
           oprot.writeListEnd();
         }
@@ -1418,10 +1511,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter264 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter272 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter264.getKey());
-            oprot.writeString(_iter264.getValue());
+            oprot.writeString(_iter272.getKey());
+            oprot.writeString(_iter272.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1455,6 +1548,13 @@ import org.slf4j.LoggerFactory;
         if (struct.isSetColStats()) {
           oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
           struct.colStats.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.fileMetadata != null) {
+        if (struct.isSetFileMetadata()) {
+          oprot.writeFieldBegin(FILE_METADATA_FIELD_DESC);
+          struct.fileMetadata.write(oprot);
           oprot.writeFieldEnd();
         }
       }
@@ -1512,13 +1612,16 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetColStats()) {
         optionals.set(11);
       }
-      oprot.writeBitSet(optionals, 12);
+      if (struct.isSetFileMetadata()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetValues()) {
         {
           oprot.writeI32(struct.values.size());
-          for (String _iter265 : struct.values)
+          for (String _iter273 : struct.values)
           {
-            oprot.writeString(_iter265);
+            oprot.writeString(_iter273);
           }
         }
       }
@@ -1540,10 +1643,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter266 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter274 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter266.getKey());
-            oprot.writeString(_iter266.getValue());
+            oprot.writeString(_iter274.getKey());
+            oprot.writeString(_iter274.getValue());
           }
         }
       }
@@ -1562,21 +1665,24 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetColStats()) {
         struct.colStats.write(oprot);
       }
+      if (struct.isSetFileMetadata()) {
+        struct.fileMetadata.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Partition struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(12);
+      BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list267 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.values = new ArrayList<String>(_list267.size);
-          String _elem268;
-          for (int _i269 = 0; _i269 < _list267.size; ++_i269)
+          org.apache.thrift.protocol.TList _list275 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.values = new ArrayList<String>(_list275.size);
+          String _elem276;
+          for (int _i277 = 0; _i277 < _list275.size; ++_i277)
           {
-            _elem268 = iprot.readString();
-            struct.values.add(_elem268);
+            _elem276 = iprot.readString();
+            struct.values.add(_elem276);
           }
         }
         struct.setValuesIsSet(true);
@@ -1604,15 +1710,15 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(6)) {
         {
-          org.apache.thrift.protocol.TMap _map270 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map270.size);
-          String _key271;
-          String _val272;
-          for (int _i273 = 0; _i273 < _map270.size; ++_i273)
+          org.apache.thrift.protocol.TMap _map278 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map278.size);
+          String _key279;
+          String _val280;
+          for (int _i281 = 0; _i281 < _map278.size; ++_i281)
           {
-            _key271 = iprot.readString();
-            _val272 = iprot.readString();
-            struct.parameters.put(_key271, _val272);
+            _key279 = iprot.readString();
+            _val280 = iprot.readString();
+            struct.parameters.put(_key279, _val280);
           }
         }
         struct.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.parameters); struct.setParametersIsSet(true);
@@ -1638,6 +1744,11 @@ import org.slf4j.LoggerFactory;
         struct.colStats = new ColumnStatistics();
         struct.colStats.read(iprot);
         struct.setColStatsIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.fileMetadata = new FileMetadata();
+        struct.fileMetadata.read(iprot);
+        struct.setFileMetadataIsSet(true);
       }
     }
   }

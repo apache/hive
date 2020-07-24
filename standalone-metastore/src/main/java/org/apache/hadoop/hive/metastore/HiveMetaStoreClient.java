@@ -1966,12 +1966,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws TException {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
@@ -1990,15 +1998,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
           throws TException {
+
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine) throws TException {
@@ -2015,8 +2032,33 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       gpbnr.setProcessorIdentifier(processorIdentifier);
-    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
-    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    return getPartitionsByNames(gpbnr);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(
+      GetPartitionsByNamesRequest request) throws TException {
+    // make sure the cat name is set in the request
+    Preconditions.checkArgument(MetaStoreUtils.hasCatalogName(request.getDb_name()));
+    Preconditions.checkArgument(!request.isGet_col_stats() || request.isSetEngine(),
+        "Engine field must be set if column statistics are requested");
+    // set the ValidWriteIdList for managed tables if the request does not have it set.
+    if (!request.isSetValidWriteIdList()) {
+      request.setValidWriteIdList(
+          getValidWriteIdList(
+              TableName.getDbTable(request.getDb_name(), request.getTbl_name())));
+    }
+    if (processorCapabilities != null) {
+      request.setProcessorCapabilities(
+          new ArrayList<>(Arrays.asList(processorCapabilities)));
+    }
+    if (processorIdentifier != null) {
+      request.setProcessorIdentifier(processorIdentifier);
+    }
+
+    List<Partition> parts = client.get_partitions_by_names_req(request).getPartitions();
+    return deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
 
   @Override

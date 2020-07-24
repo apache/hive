@@ -30,6 +30,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -142,6 +143,7 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -3317,8 +3319,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
         getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
             partsToAlter, ec, validWriteIdList, writeId);
 
-        for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
-        getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
+        GetPartitionsByNamesRequest partsRequest = new GetPartitionsByNamesRequest();
+        partsRequest
+            .setDb_name(prependCatalogToDbName(addPartitionDesc.getDbName(), conf));
+        partsRequest.setTbl_name(addPartitionDesc.getTableName());
+        partsRequest.setNames(part_names);
+        partsRequest.setValidWriteIdList(validWriteIdList);
+        List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC()
+            .getPartitionsByNames(partsRequest);
+        for ( org.apache.hadoop.hive.metastore.api.Partition outPart : partitions){
           out.add(new Partition(tbl,outPart));
         }
       }
@@ -3915,10 +3924,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int nBatches = nParts / batchSize;
 
     try {
+      // set the common fields for the request first. We divide the partName list
+      // into batches below.
+      GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest();
+      request.setDb_name(prependCatalogToDbName(tbl.getDbName(), conf));
+      request.setTbl_name(tbl.getTableName());
+      request.setGet_col_stats(getColStats);
+      request.setEngine(Constants.HIVE_ENGINE);
+      //TODO if the request is for Impala execution set the file-metadata flag to true
+      // in the request
       for (int i = 0; i < nBatches; ++i) {
+        List<String> partNamesBatch = partNames.subList(i*batchSize, (i+1)*batchSize);
+        request.setNames(partNamesBatch);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats, Constants.HIVE_ENGINE);
+          getMSC().getPartitionsByNames(request);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3927,9 +3946,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (nParts > nBatches * batchSize) {
+        List<String> partNamesBatch = partNames.subList(nBatches*batchSize, nParts);
+        request.setNames(partNamesBatch);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
+          getMSC().getPartitionsByNames(request);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));

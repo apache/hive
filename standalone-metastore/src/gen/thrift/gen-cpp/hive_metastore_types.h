@@ -186,6 +186,14 @@ struct SchemaVersionState {
 
 extern const std::map<int, const char*> _SchemaVersionState_VALUES_TO_NAMES;
 
+struct FileMetadataType {
+  enum type {
+    IMPALA = 0
+  };
+};
+
+extern const std::map<int, const char*> _FileMetadataType_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -397,6 +405,8 @@ class ColumnStatisticsObj;
 class ColumnStatisticsDesc;
 
 class ColumnStatistics;
+
+class FileMetadata;
 
 class Table;
 
@@ -4318,8 +4328,68 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj)
   return out;
 }
 
+typedef struct _FileMetadata__isset {
+  _FileMetadata__isset() : type(true), version(true), data(false) {}
+  bool type :1;
+  bool version :1;
+  bool data :1;
+} _FileMetadata__isset;
+
+class FileMetadata {
+ public:
+
+  FileMetadata(const FileMetadata&);
+  FileMetadata& operator=(const FileMetadata&);
+  FileMetadata() : type((FileMetadataType::type)0), version(1) {
+    type = (FileMetadataType::type)0;
+
+  }
+
+  virtual ~FileMetadata() throw();
+  FileMetadataType::type type;
+  int8_t version;
+  std::vector<std::string>  data;
+
+  _FileMetadata__isset __isset;
+
+  void __set_type(const FileMetadataType::type val);
+
+  void __set_version(const int8_t val);
+
+  void __set_data(const std::vector<std::string> & val);
+
+  bool operator == (const FileMetadata & rhs) const
+  {
+    if (!(type == rhs.type))
+      return false;
+    if (!(version == rhs.version))
+      return false;
+    if (!(data == rhs.data))
+      return false;
+    return true;
+  }
+  bool operator != (const FileMetadata &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FileMetadata & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FileMetadata &a, FileMetadata &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FileMetadata& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4345,6 +4415,7 @@ typedef struct _Table__isset {
   bool requiredReadCapabilities :1;
   bool requiredWriteCapabilities :1;
   bool id :1;
+  bool fileMetadata :1;
 } _Table__isset;
 
 class Table {
@@ -4383,6 +4454,7 @@ class Table {
   std::vector<std::string>  requiredReadCapabilities;
   std::vector<std::string>  requiredWriteCapabilities;
   int64_t id;
+  FileMetadata fileMetadata;
 
   _Table__isset __isset;
 
@@ -4435,6 +4507,8 @@ class Table {
   void __set_requiredWriteCapabilities(const std::vector<std::string> & val);
 
   void __set_id(const int64_t val);
+
+  void __set_fileMetadata(const FileMetadata& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4514,6 +4588,10 @@ class Table {
       return false;
     else if (__isset.id && !(id == rhs.id))
       return false;
+    if (__isset.fileMetadata != rhs.__isset.fileMetadata)
+      return false;
+    else if (__isset.fileMetadata && !(fileMetadata == rhs.fileMetadata))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -4537,7 +4615,7 @@ inline std::ostream& operator<<(std::ostream& out, const Table& obj)
 }
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false), fileMetadata(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -4550,6 +4628,7 @@ typedef struct _Partition__isset {
   bool writeId :1;
   bool isStatsCompliant :1;
   bool colStats :1;
+  bool fileMetadata :1;
 } _Partition__isset;
 
 class Partition {
@@ -4573,6 +4652,7 @@ class Partition {
   int64_t writeId;
   bool isStatsCompliant;
   ColumnStatistics colStats;
+  FileMetadata fileMetadata;
 
   _Partition__isset __isset;
 
@@ -4599,6 +4679,8 @@ class Partition {
   void __set_isStatsCompliant(const bool val);
 
   void __set_colStats(const ColumnStatistics& val);
+
+  void __set_fileMetadata(const FileMetadata& val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -4635,6 +4717,10 @@ class Partition {
     if (__isset.colStats != rhs.__isset.colStats)
       return false;
     else if (__isset.colStats && !(colStats == rhs.colStats))
+      return false;
+    if (__isset.fileMetadata != rhs.__isset.fileMetadata)
+      return false;
+    else if (__isset.fileMetadata && !(fileMetadata == rhs.fileMetadata))
       return false;
     return true;
   }
@@ -7091,13 +7177,14 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse
 }
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
   bool engine :1;
   bool validWriteIdList :1;
+  bool getFileMetadata :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest {
@@ -7105,7 +7192,7 @@ class GetPartitionsByNamesRequest {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList() {
+  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList(), getFileMetadata(0) {
   }
 
   virtual ~GetPartitionsByNamesRequest() throw();
@@ -7117,6 +7204,7 @@ class GetPartitionsByNamesRequest {
   std::string processorIdentifier;
   std::string engine;
   std::string validWriteIdList;
+  bool getFileMetadata;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -7135,6 +7223,8 @@ class GetPartitionsByNamesRequest {
   void __set_engine(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_getFileMetadata(const bool val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -7165,6 +7255,10 @@ class GetPartitionsByNamesRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.getFileMetadata != rhs.__isset.getFileMetadata)
+      return false;
+    else if (__isset.getFileMetadata && !(getFileMetadata == rhs.getFileMetadata))
       return false;
     return true;
   }
@@ -11514,7 +11608,7 @@ inline std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false), id(true) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false), id(true), getFileMetadata(false) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
@@ -11523,6 +11617,7 @@ typedef struct _GetTableRequest__isset {
   bool processorIdentifier :1;
   bool engine :1;
   bool id :1;
+  bool getFileMetadata :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -11530,7 +11625,7 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0), processorIdentifier(), engine(), id(-1LL) {
+  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0), processorIdentifier(), engine(), id(-1LL), getFileMetadata(0) {
   }
 
   virtual ~GetTableRequest() throw();
@@ -11544,6 +11639,7 @@ class GetTableRequest {
   std::string processorIdentifier;
   std::string engine;
   int64_t id;
+  bool getFileMetadata;
 
   _GetTableRequest__isset __isset;
 
@@ -11566,6 +11662,8 @@ class GetTableRequest {
   void __set_engine(const std::string& val);
 
   void __set_id(const int64_t val);
+
+  void __set_getFileMetadata(const bool val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -11604,6 +11702,10 @@ class GetTableRequest {
     if (__isset.id != rhs.__isset.id)
       return false;
     else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.getFileMetadata != rhs.__isset.getFileMetadata)
+      return false;
+    else if (__isset.getFileMetadata && !(getFileMetadata == rhs.getFileMetadata))
       return false;
     return true;
   }

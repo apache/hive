@@ -538,6 +538,19 @@ struct ColumnStatistics {
 4: optional string engine
 }
 
+enum FileMetadataType {
+  IMPALA
+}
+
+// FileMetadata represents the table-level (in case of unpartitioned) or partition-level
+// file metadata. Each partition could have more than 1 files and hence the list of
+// binary data field. Each value in data field corresponds to metadata for one file.
+struct FileMetadata {
+  1: FileMetadataType type = FileMetadataType.IMPALA,
+  2: byte version = 1
+  3: list<binary> data
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -566,6 +579,8 @@ struct Table {
   25: optional list<string> requiredWriteCapabilities
   26: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
                                        // read purposed
+  27: optional FileMetadata fileMetadata // optional serialized file-metadata for this table
+                                         // for certain execution engines
 }
 
 struct Partition {
@@ -580,7 +595,9 @@ struct Partition {
   9: optional string catName,
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant,
-  12: optional ColumnStatistics colStats // column statistics for partition
+  12: optional ColumnStatistics colStats, // column statistics for partition
+  13: optional FileMetadata fileMetadata  // optional serialized file-metadata useful
+                                          // for certain execution engines
 }
 
 struct PartitionWithoutSD {
@@ -709,7 +726,7 @@ struct CheckConstraintsResponse {
 
 
 struct DropConstraintRequest {
-  1: required string dbname, 
+  1: required string dbname,
   2: required string tablename,
   3: required string constraintname,
   4: optional string catName
@@ -863,7 +880,10 @@ struct GetPartitionsByNamesRequest {
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
   7: optional string engine,
-  8: optional string validWriteIdList
+  8: optional string validWriteIdList,
+  // when this flag is set to true, HMS will return back the file-metadata
+  // for the requested partition names along with the Partition objects
+  9: optional bool getFileMetadata
 }
 
 struct GetPartitionsByNamesResult {
@@ -1438,7 +1458,10 @@ struct GetTableRequest {
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
   10: optional string engine,
-  11: optional i64 id=-1 // table id
+  11: optional i64 id=-1, // table id
+  // when this flag is set to true, HMS will return the file-metadata
+  // for table. Default is false
+  12: optional bool getFileMetadata
 }
 
 struct GetTableResult {

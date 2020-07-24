@@ -142,6 +142,12 @@ module SchemaVersionState
   VALID_VALUES = Set.new([INITIATED, START_REVIEW, CHANGES_REQUIRED, REVIEWED, ENABLED, DISABLED, ARCHIVED, DELETED]).freeze
 end
 
+module FileMetadataType
+  IMPALA = 0
+  VALUE_MAP = {0 => "IMPALA"}
+  VALID_VALUES = Set.new([IMPALA]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -1518,6 +1524,29 @@ class ColumnStatistics
   ::Thrift::Struct.generate_accessors self
 end
 
+class FileMetadata
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  VERSION = 2
+  DATA = 3
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>     0, :enum_class => ::FileMetadataType},
+    VERSION => {:type => ::Thrift::Types::BYTE, :name => 'version', :default => 1},
+    DATA => {:type => ::Thrift::Types::LIST, :name => 'data', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @type.nil? || ::FileMetadataType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLENAME = 1
@@ -1545,6 +1574,7 @@ class Table
   REQUIREDREADCAPABILITIES = 24
   REQUIREDWRITECAPABILITIES = 25
   ID = 26
+  FILEMETADATA = 27
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1571,7 +1601,8 @@ class Table
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1599,6 +1630,7 @@ class Partition
   WRITEID = 10
   ISSTATSCOMPLIANT = 11
   COLSTATS = 12
+  FILEMETADATA = 13
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -1612,7 +1644,8 @@ class Partition
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
-    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true}
+    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2564,6 +2597,7 @@ class GetPartitionsByNamesRequest
   PROCESSORIDENTIFIER = 6
   ENGINE = 7
   VALIDWRITEIDLIST = 8
+  GETFILEMETADATA = 9
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
@@ -2573,7 +2607,8 @@ class GetPartitionsByNamesRequest
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
     ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4289,6 +4324,7 @@ class GetTableRequest
   PROCESSORIDENTIFIER = 9
   ENGINE = 10
   ID = 11
+  GETFILEMETADATA = 12
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4300,7 +4336,8 @@ class GetTableRequest
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
     ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
+    GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true}
   }
 
   def struct_fields; FIELDS; end

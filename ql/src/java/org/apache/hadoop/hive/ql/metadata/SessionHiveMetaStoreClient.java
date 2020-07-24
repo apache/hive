@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -70,7 +71,6 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1209,6 +1210,23 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> partitions = tt.getPartitionsByNames(partNames);
+
+    return deepCopyPartitions(partitions);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(GetPartitionsByNamesRequest request)
+      throws TException {
+    String[] catalogAndDb = MetaStoreUtils.parseDbName(request.getDb_name(), conf);
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(catalogAndDb[1],
+        request.getTbl_name());
+    if (table == null) {
+      // the table is not a temp table, look for the table in HMS by issuing the call
+      // to the underlying client.
+      return super.getPartitionsByNames(request);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.getPartitionsByNames(request.getNames());
 
     return deepCopyPartitions(partitions);
   }

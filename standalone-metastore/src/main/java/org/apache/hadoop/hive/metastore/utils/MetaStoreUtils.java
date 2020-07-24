@@ -1997,7 +1997,7 @@ public class MetaStoreUtils {
     }
   }
 
-  private static boolean hasCatalogName(String dbName) {
+  public static boolean hasCatalogName(String dbName) {
     return dbName != null && dbName.length() > 0 &&
         dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER;
   }
