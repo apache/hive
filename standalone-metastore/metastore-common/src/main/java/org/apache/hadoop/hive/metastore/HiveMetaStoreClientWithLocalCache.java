@@ -60,6 +60,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   /**
    * KeyType is used to differentiate the request types.
+   * More types can be added in the future.
    */
   public enum KeyType {
     PARTITIONS_BY_EXPR(PartitionsByExprRequest.class, PartitionsByExprResult.class),
