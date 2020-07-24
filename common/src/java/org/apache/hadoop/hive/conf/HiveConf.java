@@ -2211,7 +2211,8 @@ public class HiveConf extends Configuration {
         "boolean literal."),
     HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64("hive.lazysimple.decode_binary_as_base64", false,
     	"LazySimpleSerde uses this property to determine if data in binary column types should\n" +
-    	"be decoded as base64. If true and row is not valid base64 then original value will be used."),
+    	"be decoded as base64. If true and value is not valid base64 then original value will be used.\n" +
+    	"The default for this option is false."),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false,
         "Whether to enable skew join optimization. \n" +
