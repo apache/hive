@@ -158,7 +158,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsByExprResult r = null;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabled && req.getValidWriteIdList() != null) {
+    if (isCacheEnabled && isRequestCachable(req)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       Object val;
       try {
@@ -189,7 +189,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsSpecByExprResult r = null;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabled && req.getValidWriteIdList() != null) {
+    if (isCacheEnabled && isRequestCachable(req)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       Object val;
       try {
@@ -213,5 +213,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     }
 
     return r;
+  }
+
+  private boolean isRequestCachable(Object request) {
+    if (request instanceof PartitionsByExprRequest) {
+      PartitionsByExprRequest req = (PartitionsByExprRequest) request;
+      return req.getValidWriteIdList() != null && req.getId() != -1;
+    }
+
+    return false;
   }
 }

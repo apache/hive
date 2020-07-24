@@ -50,13 +50,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -1011,5 +1005,13 @@ public class MetaStoreUtils {
       orderSpecs.add(spec);
     }
     return orderSpecs;
+  }
+
+  public static void addPartitonSpecsToList(PartitionsSpecByExprResult r, List<PartitionSpec> result) {
+    result.addAll(r.getPartitionsSpec());
+  }
+
+  public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 }
