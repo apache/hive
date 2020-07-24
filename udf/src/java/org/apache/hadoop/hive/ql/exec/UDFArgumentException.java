@@ -65,16 +65,13 @@ public class UDFArgumentException extends SemanticException {
       Class<?> funcClass,
       List<TypeInfo> argTypeInfos,
       List<Method> methods) {
-    super(getMessage(message, funcClass, argTypeInfos, methods));
+    super(getMessage(message, methods));
     this.funcClass = funcClass;
     this.argTypeInfos = argTypeInfos;
     this.methods = methods;
   }
   
-  private static String getMessage(String message, 
-      Class<?> funcClass,
-      List<TypeInfo> argTypeInfos,
-      List<Method> methods) {
+  private static String getMessage(String message, List<Method> methods) {
     StringBuilder sb = new StringBuilder();
     sb.append(message);
     if (methods != null) {
