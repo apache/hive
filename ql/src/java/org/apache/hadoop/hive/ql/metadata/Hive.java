@@ -4004,9 +4004,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (AcidUtils.isTransactionalTable(tbl)) {
         validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
       }
-      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
-          tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts,
-          validWriteIdList != null ? validWriteIdList.toString() : null);
+
+      PartitionsByExprRequest req = new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(),
+              ByteBuffer.wrap(exprBytes));
+      if (defaultPartitionName != null) {
+        req.setDefaultPartitionName(defaultPartitionName);
+      }
+      req.setCatName(getDefaultCatalog(conf));
+      req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+      req.setId(tbl.getTTable().getId());
+
+      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
       partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
       return hasUnknownParts;
     } finally {
