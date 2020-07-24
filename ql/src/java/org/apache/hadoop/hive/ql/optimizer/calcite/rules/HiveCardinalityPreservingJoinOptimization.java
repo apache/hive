@@ -105,7 +105,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
   public RelNode trim(RelBuilder relBuilder, RelNode root) {
     try {
       if (root.getInputs().size() != 1) {
-        LOG.debug("Only plans where root has one input are supported. Root: " + root);
+        LOG.debug("Only plans where root has one input are supported. Root: {}", root);
         return root;
       }
 
@@ -175,7 +175,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       Map<RexTableInputRef, Integer> tableInputRefMapping = new HashMap<>();
 
       for (TableToJoinBack tableToJoinBack : tableToJoinBackList) {
-        LOG.debug("Joining back table " + tableToJoinBack.joinedBackFields.relOptHiveTable.getName());
+        LOG.debug("Joining back table {}", tableToJoinBack.joinedBackFields.relOptHiveTable.getName());
 
         // 3.1. Create new TableScan of tables to join back
         RelOptHiveTable relOptTable = tableToJoinBack.joinedBackFields.relOptHiveTable;
@@ -249,7 +249,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     for (RexInputRef expr : projectExpressions) {
       Set<RexNode> expressionLineage = relMetadataQuery.getExpressionLineage(projectInput, expr);
       if (expressionLineage == null || expressionLineage.size() != 1) {
-        LOG.debug("Lineage of expression can not be determined: " + expr);
+        LOG.debug("Lineage of expression in node {} can not be determined: {}", projectInput, expr);
         return null;
       }
 
