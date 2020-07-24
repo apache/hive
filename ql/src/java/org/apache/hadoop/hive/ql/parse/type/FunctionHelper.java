@@ -82,6 +82,20 @@ public interface FunctionHelper {
     return expr;
   }
 
+  boolean isAndFunction(FunctionInfo fi);
+
+  boolean isOrFunction(FunctionInfo fi);
+
+  boolean isInFunction(FunctionInfo fi);
+
+  boolean isCompareFunction(FunctionInfo fi);
+
+  boolean isEqualFunction(FunctionInfo fi);
+
+  boolean isConsistentWithinQuery(FunctionInfo fi);
+
+  boolean isStateful(FunctionInfo fi);
+
   /**
    * Class to store aggregate function related information.
    */
