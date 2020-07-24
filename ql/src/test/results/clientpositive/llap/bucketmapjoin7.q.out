@@ -257,8 +257,6 @@ STAGE PLANS:
                       sort order: ++
                       Statistics: Num rows: 72 Data size: 29216 Basic stats: PARTIAL Column stats: NONE
                       tag: -1
-                      TopN: 1
-                      TopN Hash Memory Usage: 0.1
                       auto parallelism: false
         Reducer 3 
             Execution mode: llap

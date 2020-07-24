@@ -118,7 +118,6 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: tw_code (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -248,7 +247,6 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: tw_code (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -413,8 +411,6 @@ STAGE PLANS:
                       Map-reduce partition columns: 0 (type: int)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
-                      TopN: 4
-                      TopN Hash Memory Usage: 0.1
                       value expressions: tw_code (type: string)
                       auto parallelism: true
             Execution mode: llap
@@ -602,8 +598,6 @@ STAGE PLANS:
                       Map-reduce partition columns: 0 (type: int)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
-                      TopN: 4
-                      TopN Hash Memory Usage: 0.1
                       value expressions: tw_code (type: string)
                       auto parallelism: true
             Execution mode: vectorized, llap
@@ -805,7 +799,6 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: tw_code (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

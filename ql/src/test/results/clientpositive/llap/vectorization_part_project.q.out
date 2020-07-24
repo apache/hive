@@ -94,7 +94,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:

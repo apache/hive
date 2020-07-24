@@ -448,7 +448,6 @@ STAGE PLANS:
                       sort order: -++++
                       Map-reduce partition columns: _col0 (type: double), _col1 (type: string), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: string)
                       Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col5 (type: double)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -468,7 +467,6 @@ STAGE PLANS:
                     null sort order: az
                     sort order: -+
                     Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col5 (type: double)
         Reducer 6 
             Execution mode: llap

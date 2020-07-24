@@ -1939,7 +1939,6 @@ GROUP BY "t0"."cs_ship_customer_sk"
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: char(1)), _col1 (type: char(1)), _col2 (type: char(20)), _col3 (type: int), _col4 (type: char(10))
                           Statistics: Num rows: 1 Data size: 499 Basic stats: COMPLETE Column stats: NONE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col5 (type: bigint)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -1959,7 +1958,6 @@ GROUP BY "t0"."cs_ship_customer_sk"
                     null sort order: zzzzz
                     sort order: +++++
                     Statistics: Num rows: 1 Data size: 499 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col3 (type: bigint)
         Reducer 6 
             Execution mode: vectorized, llap
@@ -2429,7 +2427,6 @@ GROUP BY "t0"."cs_ship_customer_sk"
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: char(1)), _col1 (type: char(1)), _col2 (type: char(20)), _col3 (type: int), _col4 (type: char(10))
                           Statistics: Num rows: 1 Data size: 499 Basic stats: COMPLETE Column stats: NONE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col5 (type: bigint)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -2449,7 +2446,6 @@ GROUP BY "t0"."cs_ship_customer_sk"
                     null sort order: zzzzz
                     sort order: +++++
                     Statistics: Num rows: 1 Data size: 499 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col3 (type: bigint)
         Reducer 6 
             Execution mode: vectorized, llap
@@ -3167,7 +3163,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: char(16))
         Reducer 4 
             Execution mode: vectorized, llap
@@ -3998,7 +3993,6 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col2 (type: double), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: decimal(25,6))
         Reducer 7 
             Execution mode: vectorized, llap
@@ -4320,7 +4314,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -5683,7 +5676,6 @@ GROUP BY "t2"."r_reason_desc"
                         null sort order: zzzz
                         sort order: ++++
                         Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

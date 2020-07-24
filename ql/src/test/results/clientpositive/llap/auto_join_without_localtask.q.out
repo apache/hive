@@ -86,7 +86,6 @@ STAGE PLANS:
                     null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -288,7 +287,6 @@ STAGE PLANS:
                     null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 1288 Data size: 229264 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -490,7 +488,6 @@ STAGE PLANS:
                     null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 270 Data size: 48060 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
