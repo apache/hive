@@ -4005,14 +4005,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
       }
 
-      PartitionsByExprRequest req = new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(),
-              ByteBuffer.wrap(exprBytes));
-      if (defaultPartitionName != null) {
-        req.setDefaultPartitionName(defaultPartitionName);
-      }
-      req.setCatName(getDefaultCatalog(conf));
-      req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-      req.setId(tbl.getTTable().getId());
+      PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
+              validWriteIdList != null ? validWriteIdList.toString() : null);
 
       boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
       partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
@@ -4021,6 +4015,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
       long diff = System.nanoTime() - t1;
       LOG.debug(String.format(logString, "getPartitionsByExpr", diff, tbl.getDbName(), tbl.getTableName()));
     }
+  }
+
+  private PartitionsByExprRequest buildPartitionByExprRequest(Table tbl, byte[] exprBytes, String defaultPartitionName,
+                                                              HiveConf conf, String validWriteIdList) {
+    PartitionsByExprRequest req = new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(),
+            ByteBuffer.wrap(exprBytes));
+    if (defaultPartitionName != null) {
+      req.setDefaultPartitionName(defaultPartitionName);
+    }
+    req.setCatName(getDefaultCatalog(conf));
+    req.setValidWriteIdList(validWriteIdList);
+    req.setId(tbl.getTTable().getId());
+
+    return req;
   }
 
   /**

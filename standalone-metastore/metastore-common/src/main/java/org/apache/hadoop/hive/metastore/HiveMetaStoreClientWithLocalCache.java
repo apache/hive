@@ -56,6 +56,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     );
   }
 
+  /**
+   * KeyType is used to differentiate the request types.
+   */
   public enum KeyType {
     PARTITIONS_BY_EXPR(PartitionsByExprRequest.class, PartitionsByExprResult.class),
     PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class);
@@ -69,6 +72,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     }
   }
 
+  /**
+   * CacheKey objects are used as key for the cache.
+   */
   public static class CacheKey{
     KeyType IDENTIFIER;
     Object obj;
@@ -118,6 +124,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return val;
   }
 
+/**
+ * Initializes the cache
+ */
   private static synchronized void initCache() {
     int initSize = 100;
     mscLocalCache = Caffeine.newBuilder()
@@ -132,7 +141,13 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("LoadingCache"));
   }
 
-
+  /**
+   * This method is used to load the cache by calling relevant APIs, depending on the type of the request.
+   *
+   * @param cacheKey key of the cache, containing an identifier and a request object
+   * @return Result object / null
+   * @throws TException
+   */
   private Object getResultObject(CacheKey cacheKey) throws TException {
     Object result = null;
 
@@ -212,11 +227,19 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return r;
   }
 
+  /**
+   * This method determines if the request should be cached.
+   * @param request Request object
+   * @return boolean
+   */
   private boolean isRequestCachable(Object request) {
+    // for PartitionsByExprRequest, cache only requests for transactional tables, with a valid table id
     if (request instanceof PartitionsByExprRequest) {
       PartitionsByExprRequest req = (PartitionsByExprRequest) request;
       return req.getValidWriteIdList() != null && req.getId() != -1;
     }
+
+    // Requests of other types can have different conditions and should be added here.
 
     return false;
   }
