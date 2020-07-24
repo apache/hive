@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -45,7 +48,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
@@ -114,6 +116,14 @@ public class HiveFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isStrictOperandTypes() {
+    return false;
   }
 
   /**
@@ -581,12 +591,28 @@ public class HiveFunctionHelper implements FunctionHelper {
   /**
    * {@inheritDoc}
    */
+  public Set<SqlKind> getAggReduceSupported() {
+    return Sets.immutableEnumSet(
+        Sets.union(SqlKind.AVG_AGG_FUNCTIONS, EnumSet.of(SqlKind.SUM0)));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public RexNode foldExpression(RexNode expr) {
     HiveRexExecutorImpl executor = new HiveRexExecutorImpl();
     List<RexNode> result = new ArrayList<>();
     executor.reduce(rexBuilder, ImmutableList.of(expr), result);
     return result.get(0);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isMultiColumnClauseSupported() {
+    return true;
   }
 
 }

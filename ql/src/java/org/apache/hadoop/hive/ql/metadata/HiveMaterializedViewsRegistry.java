@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -384,9 +385,11 @@ public final class HiveMaterializedViewsRegistry {
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {
     // 0. Recreate cluster
-    final RelOptPlanner planner = CalcitePlanner.createPlanner(conf);
     final RelDataTypeSystem typeSystem = CalcitePlanner.createTypeSystem(conf);
     final RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(typeSystem));
+    // TODO: Create engine specific function helper for MV loading (CDPD-15150)
+    final RelOptPlanner planner = CalcitePlanner.createPlanner(
+        conf, new HiveFunctionHelper(rexBuilder));
     final RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
 
     // 1. Create column schema

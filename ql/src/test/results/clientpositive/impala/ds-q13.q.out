@@ -111,24 +111,25 @@ POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-ImpalaAggregateRel(group=[{}], agg#0=[avg($7)], agg#1=[avg($4)], agg#2=[avg($5)], agg#3=[sum($5)])
-  ImpalaJoinRel(condition=[AND(=($23, $0), OR(AND($24, $25, $11, $17), AND($26, $27, $12, $18), AND($28, $29, $13, $18)))], joinType=[inner])
-    ImpalaJoinRel(condition=[AND(=($2, $19), OR(AND($20, $8), AND($21, $9), AND($22, $10)))], joinType=[inner])
-      ImpalaJoinRel(condition=[=($1, $16)], joinType=[inner])
-        ImpalaJoinRel(condition=[=($6, $15)], joinType=[inner])
-          ImpalaJoinRel(condition=[=($14, $3)], joinType=[inner])
-            ImpalaProjectPassthroughRel(ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_ext_sales_price=[$14], ss_ext_wholesale_cost=[$15], ss_sold_date_sk=[$22], CAST=[CAST($9):BIGINT], BETWEEN=[BETWEEN(false, $21, 100:DECIMAL(3, 0), 200:DECIMAL(5, 0))], BETWEEN9=[BETWEEN(false, $21, 150:DECIMAL(5, 0), 300:DECIMAL(5, 0))], BETWEEN10=[BETWEEN(false, $21, 50:DECIMAL(3, 0), 250:DECIMAL(5, 0))], BETWEEN11=[BETWEEN(false, $12, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0))], BETWEEN12=[BETWEEN(false, $12, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0))], BETWEEN13=[BETWEEN(false, $12, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(OR(BETWEEN(false, $12, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0)), BETWEEN(false, $12, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0)), BETWEEN(false, $12, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))), OR(BETWEEN(false, $21, 100:DECIMAL(3, 0), 200:DECIMAL(5, 0)), BETWEEN(false, $21, 150:DECIMAL(5, 0), 300:DECIMAL(5, 0)), BETWEEN(false, $21, 50:DECIMAL(3, 0), 250:DECIMAL(5, 0))), IS NOT NULL($6), IS NOT NULL($3), IS NOT NULL($4), IS NOT NULL($5), IS NOT NULL($22))])
-            ImpalaProjectPassthroughRel(s_store_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
-          ImpalaProjectPassthroughRel(d_date_sk=[$0])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
-        ImpalaProjectPassthroughRel(hd_demo_sk=[$0], ==[=($3, 3)], =2=[=($3, 1)])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IN($3, 3, 1), IS NOT NULL($0))])
-      ImpalaProjectPassthroughRel(ca_address_sk=[$0], IN=[IN($8, _UTF-16LE'TX', _UTF-16LE'OK', _UTF-16LE'MI')], IN2=[IN($8, _UTF-16LE'WA', _UTF-16LE'NC', _UTF-16LE'OH')], IN3=[IN($8, _UTF-16LE'MT', _UTF-16LE'FL', _UTF-16LE'GA')])
-        ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN($8, _UTF-16LE'TX', _UTF-16LE'OK', _UTF-16LE'MI', _UTF-16LE'WA', _UTF-16LE'NC', _UTF-16LE'OH', _UTF-16LE'MT', _UTF-16LE'FL', _UTF-16LE'GA'), =($10, _UTF-16LE'United States'), IS NOT NULL($0))])
-    ImpalaProjectPassthroughRel(cd_demo_sk=[$0], ==[=($2, _UTF-16LE'U')], =2=[=($3, _UTF-16LE'Secondary')], =3=[=($2, _UTF-16LE'W')], =4=[=($3, _UTF-16LE'College')], =5=[=($2, _UTF-16LE'D')], =6=[=($3, _UTF-16LE'Primary')])
-      ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(IN($2, _UTF-16LE'U', _UTF-16LE'W', _UTF-16LE'D'), IN($3, _UTF-16LE'Secondary', _UTF-16LE'College', _UTF-16LE'Primary'), IS NOT NULL($0))])
+ImpalaProjectPassthroughRel($f0=[/(CAST($0):DOUBLE, CAST($1):DOUBLE)], $f1=[CAST(/($2, CAST($3):DECIMAL(19, 0))):DECIMAL(11, 6)], $f2=[CAST(/($4, CAST($5):DECIMAL(19, 0))):DECIMAL(11, 6)], $f3=[CAST($4):DECIMAL(38, 2)])
+  ImpalaAggregateRel(group=[{}], agg#0=[sum($7)], agg#1=[count($7)], agg#2=[sum($4)], agg#3=[count($4)], agg#4=[sum($5)], agg#5=[count($5)])
+    ImpalaJoinRel(condition=[AND(=($23, $0), OR(AND($24, $25, $11, $17), AND($26, $27, $12, $18), AND($28, $29, $13, $18)))], joinType=[inner])
+      ImpalaJoinRel(condition=[AND(=($2, $19), OR(AND($20, $8), AND($21, $9), AND($22, $10)))], joinType=[inner])
+        ImpalaJoinRel(condition=[=($1, $16)], joinType=[inner])
+          ImpalaJoinRel(condition=[=($6, $15)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($14, $3)], joinType=[inner])
+              ImpalaProjectPassthroughRel(ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_ext_sales_price=[$14], ss_ext_wholesale_cost=[$15], ss_sold_date_sk=[$22], CAST=[CAST($9):BIGINT], BETWEEN=[BETWEEN(false, $21, 100:DECIMAL(3, 0), 200:DECIMAL(5, 0))], BETWEEN9=[BETWEEN(false, $21, 150:DECIMAL(5, 0), 300:DECIMAL(5, 0))], BETWEEN10=[BETWEEN(false, $21, 50:DECIMAL(3, 0), 250:DECIMAL(5, 0))], BETWEEN11=[BETWEEN(false, $12, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0))], BETWEEN12=[BETWEEN(false, $12, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0))], BETWEEN13=[BETWEEN(false, $12, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(OR(BETWEEN(false, $12, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0)), BETWEEN(false, $12, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0)), BETWEEN(false, $12, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))), OR(BETWEEN(false, $21, 100:DECIMAL(3, 0), 200:DECIMAL(5, 0)), BETWEEN(false, $21, 150:DECIMAL(5, 0), 300:DECIMAL(5, 0)), BETWEEN(false, $21, 50:DECIMAL(3, 0), 250:DECIMAL(5, 0))), IS NOT NULL($6), IS NOT NULL($3), IS NOT NULL($4), IS NOT NULL($5), IS NOT NULL($22))])
+              ImpalaProjectPassthroughRel(s_store_sk=[$0])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(d_date_sk=[$0])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(hd_demo_sk=[$0], ==[=($3, 3)], =2=[=($3, 1)])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IN($3, 3, 1), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(ca_address_sk=[$0], IN=[IN($8, _UTF-16LE'TX', _UTF-16LE'OK', _UTF-16LE'MI')], IN2=[IN($8, _UTF-16LE'WA', _UTF-16LE'NC', _UTF-16LE'OH')], IN3=[IN($8, _UTF-16LE'MT', _UTF-16LE'FL', _UTF-16LE'GA')])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN($8, _UTF-16LE'TX', _UTF-16LE'OK', _UTF-16LE'MI', _UTF-16LE'WA', _UTF-16LE'NC', _UTF-16LE'OH', _UTF-16LE'MT', _UTF-16LE'FL', _UTF-16LE'GA'), =($10, _UTF-16LE'United States'), IS NOT NULL($0))])
+      ImpalaProjectPassthroughRel(cd_demo_sk=[$0], ==[=($2, _UTF-16LE'U')], =2=[=($3, _UTF-16LE'Secondary')], =3=[=($2, _UTF-16LE'W')], =4=[=($3, _UTF-16LE'College')], =5=[=($2, _UTF-16LE'D')], =6=[=($3, _UTF-16LE'Primary')])
+        ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(IN($2, _UTF-16LE'U', _UTF-16LE'W', _UTF-16LE'D'), IN($3, _UTF-16LE'Secondary', _UTF-16LE'College', _UTF-16LE'Primary'), IS NOT NULL($0))])
 
 PREHOOK: query: explain select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
@@ -254,18 +255,18 @@ F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
   |  partitions=1
-  |  output exprs: _impala_builtins.avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.avg(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.avg(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
-  |  mem-estimate=40B mem-reservation=0B thread-reservation=0
+  |  output exprs: _impala_builtins.divide(_impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity))), _impala_builtins.casttodouble(_impala_builtins.count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_sales_price)))), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)))), _impala_builtins.casttodecimal(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost))
+  |  mem-estimate=64B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.avg:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.avg:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
+  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=12 row-size=40B cardinality=1
+  |  tuple-ids=11 row-size=64B cardinality=1
   |  in pipelines: 18(GETNEXT), 11(OPEN)
   |
   17:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=11 row-size=40B cardinality=1
+     tuple-ids=11 row-size=64B cardinality=1
      in pipelines: 11(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -273,9 +274,9 @@ Per-Host Resources: mem-estimate=19.69MB mem-reservation=9.69MB thread-reservati
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:AGGREGATE
-  |  output: avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg(default.impala_tpcds_store_sales.ss_ext_sales_price), avg(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
+  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price), count(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=11 row-size=40B cardinality=1
+  |  tuple-ids=11 row-size=64B cardinality=1
   |  in pipelines: 11(GETNEXT), 00(OPEN)
   |
   10:HASH JOIN [INNER JOIN, BROADCAST]

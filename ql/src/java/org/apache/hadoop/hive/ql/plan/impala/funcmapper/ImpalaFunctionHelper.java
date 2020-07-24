@@ -18,20 +18,19 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import java.math.BigDecimal;
+import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
@@ -59,6 +58,14 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
     this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isStrictOperandTypes() {
+    return true;
   }
 
   /**
@@ -219,6 +226,13 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public Set<SqlKind> getAggReduceSupported() {
+    return Sets.immutableEnumSet(SqlKind.AVG, SqlKind.SUM0);
+  }
+
+  /**
    * Returns true if the name corresponds to a scalar function
    * in Impala.
    */
@@ -240,5 +254,14 @@ public class ImpalaFunctionHelper implements FunctionHelper {
    */
   public static boolean isAnalyticFunction(String name) {
     return AggFunctionDetails.ANALYTIC_BUILTINS.contains(name.toUpperCase());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isMultiColumnClauseSupported() {
+    // Currently Impala does not support multi-column IN clauses.
+    return false;
   }
 }

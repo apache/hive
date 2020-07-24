@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -107,7 +109,8 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       return false;
     }
     Aggregate oldAggRel = (Aggregate) call.rels[0];
-    return containsAvgStddevVarCall(oldAggRel.getAggCallList());
+    FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
+    return containsAvgStddevVarCall(oldAggRel.getAggCallList(), functionHelper.getAggReduceSupported());
   }
 
   public void onMatch(RelOptRuleCall ruleCall) {
@@ -120,9 +123,10 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
    *
    * @param aggCallList List of aggregate calls
    */
-  private boolean containsAvgStddevVarCall(List<AggregateCall> aggCallList) {
+  private static boolean containsAvgStddevVarCall(
+      List<AggregateCall> aggCallList, Set<SqlKind> supportedAggs) {
     for (AggregateCall call : aggCallList) {
-      if (isReducible(call.getAggregation().getKind())) {
+      if (isReducible(call.getAggregation().getKind(), supportedAggs)) {
         return true;
       }
     }
@@ -132,14 +136,8 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
   /**
    * Returns whether the aggregate call is a reducible function
    */
-  private boolean isReducible(final SqlKind kind) {
-    if (SqlKind.AVG_AGG_FUNCTIONS.contains(kind)) {
-      return true;
-    }
-    if (kind == SqlKind.SUM0) {
-      return true;
-    }
-    return false;
+  private static boolean isReducible(final SqlKind kind, Set<SqlKind> supportedAggs) {
+    return supportedAggs.contains(kind);
   }
 
   /**
@@ -179,10 +177,13 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final List<RexNode> inputExprs = new ArrayList<>(relBuilder.fields());
 
     // create new agg function calls and rest of project list together
+    final FunctionHelper functionHelper =
+        oldAggRel.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
     for (AggregateCall oldCall : oldCalls) {
       projList.add(
           reduceAgg(
-              oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs));
+              oldAggRel, oldCall, functionHelper.getAggReduceSupported(),
+              newCalls, aggCallMapping, inputExprs, functionHelper.isStrictOperandTypes()));
     }
 
     final int extraArgCount =
@@ -191,7 +192,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       relBuilder.project(inputExprs,
           CompositeList.of(
               relBuilder.peek().getRowType().getFieldNames(),
-              Collections.<String>nCopies(extraArgCount, null)));
+              Collections.nCopies(extraArgCount, null)));
     }
     newAggregateRel(relBuilder, oldAggRel, newCalls);
     relBuilder.project(projList, oldAggRel.getRowType().getFieldNames())
@@ -202,18 +203,20 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
   private RexNode reduceAgg(
       Aggregate oldAggRel,
       AggregateCall oldCall,
+      Set<SqlKind> supportedAggs,
       List<AggregateCall> newCalls,
       Map<AggregateCall, RexNode> aggCallMapping,
-      List<RexNode> inputExprs) {
+      List<RexNode> inputExprs,
+      boolean matchOperandTypes) {
     final SqlKind kind = oldCall.getAggregation().getKind();
-    if (isReducible(kind)) {
+    if (isReducible(kind, supportedAggs)) {
       switch (kind) {
       case SUM0:
         // replace original SUM0(x) with COALESCE(SUM(x), 0)
         return reduceSum0(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
       case AVG:
         // replace original AVG(x) with SUM(x) / COUNT(x)
-        return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
+        return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs, matchOperandTypes);
       case STDDEV_POP:
         // replace original STDDEV_POP(x) with
         //   SQRT(
@@ -328,7 +331,8 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       AggregateCall oldCall,
       List<AggregateCall> newCalls,
       Map<AggregateCall, RexNode> aggCallMapping,
-      List<RexNode> inputExprs) {
+      List<RexNode> inputExprs,
+      boolean matchOperandTypes) {
     final int nGroups = oldAggRel.getGroupCount();
     final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
     final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
@@ -379,7 +383,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
             newCalls,
             aggCallMapping,
             ImmutableList.of(avgInputType));
-    final RexNode denominatorRef =
+    RexNode denominatorRef =
         rexBuilder.addAggCall(countCall,
             nGroups,
             oldAggRel.indicator,
@@ -388,9 +392,20 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
             ImmutableList.of(avgInputType));
 
     if (numeratorRef.getType().getSqlTypeName() != SqlTypeName.DECIMAL) {
-      // If type is not decimal, we enforce the same type as the avg to comply with
-      // Hive semantics
+      // If type is not decimal, we enforce the same type as the avg
       numeratorRef = rexBuilder.ensureType(oldCall.getType(), numeratorRef, true);
+    }
+    if (matchOperandTypes) {
+      RelDataType denominatorType;
+      if (numeratorRef.getType().getSqlTypeName() != SqlTypeName.DECIMAL) {
+        // If type is not decimal, we just match the type
+        denominatorType = oldCall.getType();
+      } else {
+        // If type is decimal, we create decimal with bigint precision
+        denominatorType = typeFactory.createSqlType(SqlTypeName.DECIMAL,
+            typeFactory.getTypeSystem().getDefaultPrecision(SqlTypeName.BIGINT));
+      }
+      denominatorRef = rexBuilder.ensureType(denominatorType, denominatorRef, true);
     }
     final RexNode divideRef =
         rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE, numeratorRef, denominatorRef);

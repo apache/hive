@@ -54,8 +54,8 @@ POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  ImpalaProjectRel(i_item_id=[$0], s_state=[$1], g_state=[GROUPING($6, 0:BIGINT)], agg1=[$2], agg2=[$3], agg3=[$4], agg4=[$5])
-    ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[avg($2)], agg#1=[avg($3)], agg#2=[avg($4)], agg#3=[avg($5)], GROUPING__ID=[GROUPING__ID()])
+  ImpalaProjectRel(i_item_id=[$0], s_state=[$1], g_state=[GROUPING($10, 0:BIGINT)], agg1=[/(CAST($2):DOUBLE, CAST($3):DOUBLE)], agg2=[CAST(/($4, CAST($5):DECIMAL(19, 0))):DECIMAL(11, 6)], agg3=[CAST(/($6, CAST($7):DECIMAL(19, 0))):DECIMAL(11, 6)], agg4=[CAST(/($8, CAST($9):DECIMAL(19, 0))):DECIMAL(11, 6)])
+    ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[sum($3)], agg#3=[count($3)], agg#4=[sum($4)], agg#5=[count($4)], agg#6=[sum($5)], agg#7=[count($5)], GROUPING__ID=[GROUPING__ID()])
       ImpalaProjectPassthroughRel($f0=[$13], $f1=[$11], $f2=[$7], $f3=[$3], $f4=[$5], $f5=[$4])
         ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
           ImpalaJoinRel(condition=[=($2, $10)], joinType=[inner])
@@ -145,7 +145,7 @@ Per-Host Resources: mem-estimate=68.06KB mem-reservation=0B thread-reservation=1
      order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
      limit: 100
      mem-estimate=68.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=17 row-size=64B cardinality=0
+     tuple-ids=14 row-size=64B cardinality=0
      in pipelines: 12(GETNEXT)
 
 F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -155,56 +155,56 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   12:TOP-N [LIMIT=100]
   |  order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=17 row-size=64B cardinality=0
+  |  tuple-ids=14 row-size=64B cardinality=0
   |  in pipelines: 12(GETNEXT), 11(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=16 row-size=64B cardinality=0
+  |  tuple-ids=13 row-size=64B cardinality=0
   |  in pipelines: 11(GETNEXT)
   |
   11:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(12 AS INT) THEN avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(14 AS INT) THEN avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_list_price) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_coupon_amt) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN _impala_builtins.avg(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(12 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(14 AS INT) THEN avg(default.impala_tpcds_store_sales.ss_sales_price) END), aggif(valid_tid(10,12,14) IN (CAST(10 AS INT), CAST(12 AS INT), CAST(14 AS INT)), CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(12 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(14 AS INT) THEN CAST(3 AS BIGINT) END)
-  |  group by: CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(12 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(14 AS INT) THEN NULL END, CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN default.impala_tpcds_store.s_state WHEN CAST(12 AS INT) THEN NULL WHEN CAST(14 AS INT) THEN NULL END, CASE valid_tid(10,12,14) WHEN CAST(10 AS INT) THEN CAST(10 AS INT) WHEN CAST(12 AS INT) THEN CAST(12 AS INT) WHEN CAST(14 AS INT) THEN CAST(14 AS INT) END
+  |  output: aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(10 AS INT) THEN sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(11 AS INT) THEN sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(10 AS INT) THEN count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN CAST(11 AS INT) THEN count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(10 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(11 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_list_price) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(10 AS INT) THEN count(default.impala_tpcds_store_sales.ss_list_price) WHEN CAST(11 AS INT) THEN count(default.impala_tpcds_store_sales.ss_list_price) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(10 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(11 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_coupon_amt) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(10 AS INT) THEN count(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN CAST(11 AS INT) THEN count(default.impala_tpcds_store_sales.ss_coupon_amt) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(10 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(11 AS INT) THEN sum(default.impala_tpcds_store_sales.ss_sales_price) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(10 AS INT) THEN count(default.impala_tpcds_store_sales.ss_sales_price) WHEN CAST(11 AS INT) THEN count(default.impala_tpcds_store_sales.ss_sales_price) END), aggif(valid_tid(9,10,11) IN (CAST(9 AS INT), CAST(10 AS INT), CAST(11 AS INT)), CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN CAST(0 AS BIGINT) WHEN CAST(10 AS INT) THEN CAST(1 AS BIGINT) WHEN CAST(11 AS INT) THEN CAST(3 AS BIGINT) END)
+  |  group by: CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(10 AS INT) THEN default.impala_tpcds_item.i_item_id WHEN CAST(11 AS INT) THEN NULL END, CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN default.impala_tpcds_store.s_state WHEN CAST(10 AS INT) THEN NULL WHEN CAST(11 AS INT) THEN NULL END, CASE valid_tid(9,10,11) WHEN CAST(9 AS INT) THEN CAST(9 AS INT) WHEN CAST(10 AS INT) THEN CAST(10 AS INT) WHEN CAST(11 AS INT) THEN CAST(11 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=15 row-size=68B cardinality=0
+  |  tuple-ids=12 row-size=124B cardinality=0
   |  in pipelines: 11(GETNEXT), 18(OPEN)
   |
   18:AGGREGATE [FINALIZE]
   |  Class 0
-  |    output: _impala_builtins.avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.avg:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.avg:merge(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.avg:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: default.impala_tpcds_item.i_item_id, default.impala_tpcds_store.s_state
   |  Class 1
-  |    output: avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg:merge(default.impala_tpcds_store_sales.ss_list_price), avg:merge(default.impala_tpcds_store_sales.ss_coupon_amt), avg:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum:merge(default.impala_tpcds_store_sales.ss_list_price), count:merge(default.impala_tpcds_store_sales.ss_list_price), sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt), count:merge(default.impala_tpcds_store_sales.ss_coupon_amt), sum:merge(default.impala_tpcds_store_sales.ss_sales_price), count:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: default.impala_tpcds_item.i_item_id, NULL
   |  Class 2
-  |    output: avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg:merge(default.impala_tpcds_store_sales.ss_list_price), avg:merge(default.impala_tpcds_store_sales.ss_coupon_amt), avg:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum:merge(default.impala_tpcds_store_sales.ss_list_price), count:merge(default.impala_tpcds_store_sales.ss_list_price), sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt), count:merge(default.impala_tpcds_store_sales.ss_coupon_amt), sum:merge(default.impala_tpcds_store_sales.ss_sales_price), count:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: NULL, NULL
   |  mem-estimate=266.00MB mem-reservation=69.94MB thread-reservation=0
-  |  tuple-ids=10N,12N,14N row-size=168B cardinality=0
+  |  tuple-ids=9N,10N,11N row-size=336B cardinality=0
   |  in pipelines: 18(GETNEXT), 01(OPEN)
   |
-  17:EXCHANGE [HASH(CASE valid_tid(9,11,13) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 13 THEN murmur_hash(NULL) END,CASE valid_tid(9,11,13) WHEN 9 THEN murmur_hash(default.impala_tpcds_store.s_state) WHEN 11 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) END)]
-     mem-estimate=180.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=9N,11N,13N row-size=168B cardinality=0
+  17:EXCHANGE [HASH(CASE valid_tid(9,10,11) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 11 THEN murmur_hash(NULL) END,CASE valid_tid(9,10,11) WHEN 9 THEN murmur_hash(default.impala_tpcds_store.s_state) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) END)]
+     mem-estimate=348.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=9N,10N,11N row-size=336B cardinality=0
      in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=273.85MB mem-reservation=77.75MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, HASH(CASE valid_tid(9,11,13) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 11 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 13 THEN murmur_hash(NULL) END,CASE valid_tid(9,11,13) WHEN 9 THEN murmur_hash(default.impala_tpcds_store.s_state) WHEN 11 THEN murmur_hash(NULL) WHEN 13 THEN murmur_hash(NULL) END)]
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, HASH(CASE valid_tid(9,10,11) WHEN 9 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 10 THEN murmur_hash(default.impala_tpcds_item.i_item_id) WHEN 11 THEN murmur_hash(NULL) END,CASE valid_tid(9,10,11) WHEN 9 THEN murmur_hash(default.impala_tpcds_store.s_state) WHEN 10 THEN murmur_hash(NULL) WHEN 11 THEN murmur_hash(NULL) END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:AGGREGATE [STREAMING]
   |  Class 0
-  |    output: avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg(default.impala_tpcds_store_sales.ss_list_price), avg(default.impala_tpcds_store_sales.ss_coupon_amt), avg(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_list_price), count(default.impala_tpcds_store_sales.ss_list_price), sum(default.impala_tpcds_store_sales.ss_coupon_amt), count(default.impala_tpcds_store_sales.ss_coupon_amt), sum(default.impala_tpcds_store_sales.ss_sales_price), count(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: default.impala_tpcds_item.i_item_id, default.impala_tpcds_store.s_state
   |  Class 1
-  |    output: avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg(default.impala_tpcds_store_sales.ss_list_price), avg(default.impala_tpcds_store_sales.ss_coupon_amt), avg(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_list_price), count(default.impala_tpcds_store_sales.ss_list_price), sum(default.impala_tpcds_store_sales.ss_coupon_amt), count(default.impala_tpcds_store_sales.ss_coupon_amt), sum(default.impala_tpcds_store_sales.ss_sales_price), count(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: default.impala_tpcds_item.i_item_id, NULL
   |  Class 2
-  |    output: avg(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), avg(default.impala_tpcds_store_sales.ss_list_price), avg(default.impala_tpcds_store_sales.ss_coupon_amt), avg(default.impala_tpcds_store_sales.ss_sales_price)
+  |    output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_list_price), count(default.impala_tpcds_store_sales.ss_list_price), sum(default.impala_tpcds_store_sales.ss_coupon_amt), count(default.impala_tpcds_store_sales.ss_coupon_amt), sum(default.impala_tpcds_store_sales.ss_sales_price), count(default.impala_tpcds_store_sales.ss_sales_price)
   |    group by: NULL, NULL
   |  mem-estimate=266.00MB mem-reservation=70.00MB thread-reservation=0
-  |  tuple-ids=9N,11N,13N row-size=168B cardinality=0
+  |  tuple-ids=9N,10N,11N row-size=336B cardinality=0
   |  in pipelines: 01(GETNEXT)
   |
   09:HASH JOIN [INNER JOIN, BROADCAST]

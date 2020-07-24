@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -80,9 +81,10 @@ public class FieldTrimmerBench {
   @Setup(Level.Trial)
   public void initTrial() {
     // Init cluster and builder
-    final RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
     final RexBuilder rexBuilder = new RexBuilder(
         new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+    final RelOptPlanner planner = CalcitePlanner.createPlanner(
+        new HiveConf(), new HiveFunctionHelper(rexBuilder));
     relOptCluster = RelOptCluster.create(planner, rexBuilder);
     relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, null);
     // Create operator tree

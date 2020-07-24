@@ -19,9 +19,11 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -33,6 +35,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 @Evolving
 public interface FunctionHelper {
+
+  /**
+   * Returns whether engine is strict with operand types for functions,
+   * i.e., operand types need to match.
+   */
+  boolean isStrictOperandTypes();
 
   /**
    * Returns RexNodeExprFactory.
@@ -95,11 +103,21 @@ public interface FunctionHelper {
       throws SemanticException;
 
   /**
+   * Returns the aggregations that can be rewritten into simpler forms.
+   */
+  Set<SqlKind> getAggReduceSupported();
+
+  /**
    * Folds expression according to function semantics.
    */
   default RexNode foldExpression(RexNode expr) {
     return expr;
   }
+
+  /**
+   * Returns whether we should generate multi-column IN clauses.
+   */
+  boolean isMultiColumnClauseSupported();
 
   /**
    * Class to store aggregate function related information.

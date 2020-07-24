@@ -70,8 +70,8 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(=($24, _UTF-16LE'NM'), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_customer_id=[$1])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[IS NOT NULL($0)])
-      ImpalaProjectPassthroughRel(_o__c0=[*($1, 1.2:DECIMAL(2, 1))], ctr_store_sk=[$0])
-        ImpalaAggregateRel(group=[{1}], agg#0=[avg($2)], condition=[IS NOT NULL($1)])
+      ImpalaProjectPassthroughRel(_o__c0=[*(/($1, CAST($2):DECIMAL(19, 0)), 1.2:DECIMAL(2, 1))], ctr_store_sk=[$0])
+        ImpalaAggregateRel(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)], condition=[IS NOT NULL(CAST($2):DECIMAL(19, 0))])
           ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($3)])
             ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
               ImpalaProjectPassthroughRel(sr_returned_date_sk=[$0], sr_customer_sk=[$3], sr_store_sk=[$7], sr_fee=[$14])
@@ -154,35 +154,35 @@ Per-Host Resources: mem-estimate=16.01KB mem-reservation=0B thread-reservation=1
      order by: c_customer_id ASC NULLS LAST
      limit: 100
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=17 row-size=12B cardinality=0
+     tuple-ids=16 row-size=12B cardinality=0
      in pipelines: 15(GETNEXT)
 
 F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=133.91MB mem-reservation=39.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=27, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:TOP-N [LIMIT=100]
   |  order by: c_customer_id ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=17 row-size=12B cardinality=0
+  |  tuple-ids=16 row-size=12B cardinality=0
   |  in pipelines: 15(GETNEXT), 18(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=16 row-size=12B cardinality=0
+  |  tuple-ids=15 row-size=12B cardinality=0
   |  in pipelines: 18(GETNEXT)
   |
   14:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_returns.sr_store_sk = default.impala_tpcds_store_returns_0.sr_store_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_store_returns.sr_fee) > _impala_builtins.multiply(_impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)), CAST(1.2 AS DECIMAL(2,1)))
+  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_store_returns.sr_fee) > _impala_builtins.multiply(_impala_builtins.divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)), _impala_builtins.casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)))), CAST(1.2 AS DECIMAL(2,1)))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=4,5,7,15 row-size=76B cardinality=0
+  |  tuple-ids=4,5,7,14 row-size=84B cardinality=0
   |  in pipelines: 18(GETNEXT), 25(OPEN)
   |
   |--26:EXCHANGE [BROADCAST]
-  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=15 row-size=20B cardinality=0
+  |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=14 row-size=28B cardinality=0
   |     in pipelines: 25(GETNEXT)
   |
   08:HASH JOIN [INNER JOIN, BROADCAST]
@@ -304,20 +304,20 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 07(GETNEXT)
 
 F08:PLAN FRAGMENT [HASH(default.impala_tpcds_store_returns_0.sr_store_sk)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=26, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.avg:merge(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee))
+  |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)), _impala_builtins.count:merge(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee))
   |  group by: default.impala_tpcds_store_returns_0.sr_store_sk
-  |  having: _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)) IS NOT NULL
+  |  having: _impala_builtins.casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=15 row-size=20B cardinality=0
+  |  tuple-ids=14 row-size=28B cardinality=0
   |  in pipelines: 25(GETNEXT), 23(OPEN)
   |
   24:EXCHANGE [HASH(default.impala_tpcds_store_returns_0.sr_store_sk)]
-     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=14 row-size=20B cardinality=0
+     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=28B cardinality=0
      in pipelines: 23(GETNEXT)
 
 F07:PLAN FRAGMENT [HASH(default.impala_tpcds_store_returns_0.sr_customer_sk,default.impala_tpcds_store_returns_0.sr_store_sk)] hosts=1 instances=1
@@ -325,10 +325,10 @@ Per-Host Resources: mem-estimate=256.03MB mem-reservation=68.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=24, HASH(default.impala_tpcds_store_returns_0.sr_store_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   13:AGGREGATE [STREAMING]
-  |  output: avg(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee))
+  |  output: sum(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee)), count(_impala_builtins.sum(default.impala_tpcds_store_returns_0.sr_fee))
   |  group by: default.impala_tpcds_store_returns_0.sr_store_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=14 row-size=20B cardinality=0
+  |  tuple-ids=14 row-size=28B cardinality=0
   |  in pipelines: 23(GETNEXT)
   |
   23:AGGREGATE [FINALIZE]

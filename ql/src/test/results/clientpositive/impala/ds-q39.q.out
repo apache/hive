@@ -62,9 +62,9 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER NOT NULL):INTEGER], mean1=[$6], cov1=[$7])
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])
     ImpalaJoinRel(condition=[AND(=($1, $5), =($0, $4))], joinType=[inner])
-      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[$4], cov=[CASE(=($4, 0), null:DOUBLE, /($3, $4))])
-        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], condition=[AND(>(/($3, $4), 1), IS NOT TRUE(=($4, 0)))])
-          ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[avg($4)])
+      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($4):DOUBLE, CAST($5):DOUBLE)], cov=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), null:DOUBLE, /($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)))])
+        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], $f5=[$5], condition=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), false, >(/($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)), 1))])
+          ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[sum($4)], agg#2=[count($4)])
             ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
               ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($1, $5)], joinType=[inner])
@@ -76,9 +76,9 @@ ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, 2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
-      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[$4], cov=[CASE(=($4, 0), null:DOUBLE, /($3, $4))])
-        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], condition=[AND(>(/($3, $4), 1), IS NOT TRUE(=($4, 0)))])
-          ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[avg($4)])
+      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($4):DOUBLE, CAST($5):DOUBLE)], cov=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), null:DOUBLE, /($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)))])
+        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], $f5=[$5], condition=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), false, >(/($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)), 1))])
+          ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[sum($4)], agg#2=[count($4)])
             ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
               ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($1, $5)], joinType=[inner])
@@ -165,22 +165,22 @@ F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=60.05KB mem-reservation=0B thread-reservation=1
   WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
   |  partitions=1
-  |  output exprs: w_warehouse_sk, i_item_sk, CAST(2 AS INT), $f4, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END, w_warehouse_sk, i_item_sk, _impala_builtins.casttoint(_impala_builtins.add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), $f4, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END
+  |  output exprs: w_warehouse_sk, i_item_sk, CAST(2 AS INT), _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)), CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END, w_warehouse_sk, i_item_sk, _impala_builtins.casttoint(_impala_builtins.add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)), CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END
   |  mem-estimate=56B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, $f4 ASC NULLS LAST, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END ASC NULLS LAST, $f4 ASC NULLS LAST, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END ASC NULLS LAST
+     order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) ASC NULLS LAST, CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END ASC NULLS LAST, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) ASC NULLS LAST, CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END ASC NULLS LAST
      mem-estimate=60.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=56B cardinality=0
      in pipelines: 21(GETNEXT)
 
 F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=135.98MB mem-reservation=41.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=135.99MB mem-reservation=41.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:SORT
-  |  order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, $f4 ASC NULLS LAST, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END ASC NULLS LAST, $f4 ASC NULLS LAST, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END ASC NULLS LAST
-  |  materialized: CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END, CASE WHEN $f4 = 0 THEN NULL ELSE _impala_builtins.divide($f3, $f4) END
+  |  order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) ASC NULLS LAST, CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END ASC NULLS LAST, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) ASC NULLS LAST, CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END ASC NULLS LAST
+  |  materialized: _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)), CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)), CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = 0 THEN NULL ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) END
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=22 row-size=56B cardinality=0
   |  in pipelines: 21(GETNEXT), 26(OPEN)
@@ -189,36 +189,35 @@ Per-Host Resources: mem-estimate=135.98MB mem-reservation=41.94MB thread-reserva
   |  hash predicates: i_item_sk = i_item_sk, w_warehouse_sk = w_warehouse_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=10,21 row-size=80B cardinality=0
+  |  tuple-ids=10,21 row-size=96B cardinality=0
   |  in pipelines: 26(GETNEXT), 31(OPEN)
   |
   |--32:EXCHANGE [BROADCAST]
-  |     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=21 row-size=40B cardinality=0
+  |     mem-estimate=52.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=21 row-size=48B cardinality=0
   |     in pipelines: 31(GETNEXT)
   |
   09:SELECT
-  |  predicates: _impala_builtins.divide($f3, $f4) > CAST(1 AS DOUBLE), _impala_builtins.divide($f3, $f4) > CAST(1.5 AS DOUBLE), _impala_builtins.isnottrue($f4 = CAST(0 AS DOUBLE))
+  |  predicates: CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) > CAST(1 AS DOUBLE) END, CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) > CAST(1.5 AS DOUBLE) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=10 row-size=40B cardinality=0
+  |  tuple-ids=10 row-size=48B cardinality=0
   |  in pipelines: 26(GETNEXT)
   |
   00:UNION
-  |  pass-through-operands: all
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=10 row-size=40B cardinality=0
+  |  tuple-ids=10 row-size=48B cardinality=0
   |  in pipelines: 26(GETNEXT)
   |
   26:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.stddev_samp:merge(default.impala_tpcds_inventory.inv_quantity_on_hand), _impala_builtins.avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))
+  |  output: _impala_builtins.stddev_samp:merge(default.impala_tpcds_inventory.inv_quantity_on_hand), _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)), _impala_builtins.count:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))
   |  group by: default.impala_tpcds_item.i_item_sk, default.impala_tpcds_warehouse.w_warehouse_sk, default.impala_tpcds_warehouse.w_warehouse_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=9 row-size=40B cardinality=0
+  |  tuple-ids=9 row-size=48B cardinality=0
   |  in pipelines: 26(GETNEXT), 01(OPEN)
   |
   25:EXCHANGE [HASH(default.impala_tpcds_item.i_item_sk,default.impala_tpcds_warehouse.w_warehouse_sk,default.impala_tpcds_warehouse.w_warehouse_name)]
-     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=8 row-size=40B cardinality=0
+     mem-estimate=52.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=48B cardinality=0
      in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -226,10 +225,10 @@ Per-Host Resources: mem-estimate=133.86MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=25, HASH(default.impala_tpcds_item.i_item_sk,default.impala_tpcds_warehouse.w_warehouse_sk,default.impala_tpcds_warehouse.w_warehouse_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   08:AGGREGATE [STREAMING]
-  |  output: stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), avg(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))
+  |  output: stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), sum(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)), count(_impala_builtins.casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))
   |  group by: default.impala_tpcds_item.i_item_sk, default.impala_tpcds_warehouse.w_warehouse_sk, default.impala_tpcds_warehouse.w_warehouse_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=8 row-size=40B cardinality=0
+  |  tuple-ids=8 row-size=48B cardinality=0
   |  in pipelines: 01(GETNEXT)
   |
   07:HASH JOIN [INNER JOIN, BROADCAST]
@@ -326,31 +325,30 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 06(GETNEXT)
 
 F11:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=32, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:SELECT
-  |  predicates: _impala_builtins.divide($f3, $f4) > CAST(1 AS DOUBLE), _impala_builtins.isnottrue($f4 = CAST(0 AS DOUBLE))
+  |  predicates: CASE WHEN _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE _impala_builtins.divide($f3, _impala_builtins.divide(_impala_builtins.casttodouble($f4), _impala_builtins.casttodouble($f5))) > CAST(1 AS DOUBLE) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=21 row-size=40B cardinality=0
+  |  tuple-ids=21 row-size=48B cardinality=0
   |  in pipelines: 31(GETNEXT)
   |
   10:UNION
-  |  pass-through-operands: all
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=21 row-size=40B cardinality=0
+  |  tuple-ids=21 row-size=48B cardinality=0
   |  in pipelines: 31(GETNEXT)
   |
   31:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.stddev_samp:merge(default.impala_tpcds_inventory_0.inv_quantity_on_hand), _impala_builtins.avg:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))
+  |  output: _impala_builtins.stddev_samp:merge(default.impala_tpcds_inventory_0.inv_quantity_on_hand), _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)), _impala_builtins.count:merge(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))
   |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_warehouse_0.w_warehouse_sk, default.impala_tpcds_warehouse_0.w_warehouse_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=20 row-size=40B cardinality=0
+  |  tuple-ids=20 row-size=48B cardinality=0
   |  in pipelines: 31(GETNEXT), 11(OPEN)
   |
   30:EXCHANGE [HASH(default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_warehouse_0.w_warehouse_sk,default.impala_tpcds_warehouse_0.w_warehouse_name)]
-     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=19 row-size=40B cardinality=0
+     mem-estimate=52.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=19 row-size=48B cardinality=0
      in pipelines: 11(GETNEXT)
 
 F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -358,10 +356,10 @@ Per-Host Resources: mem-estimate=133.86MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=30, HASH(default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_warehouse_0.w_warehouse_sk,default.impala_tpcds_warehouse_0.w_warehouse_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:AGGREGATE [STREAMING]
-  |  output: stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), avg(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))
+  |  output: stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), sum(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)), count(_impala_builtins.casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))
   |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_warehouse_0.w_warehouse_sk, default.impala_tpcds_warehouse_0.w_warehouse_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=19 row-size=40B cardinality=0
+  |  tuple-ids=19 row-size=48B cardinality=0
   |  in pipelines: 11(GETNEXT)
   |
   17:HASH JOIN [INNER JOIN, BROADCAST]

@@ -499,12 +499,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return resPlan;
   }
 
-  public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<RelNode>());
+  public static RelOptPlanner createPlanner(HiveConf conf, FunctionHelper functionHelper) {
+    return createPlanner(conf, functionHelper, new HashSet<>());
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg) {
+      HiveConf conf, FunctionHelper functionHelper, Set<RelNode> corrScalarRexSQWithAgg) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -522,9 +522,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
+    HiveConfPlannerContext hiveConfPlannerContext =
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy);
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        corrScalarRexSQWithAgg,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy));
+        corrScalarRexSQWithAgg, hiveConfPlannerContext, functionHelper);
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
@@ -1944,13 +1945,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
+      this.functionHelper = createFunctionHelper(rexBuilder);
+      RelOptPlanner planner = createPlanner(conf, functionHelper, corrScalarRexSQWithAgg);
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
-
       this.cluster = optCluster;
       this.relOptSchema = relOptSchema;
-      this.functionHelper = createFunctionHelper(rexBuilder);
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
       // 1. Gen Calcite Plan
@@ -2134,17 +2134,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
-      //TODO: CDPD-12348: Rule had to be disabled for impala because
-      // the reduceAvg method produced a "/" of decimal/bigint which
-      // is not compliant with Impala functions
-      if (!isImpalaPlan(conf)) {
-        rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
-      }
+      rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        // Currently Impala does not support multi-column IN clauses.
-        // We can enable the transformation when it does.
-        boolean multiColumnClauseSupported = !isImpalaPlan(conf);
+        boolean multiColumnClauseSupported =
+            functionHelper.isMultiColumnClauseSupported();
         rules.add(
             new HivePointLookupOptimizerRule.FilterCondition(
                 minNumORClauses, multiColumnClauseSupported));

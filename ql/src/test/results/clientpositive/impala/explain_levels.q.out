@@ -55,12 +55,13 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-05:MERGING-EXCHANGE [UNPARTITIONED]
-02:SORT
-04:AGGREGATE [FINALIZE]
-03:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
-01:AGGREGATE [STREAMING]
-00:SCAN HDFS [default.impala_tpch_lineitem]
+06:MERGING-EXCHANGE [UNPARTITIONED]
+03:SORT
+00:UNION
+05:AGGREGATE [FINALIZE]
+04:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
+02:AGGREGATE [STREAMING]
+01:SCAN HDFS [default.impala_tpch_lineitem]
 
 
   Stage: Stage-0
@@ -128,26 +129,29 @@ STAGE PLANS:
 WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
 |  partitions=1
 |
-05:MERGING-EXCHANGE [UNPARTITIONED]
-|  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+06:MERGING-EXCHANGE [UNPARTITIONED]
+|  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
 |
-02:SORT
-|  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+03:SORT
+|  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
 |  row-size=120B cardinality=0
 |
-04:AGGREGATE [FINALIZE]
-|  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
+00:UNION
+|  row-size=120B cardinality=0
+|
+05:AGGREGATE [FINALIZE]
+|  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
 |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
-|  row-size=120B cardinality=0
+|  row-size=136B cardinality=0
 |
-03:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
+04:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
 |
-01:AGGREGATE [STREAMING]
-|  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), avg(default.impala_tpch_lineitem.l_quantity), avg(default.impala_tpch_lineitem.l_extendedprice), avg(default.impala_tpch_lineitem.l_discount), count()
+02:AGGREGATE [STREAMING]
+|  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), count(default.impala_tpch_lineitem.l_quantity), count(default.impala_tpch_lineitem.l_extendedprice), sum(default.impala_tpch_lineitem.l_discount), count(default.impala_tpch_lineitem.l_discount), count()
 |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
-|  row-size=120B cardinality=0
+|  row-size=136B cardinality=0
 |
-00:SCAN HDFS [default.impala_tpch_lineitem]
+01:SCAN HDFS [default.impala_tpch_lineitem]
    HDFS partitions=1/1 files=0 size=0B
    predicates: default.impala_tpch_lineitem.l_shipdate <= '1998-09-02'
    row-size=68B cardinality=0
@@ -215,49 +219,54 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 |  Per-Host Resources: mem-estimate=124.12KB mem-reservation=0B thread-reservation=1
 WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
 |  partitions=1
-|  output exprs: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus, _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg(default.impala_tpch_lineitem.l_discount), _impala_builtins.count()
+|  output exprs: $f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9
 |  mem-estimate=120B mem-reservation=0B thread-reservation=0
 |
-05:MERGING-EXCHANGE [UNPARTITIONED]
-|  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+06:MERGING-EXCHANGE [UNPARTITIONED]
+|  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
 |  mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
 |  tuple-ids=4 row-size=120B cardinality=0
-|  in pipelines: 02(GETNEXT)
+|  in pipelines: 03(GETNEXT)
 |
-F01:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
-02:SORT
-|  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=140.14MB mem-reservation=46.00MB thread-reservation=1
+03:SORT
+|  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
 |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
 |  tuple-ids=4 row-size=120B cardinality=0
-|  in pipelines: 02(GETNEXT), 04(OPEN)
+|  in pipelines: 03(GETNEXT), 05(OPEN)
 |
-04:AGGREGATE [FINALIZE]
-|  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
+00:UNION
+|  mem-estimate=0B mem-reservation=0B thread-reservation=0
+|  tuple-ids=3 row-size=120B cardinality=0
+|  in pipelines: 05(GETNEXT)
+|
+05:AGGREGATE [FINALIZE]
+|  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
 |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
 |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-|  tuple-ids=3 row-size=120B cardinality=0
-|  in pipelines: 04(GETNEXT), 00(OPEN)
+|  tuple-ids=2 row-size=136B cardinality=0
+|  in pipelines: 05(GETNEXT), 01(OPEN)
 |
-03:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
-|  mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
-|  tuple-ids=2 row-size=120B cardinality=0
-|  in pipelines: 00(GETNEXT)
+04:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
+|  mem-estimate=140.00KB mem-reservation=0B thread-reservation=0
+|  tuple-ids=2 row-size=136B cardinality=0
+|  in pipelines: 01(GETNEXT)
 |
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-01:AGGREGATE [STREAMING]
-|  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_tax))), avg(default.impala_tpch_lineitem.l_quantity), avg(default.impala_tpch_lineitem.l_extendedprice), avg(default.impala_tpch_lineitem.l_discount), count()
+02:AGGREGATE [STREAMING]
+|  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_tax))), count(default.impala_tpch_lineitem.l_quantity), count(default.impala_tpch_lineitem.l_extendedprice), sum(default.impala_tpch_lineitem.l_discount), count(default.impala_tpch_lineitem.l_discount), count()
 |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
 |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-|  tuple-ids=2 row-size=120B cardinality=0
-|  in pipelines: 00(GETNEXT)
+|  tuple-ids=2 row-size=136B cardinality=0
+|  in pipelines: 01(GETNEXT)
 |
-00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+01:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
    HDFS partitions=1/1 files=0 size=0B
    predicates: default.impala_tpch_lineitem.l_shipdate <= '1998-09-02'
    stored statistics:
@@ -267,7 +276,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
    parquet statistics predicates: default.impala_tpch_lineitem.l_shipdate <= '1998-09-02'
    mem-estimate=0B mem-reservation=0B thread-reservation=0
    tuple-ids=0 row-size=68B cardinality=0
-   in pipelines: 00(GETNEXT)
+   in pipelines: 01(GETNEXT)
 
 
   Stage: Stage-0
@@ -332,53 +341,58 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=124.12KB mem-reservation=0B thread-reservation=1
   WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
   |  partitions=1
-  |  output exprs: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus, _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg(default.impala_tpch_lineitem.l_discount), _impala_builtins.count()
+  |  output exprs: $f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9
   |  mem-estimate=120B mem-reservation=0B thread-reservation=0
   |
-  05:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+  06:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
      mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=120B cardinality=0
-     in pipelines: 02(GETNEXT)
+     in pipelines: 03(GETNEXT)
 
-F01:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=140.14MB mem-reservation=46.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=06, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  02:SORT
-  |  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
+  03:SORT
+  |  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=120B cardinality=0
-  |  in pipelines: 02(GETNEXT), 04(OPEN)
+  |  in pipelines: 03(GETNEXT), 05(OPEN)
   |
-  04:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.avg:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=3 row-size=120B cardinality=0
+  |  in pipelines: 05(GETNEXT)
+  |
+  05:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum:merge(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(1, default.impala_tpch_lineitem.l_tax))), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_discount), _impala_builtins.count:merge()
   |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=3 row-size=120B cardinality=0
-  |  in pipelines: 04(GETNEXT), 00(OPEN)
+  |  tuple-ids=2 row-size=136B cardinality=0
+  |  in pipelines: 05(GETNEXT), 01(OPEN)
   |
-  03:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
-     mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=2 row-size=120B cardinality=0
-     in pipelines: 00(GETNEXT)
+  04:EXCHANGE [HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
+     mem-estimate=140.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=136B cardinality=0
+     in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=03, HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, HASH(default.impala_tpch_lineitem.l_returnflag,default.impala_tpch_lineitem.l_linestatus)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  01:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_tax))), avg(default.impala_tpch_lineitem.l_quantity), avg(default.impala_tpch_lineitem.l_extendedprice), avg(default.impala_tpch_lineitem.l_discount), count()
+  02:AGGREGATE [STREAMING]
+  |  output: sum(default.impala_tpch_lineitem.l_quantity), sum(default.impala_tpch_lineitem.l_extendedprice), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount))), sum(_impala_builtins.multiply(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)), _impala_builtins.add(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_tax))), count(default.impala_tpch_lineitem.l_quantity), count(default.impala_tpch_lineitem.l_extendedprice), sum(default.impala_tpch_lineitem.l_discount), count(default.impala_tpch_lineitem.l_discount), count()
   |  group by: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=2 row-size=120B cardinality=0
-  |  in pipelines: 00(GETNEXT)
+  |  tuple-ids=2 row-size=136B cardinality=0
+  |  in pipelines: 01(GETNEXT)
   |
-  00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+  01:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_lineitem.l_shipdate <= '1998-09-02'
      stored statistics:
@@ -388,7 +402,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      parquet statistics predicates: default.impala_tpch_lineitem.l_shipdate <= '1998-09-02'
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=68B cardinality=0
-     in pipelines: 00(GETNEXT)
+     in pipelines: 01(GETNEXT)
 
 
   Stage: Stage-0

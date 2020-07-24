@@ -452,10 +452,12 @@ public class ImpalaRexCall {
 
   private static Function getFunction(String name, List<RexNode> args,
       RelDataType retType) throws HiveException {
-    ScalarFunctionDetails details = ScalarFunctionDetails.get(name,
-        ImpalaTypeConverter.getNormalizedImpalaTypeList(args), retType);
+    List<RelDataType> argTypes = ImpalaTypeConverter.getNormalizedImpalaTypeList(args);
+    ScalarFunctionDetails details = ScalarFunctionDetails.get(
+        name, argTypes, retType);
     if (details == null) {
-      throw new HiveException("Could not find function \"" + name + "\" in Impala.");
+      throw new HiveException("Could not find function \"" + name + "\" in Impala "
+          + "with args " + argTypes + " and return type " + retType);
     }
     return ImpalaFunctionUtil.create(details);
   }
