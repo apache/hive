@@ -461,6 +461,7 @@ public class CliDriver {
         }
         break;
       case '"':
+      case '`':
       case '\'':
         if (!escape) {
           if (!inQuotes) {
