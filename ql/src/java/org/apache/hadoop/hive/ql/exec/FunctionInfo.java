@@ -214,6 +214,10 @@ public class FunctionInfo {
     return null != genericUDTF;
   }
 
+  public Class<? extends TableFunctionResolver>  getTableFunctionResolver() {
+    return tableFunctionResolver;
+  }
+
   /**
    * @return TRUE if the function is a Table Function
    */
@@ -239,6 +243,10 @@ public class FunctionInfo {
 
   public String getClassName() {
     return className;
+  }
+
+  public void setClassName(String className) {
+    this.className = className;
   }
 
   public FunctionResource[] getResources() {

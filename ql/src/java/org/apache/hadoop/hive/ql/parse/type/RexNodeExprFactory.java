@@ -623,28 +623,12 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexNode createFuncCallExpr(TypeInfo returnType, GenericUDF genericUDF,
+  protected RexNode createFuncCallExpr(TypeInfo typeInfo, FunctionInfo functionInfo, String funcText,
       List<RexNode> inputs) throws SemanticException {
-    final String funcText = genericUDF.getClass().getAnnotation(Description.class).name();
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
-    return functionHelper.getExpression(
-        funcText, functionInfo, inputs,
-        TypeConverter.convert(returnType, rexBuilder.getTypeFactory()));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected RexNode createFuncCallExpr(GenericUDF genericUDF, String funcText,
-      List<RexNode> inputs) throws SemanticException {
-    // 1) Function resolution
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
     // 2) Compute return type
     RelDataType returnType;
-    if (genericUDF instanceof SettableUDF) {
-      returnType = TypeConverter.convert(
-          ((SettableUDF) genericUDF).getTypeInfo(), rexBuilder.getTypeFactory());
+    if (typeInfo != null) {
+      returnType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
     } else {
       returnType = functionHelper.getReturnType(functionInfo, inputs);
     }
@@ -798,6 +782,22 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return functionHelper.isConsistentWithinQuery(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isStateful(FunctionInfo fi) {
+    return functionHelper.isStateful(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected boolean isPOSITIVEFuncCallExpr(RexNode expr) {
     return expr.isA(SqlKind.PLUS_PREFIX);
   }
@@ -834,7 +834,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<RexNode> inputs) {
     return false;
   }
 
@@ -853,6 +853,46 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   protected boolean isSTRUCTFuncCallExpr(RexNode expr) {
     return expr instanceof RexCall &&
         ((RexCall) expr).getOperator() == SqlStdOperatorTable.ROW;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isAndFunction(FunctionInfo fi) {
+    return functionHelper.isAndFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isOrFunction(FunctionInfo fi) {
+    return functionHelper.isOrFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isInFunction(FunctionInfo fi) {
+    return functionHelper.isInFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isCompareFunction(FunctionInfo fi) {
+    return functionHelper.isCompareFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isEqualFunction(FunctionInfo fi) {
+    return functionHelper.isEqualFunction(fi);
   }
 
   /**
@@ -927,6 +967,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       default:
         return null;
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
+    return functionHelper.getFunctionInfo(funcName);
   }
 
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {

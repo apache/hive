@@ -1,0 +1,975 @@
+From 4cf072b81a591c4ab31a11c959149edb3d82d569 Mon Sep 17 00:00:00 2001
+From: Steve Carlin <scarlin@cloudera.com>
+Date: Wed, 22 Jul 2020 09:19:03 -0700
+Subject: [PATCH] FENG now function
+
+Change-Id: Ia18372b2b403cd9e91014239b36d243fda5dd3cb
+---
+
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionInfo.java b/ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionInfo.java
+index 6e851c9..12b525a 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionInfo.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionInfo.java
+@@ -214,6 +214,10 @@
+     return null != genericUDTF;
+   }
+ 
++  public Class<? extends TableFunctionResolver>  getTableFunctionResolver() {
++    return tableFunctionResolver;
++  }
++
+   /**
+    * @return TRUE if the function is a Table Function
+    */
+@@ -241,6 +245,10 @@
+     return className;
+   }
+ 
++  public void setClassName(String className) {
++    this.className = className;
++  }
++
+   public FunctionResource[] getResources() {
+     return resources;
+   }
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/exec/HiveFunctionInfo.java b/ql/src/java/org/apache/hadoop/hive/ql/exec/HiveFunctionInfo.java
+new file mode 100644
+index 0000000..c79c739
+--- /dev/null
++++ b/ql/src/java/org/apache/hadoop/hive/ql/exec/HiveFunctionInfo.java
+@@ -0,0 +1,53 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.hadoop.hive.ql.exec;
++
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
++import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
++
++/**
++ * HiveFunctionInfo.
++ *
++ */
++public class HiveFunctionInfo extends FunctionInfo {
++
++  private final GenericUDF hiveGenericUDF;
++
++  private final GenericUDTF hiveGenericUDTF;
++
++  public HiveFunctionInfo(FunctionInfo functionInfo) {
++    super(functionInfo.getFunctionType(), functionInfo.getDisplayName(),
++        functionInfo.getTableFunctionResolver(), functionInfo.getResources());
++
++    this.setClassName(functionInfo.getClassName());
++    this.hiveGenericUDF = super.getGenericUDF();
++    this.hiveGenericUDTF = super.getGenericUDTF();
++  }
++
++  @Override
++  public GenericUDF getGenericUDF() {
++    return hiveGenericUDF;
++  }
++
++  @Override
++  public GenericUDTF getGenericUDTF() {
++    return hiveGenericUDTF;
++  }
++}
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprFactory.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprFactory.java
+index c05231c..8bf7f9a 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprFactory.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprFactory.java
+@@ -22,6 +22,7 @@
+ import java.util.List;
+ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
++import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+ import org.apache.hadoop.hive.ql.parse.ASTNode;
+ import org.apache.hadoop.hive.ql.parse.RowResolver;
+ import org.apache.hadoop.hive.ql.parse.SemanticException;
+@@ -300,13 +301,7 @@
+   /**
+    * Creates function call expression.
+    */
+-  protected abstract T createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
+-      List<T> inputs) throws SemanticException;
+-
+-  /**
+-   * Creates function call expression.
+-   */
+-  protected abstract T createFuncCallExpr(GenericUDF genericUDF, String funcText,
++  protected abstract T createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi, String funcText,
+       List<T> inputs) throws SemanticException;
+ 
+   /**
+@@ -334,10 +329,23 @@
+    */
+   protected abstract boolean isSTRUCTFuncCallExpr(T expr);
+ 
++  protected abstract boolean isAndFunction(FunctionInfo fi);
++
++  protected abstract boolean isOrFunction(FunctionInfo fi);
++
++  protected abstract boolean isInFunction(FunctionInfo fi);
++
++  protected abstract boolean isCompareFunction(FunctionInfo fi);
++
++  protected abstract boolean isEqualFunction(FunctionInfo fi);
++
++  protected abstract boolean isConsistentWithinQuery(FunctionInfo fi);
++
++  protected abstract boolean isStateful(FunctionInfo fi);
+   /**
+    * Returns true if a CASE expression can be converted into a COALESCE function call.
+    */
+-  protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<T> inputs);
++  protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<T> inputs);
+ 
+   /* SUBQUERIES */
+   /**
+@@ -400,4 +408,9 @@
+    */
+   protected abstract List<String> getStructNameList(T expr);
+ 
++  /**
++   * Returns the FunctionInfo given the name
++   */
++  protected abstract FunctionInfo getFunctionInfo(String funcName) throws SemanticException;
++
+ }
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprNodeDescExprFactory.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprNodeDescExprFactory.java
+index 7868e1f..f1e3342 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprNodeDescExprFactory.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/ExprNodeDescExprFactory.java
+@@ -39,6 +39,7 @@
+ import org.apache.hadoop.hive.ql.ErrorMsg;
+ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+ import org.apache.hadoop.hive.ql.exec.Description;
++import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+@@ -56,7 +57,16 @@
+ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+ import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
+ import org.apache.hadoop.hive.ql.plan.SubqueryType;
++import org.apache.hadoop.hive.ql.udf.SettableUDF;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+ import org.apache.hadoop.hive.serde.serdeConstants;
+@@ -563,17 +573,13 @@
+    * {@inheritDoc}
+    */
+   @Override
+-  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
+-      List<ExprNodeDesc> inputs) {
+-    return new ExprNodeGenericFuncDesc(typeInfo, genericUDF, inputs);
+-  }
+-
+-  /**
+-   * {@inheritDoc}
+-   */
+-  @Override
+-  protected ExprNodeGenericFuncDesc createFuncCallExpr(GenericUDF genericUDF,
++  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi,
+       String funcText, List<ExprNodeDesc> inputs) throws UDFArgumentException {
++    GenericUDF genericUDF = fi.getGenericUDF();
++    if (genericUDF instanceof SettableUDF) {
++      ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
++    }
++
+     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
+   }
+ 
+@@ -720,6 +726,63 @@
+    * {@inheritDoc}
+    */
+   @Override
++  protected boolean isAndFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isOrFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPOr;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isInFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFIn;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isCompareFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isEqualFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPEqual
++        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
++    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isStateful(FunctionInfo fi) {
++    return FunctionRegistry.isStateful(fi.getGenericUDF());
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
+   protected ExprNodeDesc setTypeInfo(ExprNodeDesc expr, TypeInfo type) {
+     expr.setTypeInfo(type);
+     return expr;
+@@ -729,7 +792,8 @@
+    * {@inheritDoc}
+    */
+   @Override
+-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<ExprNodeDesc> inputs) {
++  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
++    GenericUDF genericUDF = fi.getGenericUDF();
+     if (genericUDF instanceof GenericUDFWhen && inputs.size() == 3 &&
+         inputs.get(1) instanceof ExprNodeConstantDesc &&
+         inputs.get(2) instanceof ExprNodeConstantDesc) {
+@@ -830,4 +894,13 @@
+     }
+   }
+ 
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
++    return FunctionRegistry.getFunctionInfo(funcName);
++  }
++
++
+ }
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/FunctionHelper.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/FunctionHelper.java
+index e9775bc..f5e7702 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/FunctionHelper.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/FunctionHelper.java
+@@ -101,6 +101,20 @@
+     return expr;
+   }
+ 
++  boolean isAndFunction(FunctionInfo fi);
++
++  boolean isOrFunction(FunctionInfo fi);
++
++  boolean isInFunction(FunctionInfo fi);
++
++  boolean isCompareFunction(FunctionInfo fi);
++
++  boolean isEqualFunction(FunctionInfo fi);
++
++  boolean isConsistentWithinQuery(FunctionInfo fi);
++
++  boolean isStateful(FunctionInfo fi);
++
+   /**
+    * Class to store aggregate function related information.
+    */
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/HiveFunctionHelper.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/HiveFunctionHelper.java
+index 1086f41..8c973fe 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/HiveFunctionHelper.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/HiveFunctionHelper.java
+@@ -43,6 +43,7 @@
+ import org.apache.hadoop.hive.conf.HiveConf;
+ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
++import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
+ import org.apache.hadoop.hive.ql.metadata.Hive;
+ import org.apache.hadoop.hive.ql.metadata.HiveException;
+ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+@@ -68,7 +69,12 @@
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
++import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+@@ -138,7 +144,7 @@
+   @Override
+   public FunctionInfo getFunctionInfo(String functionText)
+       throws SemanticException {
+-    return FunctionRegistry.getFunctionInfo(functionText);
++    return new HiveFunctionInfo(FunctionRegistry.getFunctionInfo(functionText));
+   }
+ 
+   /**
+@@ -589,4 +595,67 @@
+     return result.get(0);
+   }
+ 
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isAndFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isOrFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPOr;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isInFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFIn;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isCompareFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isEqualFunction(FunctionInfo fi) {
++    return fi.getGenericUDF() instanceof GenericUDFOPEqual
++        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isConsistentWithinQuery(FunctionInfo fi) {
++    //TODO: don't getGenericUDF
++    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isStateful(FunctionInfo fi) {
++    //TODO: don't getGenericUDF
++    GenericUDF genericUDF = fi.getGenericUDF();
++    if (genericUDF == null) {
++      return false;
++    }
++    return FunctionRegistry.isStateful(fi.getGenericUDF());
++  }
++
+ }
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/RexNodeExprFactory.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/RexNodeExprFactory.java
+index 36d8158..2aba813 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/RexNodeExprFactory.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/RexNodeExprFactory.java
+@@ -638,28 +638,12 @@
+    * {@inheritDoc}
+    */
+   @Override
+-  protected RexNode createFuncCallExpr(TypeInfo returnType, GenericUDF genericUDF,
++  protected RexNode createFuncCallExpr(TypeInfo typeInfo, FunctionInfo functionInfo, String funcText,
+       List<RexNode> inputs) throws SemanticException {
+-    final String funcText = genericUDF.getClass().getAnnotation(Description.class).name();
+-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
+-    return functionHelper.getExpression(
+-        funcText, functionInfo, inputs,
+-        TypeConverter.convert(returnType, rexBuilder.getTypeFactory()));
+-  }
+-
+-  /**
+-   * {@inheritDoc}
+-   */
+-  @Override
+-  protected RexNode createFuncCallExpr(GenericUDF genericUDF, String funcText,
+-      List<RexNode> inputs) throws SemanticException {
+-    // 1) Function resolution
+-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
+     // 2) Compute return type
+     RelDataType returnType;
+-    if (genericUDF instanceof SettableUDF) {
+-      returnType = TypeConverter.convert(
+-          ((SettableUDF) genericUDF).getTypeInfo(), rexBuilder.getTypeFactory());
++    if (typeInfo != null) {
++      returnType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+     } else {
+       returnType = functionHelper.getReturnType(functionInfo, inputs);
+     }
+@@ -813,6 +797,22 @@
+    * {@inheritDoc}
+    */
+   @Override
++  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
++    return functionHelper.isConsistentWithinQuery(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isStateful(FunctionInfo fi) {
++    return functionHelper.isStateful(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
+   protected boolean isPOSITIVEFuncCallExpr(RexNode expr) {
+     return expr.isA(SqlKind.PLUS_PREFIX);
+   }
+@@ -849,7 +849,7 @@
+    * {@inheritDoc}
+    */
+   @Override
+-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
++  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<RexNode> inputs) {
+     return false;
+   }
+ 
+@@ -874,6 +874,46 @@
+    * {@inheritDoc}
+    */
+   @Override
++  protected boolean isAndFunction(FunctionInfo fi) {
++    return functionHelper.isAndFunction(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isOrFunction(FunctionInfo fi) {
++    return functionHelper.isOrFunction(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isInFunction(FunctionInfo fi) {
++    return functionHelper.isInFunction(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isCompareFunction(FunctionInfo fi) {
++    return functionHelper.isCompareFunction(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected boolean isEqualFunction(FunctionInfo fi) {
++    return functionHelper.isEqualFunction(fi);
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
+   protected boolean isConstantStruct(RexNode expr) {
+     return expr.getType().getSqlTypeName() == SqlTypeName.ROW &&
+         HiveCalciteUtil.isLiteral(expr);
+@@ -944,6 +984,14 @@
+     }
+   }
+ 
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
++    return functionHelper.getFunctionInfo(funcName);
++  }
++
+   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
+     throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+         "Invalid operator:" + comparisonOp.toString()));
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/TypeCheckProcFactory.java b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/TypeCheckProcFactory.java
+index 514c202..c0030c9 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/parse/type/TypeCheckProcFactory.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/parse/type/TypeCheckProcFactory.java
+@@ -67,15 +67,6 @@
+ import org.apache.hadoop.hive.ql.session.SessionState;
+ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+ import org.apache.hadoop.hive.ql.udf.SettableUDF;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+ import org.apache.hadoop.hive.serde.serdeConstants;
+ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+@@ -699,7 +690,7 @@
+    */
+   public class DefaultExprProcessor implements SemanticNodeProcessor {
+ 
+-    protected boolean isRedundantConversionFunction(ASTNode expr,
++    private boolean isRedundantConversionFunction(ASTNode expr,
+         boolean isFunction, List<T> children) {
+       if (!isFunction) {
+         return false;
+@@ -731,7 +722,7 @@
+ 
+       FunctionInfo fi;
+       try {
+-        fi = FunctionRegistry.getFunctionInfo(udfName);
++        fi = exprFactory.getFunctionInfo(udfName);
+       } catch (SemanticException e) {
+         throw new UDFArgumentException(e);
+       }
+@@ -739,23 +730,15 @@
+         throw new UDFArgumentException(udfName + " not found.");
+       }
+ 
+-      GenericUDF genericUDF = fi.getGenericUDF();
+-      if (genericUDF == null) {
++      if (!fi.isGenericUDF()) {
+         throw new UDFArgumentException(udfName
+             + " is an aggregation function or a table function.");
+       }
+ 
+-      // Add udfData to UDF if necessary
+-      if (typeInfo != null) {
+-        if (genericUDF instanceof SettableUDF) {
+-          ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
+-        }
+-      }
+-
+       List<T> childrenList = new ArrayList<>(children.length);
+ 
+       childrenList.addAll(Arrays.asList(children));
+-      return exprFactory.createFuncCallExpr(genericUDF, udfName, childrenList);
++      return exprFactory.createFuncCallExpr(typeInfo, fi, udfName, childrenList);
+     }
+ 
+     public T getFuncExprNodeDesc(String udfName, T... children) throws SemanticException {
+@@ -779,11 +762,11 @@
+       return getDefaultExprProcessor().getFuncExprNodeDescWithUdfData(baseType, tableFieldTypeInfo, column);
+     }
+ 
+-    protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
+-        List<T> children, GenericUDF genericUDF) throws SemanticException {
++    private void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
++        List<T> children) throws SemanticException {
+       // Check if a bigint is implicitely cast to a double as part of a comparison
+       // Perform the check here instead of in GenericUDFBaseCompare to guarantee it is only run once per operator
+-      if (genericUDF instanceof GenericUDFBaseCompare && children.size() == 2) {
++      if (exprFactory.isCompareFunction(fi) && children.size() == 2) {
+         TypeInfo oiTypeInfo0 = exprFactory.getTypeInfo(children.get(0));
+         TypeInfo oiTypeInfo1 = exprFactory.getTypeInfo(children.get(1));
+ 
+@@ -819,14 +802,14 @@
+               ErrorMsg.UDAF_INVALID_LOCATION.getMsg(), expr));
+         }
+       }
+-      if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
+-        if (FunctionRegistry.isStateful(genericUDF)) {
++      if (!ctx.getAllowStatefulFunctions()) {
++        if (exprFactory.isStateful(fi)) {
+           throw new SemanticException(ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+         }
+       }
+     }
+ 
+-    protected void insertCast(String funcText, List<T> children) throws SemanticException {
++    private void insertCast(String funcText, List<T> children) throws SemanticException {
+       // substring, concat UDFs expect first argument as string. Therefore this method inserts explicit cast
+       // to cast the first operand to string
+       if (funcText.equals("substring") || funcText.equals("concat")) {
+@@ -849,17 +832,15 @@
+       String funcText = getFunctionText(node, isFunction);
+       T expr;
+       if (funcText.equals(".")) {
+-        // "." : FIELD Expression
+-
+         assert (children.size() == 2);
+         // Only allow constant field name for now
+         assert (exprFactory.isConstantExpr(children.get(1)));
+         T object = children.get(0);
+-
++       
+         // Calculate result TypeInfo
+         String fieldNameString = exprFactory.getConstantValueAsString(children.get(1));
+         TypeInfo objectTypeInfo = exprFactory.getTypeInfo(object);
+-
++       
+         // Allow accessing a field of list element structs directly from a list
+         boolean isList = (objectTypeInfo.getCategory() == ObjectInspector.Category.LIST);
+         if (isList) {
+@@ -873,9 +854,12 @@
+         if (isList) {
+           t = TypeInfoFactory.getListTypeInfo(t);
+         }
+-
++       
+         expr = exprFactory.createNestedColumnRefExpr(t, children.get(0), fieldNameString, isList);
+       } else if (funcText.equals("[")) {
++        funcText = "index";
++        FunctionInfo fi = exprFactory.getFunctionInfo(funcText);
++
+         // "[]" : LSQUARE/INDEX Expression
+         if (!ctx.getallowIndexExpr()) {
+           throw new SemanticException(ASTErrorUtils.getMsg(
+@@ -897,7 +881,7 @@
+ 
+           // Calculate TypeInfo
+           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
+-          expr = exprFactory.createFuncCallExpr(t, FunctionRegistry.getGenericUDFForIndex(), children);
++          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
+         } else if (myt.getCategory() == Category.MAP) {
+           if (!TypeInfoUtils.implicitConvertible(exprFactory.getTypeInfo(children.get(1)),
+               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
+@@ -906,14 +890,14 @@
+           }
+           // Calculate TypeInfo
+           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
+-          expr = exprFactory.createFuncCallExpr(t, FunctionRegistry.getGenericUDFForIndex(), children);
++          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
+         } else {
+           throw new SemanticException(ASTErrorUtils.getMsg(
+               ErrorMsg.NON_COLLECTION_TYPE.getMsg(), node, myt.getTypeName()));
+         }
+       } else {
+         // other operators or functions
+-        FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcText);
++        FunctionInfo fi = exprFactory.getFunctionInfo(funcText);
+ 
+         if (fi == null) {
+           if (isFunction) {
+@@ -925,63 +909,21 @@
+           }
+         }
+ 
+-        // getGenericUDF() actually clones the UDF. Just call it once and reuse.
+-        GenericUDF genericUDF = fi.getGenericUDF();
+-
+         if (!fi.isNative()) {
+           ctx.getUnparseTranslator().addIdentifierTranslation(
+               (ASTNode) node.getChild(0));
+         }
+ 
+         // Handle type casts that may contain type parameters
+-        if (isFunction) {
+-          ASTNode funcNameNode = (ASTNode) node.getChild(0);
+-          switch (funcNameNode.getType()) {
+-            case HiveParser.TOK_CHAR:
+-              // Add type params
+-              CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
+-              if (genericUDF != null) {
+-                ((SettableUDF) genericUDF).setTypeInfo(charTypeInfo);
+-              }
+-              break;
+-            case HiveParser.TOK_VARCHAR:
+-              VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
+-              if (genericUDF != null) {
+-                ((SettableUDF) genericUDF).setTypeInfo(varcharTypeInfo);
+-              }
+-              break;
+-            case HiveParser.TOK_TIMESTAMPLOCALTZ:
+-              TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
+-              HiveConf conf;
+-              try {
+-                conf = Hive.get().getConf();
+-              } catch (HiveException e) {
+-                throw new SemanticException(e);
+-              }
+-              timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
+-              if (genericUDF != null) {
+-                ((SettableUDF) genericUDF).setTypeInfo(timestampLocalTZTypeInfo);
+-              }
+-              break;
+-            case HiveParser.TOK_DECIMAL:
+-              DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+-              if (genericUDF != null) {
+-                ((SettableUDF) genericUDF).setTypeInfo(decTypeInfo);
+-              }
+-              break;
+-            default:
+-              // Do nothing
+-              break;
+-          }
+-        }
++        TypeInfo typeInfo = isFunction ? getTypeInfo((ASTNode) node.getChild(0)) : null;
+ 
+         insertCast(funcText, children);
+ 
+-        validateUDF(node, isFunction, ctx, fi, children, genericUDF);
++        validateUDF(node, isFunction, ctx, fi, children);
+ 
+         // Try to infer the type of the constant only if there are two
+         // nodes, one of them is column and the other is numeric const
+-        if (genericUDF instanceof GenericUDFBaseCompare
++        if (exprFactory.isCompareFunction(fi)
+             && children.size() == 2
+             && ((exprFactory.isConstantExpr(children.get(0))
+             && exprFactory.isColumnRefExpr(children.get(1)))
+@@ -999,15 +941,19 @@
+           if (newChild == null) {
+             // non-interpretable as target type...
+             // TODO: all comparisons with null should result in null
+-            if (genericUDF instanceof GenericUDFOPEqual
+-                && !(genericUDF instanceof GenericUDFOPEqualNS)) {
++            if (exprFactory.isEqualFunction(fi)) {
+               return exprFactory.createBooleanConstantExpr(null);
+             }
+           } else {
+             children.set(constIdx, newChild);
+           }
+         }
+-        if (genericUDF instanceof GenericUDFIn) {
++	// The "in" function is sometimes changed to an "or".  Later on, the "or"
++	// function is processed a little differently.  We don't want to process this
++	// new "or" function differently, so we track it with this variable.
++	// TODO: Test to see if this can be removed.
++        boolean functionInfoChangedFromIn = false;
++        if (exprFactory.isInFunction(fi)) {
+           // We will split the IN clause into different IN clauses, one for each
+           // different value type. The reason is that Hive and Calcite treat
+           // types in IN clauses differently and it is practically impossible
+@@ -1044,19 +990,20 @@
+           if (numEntries == 1) {
+             children.addAll(expressions.asMap().values().iterator().next());
+             funcText = "in";
+-            genericUDF = new GenericUDFIn();
++            fi = exprFactory.getFunctionInfo("in");
+           } else {
++            FunctionInfo inFunctionInfo  = exprFactory.getFunctionInfo("in");
+             for (Collection<T> c : expressions.asMap().values()) {
+-              newExprs.add(
+-                  exprFactory.createFuncCallExpr(
+-                      new GenericUDFIn(), "in", (List<T>) c));
++              newExprs.add(exprFactory.createFuncCallExpr(null, inFunctionInfo,
++	          "in", (List<T>) c));
+             }
+             children.addAll(newExprs);
+             funcText = "or";
+-            genericUDF = new GenericUDFOPOr();
++            fi = exprFactory.getFunctionInfo("or");
++	    functionInfoChangedFromIn = true;
+           }
+         }
+-        if (genericUDF instanceof GenericUDFOPOr) {
++        if (exprFactory.isOrFunction(fi) && !functionInfoChangedFromIn) {
+           // flatten OR
+           List<T> childrenList = new ArrayList<>(children.size());
+           for (T child : children) {
+@@ -1069,8 +1016,8 @@
+               childrenList.add(child);
+             }
+           }
+-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
+-        } else if (genericUDF instanceof GenericUDFOPAnd) {
++          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
++        } else if (exprFactory.isAndFunction(fi)) {
+           // flatten AND
+           List<T> childrenList = new ArrayList<>(children.size());
+           for (T child : children) {
+@@ -1083,22 +1030,24 @@
+               childrenList.add(child);
+             }
+           }
+-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
+-        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(genericUDF, children)) {
++          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
++        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(fi, children)) {
+           // Rewrite CASE into COALESCE
+-          expr = exprFactory.createFuncCallExpr(new GenericUDFCoalesce(), "coalesce",
++          fi = exprFactory.getFunctionInfo("coalesce");
++          expr = exprFactory.createFuncCallExpr(null, fi, "coalesce",
+               Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
+           if (Boolean.FALSE.equals(exprFactory.getConstantValue(children.get(1)))) {
+-            expr = exprFactory.createFuncCallExpr(new GenericUDFOPNot(), "not", Lists.newArrayList(expr));
++            fi = exprFactory.getFunctionInfo("not");
++            expr = exprFactory.createFuncCallExpr(null, fi, "not", Lists.newArrayList(expr));
+           }
+         } else {
+-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, children);
++          expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
+         }
+ 
+         // If the function is deterministic and the children are constants,
+         // we try to fold the expression to remove e.g. cast on constant
+         if (ctx.isFoldExpr() && exprFactory.isFuncCallExpr(expr) &&
+-            FunctionRegistry.isConsistentWithinQuery(genericUDF) &&
++            exprFactory.isConsistentWithinQuery(fi) &&
+             exprFactory.isAllConstants(children)) {
+           T constantExpr = exprFactory.foldExpr(expr);
+           if (constantExpr != null) {
+@@ -1126,6 +1075,28 @@
+       return expr;
+     }
+ 
++    private TypeInfo getTypeInfo(ASTNode funcNameNode) throws SemanticException {
++      switch (funcNameNode.getType()) {
++        case HiveParser.TOK_CHAR:
++          return ParseUtils.getCharTypeInfo(funcNameNode);
++        case HiveParser.TOK_VARCHAR:
++          return ParseUtils.getVarcharTypeInfo(funcNameNode);
++        case HiveParser.TOK_TIMESTAMPLOCALTZ:
++          TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
++          HiveConf conf;
++          try {
++            conf = Hive.get().getConf();
++          } catch (HiveException e) {
++            throw new SemanticException(e);
++          }
++          timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
++          return timestampLocalTZTypeInfo;
++        case HiveParser.TOK_DECIMAL:
++          return ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
++        default:
++	  return null;
++      }
++    }
+     /**
+      * Interprets the given value as the input columnDesc if possible.
+      * Otherwise, returns input valueDesc as is.
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/plan/impala/funcmapper/ImpalaFunctionHelper.java b/ql/src/java/org/apache/hadoop/hive/ql/plan/impala/funcmapper/ImpalaFunctionHelper.java
+index f6dc6fc..557d66b 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/plan/impala/funcmapper/ImpalaFunctionHelper.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/plan/impala/funcmapper/ImpalaFunctionHelper.java
+@@ -200,6 +200,49 @@
+     return getAggregateCommon(isDistinct, isAllColumns, aggregateName, aggregateParameters);
+   }
+ 
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isAndFunction(FunctionInfo fi) {
++    return fi.getDisplayName().equals("and");
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isOrFunction(FunctionInfo fi) {
++    return fi.getDisplayName().equals("or");
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isInFunction(FunctionInfo fi) {
++    return fi.getDisplayName().equals("in");
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isCompareFunction(FunctionInfo fi) {
++    return fi.getDisplayName().equals("=") || fi.getDisplayName().equals("==") ||
++        fi.getDisplayName().equals("<") || fi.getDisplayName().equals("<=") ||
++        fi.getDisplayName().equals(">") || fi.getDisplayName().equals(">=") ||
++        fi.getDisplayName().equals("!=") || fi.getDisplayName().equals("<>");
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isEqualFunction(FunctionInfo fi) {
++    return fi.getDisplayName().equals("=") || fi.getDisplayName().equals("==");
++  }
++
+   private AggregateInfo getAggregateCommon(boolean isDistinct, boolean isAllColumns, String aggregateName,
+       List<RexNode> aggregateParameters) throws SemanticException {
+     try {
+@@ -241,4 +284,22 @@
+   public static boolean isAnalyticFunction(String name) {
+     return AggFunctionDetails.ANALYTIC_BUILTINS.contains(name.toUpperCase());
+   }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isConsistentWithinQuery(FunctionInfo fi) {
++    //TODO: Need to implement
++    return false;
++  }
++
++  /**
++   * {@inheritDoc}
++   */
++  @Override
++  public boolean isStateful(FunctionInfo fi) {
++    //TODO: Need to implement
++    return false;
++  }
+ }
