@@ -409,7 +409,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
         Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
-    // Though we pass allowCast=true as parameter, this will return a
+    // Note. Though we pass allowCast=true as parameter, this method will return a
     // VARCHAR literal without a CAST.
     return (RexLiteral) rexBuilder.makeLiteral(
         makeHiveUnicodeString(value), stringType, true);

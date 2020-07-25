@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -342,20 +343,21 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
       case CHAR: {
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "char values must use NlsString for correctness");
         int precision = lType.getPrecision();
         HiveChar value = new HiveChar((String) literal.getValue3(), precision);
         return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
       }
       case VARCHAR: {
-        if (literal.getValue() instanceof NlsString) {
-          int precision = lType.getPrecision();
-          if (precision == Integer.MAX_VALUE) {
-            return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          }
-          HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-          return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "varchar/string values must use NlsString for correctness");
+        int precision = lType.getPrecision();
+        if (precision == Integer.MAX_VALUE) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
         }
-        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
+        HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:
