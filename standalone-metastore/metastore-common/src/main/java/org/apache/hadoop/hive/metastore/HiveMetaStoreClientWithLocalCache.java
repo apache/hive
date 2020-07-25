@@ -109,7 +109,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return keySize + valSize;
   }
 
-  private Object getOrLoad(CacheKey key) {
+  private Object load(CacheKey key) {
     Object val;
     try {
       val = getResultObject(key);
@@ -174,7 +174,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       Object val;
       try {
-        val = mscLocalCache.get(cacheKey, this::getOrLoad); // get either the result or an Exception
+        val = mscLocalCache.get(cacheKey, this::load); // get either the result or an Exception
 
         if (val instanceof PartitionsByExprResult) {
           r = (PartitionsByExprResult) val;
@@ -205,7 +205,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       Object val;
       try {
-        val = mscLocalCache.get(cacheKey, this::getOrLoad);
+        val = mscLocalCache.get(cacheKey, this::load);
 
         if (val instanceof PartitionsSpecByExprResult) {
           r = (PartitionsSpecByExprResult) val;
