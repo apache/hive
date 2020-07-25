@@ -138,7 +138,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
             .recordStats()
             .build();
 
-    cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("LoadingCache"));
+    cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("Cache@"));
   }
 
   /**
