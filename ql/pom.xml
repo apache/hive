@@ -40,7 +40,8 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-v2</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -55,7 +56,8 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-common</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -70,7 +72,8 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-intg</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
