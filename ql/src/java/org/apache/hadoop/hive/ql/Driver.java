@@ -433,6 +433,12 @@ public class Driver implements IDriver {
 
     driverState.lock();
     try {
+      if (driverContext != null && driverContext.getPlan() != null
+          && driverContext.getPlan().getIsPrepareQuery()
+          && !driverContext.getPlan().isExplain()) {
+        //TODO: LOG
+        return;
+      }
       if (alreadyCompiled) {
         if (driverState.isCompiled()) {
           driverState.executing();

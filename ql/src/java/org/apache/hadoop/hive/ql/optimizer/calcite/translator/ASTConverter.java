@@ -46,6 +46,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
@@ -835,6 +836,11 @@ public class ASTConverter {
       } else {
         return SqlFunctionConverter.buildAST(op, astNodeLst);
       }
+    }
+
+    @Override
+    public ASTNode visitDynamicParam(RexDynamicParam dynamicParam) {
+      return ASTBuilder.dynamicParam(dynamicParam);
     }
   }
 

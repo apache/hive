@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
+import static org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer.getAllOperatorsForSimpleFetch;
 
 public class OperatorUtils {
 
@@ -667,4 +670,19 @@ public class OperatorUtils {
     }
     return null;
   }
+
+
+  /**
+   * Given a {@link FetchTask} this returns a set of all the operators within the task
+   * @param task - Fetch Task
+   */
+  public static Set<Operator<?>> getAllFetchOperators(FetchTask task) {
+    if (task.getWork().getSource() == null)  {
+      return Collections.EMPTY_SET;
+    }
+    Set<Operator<?>> operatorList =  new HashSet<>();
+    operatorList.add(task.getWork().getSource());
+    return getAllOperatorsForSimpleFetch(operatorList);
+  }
+
 }

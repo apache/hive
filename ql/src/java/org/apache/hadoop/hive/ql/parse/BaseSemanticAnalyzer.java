@@ -184,10 +184,13 @@ public abstract class BaseSemanticAnalyzer {
    */
   private Boolean autoCommitValue;
 
+  protected Boolean isPrepareQuery = false;
+
   public Boolean getAutoCommitValue() {
     return autoCommitValue;
   }
-  void setAutoCommitValue(Boolean autoCommit) {
+
+  public void setAutoCommitValue(Boolean autoCommit) {
     autoCommitValue = autoCommit;
   }
 
@@ -197,6 +200,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public String getCboInfo() {
     return ctx.getCboInfo();
+  }
+
+  public Boolean getIsPrepareQuery() {
+    return isPrepareQuery;
   }
 
   class RowFormatParams {
@@ -289,6 +296,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public void initCtx(Context ctx) {
     this.ctx = ctx;
+  }
+
+  public Context getCtx() {
+    return this.ctx;
   }
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
