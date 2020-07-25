@@ -23,7 +23,7 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,8 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
 
     JaninoRelMetadataProvider original = RelMetadataQuery.THREAD_PROVIDERS.get();
     try {
-      RelMetadataQuery.THREAD_PROVIDERS.set(getJaninoRelMetadataProvider());
+      RelMetadataQuery.THREAD_PROVIDERS.set(
+          HiveTezModelRelMetadataProvider.DEFAULT);
       RelMetadataQuery metadataQuery = RelMetadataQuery.instance();
 
       RelOptCost optimizedCost = metadataQuery.getCumulativeCost(optimized);
@@ -70,7 +71,4 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
     }
   }
 
-  private JaninoRelMetadataProvider getJaninoRelMetadataProvider() {
-    return new HiveDefaultTezModelRelMetadataProvider().getMetadataProvider();
-  }
 }

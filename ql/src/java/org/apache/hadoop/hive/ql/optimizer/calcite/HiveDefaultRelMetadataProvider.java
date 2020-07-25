@@ -122,8 +122,6 @@ public class HiveDefaultRelMetadataProvider {
    * be visited during the planning phase.
    */
   public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
-    // This will register the classes in the default Janino implementation
-    JaninoRelMetadataProvider.DEFAULT.register(nodeClasses);
     // This will register the classes in the default Hive implementation
     DEFAULT.register(nodeClasses);
   }

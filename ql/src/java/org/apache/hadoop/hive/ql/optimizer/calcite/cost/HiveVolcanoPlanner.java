@@ -123,9 +123,12 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
     Multimap<Class<? extends RelNode>, RelNode> nodeTypes =
         mq.getNodeTypes(rel);
     for (RelNode scan : nodeTypes.get(TableScan.class)) {
-      if (((RelOptHiveTable) scan.getTable()).getHiveTableMD().isMaterializedView()) {
-        usesMaterializedViews = true;
-        break;
+      if (scan.getTable() instanceof RelOptHiveTable) {
+        RelOptHiveTable relOptHiveTable = (RelOptHiveTable) scan.getTable();
+        if (relOptHiveTable.getHiveTableMD().isMaterializedView()) {
+          usesMaterializedViews = true;
+          break;
+        }
       }
     }
     if (isHeuristic && usesMaterializedViews) {
