@@ -206,7 +206,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       if (copyAtLoad ) {
         return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf);
       } else {
-        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, true), context.hiveConf);
+        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, false), context.hiveConf);
       }
     }
   }

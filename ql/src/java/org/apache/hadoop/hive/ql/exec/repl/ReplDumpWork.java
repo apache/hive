@@ -155,8 +155,10 @@ public class ReplDumpWork implements Serializable {
     this.functionCopyPathIterator = functionCopyPathIterator;
   }
 
-  public boolean tableDataCopyIteratorsInitialized() {
-    return externalTblCopyPathIterator != null || managedTblCopyPathIterator != null;
+  public boolean dataCopyIteratorsInitialized() {
+    return externalTblCopyPathIterator != null
+            || managedTblCopyPathIterator != null
+            || functionCopyPathIterator != null;
   }
 
   public Path getCurrentDumpPath() {

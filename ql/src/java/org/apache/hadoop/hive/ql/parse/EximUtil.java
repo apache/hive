@@ -200,7 +200,7 @@ public class EximUtil {
 
     @Override
     public String toString() {
-      return "ManagedTableCopyPath{"
+      return "DataCopyPath{"
               + "fullyQualifiedSourcePath=" + srcPath
               + ", fullyQualifiedTargetPath=" + tgtPath
               + '}';

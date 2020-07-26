@@ -154,7 +154,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public int execute() {
     try {
       SecurityUtils.reloginExpiringKeytabUser();
-      if (work.tableDataCopyIteratorsInitialized()) {
+      if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
         Path dumpRoot = getEncodedDumpRootPath();
