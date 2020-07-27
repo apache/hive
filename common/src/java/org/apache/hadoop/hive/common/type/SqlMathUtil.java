@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.util.Arrays;
 
 /**
@@ -25,6 +27,7 @@ import java.util.Arrays;
  *
  * Misc utilities used in this package.
  */
+@SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "Intended exposure of fields")
 public final class SqlMathUtil {
 
   /** Mask to convert a long to a negative long. */
@@ -49,52 +52,52 @@ public final class SqlMathUtil {
   public static final int MAX_POWER_FIVE_INT31 = 13;
 
   /** 5^x. All unsigned values. */
-  public static final int[] POWER_FIVES_INT31 = new int[MAX_POWER_FIVE_INT31 + 1];
+  protected static final int[] POWER_FIVES_INT31 = new int[MAX_POWER_FIVE_INT31 + 1];
 
   /** 5^27 fits in 2^63. */
   public static final int MAX_POWER_FIVE_INT63 = 27;
 
   /** 5^x. All unsigned values. */
-  public static final long[] POWER_FIVES_INT63 = new long[MAX_POWER_FIVE_INT63 + 1];
+  protected static final long[] POWER_FIVES_INT63 = new long[MAX_POWER_FIVE_INT63 + 1];
 
   /** 5^55 fits in 2^128. */
   public static final int MAX_POWER_FIVE_INT128 = 55;
 
   /** 5^x. */
-  public static final UnsignedInt128[] POWER_FIVES_INT128 = new UnsignedInt128[MAX_POWER_FIVE_INT128 + 1];
+  protected static final UnsignedInt128[] POWER_FIVES_INT128 = new UnsignedInt128[MAX_POWER_FIVE_INT128 + 1];
 
   /**
    * 1/5^x, scaled to 128bits (in other words, 2^128/5^x). Because of flooring,
    * this is same or smaller than real value.
    */
-  public static final UnsignedInt128[] INVERSE_POWER_FIVES_INT128 = new UnsignedInt128[MAX_POWER_FIVE_INT128 + 1];
+  protected static final UnsignedInt128[] INVERSE_POWER_FIVES_INT128 = new UnsignedInt128[MAX_POWER_FIVE_INT128 + 1];
 
   /** 10^9 fits in 2^31. */
   public static final int MAX_POWER_TEN_INT31 = 9;
 
   /** 10^x. All unsigned values. */
-  public static final int[] POWER_TENS_INT31 = new int[MAX_POWER_TEN_INT31 + 1];
+  protected static final int[] POWER_TENS_INT31 = new int[MAX_POWER_TEN_INT31 + 1];
 
   /** 5 * 10^(x-1). */
-  public static final int[] ROUND_POWER_TENS_INT31 = new int[MAX_POWER_TEN_INT31 + 1];
+  protected static final int[] ROUND_POWER_TENS_INT31 = new int[MAX_POWER_TEN_INT31 + 1];
 
   /** 10^38 fits in UnsignedInt128. */
   public static final int MAX_POWER_TEN_INT128 = 38;
 
   /** 10^x. */
-  public static final UnsignedInt128[] POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
+  protected static final UnsignedInt128[] POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
 
   /** 5 * 10^(x-1). */
-  public static final UnsignedInt128[] ROUND_POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
+  protected static final UnsignedInt128[] ROUND_POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
 
   /**
    * 1/10^x, scaled to 128bits, also word-shifted for better accuracy. Because
    * of flooring, this is same or smaller than real value.
    */
-  public static final UnsignedInt128[] INVERSE_POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
+  protected static final UnsignedInt128[] INVERSE_POWER_TENS_INT128 = new UnsignedInt128[MAX_POWER_TEN_INT128 + 1];
 
   /** number of words shifted up in each INVERSE_POWER_TENS_INT128. */
-  public static final int[] INVERSE_POWER_TENS_INT128_WORD_SHIFTS = new int[MAX_POWER_TEN_INT128 + 1];
+  protected static final int[] INVERSE_POWER_TENS_INT128_WORD_SHIFTS = new int[MAX_POWER_TEN_INT128 + 1];
 
   /** To quickly calculate bit length for up to 256. */
   private static final byte[] BIT_LENGTH;

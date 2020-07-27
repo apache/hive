@@ -856,12 +856,6 @@
       <artifactId>jersey-multipart</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>4.0.3</version>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
   <profiles>
     <profile>

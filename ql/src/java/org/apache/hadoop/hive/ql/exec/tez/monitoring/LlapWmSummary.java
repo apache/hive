@@ -58,8 +58,7 @@ public class LlapWmSummary implements PrintSummary {
     console.printInfo(LLAP_SUMMARY_TITLE);
 
     SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
-    Set<StatusGetOpts> statusOptions = new HashSet<>(1);
-    statusOptions.add(StatusGetOpts.GET_COUNTERS);
+    Set<StatusGetOpts> statusOptions = Collections.singleton(StatusGetOpts.GET_COUNTERS);
     String counterGroup = LlapWmCounters.class.getName();
     for (String vertexName : keys) {
       TezCounters vertexCounters = vertexCounter(statusOptions, vertexName);

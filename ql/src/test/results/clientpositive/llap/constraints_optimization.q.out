@@ -202,7 +202,6 @@ STAGE PLANS:
                           null sort order: z
                           sort order: +
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -277,7 +276,6 @@ STAGE PLANS:
                           null sort order: z
                           sort order: +
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -361,7 +359,6 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint)
                             Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                            TopN Hash Memory Usage: 0.1
                             value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -383,7 +380,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -628,7 +624,6 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: bigint), _col1 (type: string)
                             Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-                            TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -648,7 +643,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2689,13 +2683,17 @@ POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(c_customer_id=[$1])
-  HiveAggregate(group=[{0, 1}])
-    HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
-        HiveTableScan(table=[[default, customer]], table:alias=[customer])
-      HiveProject(ss_customer_sk=[$3])
-        HiveFilter(condition=[IS NOT NULL($3)])
-          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(c_customer_sk=[$0])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[CommonJoin], cost=[not available])
+        HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
+          HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ss_customer_sk=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveProject(ss_customer_sk=[$3])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
 PREHOOK: query: EXPLAIN	CBO
 SELECT
@@ -2739,13 +2737,17 @@ POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(c_first_name=[$1])
-  HiveAggregate(group=[{0, 1}])
-    HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
-        HiveTableScan(table=[[default, customer]], table:alias=[customer])
-      HiveProject(ss_customer_sk=[$3])
-        HiveFilter(condition=[IS NOT NULL($3)])
-          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(c_customer_sk=[$0], c_first_name=[$8])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(c_customer_sk=[$0])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[CommonJoin], cost=[not available])
+        HiveProject(c_customer_sk=[$0], c_first_name=[$8])
+          HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ss_customer_sk=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveProject(ss_customer_sk=[$3])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
 PREHOOK: query: EXPLAIN	CBO
 SELECT

@@ -264,7 +264,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 1 Data size: 159 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: bigint), _col1 (type: date), _col3 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

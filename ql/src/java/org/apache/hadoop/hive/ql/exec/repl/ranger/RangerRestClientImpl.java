@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.jersey.api.client.Client;
@@ -35,7 +36,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.jetty.util.MultiPartWriter;
 import org.slf4j.Logger;
@@ -54,6 +57,8 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -80,34 +85,13 @@ public class RangerRestClientImpl implements RangerRestClient {
     Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
       @Override
       public RangerExportPolicyList execute() throws Exception {
-        String finalUrl = getRangerExportUrl(sourceRangerEndpoint, rangerHiveServiceName, dbName);
-        LOG.debug("Url to export policies from source Ranger: {}", finalUrl);
-        WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
-        RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
-        ClientResponse clientResp = builder.get(ClientResponse.class);
-        String response = null;
-        if (clientResp != null) {
-          if (clientResp.getStatus() == HttpServletResponse.SC_OK) {
-            Gson gson = new GsonBuilder().create();
-            response = clientResp.getEntity(String.class);
-            LOG.debug("Response received for ranger export {} ", response);
-            if (StringUtils.isNotEmpty(response)) {
-              rangerExportPolicyList = gson.fromJson(response, RangerExportPolicyList.class);
-              return rangerExportPolicyList;
-            }
-          } else if (clientResp.getStatus() == HttpServletResponse.SC_NO_CONTENT) {
-            LOG.debug("Ranger policy export request returned empty list");
-            return rangerExportPolicyList;
-          } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
-            throw new SemanticException("Authentication Failure while communicating to Ranger admin");
-          } else if (clientResp.getStatus() == HttpServletResponse.SC_FORBIDDEN) {
-            throw new SemanticException("Authorization Failure while communicating to Ranger admin");
-          }
+        if (UserGroupInformation.isSecurityEnabled()) {
+          SecurityUtils.reloginExpiringKeytabUser();
+          return UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<RangerExportPolicyList>) () ->
+            exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName, dbName));
+        } else {
+          return exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName, dbName);
         }
-        if (StringUtils.isEmpty(response)) {
-          LOG.debug("Ranger policy export request returned empty list or failed, Please refer Ranger admin logs.");
-        }
-        return null;
       }
     };
     try {
@@ -115,6 +99,40 @@ public class RangerRestClientImpl implements RangerRestClient {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  @VisibleForTesting
+  RangerExportPolicyList exportRangerPoliciesPlain(String sourceRangerEndpoint,
+                                                           String rangerHiveServiceName,
+                                                           String dbName) throws SemanticException, URISyntaxException {
+    String finalUrl = getRangerExportUrl(sourceRangerEndpoint, rangerHiveServiceName, dbName);
+    LOG.debug("Url to export policies from source Ranger: {}", finalUrl);
+    WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
+    RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
+    ClientResponse clientResp = builder.get(ClientResponse.class);
+    String response = null;
+    if (clientResp != null) {
+      if (clientResp.getStatus() == HttpServletResponse.SC_OK) {
+        Gson gson = new GsonBuilder().create();
+        response = clientResp.getEntity(String.class);
+        LOG.debug("Response received for ranger export {} ", response);
+        if (StringUtils.isNotEmpty(response)) {
+          rangerExportPolicyList = gson.fromJson(response, RangerExportPolicyList.class);
+          return rangerExportPolicyList;
+        }
+      } else if (clientResp.getStatus() == HttpServletResponse.SC_NO_CONTENT) {
+        LOG.debug("Ranger policy export request returned empty list");
+        return rangerExportPolicyList;
+      } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
+        throw new SemanticException("Authentication Failure while communicating to Ranger admin");
+      } else if (clientResp.getStatus() == HttpServletResponse.SC_FORBIDDEN) {
+        throw new SemanticException("Authorization Failure while communicating to Ranger admin");
+      }
+    }
+    if (StringUtils.isEmpty(response)) {
+      LOG.debug("Ranger policy export request returned empty list or failed, Please refer Ranger admin logs.");
+    }
+    return null;
   }
 
   public String getRangerExportUrl(String sourceRangerEndpoint, String rangerHiveServiceName,
@@ -185,50 +203,15 @@ public class RangerRestClientImpl implements RangerRestClient {
     Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
       @Override
       public RangerExportPolicyList execute() throws Exception {
-        ClientResponse clientResp = null;
-
-        StreamDataBodyPart filePartPolicies = new StreamDataBodyPart("file",
-            new ByteArrayInputStream(jsonRangerExportPolicyList.getBytes(StandardCharsets.UTF_8)),
-            rangerPoliciesJsonFileName);
-        StreamDataBodyPart filePartServiceMap = new StreamDataBodyPart("servicesMapJson",
-            new ByteArrayInputStream(jsonServiceMap.getBytes(StandardCharsets.UTF_8)), serviceMapJsonFileName);
-
-        FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
-        MultiPart multipartEntity = null;
-        try {
-          multipartEntity = formDataMultiPart.bodyPart(filePartPolicies).bodyPart(filePartServiceMap);
-          WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
-          clientResp = builder.accept(MediaType.APPLICATION_JSON).type(MediaType.MULTIPART_FORM_DATA)
-            .post(ClientResponse.class, multipartEntity);
-          if (clientResp != null) {
-            if (clientResp.getStatus() == HttpServletResponse.SC_NO_CONTENT) {
-              LOG.debug("Ranger policy import finished successfully");
-
-            } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
-              throw new Exception("Authentication Failure while communicating to Ranger admin");
-            } else {
-              throw new Exception("Ranger policy import failed, Please refer target Ranger admin logs.");
-            }
-          }
-        } finally {
-          try {
-            if (filePartPolicies != null) {
-              filePartPolicies.cleanup();
-            }
-            if (filePartServiceMap != null) {
-              filePartServiceMap.cleanup();
-            }
-            if (formDataMultiPart != null) {
-              formDataMultiPart.close();
-            }
-            if (multipartEntity != null) {
-              multipartEntity.close();
-            }
-          } catch (IOException e) {
-            LOG.error("Exception occurred while closing resources: {}", e);
-          }
+        if (UserGroupInformation.isSecurityEnabled()) {
+          SecurityUtils.reloginExpiringKeytabUser();
+          return UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<RangerExportPolicyList>) () ->
+            importRangerPoliciesPlain(jsonRangerExportPolicyList, rangerPoliciesJsonFileName,
+            serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
+        } else {
+          return importRangerPoliciesPlain(jsonRangerExportPolicyList, rangerPoliciesJsonFileName,
+            serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList);
         }
-        return rangerExportPolicyList;
       }
     };
     try {
@@ -236,6 +219,56 @@ public class RangerRestClientImpl implements RangerRestClient {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  private RangerExportPolicyList importRangerPoliciesPlain(String jsonRangerExportPolicyList,
+                                                           String rangerPoliciesJsonFileName,
+                                                           String serviceMapJsonFileName, String jsonServiceMap,
+                                                           String finalUrl, RangerExportPolicyList
+                                                             rangerExportPolicyList) throws Exception {
+    ClientResponse clientResp = null;
+    StreamDataBodyPart filePartPolicies = new StreamDataBodyPart("file",
+      new ByteArrayInputStream(jsonRangerExportPolicyList.getBytes(StandardCharsets.UTF_8)),
+      rangerPoliciesJsonFileName);
+    StreamDataBodyPart filePartServiceMap = new StreamDataBodyPart("servicesMapJson",
+      new ByteArrayInputStream(jsonServiceMap.getBytes(StandardCharsets.UTF_8)), serviceMapJsonFileName);
+
+    FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+    MultiPart multipartEntity = null;
+    try {
+      multipartEntity = formDataMultiPart.bodyPart(filePartPolicies).bodyPart(filePartServiceMap);
+      WebResource.Builder builder = getRangerResourceBuilder(finalUrl);
+      clientResp = builder.accept(MediaType.APPLICATION_JSON).type(MediaType.MULTIPART_FORM_DATA)
+        .post(ClientResponse.class, multipartEntity);
+      if (clientResp != null) {
+        if (clientResp.getStatus() == HttpServletResponse.SC_NO_CONTENT) {
+          LOG.debug("Ranger policy import finished successfully");
+
+        } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
+          throw new Exception("Authentication Failure while communicating to Ranger admin");
+        } else {
+          throw new Exception("Ranger policy import failed, Please refer target Ranger admin logs.");
+        }
+      }
+    } finally {
+      try {
+        if (filePartPolicies != null) {
+          filePartPolicies.cleanup();
+        }
+        if (filePartServiceMap != null) {
+          filePartServiceMap.cleanup();
+        }
+        if (formDataMultiPart != null) {
+          formDataMultiPart.close();
+        }
+        if (multipartEntity != null) {
+          multipartEntity.close();
+        }
+      } catch (IOException e) {
+        LOG.error("Exception occurred while closing resources: {}", e);
+      }
+    }
+    return rangerExportPolicyList;
   }
 
   public String getRangerImportUrl(String rangerUrl, String dbName) throws URISyntaxException {
@@ -376,10 +409,12 @@ public class RangerRestClientImpl implements RangerRestClient {
     Retry<Boolean> retriable = new Retry<Boolean>(Exception.class) {
       @Override
       public Boolean execute() throws Exception {
-        WebResource.Builder builder;
-        builder = getRangerResourceBuilder(url);
-        ClientResponse clientResp = builder.get(ClientResponse.class);
-        return (clientResp.getStatus() < HttpServletResponse.SC_UNAUTHORIZED);
+        if (UserGroupInformation.isSecurityEnabled()) {
+          SecurityUtils.reloginExpiringKeytabUser();
+          return UserGroupInformation.getLoginUser().doAs((PrivilegedAction<Boolean>) () -> checkConnectionPlain(url));
+        } else {
+          return checkConnectionPlain(url);
+        }
       }
     };
     try {
@@ -387,6 +422,14 @@ public class RangerRestClientImpl implements RangerRestClient {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  @VisibleForTesting
+  boolean checkConnectionPlain(String url) {
+    WebResource.Builder builder;
+    builder = getRangerResourceBuilder(url);
+    ClientResponse clientResp = builder.get(ClientResponse.class);
+    return (clientResp.getStatus() < HttpServletResponse.SC_UNAUTHORIZED);
   }
 
   @Override

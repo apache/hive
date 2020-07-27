@@ -27,6 +27,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_1
+POSTHOOK: Output: default@partition_mv_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -124,7 +125,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       partition columns: key string
       columns: value string
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`
@@ -169,6 +170,7 @@ SELECT value, key FROM src_txn where key > 200 and key < 250
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_mv_1
 POSTHOOK: Output: default@partition_mv_1
 POSTHOOK: Output: default@partition_mv_1@key=201
 POSTHOOK: Output: default@partition_mv_1@key=202
@@ -329,6 +331,7 @@ SELECT key, value FROM src_txn where key > 200 and key < 250
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_mv_2
 POSTHOOK: Output: default@partition_mv_2
 POSTHOOK: Output: default@partition_mv_2@value=val_201
 POSTHOOK: Output: default@partition_mv_2@value=val_202
@@ -619,6 +622,7 @@ POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@partition_mv_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -746,6 +750,7 @@ PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@partition_mv_1
 POSTHOOK: Output: default@partition_mv_1@key=238
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=238).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM partition_mv_1 where key = 238
@@ -868,6 +873,7 @@ POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_3
+POSTHOOK: Output: default@partition_mv_3
 POSTHOOK: Output: default@partition_mv_3@key=201
 POSTHOOK: Output: default@partition_mv_3@key=202
 POSTHOOK: Output: default@partition_mv_3@key=203
@@ -953,6 +959,7 @@ ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@partition_mv_3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1126,6 +1133,7 @@ POSTHOOK: query: ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@partition_mv_3
 POSTHOOK: Output: default@partition_mv_3@key=238
 POSTHOOK: Lineage: partition_mv_3 PARTITION(key=238).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM partition_mv_3 where key = 238

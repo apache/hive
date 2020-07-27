@@ -421,6 +421,31 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
+  // Mostly dup of genIncludedColumns
+  public static String[] genIncludedColNames(TypeDescription fileSchema,
+         List<Integer> included, Integer recursiveStruct) {
+    String[] originalColNames = new String[included.size()];
+    List<TypeDescription> children = fileSchema.getChildren();
+    for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
+      int indexInBatchCols = included.indexOf(columnNumber);
+      if (indexInBatchCols >= 0) {
+        // child Index and FiledIdx should be the same
+        originalColNames[indexInBatchCols] = fileSchema.getFieldNames().get(columnNumber);
+      } else if (recursiveStruct != null && recursiveStruct == columnNumber) {
+        // This assumes all struct cols immediately follow struct
+        List<TypeDescription> nestedChildren = children.get(columnNumber).getChildren();
+        for (int columnNumberDelta = 0; columnNumberDelta < nestedChildren.size(); ++columnNumberDelta) {
+          int columnNumberNested = columnNumber + 1 + columnNumberDelta;
+          int nestedIxInBatchCols = included.indexOf(columnNumberNested);
+          if (nestedIxInBatchCols >= 0) {
+            originalColNames[nestedIxInBatchCols] = children.get(columnNumber).getFieldNames().get(columnNumberDelta);
+          }
+        }
+      }
+    }
+    return originalColNames;
+  }
+
 
   private static void addColumnToIncludes(TypeDescription child, boolean[] result) {
     for(int col = child.getId(); col <= child.getMaximumId(); ++col) {
@@ -2143,9 +2168,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         LOG.warn("Can't determine bucket ID for " + split.getPath() + "; ignoring");
       }
       bucket = acidIOOptions.getBucketId();
-      if(split.isOriginal()) {
-        mergerOptions.copyIndex(acidIOOptions.getCopyNumber()).bucketPath(split.getPath());
-      }
     } else {
       bucket = (int) split.getStart();
       assert false : "We should never have a split w/o base in acid 2.0 for full acid: " + split.getPath();

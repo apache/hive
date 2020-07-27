@@ -75,9 +75,10 @@ public class MetricsMBeanImpl implements  MetricsMBean {
           synchronized(metricsMap) {
             attributeInfos = new MBeanAttributeInfo[metricsMap.size()];
             int i = 0;
-            for (String key : metricsMap.keySet()) {
-              attributeInfos[i] = new MBeanAttributeInfo(
-                  key, metricsMap.get(key).getClass().getName(), key, true, true/*writable*/, false);
+            for (Map.Entry<String, Object> entry : metricsMap.entrySet()) {
+              attributeInfos[i] = new MBeanAttributeInfo(entry.getKey(),
+                      metricsMap.get(entry.getKey()).getClass().getName(), entry.getKey(),
+                      true, true/*writable*/, false);
               i++;
             }
             dirtyAttributeInfoCache = false;

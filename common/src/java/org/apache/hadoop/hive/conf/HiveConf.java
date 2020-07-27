@@ -43,6 +43,7 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.HiveCompat;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -101,6 +103,59 @@ public class HiveConf extends Configuration {
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
   private static final int LOG_PREFIX_LENGTH = 64;
+
+  public enum ResultFileFormat {
+    INVALID_FORMAT {
+      @Override
+        public String toString() {
+          return "invalid result file format";
+        }
+    },
+    TEXTFILE {
+      @Override
+        public String toString() {
+          return "TextFile";
+        }
+    },
+    SEQUENCEFILE {
+      @Override
+        public String toString() {
+          return "SequenceFile";
+        }
+    },
+    RCFILE {
+      @Override
+        public String toString() {
+          return "RCfile";
+        }
+    },
+    LLAP {
+      @Override
+        public String toString() {
+          return "Llap";
+        }
+    };
+
+    public static ResultFileFormat getInvalid() {
+      return INVALID_FORMAT;
+    }
+
+    public static EnumSet<ResultFileFormat> getValidSet() {
+      return EnumSet.complementOf(EnumSet.of(getInvalid()));
+    }
+
+    public static ResultFileFormat from(String value) {
+      try {
+        return valueOf(value.toUpperCase());
+      } catch (Exception e) {
+        return getInvalid();
+      }
+    }
+  }
+
+  public ResultFileFormat getResultFileFormat() {
+    return ResultFileFormat.from(this.getVar(ConfVars.HIVEQUERYRESULTFILEFORMAT));
+  }
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -170,19 +225,18 @@ public class HiveConf extends Configuration {
         String nameInConf = "conf" + File.separator + name;
         result = checkConfigFile(new File(homePath, nameInConf));
         if (result == null) {
-          URI jarUri = null;
           try {
             // Handle both file:// and jar:<url>!{entry} in the case of shaded hive libs
             URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
-            jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            URI jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
+            // From the jar file, the parent is /lib folder
+            File parent = new File(jarUri).getParentFile();
+            if (parent != null) {
+              result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
+            }
           } catch (Throwable e) {
             LOG.info("Cannot get jar URI", e);
             System.err.println("Cannot get jar URI: " + e.getMessage());
-          }
-          // From the jar file, the parent is /lib folder
-          File parent = new File(jarUri).getParentFile();
-          if (parent != null) {
-            result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
           }
         }
       }
@@ -301,7 +355,7 @@ public class HiveConf extends Configuration {
   /**
    * User configurable Metastore vars
    */
-  public static final HiveConf.ConfVars[] metaConfVars = {
+  static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
@@ -339,7 +393,7 @@ public class HiveConf extends Configuration {
   /**
    * encoded parameter values are ;-) encoded.  Use decoder to get ;-) decoded string
    */
-  public static final HiveConf.ConfVars[] ENCODED_CONF = {
+  static final HiveConf.ConfVars[] ENCODED_CONF = {
       ConfVars.HIVEQUERYSTRING
   };
 
@@ -470,6 +524,11 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
+    REPL_DATA_COPY_LAZY("hive.repl.data.copy.lazy", false,
+            "Indicates whether replication should run data copy tasks during repl load operation."),
+    REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
+        "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
+                + "When the config 'hive.repl.data.copy.lazy' is set to true, this config is not considered."),
     REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Frequency at which timer task runs to purge expired dump dirs."),
@@ -483,7 +542,7 @@ public class HiveConf extends Configuration {
         "Indicates whether replication dump can skip copyTask and refer to  \n"
             + " original path instead. This would retain all table and partition meta"),
     REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
-            false,
+            true,
             "Indicates whether external table replication dump only metadata information or data + metadata"),
     REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
         "Indicates if repl dump should bootstrap the information about ACID tables along with \n"
@@ -496,6 +555,11 @@ public class HiveConf extends Configuration {
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
             + "If these open transactions are not closed within the timeout value, then REPL DUMP will "
             + "forcefully abort those transactions and continue with bootstrap dump."),
+    REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT("hive.repl.bootstrap.dump.abort.write.txn.after.timeout",
+      true,
+      "Indicates whether to abort write transactions belonging to the db under replication while doing a" +
+        " bootstrap dump after the timeout configured by hive.repl.bootstrap.dump.open.txn.timeout. If set to false," +
+        " bootstrap dump will fail."),
     //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
@@ -1875,7 +1939,8 @@ public class HiveConf extends Configuration {
         "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
         "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
         "for all tables."),
-    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "SequenceFile", new StringSet("TextFile", "SequenceFile", "RCfile", "Llap"),
+    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", ResultFileFormat.SEQUENCEFILE.toString(),
+        new StringSet(ResultFileFormat.getValidSet()),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
 
@@ -2492,7 +2557,7 @@ public class HiveConf extends Configuration {
         "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
             "during logical optimization."),
 
-    HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", false,
+    HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", true,
         "Whether to find suitable table scan operators that could reduce the number of decoded rows at runtime by probing extra available information. \n"
             + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
             + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
@@ -2818,6 +2883,8 @@ public class HiveConf extends Configuration {
         120, "Enable dir cache for ACID tables specified in minutes."
         + "0 indicates cache is used as read-only and no additional info would be "
         + "populated. -1 means cache is disabled"),
+    HIVE_WRITE_ACID_VERSION_FILE("hive.txn.write.acid.version.file", true,
+        "Creates an _orc_acid_version file along with acid files, to store the version data"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
@@ -4152,6 +4219,17 @@ public class HiveConf extends Configuration {
         + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
         + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
         + " quoted table names.\nThe default value is true."),
+    // This config is temporary and will be deprecated later
+    CREATE_TABLE_AS_EXTERNAL("hive.create.as.external.legacy", false,
+        "When this flag set to true. it will ignore hive.create.as.acid and hive.create.as.insert.only,"
+        + "create external purge table by default."),
+    /**
+     * Expose MetastoreConf.CREATE_TABLES_AS_ACID in HiveConf
+     * so user can set hive.create.as.acid in session level
+     */
+    CREATE_TABLES_AS_ACID("hive.create.as.acid", false,
+        "Whether the eligible tables should be created as full ACID by default. Does \n" +
+        "not apply to external tables, the ones using storage handlers, etc."),
     HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
         "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
         "not apply to external tables, the ones using storage handlers, etc."),
@@ -5370,6 +5448,7 @@ public class HiveConf extends Configuration {
     return new LoopingByteArrayInputStream(confVarByteArray);
   }
 
+  @SuppressFBWarnings(value = "NP_NULL_PARAM_DEREF", justification = "Exception before reaching NP")
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
     if (modWhiteListPattern != null) {
       Matcher wlMatcher = modWhiteListPattern.matcher(name);
@@ -6021,6 +6100,8 @@ public class HiveConf extends Configuration {
       ConfVars.AGGR_JOIN_TRANSPOSE.varname,
       ConfVars.BYTESPERREDUCER.varname,
       ConfVars.CLIENT_STATS_COUNTERS.varname,
+      ConfVars.CREATE_TABLES_AS_ACID.varname,
+      ConfVars.CREATE_TABLE_AS_EXTERNAL.varname,
       ConfVars.DEFAULTPARTITIONNAME.varname,
       ConfVars.DROP_IGNORES_NON_EXISTENT.varname,
       ConfVars.HIVECOUNTERGROUP.varname,
@@ -6044,6 +6125,7 @@ public class HiveConf extends Configuration {
       ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
       ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
       ConfVars.HIVE_COMPAT.varname,
+      ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY.varname,
       ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
       ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
       ConfVars.HIVE_EXECUTION_ENGINE.varname,
@@ -6190,6 +6272,7 @@ public class HiveConf extends Configuration {
 
   //Take care of conf overrides.
   //Includes values in ConfVars as well as underlying configuration properties (ie, hadoop)
+  @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "Intended exposure")
   public static final Map<String, String> overrides = new HashMap<String, String>();
 
   /**
@@ -6495,23 +6578,22 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = StringUtils.EMPTY;
-    for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
-      if ("mr".equals(s)) {
-        continue;
-      }
-      if (!result.isEmpty()) {
-        result += ", ";
-      }
-      result += s;
-    }
-    return result;
+    Set<String> engines = new HashSet<>(ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues());
+    engines.remove("mr");
+    String validNonMrEngines = String.join(", ", engines);
+    LOG.debug("Valid non-MapReduce execution engines: {}", validNonMrEngines);
+    return validNonMrEngines;
   }
 
   public static String generateMrDeprecationWarning() {
     return "Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. "
         + "Consider using a different execution engine (i.e. " + HiveConf.getNonMrEngines()
         + ") or using Hive 1.X releases.";
+  }
+
+  public static String generateDeprecationWarning() {
+    return "This config will be deprecated and may not be available in the future "
+        + "versions. Please adjust DDL towards the new semantics.";
   }
 
   private static final Object reverseMapLock = new Object();

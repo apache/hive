@@ -205,15 +205,6 @@ public class ReduceWork extends BaseWork {
     this.numReduceTasks = numReduceTasks;
   }
 
-  @Override
-  public void configureJobConf(JobConf job) {
-    if (reducer != null) {
-      for (FileSinkOperator fs : OperatorUtils.findOperators(reducer, FileSinkOperator.class)) {
-        PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
-      }
-    }
-  }
-
   public void setAutoReduceParallelism(boolean isAutoReduceParallelism) {
     this.isAutoReduceParallelism = isAutoReduceParallelism;
   }

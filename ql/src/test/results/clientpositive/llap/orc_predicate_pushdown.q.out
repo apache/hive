@@ -851,7 +851,6 @@ STAGE PLANS:
                           null sort order: a
                           sort order: -
                           Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -941,7 +940,6 @@ STAGE PLANS:
                           null sort order: a
                           sort order: -
                           Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1097,7 +1095,6 @@ STAGE PLANS:
                           null sort order: a
                           sort order: -
                           Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1122,7 +1119,6 @@ STAGE PLANS:
                       null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -1215,7 +1211,6 @@ STAGE PLANS:
                           null sort order: a
                           sort order: -
                           Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1240,7 +1235,6 @@ STAGE PLANS:
                       null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap

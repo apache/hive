@@ -115,6 +115,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_item_sk is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

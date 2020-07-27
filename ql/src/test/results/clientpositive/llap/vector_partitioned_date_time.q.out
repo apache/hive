@@ -305,7 +305,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -360,7 +359,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -610,6 +608,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
@@ -1296,7 +1295,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1351,7 +1349,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1673,6 +1670,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
@@ -2359,7 +2357,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2414,7 +2411,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2978,7 +2974,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -3033,7 +3028,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -3283,6 +3277,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-22
@@ -3969,7 +3964,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -4024,7 +4018,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -4346,6 +4339,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
@@ -5032,7 +5026,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -5087,7 +5080,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap

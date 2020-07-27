@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,6 +113,79 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
                                       replicatedDbName + ".testFunctionTwo" });
+  }
+
+  @Test
+  public void testCreateFunctionOnHDFSIncrementalReplication() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1"})
+            .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
+            .verifyResults(new String[] { "MyName"});
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc2 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
+
+    WarehouseInstance.Tuple incrementalDump =
+            primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1",
+                    replicatedDbName + ".idFunc2" })
+            .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
+            .verifyResults(new String[] { "YourName"});
+  }
+
+  @Test
+  public void testCreateFunctionOnHDFSIncrementalReplicationLazyCopy() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
+    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClasuse);
+    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1"})
+            .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
+            .verifyResults(new String[] { "MyName"});
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc2 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
+
+    WarehouseInstance.Tuple incrementalDump =
+            primary.dump(primaryDbName, withClasuse);
+    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1",
+                    replicatedDbName + ".idFunc2" })
+            .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
+            .verifyResults(new String[] { "YourName"});
   }
 
   @Test
@@ -969,7 +1043,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName); // first successful incremental load.
 
     // Bootstrap Repl B -> C
-    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName);
+    WarehouseInstance.Tuple tupleReplica = replica.run("alter database " + replicatedDbName
+      + " set dbproperties ('" + TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
@@ -1682,5 +1757,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private String quote(String str) {
     return "'" + str + "'";
+  }
+
+  private void setupUDFJarOnHDFS(Path identityUdfLocalPath, Path identityUdfHdfsPath) throws IOException {
+    FileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
   }
 }

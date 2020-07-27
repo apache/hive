@@ -3019,7 +3019,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(5,2)), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -3174,7 +3173,6 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -3194,7 +3192,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: int), _col1 (type: decimal(5,2)), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -3951,6 +3948,7 @@ PREHOOK: Output: default@tablepartitioned
 POSTHOOK: query: explain INSERT INTO tablePartitioned partition(p1, p2) select key, value, value, key as p1, 3 as p2 from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tablepartitioned
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -4077,6 +4075,7 @@ PREHOOK: Output: default@tablepartitioned
 POSTHOOK: query: INSERT INTO tablePartitioned partition(p1, p2) select key, value, value, key as p1, 3 as p2 from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tablepartitioned
 POSTHOOK: Output: default@tablepartitioned@p1=165/p2=3
 POSTHOOK: Output: default@tablepartitioned@p1=238/p2=3
 POSTHOOK: Output: default@tablepartitioned@p1=255/p2=3
@@ -4173,6 +4172,7 @@ insert overwrite table src_multi2_n1 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_multi2_n1
+POSTHOOK: Output: default@tablepartitioned
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -6298,7 +6298,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
