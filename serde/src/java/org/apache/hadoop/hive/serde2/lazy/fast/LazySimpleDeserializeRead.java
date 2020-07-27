@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
+
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -53,6 +56,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.TimestampParser;
 
 import com.google.common.base.Preconditions;
+import com.sun.jersey.core.util.Base64;
 
 /*
  * Directly deserialize with the caller reading field-by-field the LazySimple (text)
@@ -780,18 +784,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           return true;
         case BINARY:
           {
-            byte[] recv = new byte[fieldLength];
-            System.arraycopy(bytes, fieldStart, recv, 0, fieldLength);
-            if (isDecodeBinaryAsBase64) {
-              byte[] decoded = LazyBinary.decodeIfNeeded(recv);
-              currentBytes = decoded;
-              currentBytesStart = 0;
-              currentBytesLength = decoded.length;
-            } else {
-              currentBytes = recv;
-              currentBytesStart = 0;
-              currentBytesLength = recv.length;
-            }
+          	ByteBuffer bb = ByteBuffer.wrap(bytes, fieldStart, fieldLength);
+        	final ByteBuffer b64bb = isDecodeBinaryAsBase64 ? Base64.getDecoder().decode(bb) : bb;
+        	currentBytes = new byte[b64bb.remaining()];
+        	b64bb.get(currentBytes);
+            currentBytesStart = 0;
+            currentBytesLength = currentBytes.length;
           }
           return true;
         case DATE:

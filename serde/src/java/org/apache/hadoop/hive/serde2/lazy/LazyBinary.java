@@ -52,7 +52,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
     data.set(decoded, 0, decoded.length);
   }
 
-  // decodes binary columns as base64 if the conf value HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64 is set to true.
+  // todo this should be configured in serde
   public static byte[] decodeIfNeeded(byte[] recv) {
     try {
       return Base64.getDecoder().decode(recv);
