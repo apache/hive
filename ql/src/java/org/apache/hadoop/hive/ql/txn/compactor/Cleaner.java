@@ -75,10 +75,8 @@ public class Cleaner extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
-    if (cleanerCheckInterval == 0) {
-      cleanerCheckInterval = conf.getTimeVar(
-              HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
-    }
+    cleanerCheckInterval = conf.getTimeVar(
+            HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
