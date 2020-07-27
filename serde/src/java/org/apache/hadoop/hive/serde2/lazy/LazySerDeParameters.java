@@ -119,7 +119,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false));
     
     decodeBinaryAsBase64 = (job == null ? false :
-    	job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64.varname, false));
+    	job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64.varname, true));
     		
     String[] timestampFormatsArray =
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
