@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // REPLICATION_METRIC_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1192 = iprot.readListBegin();
-                struct.replicationMetricList = new ArrayList<ReplicationMetrics>(_list1192.size);
-                ReplicationMetrics _elem1193;
-                for (int _i1194 = 0; _i1194 < _list1192.size; ++_i1194)
+                org.apache.thrift.protocol.TList _list1272 = iprot.readListBegin();
+                struct.replicationMetricList = new ArrayList<ReplicationMetrics>(_list1272.size);
+                ReplicationMetrics _elem1273;
+                for (int _i1274 = 0; _i1274 < _list1272.size; ++_i1274)
                 {
-                  _elem1193 = new ReplicationMetrics();
-                  _elem1193.read(iprot);
-                  struct.replicationMetricList.add(_elem1193);
+                  _elem1273 = new ReplicationMetrics();
+                  _elem1273.read(iprot);
+                  struct.replicationMetricList.add(_elem1273);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(REPLICATION_METRIC_LIST_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.replicationMetricList.size()));
-          for (ReplicationMetrics _iter1195 : struct.replicationMetricList)
+          for (ReplicationMetrics _iter1275 : struct.replicationMetricList)
           {
-            _iter1195.write(oprot);
+            _iter1275.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.replicationMetricList.size());
-        for (ReplicationMetrics _iter1196 : struct.replicationMetricList)
+        for (ReplicationMetrics _iter1276 : struct.replicationMetricList)
         {
-          _iter1196.write(oprot);
+          _iter1276.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, ReplicationMetricList struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1197 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.replicationMetricList = new ArrayList<ReplicationMetrics>(_list1197.size);
-        ReplicationMetrics _elem1198;
-        for (int _i1199 = 0; _i1199 < _list1197.size; ++_i1199)
+        org.apache.thrift.protocol.TList _list1277 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.replicationMetricList = new ArrayList<ReplicationMetrics>(_list1277.size);
+        ReplicationMetrics _elem1278;
+        for (int _i1279 = 0; _i1279 < _list1277.size; ++_i1279)
         {
-          _elem1198 = new ReplicationMetrics();
-          _elem1198.read(iprot);
-          struct.replicationMetricList.add(_elem1198);
+          _elem1278 = new ReplicationMetrics();
+          _elem1278.read(iprot);
+          struct.replicationMetricList.add(_elem1278);
         }
       }
       struct.setReplicationMetricListIsSet(true);

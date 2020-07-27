@@ -927,8 +927,9 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
-    Assert.assertEquals(minTxn, min);
-    Assert.assertEquals(maxTxn, max);
+    // We are doing +1, as DDL operation will also advance the write Id now.
+    Assert.assertEquals(minTxn + 1, min);
+    Assert.assertEquals(maxTxn + 1, max);
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
@@ -982,8 +983,9 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
-    Assert.assertEquals(minTxn, min);
-    Assert.assertEquals(maxTxn, max);
+    // We are doing +1, as DDL operation will also advance the write Id now.
+    Assert.assertEquals(minTxn + 1, min);
+    Assert.assertEquals(maxTxn + 1, max);
     boolean isVectorizationEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (vectorize) {
       conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);

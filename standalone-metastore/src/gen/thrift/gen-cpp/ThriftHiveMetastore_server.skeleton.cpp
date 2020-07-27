@@ -127,6 +127,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_fields_with_environment_context\n");
   }
 
+  void get_fields_req(GetFieldsResponse& _return, const GetFieldsRequest& req) {
+    // Your implementation goes here
+    printf("get_fields_req\n");
+  }
+
   void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) {
     // Your implementation goes here
     printf("get_schema\n");
@@ -135,6 +140,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("get_schema_with_environment_context\n");
+  }
+
+  void get_schema_req(GetSchemaResponse& _return, const GetSchemaRequest& req) {
+    // Your implementation goes here
+    printf("get_schema_req\n");
   }
 
   void create_table(const Table& tbl) {
@@ -377,6 +387,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partition\n");
   }
 
+  void get_partition_req(GetPartitionResponse& _return, const GetPartitionRequest& req) {
+    // Your implementation goes here
+    printf("get_partition_req\n");
+  }
+
   void exchange_partition(Partition& _return, const std::map<std::string, std::string> & partitionSpecs, const std::string& source_db, const std::string& source_table_name, const std::string& dest_db, const std::string& dest_table_name) {
     // Your implementation goes here
     printf("exchange_partition\n");
@@ -400,6 +415,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partitions\n");
+  }
+
+  void get_partitions_req(PartitionsResponse& _return, const PartitionsRequest& req) {
+    // Your implementation goes here
+    printf("get_partitions_req\n");
   }
 
   void get_partitions_with_auth(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts, const std::string& user_name, const std::vector<std::string> & group_names) {
@@ -432,9 +452,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_ps_with_auth\n");
   }
 
+  void get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthResponse& _return, const GetPartitionsPsWithAuthRequest& req) {
+    // Your implementation goes here
+    printf("get_partitions_ps_with_auth_req\n");
+  }
+
   void get_partition_names_ps(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partition_names_ps\n");
+  }
+
+  void get_partition_names_ps_req(GetPartitionNamesPsResponse& _return, const GetPartitionNamesPsRequest& req) {
+    // Your implementation goes here
+    printf("get_partition_names_ps_req\n");
   }
 
   void get_partitions_by_filter(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int16_t max_parts) {
