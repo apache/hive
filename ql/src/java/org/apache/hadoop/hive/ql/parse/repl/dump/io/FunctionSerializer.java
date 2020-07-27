@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
@@ -40,10 +41,15 @@ public class FunctionSerializer implements JsonWriter.Serializer {
   public static final String FIELD_NAME = "function";
   private Function function;
   private HiveConf hiveConf;
+  private Path functionDataRoot;
+  private boolean copyAtLoad;
+  private List<EximUtil.DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
 
-  public FunctionSerializer(Function function, HiveConf hiveConf) {
+  public FunctionSerializer(Function function, Path functionDataRoot, boolean copyAtLoad, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     this.function = function;
+    this.functionDataRoot = functionDataRoot;
+    this.copyAtLoad = copyAtLoad;
   }
 
   @Override
@@ -58,9 +64,16 @@ public class FunctionSerializer implements JsonWriter.Serializer {
           FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
           Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
           String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
-          String newFileUri = ReplChangeManager.getInstance(hiveConf)
+          String encodedSrcUri = ReplChangeManager.getInstance(hiveConf)
                   .encodeFileUri(qualifiedUri.toString(), checkSum, null);
-          resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
+          if (copyAtLoad) {
+            resourceUris.add(new ResourceUri(uri.getResourceType(), encodedSrcUri));
+          } else {
+            Path newBinaryPath = new Path(functionDataRoot, qualifiedUri.getName());
+            resourceUris.add(new ResourceUri(uri.getResourceType(),newBinaryPath.toString()));
+            functionBinaryCopyPaths.add(new EximUtil.DataCopyPath(additionalPropertiesProvider,
+                    new Path(encodedSrcUri), newBinaryPath));
+          }
         } else {
           resourceUris.add(uri);
         }
@@ -83,5 +96,9 @@ public class FunctionSerializer implements JsonWriter.Serializer {
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }
+  }
+
+  public List<EximUtil.DataCopyPath> getFunctionBinaryCopyPaths() {
+    return functionBinaryCopyPaths;
   }
 }
