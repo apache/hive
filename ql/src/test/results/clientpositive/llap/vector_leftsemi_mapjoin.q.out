@@ -3365,6 +3365,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((key > 100) and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.045454545454545456
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key > 100) and value is not null) (type: boolean)
@@ -6472,6 +6473,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((key > 100) and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.045454545454545456
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key > 100) and value is not null) (type: boolean)
@@ -14370,6 +14372,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((key > 100) and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.045454545454545456
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -19055,6 +19058,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((key > 100) and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.045454545454545456
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -23764,6 +23768,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((key > 100) and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:value, smallTablePos:1, keyRatio:0.045454545454545456
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

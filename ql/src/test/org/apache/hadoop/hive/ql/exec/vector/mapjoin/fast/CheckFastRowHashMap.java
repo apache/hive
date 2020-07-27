@@ -361,7 +361,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
               throw new RuntimeException("Unexpected hash table key type " + hashTableKeyType.name());
             }
             joinResult = longHashMap.lookup(longKey, hashMapResult);
-            if (joinResult != JoinUtil.JoinResult.MATCH || !longHashMap.containsLongKey(longKey)) {
+            if (joinResult != JoinUtil.JoinResult.MATCH) {
               assertTrue(false);
             }
           }
@@ -376,7 +376,8 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
             byte[] bytes = text.getBytes();
             int length = text.getLength();
             joinResult = stringHashMap.lookup(bytes, 0, length, hashMapResult);
-            if (joinResult != JoinUtil.JoinResult.MATCH) {
+            if (joinResult != JoinUtil.JoinResult.MATCH ||
+                stringHashMap.lookup(bytes, 0, length, hashMapResult) != JoinUtil.JoinResult.MATCH) {
               assertTrue(false);
             }
           }
@@ -387,7 +388,8 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
             VectorMapJoinFastMultiKeyHashMap stringHashMap = (VectorMapJoinFastMultiKeyHashMap) map;
             hashMapResult = stringHashMap.createHashMapResult();
             joinResult = stringHashMap.lookup(keyBytes, 0, keyBytes.length, hashMapResult);
-            if (joinResult != JoinUtil.JoinResult.MATCH) {
+            if (joinResult != JoinUtil.JoinResult.MATCH ||
+                stringHashMap.lookup(keyBytes, 0, keyBytes.length, hashMapResult) != JoinUtil.JoinResult.MATCH) {
               assertTrue(false);
             }
           }

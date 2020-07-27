@@ -201,6 +201,7 @@ STAGE PLANS:
                 TableScan
                   alias: bigtbl
                   filterExpr: (key is not null and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.99
                   Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -375,6 +376,7 @@ STAGE PLANS:
                 TableScan
                   alias: bigtbl
                   filterExpr: (key is not null and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.99
                   Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -551,6 +553,7 @@ STAGE PLANS:
                 TableScan
                   alias: bigtbl
                   filterExpr: (key is not null and value is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.99
                   Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -871,6 +874,7 @@ STAGE PLANS:
                 TableScan
                   alias: bigtbl
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_96_container, bigKeyColName:key1, smallTablePos:1, keyRatio:0.935
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)
@@ -1218,6 +1222,7 @@ STAGE PLANS:
                 TableScan
                   alias: bigtbl
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_96_container, bigKeyColName:key1, smallTablePos:1, keyRatio:0.935
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)

@@ -44,6 +44,8 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
 
   private VectorMapJoinFastBytesHashMultiSetStore hashMultiSetStore;
 
+  private VectorMapJoinHashMultiSetResult lookupHashMapResult;
+
   @Override
   public VectorMapJoinHashMultiSetResult createHashMultiSetResult() {
     return new VectorMapJoinFastBytesHashMultiSetStore.HashMultiSetResult();
@@ -168,6 +170,7 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
         isFullOuter,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     hashMultiSetStore = new VectorMapJoinFastBytesHashMultiSetStore(writeBuffersSize);
+    lookupHashMapResult = createHashMultiSetResult();
     writeBuffers = hashMultiSetStore.getWriteBuffers();
   }
 

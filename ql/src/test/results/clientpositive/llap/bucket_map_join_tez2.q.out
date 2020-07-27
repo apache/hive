@@ -2416,6 +2416,7 @@ STAGE PLANS:
                 TableScan
                   alias: my_dim
                   filterExpr: ((filter_col) IN ('VAL1', 'VAL2') and join_col is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:bucket_col, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

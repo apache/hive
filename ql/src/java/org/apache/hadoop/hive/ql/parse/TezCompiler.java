@@ -1569,15 +1569,11 @@ public class TezCompiler extends TaskCompiler {
     return mjKeyCardinality / (double) tsKeyCardinality;
   }
 
-  // Valid MapJoin with a single Key of Number type (Long/Int/Short)
+  // Valid MapJoin with a single (column not-expression) Key
   private static boolean isValidProbeDecodeMapJoin(MapJoinOperator mapJoinOp) {
     Map<Byte, List<ExprNodeDesc>> keyExprs = mapJoinOp.getConf().getKeys();
     List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get( (byte) mapJoinOp.getConf().getPosBigTable());
-    return (bigTableKeyExprs.size() == 1) && (bigTableKeyExprs.get(0) instanceof ExprNodeColumnDesc)
-        && !(((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
-        equals(PrimitiveObjectInspector.PrimitiveCategory.STRING) ||
-        ((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
-            equals(PrimitiveObjectInspector.PrimitiveCategory.BYTE));
+    return (bigTableKeyExprs.size() == 1) && (bigTableKeyExprs.get(0) instanceof ExprNodeColumnDesc);
   }
 
   private static boolean canUseNDV(ColStatistics colStats) {

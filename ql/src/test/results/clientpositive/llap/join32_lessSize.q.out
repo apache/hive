@@ -67,6 +67,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -205,6 +206,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.126
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -554,6 +556,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: (value is not null and key is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_76_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.64
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -692,6 +695,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_77_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.032
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -767,6 +771,7 @@ STAGE PLANS:
                 TableScan
                   alias: w
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_78_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.198
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1107,6 +1112,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1245,6 +1251,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1717,6 +1724,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_47_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -2088,6 +2096,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2142,6 +2151,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -2385,6 +2395,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2439,6 +2450,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)

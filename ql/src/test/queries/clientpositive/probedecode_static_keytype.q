@@ -31,19 +31,39 @@ EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_dt joi
 -- two keys match, the remaining rows can be skipped
 select key1, key2, name, dt from orders_fact_dt join item_dim_dt on (orders_fact_dt.key2 = item_dim_dt.key1);
 
+--
+CREATE TABLE item_dim_str (key1 string, name string) stored as ORC;
+CREATE TABLE orders_fact_str (nokey int, key2 string, dt timestamp) stored as ORC;
 
+INSERT INTO item_dim_str values('2001-01-30 00:00:00', "Item 101");
+INSERT INTO item_dim_str values('2002-01-30 00:00:00', "Item 102");
+
+INSERT INTO orders_fact_str values(12345, '2001-01-30 00:00:00', '2011-01-30 00:00:00');
+INSERT INTO orders_fact_str values(23456, '2004-01-30 00:00:00', '2014-02-30 00:00:00');
+INSERT INTO orders_fact_str values(34567, '2008-01-30 00:00:00', '2018-03-30 00:00:00');
+INSERT INTO orders_fact_str values(45678, '2002-01-30 00:00:00', '2012-04-30 00:00:00');
+INSERT INTO orders_fact_str values(56789, '2009-01-30 00:00:00', '2019-05-30 00:00:00');
+INSERT INTO orders_fact_str values(67891, '2010-01-30 00:00:00', '2020-06-30 00:00:00');
+
+-- Reduce Sink Vectorization -> Expected className: VectorReduceSinkStringOperator
+EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_str join item_dim_str on (orders_fact_str.key2 = item_dim_str.key1);
+
+-- two keys match, the remaining rows can be skipped
+select key1, key2, name, dt from orders_fact_str join item_dim_str on (orders_fact_str.key2 = item_dim_str.key1);
+
+--
 CREATE TABLE item_dim_ts (key1 timestamp, name string) stored as ORC;
 CREATE TABLE orders_fact_ts (nokey int, key2 timestamp, dt timestamp) stored as ORC;
 
-INSERT INTO item_dim_ts values('2001-01-30 00:00:00', "Item 101");
-INSERT INTO item_dim_ts values('2002-01-30 00:00:00', "Item 102");
+INSERT INTO item_dim_ts values('2001-01-30 10:11:12', "Item 101");
+INSERT INTO item_dim_ts values('2002-01-30 09:10:11', "Item 102");
 
-INSERT INTO orders_fact_ts values(12345, '2001-01-30 00:00:00', '2011-01-30 00:00:00');
-INSERT INTO orders_fact_ts values(23456, '2004-01-30 00:00:00', '2014-02-30 00:00:00');
-INSERT INTO orders_fact_ts values(34567, '2008-01-30 00:00:00', '2018-03-30 00:00:00');
-INSERT INTO orders_fact_ts values(45678, '2002-01-30 00:00:00', '2012-04-30 00:00:00');
-INSERT INTO orders_fact_ts values(56789, '2009-01-30 00:00:00', '2019-05-30 00:00:00');
-INSERT INTO orders_fact_ts values(67891, '2010-01-30 00:00:00', '2020-06-30 00:00:00');
+INSERT INTO orders_fact_ts values(12345, '2001-01-30 10:11:12', '2011-01-30 00:00:00');
+INSERT INTO orders_fact_ts values(23456, '2004-01-30 01:10:20', '2014-02-30 00:00:00');
+INSERT INTO orders_fact_ts values(34567, '2008-01-30 05:30:40', '2018-03-30 00:00:00');
+INSERT INTO orders_fact_ts values(45678, '2002-01-30 09:10:11', '2012-04-30 00:00:00');
+INSERT INTO orders_fact_ts values(56789, '2009-01-30 08:40:20', '2019-05-30 00:00:00');
+INSERT INTO orders_fact_ts values(67891, '2010-01-30 06:20:10', '2020-06-30 00:00:00');
 
 -- Reduce Sink Vectorization -> Expected className: VectorReduceSinkMultiKeyOperator
 EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_ts join item_dim_ts on (orders_fact_ts.key2 = item_dim_ts.key1);

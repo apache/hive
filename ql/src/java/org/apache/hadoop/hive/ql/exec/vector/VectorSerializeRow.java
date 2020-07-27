@@ -105,6 +105,10 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     return children;
   }
 
+  public Field[] getFields() {
+    return root.children;
+  }
+
   private Field createField(TypeInfo typeInfo) {
     final Field field = new Field();
     final Category category = typeInfo.getCategory();
@@ -409,7 +413,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     serializeWrite.finishList();
   }
 
-  private void serializePrimitiveWrite(
+  public void serializePrimitiveWrite(
       ColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
     final PrimitiveCategory primitiveCategory = field.primitiveCategory;

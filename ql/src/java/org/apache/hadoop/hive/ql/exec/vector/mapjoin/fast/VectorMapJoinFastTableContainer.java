@@ -88,6 +88,11 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     return vectorMapJoinFastHashTable;
   }
 
+  @Override
+  public VectorMapJoinDesc mapJoinDesc() {
+    return (VectorMapJoinDesc) desc.getVectorDesc();
+  }
+
   private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
 
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();

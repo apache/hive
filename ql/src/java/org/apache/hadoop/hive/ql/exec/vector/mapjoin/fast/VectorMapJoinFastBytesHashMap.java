@@ -48,6 +48,8 @@ public abstract class VectorMapJoinFastBytesHashMap
 
   private long fullOuterNullKeyRefWord;
 
+  private VectorMapJoinHashMapResult lookupHashMapResult;
+
   private static class NonMatchedBytesHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
 
     private VectorMapJoinFastBytesHashMap hashMap;
@@ -317,6 +319,7 @@ public abstract class VectorMapJoinFastBytesHashMap
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     fullOuterNullKeyRefWord = 0;
     hashMapStore = new VectorMapJoinFastBytesHashMapStore(writeBuffersSize);
+    lookupHashMapResult = createHashMapResult();
     writeBuffers = hashMapStore.getWriteBuffers();
   }
 

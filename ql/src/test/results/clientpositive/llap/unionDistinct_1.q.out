@@ -5888,6 +5888,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_47_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.3333333333333333
                   Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -6273,6 +6274,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.3333333333333333
                   Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -6886,6 +6888,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -10884,6 +10887,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.6
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -11066,6 +11070,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.6
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -11204,6 +11209,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.6
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -11407,6 +11413,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:key, smallTablePos:0, keyRatio:1.6
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -12077,6 +12084,7 @@ STAGE PLANS:
                 TableScan
                   alias: src10_1
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_43_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
