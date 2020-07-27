@@ -20,12 +20,24 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
+
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
+
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> {
   CreateFunctionHandler(NotificationEvent event) {
@@ -41,13 +53,37 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} CREATE_FUNCTION message : {}", fromEventId(), eventMessageAsJSON);
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+    Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
     FileSystem fileSystem = metadataPath.getFileSystem(withinContext.hiveConf);
-
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    List<DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
     try (JsonWriter jsonWriter = new JsonWriter(fileSystem, metadataPath)) {
-      new FunctionSerializer(eventMessage.getFunctionObj(), withinContext.hiveConf)
-          .writeTo(jsonWriter, withinContext.replicationSpec);
+      FunctionSerializer serializer = new FunctionSerializer(eventMessage.getFunctionObj(),
+              dataPath, copyAtLoad, withinContext.hiveConf);
+      serializer.writeTo(jsonWriter, withinContext.replicationSpec);
+      functionBinaryCopyPaths.addAll(serializer.getFunctionBinaryCopyPaths());
     }
     withinContext.createDmd(this).write();
+    copyFunctionBinaries(functionBinaryCopyPaths, withinContext.hiveConf);
+  }
+
+  private void copyFunctionBinaries(List<DataCopyPath> functionBinaryCopyPaths, HiveConf hiveConf)
+          throws MetaException, IOException, LoginException, HiveFatalException {
+    if (!functionBinaryCopyPaths.isEmpty()) {
+      String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+      for (DataCopyPath funcBinCopyPath : functionBinaryCopyPaths) {
+        String [] decodedURISplits = ReplChangeManager.decodeFileUri(funcBinCopyPath.getSrcPath().toString());
+        ReplChangeManager.FileInfo fileInfo = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
+                decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);
+        filePaths.add(fileInfo);
+        Path destRoot = funcBinCopyPath.getTargetPath().getParent();
+        FileSystem dstFs = destRoot.getFileSystem(hiveConf);
+        CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
+        copyUtils.copyAndVerify(destRoot, filePaths, funcBinCopyPath.getSrcPath(), false);
+        copyUtils.renameFileCopiedFromCmPath(destRoot, dstFs, filePaths);
+      }
+    }
   }
 
   @Override

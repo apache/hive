@@ -91,7 +91,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
         Utilities.FILE_OP_LOGGER.debug("Copying file {} to {}", oneSrcPathStr, toPath);
         if (!FileUtils.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
             false, // delete source
-            true, // overwrite destination
+            work.isOverwrite(), // overwrite destination
             conf)) {
           console.printError("Failed to copy: '" + oneSrcPathStr
               + "to: '" + toPath.toString() + "'");

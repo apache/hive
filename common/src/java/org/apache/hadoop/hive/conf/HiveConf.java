@@ -542,7 +542,7 @@ public class HiveConf extends Configuration {
         "Indicates whether replication dump can skip copyTask and refer to  \n"
             + " original path instead. This would retain all table and partition meta"),
     REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
-            false,
+            true,
             "Indicates whether external table replication dump only metadata information or data + metadata"),
     REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
         "Indicates if repl dump should bootstrap the information about ACID tables along with \n"

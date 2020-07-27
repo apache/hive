@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.EximUtil.ManagedTableCopyPath;
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
@@ -174,7 +174,7 @@ public class TableExport {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
         if (!(isExportTask || dataCopyAtLoad)) {
-          fileList.add(new ManagedTableCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
+          fileList.add(new DataCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
                   paths.dataExportDir()).convertToString());
         }
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
