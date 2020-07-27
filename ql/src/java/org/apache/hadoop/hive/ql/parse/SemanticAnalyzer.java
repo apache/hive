@@ -4947,6 +4947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (mode) {
     case COMPLETE:
       return GenericUDAFEvaluator.Mode.COMPLETE;
+    case HASH:
     case PARTIAL1:
       return GenericUDAFEvaluator.Mode.PARTIAL1;
     case PARTIAL2:
@@ -4956,8 +4957,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           : GenericUDAFEvaluator.Mode.PARTIAL2;
     case FINAL:
       return GenericUDAFEvaluator.Mode.FINAL;
-    case HASH:
-      return GenericUDAFEvaluator.Mode.PARTIAL1;
     case MERGEPARTIAL:
       return isDistinct ? GenericUDAFEvaluator.Mode.COMPLETE
           : GenericUDAFEvaluator.Mode.FINAL;
