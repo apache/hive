@@ -417,9 +417,17 @@ public final class OpProcFactory {
         if (!ewi.isDeterministic()) {
           /* predicate is not deterministic */
           if (op.getChildren() != null && op.getChildren().size() == 1) {
+            ExprWalkerInfo prunedPreds = owi.getPrunedPreds((Operator<? extends OperatorDesc>) (op
+                .getChildren().get(0)));
+            //resolve of HIVE-23893
+            if (!(prunedPreds != null && prunedPreds.hasAnyCandidates())
+                && !ewi.getFinalCandidates().isEmpty()) {
+              splitFilter((FilterOperator) op, ewi, owi);
+              return null;
+            }
             createFilter(op, owi
                 .getPrunedPreds((Operator<? extends OperatorDesc>) (op
-                .getChildren().get(0))), owi);
+                    .getChildren().get(0))), owi);
           }
           return null;
         }
@@ -780,6 +788,89 @@ public final class OpProcFactory {
       }
       return ewi;
     }
+  }
+
+  protected static Object splitFilter(FilterOperator op,
+      ExprWalkerInfo ewi, OpWalkerInfo owi) throws SemanticException {
+
+    RowSchema inputRS = op.getSchema();
+
+    Map<String, List<ExprNodeDesc>> pushDownPreds = ewi.getFinalCandidates();
+    Map<String, List<ExprNodeDesc>> unPushDownPreds = ewi.getNonFinalCandidates();
+
+    // combine all deterministic predicates into a single expression
+    List<ExprNodeDesc> deterministicPreds = new ArrayList<ExprNodeDesc>();
+    Iterator<List<ExprNodeDesc>> iterator1 = pushDownPreds.values().iterator();
+    while (iterator1.hasNext()) {
+      for (ExprNodeDesc pred : iterator1.next()) {
+        deterministicPreds = ExprNodeDescUtils.split(pred, deterministicPreds);
+      }
+    }
+
+    if (deterministicPreds.isEmpty()) {
+      return null;
+    }
+
+    List<ExprNodeDesc> nondeterministicPreds = new ArrayList<ExprNodeDesc>();
+    Iterator<List<ExprNodeDesc>> iterator2 = unPushDownPreds.values().iterator();
+    while (iterator2.hasNext()) {
+      for (ExprNodeDesc pred : iterator2.next()) {
+        nondeterministicPreds = ExprNodeDescUtils.split(pred, nondeterministicPreds);
+      }
+    }
+
+    assert !nondeterministicPreds.isEmpty();
+
+    ExprNodeDesc deterministicCondn = ExprNodeDescUtils.mergePredicates(deterministicPreds);
+    ExprNodeDesc nondeterministicCondn = ExprNodeDescUtils.mergePredicates(nondeterministicPreds);
+
+    Operator<FilterDesc> deterministicFilter =
+        OperatorFactory.get(new FilterDesc(deterministicCondn, false), new RowSchema(inputRS.getSignature()));
+
+    deterministicFilter.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+    deterministicFilter.getChildOperators().add(op);
+
+    List<Operator<? extends OperatorDesc>> originalParents = op
+        .getParentOperators();
+    for (Operator<? extends OperatorDesc> parent : originalParents) {
+      List<Operator<? extends OperatorDesc>> childOperators = parent
+          .getChildOperators();
+      int pos = childOperators.indexOf(op);
+      childOperators.remove(pos);
+      childOperators.add(pos, deterministicFilter);
+
+      int pPos = op.getParentOperators().indexOf(parent);
+      deterministicFilter.getParentOperators().add(pPos, parent);
+    }
+
+    op.getParentOperators().clear();
+    op.getParentOperators().add(deterministicFilter);
+    op.getConf().setPredicate(nondeterministicCondn);
+
+    if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+        HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+      // remove the candidate filter ops
+      for (FilterOperator fop : owi.getCandidateFilterOps()) {
+        List<Operator<? extends OperatorDesc>> children = fop.getChildOperators();
+        List<Operator<? extends OperatorDesc>> parents = fop.getParentOperators();
+        for (Operator<? extends OperatorDesc> parent : parents) {
+          parent.getChildOperators().addAll(children);
+          parent.removeChild(fop);
+        }
+        for (Operator<? extends OperatorDesc> child : children) {
+          child.getParentOperators().addAll(parents);
+          child.removeParent(fop);
+        }
+      }
+      owi.getCandidateFilterOps().clear();
+    }
+
+    ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op,
+        deterministicFilter.getConf().getPredicate());
+
+    owi.putPrunedPreds(deterministicFilter, ewi);
+
+    return deterministicFilter;
   }
 
   protected static Object createFilter(Operator op,
