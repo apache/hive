@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
-
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.slf4j.Logger;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -56,7 +54,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.TimestampParser;
 
 import com.google.common.base.Preconditions;
-import com.sun.jersey.core.util.Base64;
 
 /*
  * Directly deserialize with the caller reading field-by-field the LazySimple (text)
@@ -784,10 +781,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           return true;
         case BINARY:
           {
-          	ByteBuffer bb = ByteBuffer.wrap(bytes, fieldStart, fieldLength);
-        	final ByteBuffer b64bb = isDecodeBinaryAsBase64 ? Base64.getDecoder().decode(bb) : bb;
-        	currentBytes = new byte[b64bb.remaining()];
-        	b64bb.get(currentBytes);
+            ByteBuffer bb = ByteBuffer.wrap(bytes, fieldStart, fieldLength);
+            // Base64 or raw value: Throws IllegalArgumentException on invalid decode
+            final ByteBuffer b64bb = isDecodeBinaryAsBase64 ? Base64.getDecoder().decode(bb) : bb;
+            currentBytes = new byte[b64bb.remaining()];
+            b64bb.get(currentBytes);
             currentBytesStart = 0;
             currentBytesLength = currentBytes.length;
           }
