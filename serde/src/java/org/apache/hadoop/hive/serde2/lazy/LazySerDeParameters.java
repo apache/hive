@@ -54,7 +54,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   public static final String SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
 	= "hive.serialization.extend.additional.nesting.levels";
   public static final String SERIALIZATION_DECODE_BINARY_AS_BASE64
-  	= "hive.serialization.decode.binary.as.base.64";
+  	= "hive.serialization.decode.binary.as.base64";
   
   private Properties tableProperties;
   private String serdeName;
@@ -121,7 +121,6 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
 
     extendedBooleanLiteral = (job == null ? false :
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false));
-
     String[] timestampFormatsArray =
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
     if (timestampFormatsArray != null) {
