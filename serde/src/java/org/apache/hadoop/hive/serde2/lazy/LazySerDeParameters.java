@@ -53,7 +53,9 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   	= "hive.serialization.extend.nesting.levels";
   public static final String SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
 	= "hive.serialization.extend.additional.nesting.levels";
-
+  public static final String SERIALIZATION_DECODE_BINARY_AS_BASE64
+  	= "hive.serialization.decode.binary.as.base.64";
+  
   private Properties tableProperties;
   private String serdeName;
 
@@ -90,6 +92,8 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
 
+    decodeBinaryAsBase64 = Boolean.parseBoolean(tableProperties.getProperty(SERIALIZATION_DECODE_BINARY_AS_BASE64, "true"));
+
     extractColumnInfo(job);
 
     // Create the LazyObject for storing the rows
@@ -117,10 +121,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
 
     extendedBooleanLiteral = (job == null ? false :
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false));
-    
-    decodeBinaryAsBase64 = (job == null ? false :
-    	job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_DECODE_BINARY_AS_BASE64.varname, true));
-    		
+
     String[] timestampFormatsArray =
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
     if (timestampFormatsArray != null) {
@@ -254,7 +255,8 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     boolean extendedNesting = extendNestingValue != null && extendNestingValue.equalsIgnoreCase("true");
     boolean extendedAdditionalNesting = extendAdditionalNestingValue != null 
     		&& extendAdditionalNestingValue.equalsIgnoreCase("true");
-
+    
+    
     separatorCandidates.add(LazyUtils.getByte(tableProperties.getProperty(serdeConstants.FIELD_DELIM,
         tableProperties.getProperty(serdeConstants.SERIALIZATION_FORMAT)), DefaultSeparators[0]));
     separatorCandidates.add(LazyUtils.getByte(tableProperties
