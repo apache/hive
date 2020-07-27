@@ -255,8 +255,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     boolean extendedNesting = extendNestingValue != null && extendNestingValue.equalsIgnoreCase("true");
     boolean extendedAdditionalNesting = extendAdditionalNestingValue != null 
     		&& extendAdditionalNestingValue.equalsIgnoreCase("true");
-    
-    
+
     separatorCandidates.add(LazyUtils.getByte(tableProperties.getProperty(serdeConstants.FIELD_DELIM,
         tableProperties.getProperty(serdeConstants.SERIALIZATION_FORMAT)), DefaultSeparators[0]));
     separatorCandidates.add(LazyUtils.getByte(tableProperties
