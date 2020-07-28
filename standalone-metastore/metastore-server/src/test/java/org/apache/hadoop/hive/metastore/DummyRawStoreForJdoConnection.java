@@ -1340,4 +1340,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
     throw new RuntimeException("unimplemented");
   }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tableName) {
+    throw new RuntimeException("unimplemented");
+  }
+
 }
