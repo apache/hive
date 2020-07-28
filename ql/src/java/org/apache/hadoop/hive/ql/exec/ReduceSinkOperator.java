@@ -94,7 +94,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * Evaluators for bucketing columns. This is used to compute bucket number.
    */
   protected transient ExprNodeEvaluator[] bucketEval = null;
-  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is ready
   protected transient Serializer keySerializer;
   protected transient boolean keyIsText;
   protected transient Serializer valueSerializer;

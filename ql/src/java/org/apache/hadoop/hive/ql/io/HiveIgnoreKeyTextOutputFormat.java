@@ -87,7 +87,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
           outStream.write(tr.getBytes(), 0, tr.getLength());
           outStream.write(finalRowSeparator);
         } else {
-          // DynamicSerDe always writes out BytesWritable
+          // Binary SerDes always write out BytesWritable
           BytesWritable bw = (BytesWritable) r;
           outStream.write(bw.get(), 0, bw.getSize());
           outStream.write(finalRowSeparator);
