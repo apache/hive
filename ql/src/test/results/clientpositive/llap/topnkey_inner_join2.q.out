@@ -182,7 +182,6 @@ STAGE PLANS:
                       null sort order: z
                       sort order: +
                       Statistics: Num rows: 2 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: char(20))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -339,7 +338,6 @@ STAGE PLANS:
                     null sort order: z
                     sort order: +
                     Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: char(20)), _col1 (type: varchar(60))
         Reducer 3 
             Execution mode: vectorized, llap
