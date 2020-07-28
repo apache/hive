@@ -121,6 +121,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
 
     extendedBooleanLiteral = (job == null ? false :
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false));
+
     String[] timestampFormatsArray =
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
     if (timestampFormatsArray != null) {
