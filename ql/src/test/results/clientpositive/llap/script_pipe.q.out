@@ -40,12 +40,12 @@ STAGE PLANS:
             LLAP IO: all inputs
         Reducer 2 
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 1
                 Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 1
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   Transform Operator
                     command: true

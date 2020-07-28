@@ -413,12 +413,12 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
@@ -429,12 +429,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -457,12 +457,12 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
@@ -473,12 +473,12 @@ STAGE PLANS:
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -682,12 +682,12 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string)
-                outputColumnNames: _col0
+              Limit
+                Number of rows: 5
                 Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
+                Select Operator
+                  expressions: VALUE._col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -702,12 +702,12 @@ STAGE PLANS:
         Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string)
-                outputColumnNames: _col0
+              Limit
+                Number of rows: 5
                 Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
+                Select Operator
+                  expressions: VALUE._col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -972,12 +972,12 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 12 Data size: 1772 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 12 Data size: 1772 Basic stats: COMPLETE Column stats: COMPLETE
-                  Limit
-                    Number of rows: 5
+                Limit
+                  Number of rows: 5
+                  Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
@@ -988,12 +988,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 5
                 Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -1016,12 +1016,12 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 12 Data size: 1772 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 12 Data size: 1772 Basic stats: COMPLETE Column stats: COMPLETE
-                  Limit
-                    Number of rows: 5
+                Limit
+                  Number of rows: 5
+                  Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
@@ -1032,12 +1032,12 @@ STAGE PLANS:
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 5
                 Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
@@ -1052,12 +1052,12 @@ STAGE PLANS:
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string)
-                outputColumnNames: _col0
+              Limit
+                Number of rows: 5
                 Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
+                Select Operator
+                  expressions: VALUE._col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)

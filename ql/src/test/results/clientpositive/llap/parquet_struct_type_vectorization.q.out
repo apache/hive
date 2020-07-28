@@ -316,19 +316,19 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 170 Data size: 38158 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: bigint), _col0 (type: int)
-                  outputColumnNames: _col0, _col1
-                  Select Vectorization:
-                      className: VectorSelectOperator
+                Limit
+                  Number of rows: 10
+                  Limit Vectorization:
+                      className: VectorLimitOperator
                       native: true
-                      projectedOutputColumnNums: [1, 0]
-                  Statistics: Num rows: 170 Data size: 38158 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
-                    Limit Vectorization:
-                        className: VectorLimitOperator
+                  Statistics: Num rows: 10 Data size: 2240 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: bigint), _col0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [1, 0]
                     Statistics: Num rows: 10 Data size: 2240 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
