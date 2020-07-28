@@ -74,8 +74,9 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
           }
           fieldNamesProperty = String.join(",",columnNames);
         }
-        else
+        else {
           fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
+        }
       }
       catch (Exception e) {
         LOGGER.error("Error while trying to get column names.", e);
