@@ -239,7 +239,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       RexNode condition = rexBuilder.makeCall(
           SqlStdOperatorTable.EQUALS,
           originalInputRefs.get(originalInputRefs.size() - 1),
-          rexBuilder.makeExactLiteral(
+          rexBuilder.makeBigintLiteral(
               new BigDecimal(
                   getGroupingIdValue(list, originalGroupSet, newGroupSet, aggr.getGroupCount()))));
       if (list.size() == 1) {
@@ -248,7 +248,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
             originalInputRefs.get(pos));
         condition = rexBuilder.makeCall(SqlStdOperatorTable.AND, condition, notNull);
       }
-      RexNode caseExpr1 = rexBuilder.makeExactLiteral(BigDecimal.ONE);
+      RexNode caseExpr1 = rexBuilder.makeBigintLiteral(BigDecimal.ONE);
       RexNode caseExpr2 = rexBuilder.makeNullLiteral(caseExpr1.getType());
       RexNode when = rexBuilder.makeCall(SqlStdOperatorTable.CASE, condition,
           caseExpr1, caseExpr2);
