@@ -523,9 +523,16 @@
     </class>
     
     <class name="MPartitionParams" table="PARTITION_PARAMS" detachable="true">
+    
+    <field  name="partition">
        <column name="PART_ID" jdbc-type="BIGINT" allows-null="false"/>
+       </field>
+    <field  name="key">
        <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
+       </field>
+    <field  name="value">
 	   <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+       </field>
     </class>
     
         

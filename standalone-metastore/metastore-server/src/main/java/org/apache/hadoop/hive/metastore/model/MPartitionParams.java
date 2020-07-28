@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.model;
 
 public class MPartitionParams {
 
+  MPartition partition;
   private String key;
   private String value;
 
