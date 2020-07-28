@@ -62,27 +62,28 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
     if (conf.get(Constants.JDBC_TABLE) != null && conf.get(Constants.JDBC_QUERY) != null) {
       fieldNamesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_NAMES));
       fieldTypesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_TYPES));
-    } else {
-        try {
-          if(conf.get(Constants.JDBC_QUERY) == null)    {
-            ResultSetMetaData metadata = rs.getMetaData();
-            int numColumns = metadata.getColumnCount();
-            List<String> columnNames = new ArrayList<String>(numColumns);
-            for (int i = 0; i < numColumns; i++) {
-              columnNames.add(metadata.getColumnName(i + 1));
-            }
-            fieldNamesProperty = String.join(",",columnNames);
-          }
-          else
-            fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
-        }
-        catch (Exception e) {
-          LOGGER.error("Error while trying to get column names.", e);
-          throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
-        }
-        fieldTypesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMN_TYPES));
     }
-    LOGGER.debug("Iterator ColumnNames = "+fieldNamesProperty);
+    else {
+      try {
+        if (conf.get(Constants.JDBC_QUERY) == null)    {
+          ResultSetMetaData metadata = rs.getMetaData();
+          int numColumns = metadata.getColumnCount();
+          List<String> columnNames = new ArrayList<String>(numColumns);
+          for (int i = 0; i < numColumns; i++) {
+            columnNames.add(metadata.getColumnName(i + 1));
+          }
+          fieldNamesProperty = String.join(",",columnNames);
+        }
+        else
+          fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
+      }
+      catch (Exception e) {
+        LOGGER.error("Error while trying to get column names.", e);
+        throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
+      }
+      fieldTypesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMN_TYPES));
+    }
+    LOGGER.debug("Iterator ColumnNames = {}", fieldNamesProperty);
     hiveColumnNames = fieldNamesProperty.trim().split(",");
     hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
   }
