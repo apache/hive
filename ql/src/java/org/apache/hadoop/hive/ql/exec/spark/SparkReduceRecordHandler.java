@@ -78,7 +78,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
-  // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
   private Operator<?> reducer;
   private boolean isTagged = false;
