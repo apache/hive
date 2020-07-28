@@ -226,8 +226,8 @@ public class NonBlockingOpDeDupProc extends Transform {
       }
 
       List<ExprNodeDesc> splits = new ArrayList<ExprNodeDesc>();
-      ExprNodeDescUtils.split(cFIL.getConf().getPredicate(), splits);
       ExprNodeDescUtils.split(pFIL.getConf().getPredicate(), splits);
+      ExprNodeDescUtils.split(cFIL.getConf().getPredicate(), splits);
 
       pFIL.getConf().setPredicate(ExprNodeDescUtils.mergePredicates(splits));
 

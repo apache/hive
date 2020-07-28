@@ -470,9 +470,15 @@ public final class OpProcFactory {
         if (!ewi.isDeterministic()) {
           /* predicate is not deterministic */
           if (op.getChildren() != null && op.getChildren().size() == 1) {
-            createFilter(op, owi
-                .getPrunedPreds((Operator<? extends OperatorDesc>) (op
-                .getChildren().get(0))), owi);
+            if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+                HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+              Operator child = (Operator<? extends OperatorDesc>) (op.getChildren().get(0));
+              Operator operator = (Operator) createFilter(op, ewi.getResidualPredicates(true), owi);
+              createFilter(operator, owi.getPrunedPreds(child), owi);
+              owi.addCandidateFilterOp((FilterOperator) op);
+            }
+            logExpr(op, ewi);
+            owi.putPrunedPreds(op, ewi);
           }
           return null;
         }

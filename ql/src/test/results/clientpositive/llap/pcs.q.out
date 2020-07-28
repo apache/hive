@@ -1371,6 +1371,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
+          filterExpr: (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09')) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

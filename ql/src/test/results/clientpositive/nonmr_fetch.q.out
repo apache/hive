@@ -1154,6 +1154,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (ds = '2008-04-09') (type: boolean)
           Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
             predicate: (rand() > 1.0D) (type: boolean)
