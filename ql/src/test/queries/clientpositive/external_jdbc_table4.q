@@ -129,6 +129,17 @@ SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10;
 
 SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10;
 
+-- Set CBO off to test column names.
+set hive.cbo.enable=false;
+
+SELECT * FROM db1_ext_auth1;
+
+SELECT * FROM db2_ext_auth2;
+
+SELECT * FROM db1_ext_auth2;
+
+set hive.cbo.enable=true;
+
 DROP TABLE db1_ext_auth1;
 DROP TABLE db2_ext_auth2;
 DROP TABLE db1_ext_auth2;
