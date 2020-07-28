@@ -9485,7 +9485,92 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void deleteAllPartitionColumnStatistics(TableName tn) {
-    throw new RuntimeException("fixme");
+
+    String catName = tn.getCat();
+    String dbName = tn.getDb();
+    String tableName = tn.getTable();
+
+    Query query = null;
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
+    catName = normalizeIdentifier(catName);
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
+    try {
+      openTransaction();
+      MTable mTable = getMTable(catName, dbName, tableName);
+
+      query = pm.newQuery(MPartitionColumnStatistics.class);
+
+      Object engine = null;
+      String filter = "dbName == t2 && tableName == t3 && catName == t4" + (engine != null ? " && engine == t5" : "");
+      String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4"
+          + (engine != null ? ", java.lang.String t5" : "");
+
+      query.setFilter(filter);
+      query.declareParameters(parameters);
+
+      Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
+          normalizeIdentifier(catName));
+
+
+      pm.newQuery(MPartition  )
+      //      query = pm.newQuery(MPartitionp.class);
+
+      MPartitionColumnStatistics mStatsObj;
+      List<MPartitionColumnStatistics> mStatsObjColl;
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table " + tableName + "  for which stats deletion is requested doesn't exist");
+      }
+      // Note: this does not verify ACID state; called internally when removing cols/etc.
+      //       Also called via an unused metastore API that checks for ACID tables.
+      MPartition mPartition = getMPartition(catName, dbName, tableName, partVals);
+      if (mPartition == null) {
+        throw new NoSuchObjectException(
+            "Partition " + partName + " for which stats deletion is requested doesn't exist");
+      }
+      query = pm.newQuery(MPartitionColumnStatistics.class);
+      String filter;
+      String parameters;
+      if (colName != null) {
+        query.setUnique(true);
+        if (engine != null) {
+          mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(), normalizeIdentifier(dbName),
+              normalizeIdentifier(tableName), normalizeIdentifier(colName), normalizeIdentifier(catName), engine);
+        } else {
+          mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(), normalizeIdentifier(dbName),
+              normalizeIdentifier(tableName), normalizeIdentifier(colName), normalizeIdentifier(catName));
+        }
+        pm.retrieve(mStatsObj);
+        if (mStatsObj != null) {
+          pm.deletePersistent(mStatsObj);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for table="
+              + TableName.getQualified(catName, dbName, tableName) + " partition=" + partName + " col=" + colName);
+        }
+      } else {
+        if (engine != null) {
+          mStatsObjColl = (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
+              normalizeIdentifier(dbName), normalizeIdentifier(tableName), normalizeIdentifier(catName), engine);
+        } else {
+          mStatsObjColl = (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
+              normalizeIdentifier(dbName), normalizeIdentifier(tableName), normalizeIdentifier(catName));
+        }
+        pm.retrieveAll(mStatsObjColl);
+        if (mStatsObjColl != null) {
+          pm.deletePersistentAll(mStatsObjColl);
+        } else {
+          throw new NoSuchObjectException("Column stats don't exist for table="
+              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
+        }
+      }
+      ret = commitTransaction();
+    } catch (NoSuchObjectException e) {
+      rollbackTransaction();
+      throw e;
+    } finally {
+      rollbackAndCleanup(ret, query);
+    }
   }
 
   @Override
