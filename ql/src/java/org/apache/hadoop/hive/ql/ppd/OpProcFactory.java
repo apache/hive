@@ -417,11 +417,8 @@ public final class OpProcFactory {
         if (!ewi.isDeterministic()) {
           /* predicate is not deterministic */
           if (op.getChildren() != null && op.getChildren().size() == 1) {
-            ExprWalkerInfo prunedPreds = owi.getPrunedPreds((Operator<? extends OperatorDesc>) (op
-                .getChildren().get(0)));
-            //resolve of HIVE-23893
-            if (!(prunedPreds != null && prunedPreds.hasAnyCandidates())
-                && !ewi.getFinalCandidates().isEmpty()) {
+            if (!ewi.getFinalCandidates().isEmpty()) {
+              mergeWithChildrenPred(op, owi, ewi, null);
               splitFilter((FilterOperator) op, ewi, owi);
               return null;
             }
@@ -807,9 +804,7 @@ public final class OpProcFactory {
       }
     }
 
-    if (deterministicPreds.isEmpty()) {
-      return null;
-    }
+    assert !deterministicPreds.isEmpty();
 
     List<ExprNodeDesc> nondeterministicPreds = new ArrayList<ExprNodeDesc>();
     Iterator<List<ExprNodeDesc>> iterator2 = unPushDownPreds.values().iterator();
