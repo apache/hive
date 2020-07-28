@@ -81,6 +81,7 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
+sw java 11
 ls -l
 set -x
 . /etc/profile.d/confs.sh
