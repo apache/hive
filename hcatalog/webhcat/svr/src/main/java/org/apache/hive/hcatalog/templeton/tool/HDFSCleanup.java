@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
-import java.util.Date;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -113,8 +112,7 @@ public class HDFSCleanup extends Thread {
         }
 
         long sleepMillis = (long) (Math.random() * interval);
-        LOG.info("Next execution: " + new Date(new Date().getTime()
-                             + sleepMillis));
+        LOG.info("Next execution: " + (System.currentTimeMillis() + sleepMillis));
         Thread.sleep(sleepMillis);
 
       } catch (Exception e) {
@@ -134,7 +132,7 @@ public class HDFSCleanup extends Thread {
    * @throws IOException
    */
   private void checkFiles(FileSystem fs) throws IOException {
-    long now = new Date().getTime();
+    long now = System.currentTimeMillis();
     for (Type type : Type.values()) {
       try {
         for (FileStatus status : fs.listStatus(new Path(

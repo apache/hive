@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -138,7 +137,7 @@ public class BeeLine implements Closeable {
   private Collection<Driver> drivers = null;
   private final BeeLineOpts opts = new BeeLineOpts(this, System.getProperties());
   private String lastProgress = null;
-  private final Map<SQLWarning, Date> seenWarnings = new HashMap<SQLWarning, Date>();
+  private final Map<SQLWarning, Long> seenWarnings = new HashMap<SQLWarning, Long>();
   private final Commands commands = new Commands(this);
   private OutputFile scriptOutputFile = null;
   private OutputFile recordOutputFile = null;
@@ -1798,7 +1797,7 @@ public class BeeLine implements Closeable {
 
     if (seenWarnings.get(warn) == null) {
       // don't re-display warnings we have already seen
-      seenWarnings.put(warn, new java.util.Date());
+      seenWarnings.put(warn, System.currentTimeMillis());
       handleSQLException(warn);
     }
 

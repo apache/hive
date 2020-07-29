@@ -21,7 +21,6 @@ package org.apache.hive.hcatalog.templeton.tool;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Date;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.hadoop.conf.Configuration;
@@ -113,8 +112,7 @@ public class ZooKeeperCleanup extends Thread {
         }
 
         long sleepMillis = (long) (Math.random() * interval);
-        LOG.info("Next execution: " + new Date(new Date().getTime()
-          + sleepMillis));
+        LOG.info("Next execution: " + (System.currentTimeMillis() + sleepMillis));
         Thread.sleep(sleepMillis);
 
       } catch (Exception e) {
@@ -149,7 +147,7 @@ public class ZooKeeperCleanup extends Thread {
       JobStateTracker tracker = new JobStateTracker(node, zk, true,
         appConf.get(TempletonStorage.STORAGE_ROOT +
           ZooKeeperStorage.TRACKINGDIR));
-      long now = new Date().getTime();
+      long now = System.currentTimeMillis();
       state = new JobState(tracker.getJobID(), appConf);
 
       // Set the default to 0 -- if the created date is null, there was
