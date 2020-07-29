@@ -33,7 +33,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,10 +61,9 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
     if (conf.get(Constants.JDBC_TABLE) != null && conf.get(Constants.JDBC_QUERY) != null) {
       fieldNamesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_NAMES));
       fieldTypesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_TYPES));
-    }
-    else {
+    } else {
       try {
-        if (conf.get(Constants.JDBC_QUERY) == null)    {
+        if (conf.get(Constants.JDBC_QUERY) == null) {
           ResultSetMetaData metadata = rs.getMetaData();
           int numColumns = metadata.getColumnCount();
           List<String> columnNames = new ArrayList<String>(numColumns);
@@ -73,8 +71,7 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
             columnNames.add(metadata.getColumnName(i + 1));
           }
           fieldNamesProperty = String.join(",",columnNames);
-        }
-        else {
+        } else {
           fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
         }
       }
