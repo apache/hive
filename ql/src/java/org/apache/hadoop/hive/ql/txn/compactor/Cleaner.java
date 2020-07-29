@@ -111,14 +111,12 @@ public class Cleaner extends MetaStoreCompactorThread {
         // Now, go back to bed until it's time to do this again
         long elapsedTime = System.currentTimeMillis() - startedAt;
         if (elapsedTime < cleanerCheckInterval && !stop.get()) {
-          try {
-            Thread.sleep(cleanerCheckInterval - elapsedTime);
-          } catch (InterruptedException ie) {
-            LOG.error("Caught an exception while sleeping till next cleaner run, " +
-              StringUtils.stringifyException(ie));
-          }
+          Thread.sleep(cleanerCheckInterval - elapsedTime);
         }
       } while (!stop.get());
+    } catch (InterruptedException ie) {
+      LOG.error("Compactor cleaner thread interrupted, exiting " +
+        StringUtils.stringifyException(ie));
     } finally {
       if (cleanerExecutor != null) {
         this.cleanerExecutor.shutdownNow();
