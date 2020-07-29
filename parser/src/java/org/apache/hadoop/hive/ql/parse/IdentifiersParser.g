@@ -339,17 +339,11 @@ constant
     | timestampLiteral
     | timestampLocalTZLiteral
     | StringLiteral
-    | stringLiteralSequence
     | IntegralLiteral
     | NumberLiteral
     | charSetStringLiteral
     | booleanValue
     | KW_NULL -> TOK_NULL
-    ;
-
-stringLiteralSequence
-    :
-    StringLiteral StringLiteral+ -> ^(TOK_STRINGLITERALSEQUENCE StringLiteral StringLiteral+)
     ;
 
 charSetStringLiteral
