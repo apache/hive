@@ -33,6 +33,7 @@ import java.io.File;
 /**
  * Unit tests for Codahale reporter config backward compatibility
  */
+@org.junit.Ignore("HIVE-23945")
 public class TestCodahaleReportersConf {
 
   private static File workDir = new File(System.getProperty("test.tmp.dir"));

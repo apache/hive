@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -499,6 +500,19 @@ public class MetaStoreServerUtils {
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
+  }
+
+  /**
+   * Returns true if p is a prefix of s.
+   */
+  public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
+    if (p == s) {
+      return true;
+    }
+    if (p.size() > s.size()) {
+      return false;
+    }
+    return ListUtils.isEqualList(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
