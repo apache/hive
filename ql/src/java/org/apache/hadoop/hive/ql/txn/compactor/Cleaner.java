@@ -78,7 +78,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     cleanerCheckInterval = conf.getTimeVar(
             HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE),
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
   }
 

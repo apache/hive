@@ -3027,7 +3027,7 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
-    HIVE_COMPACTOR_CLEANER_REQUEST_QUEUE("hive.compactor.cleaner.request.queue", 1,
+    HIVE_COMPACTOR_CLEANER_THREADS_NUM("hive.compactor.cleaner.threads.num", 1,
       "Enables parallelization of the cleaning directories after compaction, that includes many file \n" +
       "related checks and may be expensive"),
     COMPACTOR_JOB_QUEUE("hive.compactor.job.queue", "", "Used to specify name of Hadoop queue to which\n" +
