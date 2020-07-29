@@ -85,6 +85,8 @@ public class QBJoinTree implements Serializable, Cloneable {
    */
   private final List<ASTNode> postJoinFilters;
   private Map<String, SemiJoinHint> semiJoinHint;
+  private int fkJoinTableIndex = -1 ;
+  private boolean nonFkSideIsFiltered;
 
   /**
    * constructor.
@@ -420,6 +422,8 @@ public class QBJoinTree implements Serializable, Cloneable {
     cloned.setNullSafes(nullsafes == null ? null : new ArrayList<Boolean>(nullsafes));
     cloned.setRightAliases(rightAliases == null ? null : rightAliases.clone());
     cloned.setStreamAliases(streamAliases == null ? null : new ArrayList<String>(streamAliases));
+    cloned.setFkJoinTableIndex(fkJoinTableIndex);
+    cloned.setNonFkSideIsFiltered(nonFkSideIsFiltered);
 
     // clone postJoinFilters
     for (ASTNode filter : postJoinFilters) {
@@ -444,5 +448,21 @@ public class QBJoinTree implements Serializable, Cloneable {
   @Override
   public String toString() {
     return "QBJoinTree [leftAlias=" + leftAlias + ", rightAliases=" + Arrays.toString(rightAliases) + ", leftAliases=" + Arrays.toString(leftAliases) + ", semiJoinHint=" + semiJoinHint + "]";
+  }
+
+  public void setFkJoinTableIndex(int fkJoinTableIndex) {
+    this.fkJoinTableIndex = fkJoinTableIndex;
+  }
+
+  public int getFkJoinTableIndex() {
+    return fkJoinTableIndex;
+  }
+
+  public void setNonFkSideIsFiltered(boolean nonFkSideIsFiltered) {
+    this.nonFkSideIsFiltered = nonFkSideIsFiltered;
+  }
+
+  public boolean isNonFkSideIsFiltered() {
+    return nonFkSideIsFiltered;
   }
 }
