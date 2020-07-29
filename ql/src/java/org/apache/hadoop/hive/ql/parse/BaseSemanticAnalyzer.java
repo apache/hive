@@ -187,7 +187,7 @@ public abstract class BaseSemanticAnalyzer {
   public boolean skipAuthorization() {
     String authUser = SessionState.getUserFromAuthenticator();
     if (authUser != null) {
-      Set<String> servUsers = new HashSet<>(conf.getStringCollection(
+      Set<String> servUsers = new HashSet<>(SessionState.getSessionConf().getStringCollection(
           HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname));
       if (servUsers.contains(authUser)) {
         console.logInfo("Skip authorization as the current user: " + authUser +

@@ -23,6 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.junit.Test;
 
@@ -102,5 +106,26 @@ public class TestSemanticAnalyzer {
     // (\uD867\uDE3D is Okhotsk atka mackerel in Kanji).
     assertEquals("\uD867\uDE3D is a fish",
       BaseSemanticAnalyzer.unescapeSQLString("\"\\uD867\uDE3D is a fish\""));
+  }
+
+  @Test
+  public void testSkipAuthorization() throws Exception {
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS, "u1,u2");
+    SessionState state = new SessionState(hiveConf);
+    state.setAuthenticator(new HadoopDefaultAuthenticator() {
+      @Override public String getUserName() {
+        return "u3";
+      }
+    });
+    SessionState.setCurrentSessionState(state);
+    BaseSemanticAnalyzer analyzer = new BaseSemanticAnalyzer(
+        new QueryState.Builder().withHiveConf(hiveConf).build(), null) {
+      @Override public void analyzeInternal(ASTNode ast) throws SemanticException {
+      }
+    };
+    assertFalse(analyzer.skipAuthorization());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS, "u1,u2,u3");
+    assertTrue(analyzer.skipAuthorization());
   }
 }
