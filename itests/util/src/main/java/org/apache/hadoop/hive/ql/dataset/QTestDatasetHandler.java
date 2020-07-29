@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +51,8 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
   private File datasetDir;
   private static Set<String> srcTables;
-  private static Set<String> missingTables = new HashSet<>();
-  Set<String> tablesToUnload = new HashSet<>();
+  private Set<String> missingTables = new HashSet<>();
+  private Set<String> tablesToUnload = new HashSet<>();
 
   public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
@@ -73,9 +72,9 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     return dataDir;
   }
 
-  public boolean initDataset(String table, CliDriver cliDriver) throws Exception {
+  public void initDataset(String table, CliDriver cliDriver) {
     File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
-    String commands = null;
+    String commands;
     try {
       commands = FileUtils.readFileToString(tableFile);
     } catch (IOException e) {
@@ -84,23 +83,25 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
     try {
       CommandProcessorResponse result = cliDriver.processLine(commands);
-      LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+      LOG.info("Result from cliDrriver.processLine in initDataset=" + result);
     } catch (CommandProcessorException e) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + e);
+      throw new RuntimeException("Failed while loading table " + table, e);
     }
-
-    return true;
+    // Add the talbe in sources if it is loaded sucessfully
+    addSrcTable(table);
   }
 
-  public boolean unloadDataset(String table, CliDriver cliDriver) throws Exception {
+  private void unloadDataset(String table, CliDriver cliDriver) {
     try {
+      // Remove table from sources otherwise the following command will fail due to EnforceReadOnlyTables.
+      removeSrcTable(table);
       CommandProcessorResponse result = cliDriver.processLine("drop table " + table);
-      LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+      LOG.info("Result from cliDrriver.processLine in unloadDataset=" + result);
     } catch (CommandProcessorException e) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + e);
+      // If the unloading fails for any reason then add again the table to sources since it is still there.
+      addSrcTable(table);
+      throw new RuntimeException("Failed while unloading table " + table, e);
     }
-
-    return true;
   }
 
   public static Set<String> getSrcTables() {
@@ -186,18 +187,18 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     }
     synchronized (QTestUtil.class) {
       qt.newSession(true);
-      for (String table : missingTables) {
-        if (initDataset(table, qt.getCliDriver())) {
-          addSrcTable(table);
+      try {
+        for (String table : missingTables) {
+          initDataset(table, qt.getCliDriver());
         }
+        for (String table : tablesToUnload) {
+          unloadDataset(table, qt.getCliDriver());
+        }
+      } finally {
+        missingTables.clear();
+        tablesToUnload.clear();
+        qt.newSession(true);
       }
-      for (String table : tablesToUnload) {
-        removeSrcTable(table);
-        unloadDataset(table, qt.getCliDriver());
-      }
-      missingTables.clear();
-      tablesToUnload.clear();
-      qt.newSession(true);
     }
   }
 
