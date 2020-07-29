@@ -82,6 +82,8 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
   public Double getDistinctRowCount(HiveAntiJoin rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
                                     RexNode predicate) {
+    //TODO : Currently calcite does not support this.
+    // https://issues.apache.org/jira/browse/HIVE-23933
     return super.getDistinctRowCount(rel, mq, groupKey, predicate);
   }
 

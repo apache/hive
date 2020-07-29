@@ -148,11 +148,7 @@ public class VectorMapJoinAntiJoinLongOperator extends VectorMapJoinAntiJoinGene
           } else {
             joinResult = hashSet.contains(key, hashSetResults[0]);
             // reverse the join result for anti join.
-            if (joinResult == JoinUtil.JoinResult.NOMATCH) {
-              joinResult = JoinUtil.JoinResult.MATCH;
-            } else if (joinResult == JoinUtil.JoinResult.MATCH) {
-              joinResult = JoinUtil.JoinResult.NOMATCH;
-            }
+            joinResult = inverseResultForAntiJoin(joinResult);
           }
         }
 
@@ -225,18 +221,14 @@ public class VectorMapJoinAntiJoinLongOperator extends VectorMapJoinAntiJoinGene
               haveSaveKey = true;
               saveKey = currentKey;
               if (useMinMax && (currentKey < min || currentKey > max)) {
-                // Key out of range for whole hash table, is a valid match for anti join.
                 saveJoinResult = JoinUtil.JoinResult.NOMATCH;
               } else {
                 saveJoinResult = hashSet.contains(currentKey, hashSetResults[hashSetResultCount]);
               }
 
               // Reverse the match result for anti join.
-              if (saveJoinResult == JoinUtil.JoinResult.NOMATCH) {
-                saveJoinResult = JoinUtil.JoinResult.MATCH;
-              } else if (saveJoinResult == JoinUtil.JoinResult.MATCH) {
-                saveJoinResult = JoinUtil.JoinResult.NOMATCH;
-              }
+              // Key out of range for whole hash table, is a valid match for anti join.
+              saveJoinResult = inverseResultForAntiJoin(saveJoinResult);
             }
 
             // Common anti join result processing.

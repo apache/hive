@@ -1113,6 +1113,7 @@ public class HiveSubQRemoveRelBuilder {
 
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
                                        Set<CorrelationId> variablesSet, JoinRelType semiJoinType) {
+    assert semiJoinType == JoinRelType.SEMI || semiJoinType == JoinRelType.ANTI || semiJoinType == null;
     Frame right = stack.pop();
     final Frame left = stack.pop();
     final RelNode join;

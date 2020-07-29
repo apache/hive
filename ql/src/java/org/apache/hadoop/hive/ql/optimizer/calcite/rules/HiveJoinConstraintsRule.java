@@ -85,6 +85,11 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     final RelNode rightInput = join.getRight();
     final RexNode cond = join.getCondition();
 
+    //TODO:https://issues.apache.org/jira/browse/HIVE-23920
+    if (joinType == JoinRelType.ANTI) {
+      return;
+    }
+
     // 1) If it is an inner, check whether project only uses columns from one side.
     // That side will need to be the FK side.
     // If it is a left outer, left will be the FK side.
@@ -101,7 +106,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     boolean leftInputPotentialFK = topRefs.intersects(leftBits);
     boolean rightInputPotentialFK = topRefs.intersects(rightBits);
     if (leftInputPotentialFK && rightInputPotentialFK &&
-            (joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI || joinType == JoinRelType.ANTI)) {
+            (joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI)) {
       // Both inputs are referenced. Before making a decision, try to swap
       // references in join condition if it is an inner join, i.e. if a join
       // condition column is referenced above the join, then we can just

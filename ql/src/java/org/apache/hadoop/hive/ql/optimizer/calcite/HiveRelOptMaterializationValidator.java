@@ -256,7 +256,6 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     return visitChildren(semiJoin);
   }
 
-  // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveAntiJoin antiJoin) {
     setAutomaticRewritingInvalidReason("Statement has unsupported join type: anti join.");
     checkExpr(antiJoin.getCondition());

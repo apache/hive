@@ -3420,7 +3420,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       hashTableKind = HashTableKind.HASH_SET;
       break;
     case JoinDesc.ANTI_JOIN:
-        vectorMapJoinVariation = VectorMapJoinVariation.ANTI;
+        vectorMapJoinVariation = VectorMapJoinVariation.LEFT_ANTI;
         hashTableKind = HashTableKind.HASH_SET;
         break;
     default:
@@ -3445,7 +3445,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiLongOperator.class;
         break;
-      case ANTI:
+      case LEFT_ANTI:
         opClass = VectorMapJoinAntiJoinLongOperator.class;
         break;
       case OUTER:
@@ -3469,7 +3469,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiStringOperator.class;
         break;
-      case ANTI:
+      case LEFT_ANTI:
         opClass = VectorMapJoinAntiJoinStringOperator.class;
         break;
       case OUTER:
@@ -3493,7 +3493,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiMultiKeyOperator.class;
         break;
-      case ANTI:
+      case LEFT_ANTI:
         opClass = VectorMapJoinAntiJoinMultiKeyOperator.class;
         break;
       case OUTER:

@@ -239,7 +239,7 @@ POSTHOOK: Input: default@t2_n33
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
   HiveProject(key=[$0], value=[$1])
-    HiveJoin(condition=[=($0, $3)], joinType=[anti], algorithm=[none], cost=[not available])
+    HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
       HiveProject(literalTrue=[true], key=[$0])
@@ -365,7 +365,7 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[anti], algorithm=[none], cost=[not available])
+HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
   HiveProject(key=[$0], value=[$1])
     HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
   HiveProject(key=[$0])
@@ -557,7 +557,7 @@ HiveSortExchange(distribution=[any], collation=[[0, 1]])
       HiveProject(key=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, t3_n12]], table:alias=[c])
-      HiveJoin(condition=[=($0, $2)], joinType=[anti], algorithm=[none], cost=[not available])
+      HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
         HiveProject(key=[$0], value=[$1])
           HiveFilter(condition=[IS NOT NULL($0)])
             HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
@@ -715,7 +715,7 @@ POSTHOOK: Input: default@t2_n33
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
   HiveProject(key=[$0], value=[$1])
-    HiveJoin(condition=[=($0, $3)], joinType=[anti], algorithm=[none], cost=[not available])
+    HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
       HiveProject(literalTrue=[true], key=[$0])
@@ -833,7 +833,7 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[anti], algorithm=[none], cost=[not available])
+HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
   HiveProject(key=[$0], value=[$1])
     HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
   HiveProject(key=[$0])
@@ -945,6 +945,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.09090909090909091
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1010,7 +1011,7 @@ HiveSortExchange(distribution=[any], collation=[[0, 1]])
       HiveProject(key=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, t3_n12]], table:alias=[c])
-      HiveJoin(condition=[=($0, $2)], joinType=[anti], algorithm=[none], cost=[not available])
+      HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
         HiveProject(key=[$0], value=[$1])
           HiveFilter(condition=[IS NOT NULL($0)])
             HiveTableScan(table=[[default, t1_n55]], table:alias=[a])

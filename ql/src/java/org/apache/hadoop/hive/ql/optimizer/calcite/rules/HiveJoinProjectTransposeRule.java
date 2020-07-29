@@ -136,6 +136,8 @@ public final class HiveJoinProjectTransposeRule {
     public void onMatch(RelOptRuleCall call) {
       //TODO: this can be removed once CALCITE-3824 is released
       Join joinRel = call.rel(0);
+
+      //TODO:https://issues.apache.org/jira/browse/HIVE-23921
       if (joinRel.getJoinType() == JoinRelType.ANTI) {
         return;
       }

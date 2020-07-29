@@ -83,7 +83,6 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
@@ -229,7 +228,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinConstraintsRule
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinWithFilterToAntiJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAntiSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
@@ -1917,11 +1916,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
           mdProvider.getMetadataProvider(), executorProvider);
 
-      if (conf.getBoolVar(ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
-        calcitePreCboPlan = hepPlan(calcitePreCboPlan, false, mdProvider.getMetadataProvider(),
-                null, HepMatchOrder.DEPTH_FIRST, HiveJoinWithFilterToAntiJoinRule.INSTANCE);
-      }
-
       // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
@@ -2138,6 +2132,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HiveRemoveSqCountCheck.INSTANCE);
+      }
+
+      // 10. Convert left outer join + null filter on right side table column to anti join. Add this
+      // rule after all the optimization for which calcite support for anti join is missing.
+      // Needs to be done before ProjectRemoveRule as it expect a project over filter.
+      // This is done before join re-ordering as join re-ordering is converting the left outer
+      // to right join in some cases before converting back again to left outer.
+      if (conf.getBoolVar(ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
+        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                HiveAntiSemiJoinRule.INSTANCE);
       }
 
       // Trigger program
@@ -3041,7 +3045,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       case HiveParser.TOK_LEFTSEMIJOIN:
         hiveJoinType = JoinType.LEFTSEMI;
         break;
-      case HiveParser.TOK_ANTIJOIN:
+      case HiveParser.TOK_LEFTANTISEMIJOIN:
         hiveJoinType = JoinType.ANTI;
         break;
       default:

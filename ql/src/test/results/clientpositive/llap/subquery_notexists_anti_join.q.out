@@ -1564,7 +1564,7 @@ POSTHOOK: Input: default@tschema
 CBO PLAN:
 HiveProject(eid=[_UTF-16LE'empno'], id=[$0])
   HiveAggregate(group=[{0}])
-    HiveJoin(condition=[=($0, $2)], joinType=[anti], algorithm=[none], cost=[not available])
+    HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
       HiveProject(id=[$0])
         HiveTableScan(table=[[default, tschema]], table:alias=[a])
       HiveProject(literalTrue=[true], id0=[$0])

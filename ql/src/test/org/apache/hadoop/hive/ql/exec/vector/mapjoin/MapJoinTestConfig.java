@@ -308,7 +308,7 @@ public class MapJoinTestConfig {
     case LEFT_SEMI:
       joinDescType = JoinDesc.LEFT_SEMI_JOIN;
       break;
-    case ANTI:
+    case LEFT_ANTI:
         joinDescType = JoinDesc.ANTI_JOIN;
         break;
     case OUTER:
@@ -366,7 +366,7 @@ public class MapJoinTestConfig {
       hashTableKind = HashTableKind.HASH_MULTISET;
       break;
     case LEFT_SEMI:
-    case ANTI:
+    case LEFT_ANTI:
       hashTableKind = HashTableKind.HASH_SET;
       break;
     case OUTER:

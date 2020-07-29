@@ -207,11 +207,7 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
           // LOG.debug(CLASS_NAME + " processOp all " + displayBytes(keyBytes, 0, keyLength));
           joinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[0]);
           // reverse the join result from hash table for anti join.
-          if (joinResult == JoinUtil.JoinResult.NOMATCH) {
-            joinResult = JoinUtil.JoinResult.MATCH;
-          } else if (joinResult == JoinUtil.JoinResult.MATCH) {
-            joinResult = JoinUtil.JoinResult.NOMATCH;
-          }
+          joinResult = inverseResultForAntiJoin(joinResult);
         }
 
         /*
@@ -314,11 +310,7 @@ public class VectorMapJoinAntiJoinMultiKeyOperator extends VectorMapJoinAntiJoin
               byte[] keyBytes = saveKeyOutput.getData();
               int keyLength = saveKeyOutput.getLength();
               saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
-              if (saveJoinResult == JoinUtil.JoinResult.NOMATCH) {
-                saveJoinResult = JoinUtil.JoinResult.MATCH;
-              } else if (saveJoinResult == JoinUtil.JoinResult.MATCH) {
-                saveJoinResult = JoinUtil.JoinResult.NOMATCH;
-              }
+              saveJoinResult = inverseResultForAntiJoin(saveJoinResult);
             }
 
             /*

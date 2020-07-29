@@ -49,7 +49,7 @@ public class HiveRemoveGBYSemiJoinRule extends RelOptRule {
   }
 
   @Override public void onMatch(RelOptRuleCall call) {
-    final Join join= call.rel(0);
+    final Join join = call.rel(0);
 
     if (join.getJoinType() != JoinRelType.SEMI && join.getJoinType() != JoinRelType.ANTI) {
       return;

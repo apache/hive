@@ -747,7 +747,9 @@ public class HiveRelOptUtil extends RelOptUtil {
     final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
 
-    if (joinType != JoinRelType.INNER && !join.isSemiJoin() && joinType != JoinRelType.ANTI) {
+    // TODO : Need to handle Anti join.
+    // https://issues.apache.org/jira/browse/HIVE-23906
+    if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
       // outer join (as it would not be correct)

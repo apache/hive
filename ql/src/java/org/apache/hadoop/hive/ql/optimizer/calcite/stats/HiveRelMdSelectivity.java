@@ -146,7 +146,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
         ndvEstimate = exponentialBackoff(peLst, colStatMap);
       }
 
-      if (j.isSemiJoin() || (j instanceof HiveJoin && j.getJoinType().equals(JoinRelType.ANTI))) {
+      if (j.isSemiJoin() || (j.getJoinType().equals(JoinRelType.ANTI))) {
         ndvEstimate = Math.min(mq.getRowCount(j.getLeft()),
             ndvEstimate);
       } else if (j instanceof HiveJoin) {

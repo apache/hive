@@ -58,7 +58,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   public static final HiveJoinAddNotNullRule INSTANCE_ANTIJOIN =
-          new HiveJoinAddNotNullRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+      new HiveJoinAddNotNullRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -79,10 +79,11 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
 
-    // For anti join case add the not null on right side if the condition is
-    // always true. This is done because during execution, anti join expect the right side to
-    // be empty and if we dont put null check on right, for null only right side table and condition
-    // always true, execution will produce 0 records.
+    // For anti join case add the not null on right side even if the condition is always true.
+    // This is done because during execution, anti join expect the right side to be empty and
+    // if we dont put null check on right, for null only right side table and condition always
+    // true, execution will produce 0 records as the post processing to filter out null value
+    // is not done for always true conditions during execution.
     // eg  select * from left_tbl where (select 1 from all_null_right limit 1) is null
     if (join.getJoinType() == JoinRelType.FULL ||
             (join.getJoinType() != JoinRelType.ANTI && join.getCondition().isAlwaysTrue())) {

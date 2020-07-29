@@ -153,7 +153,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   transient boolean hasLeftSemiJoin = false;
 
-  transient boolean hasAntiJoin = false;
+  transient boolean hasLeftAntiSemiJoin = false;
 
   protected transient int countAfterReport;
   protected transient int heartbeatInterval;
@@ -368,7 +368,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       if(condn[i].getType() == JoinDesc.LEFT_SEMI_JOIN) {
         hasLeftSemiJoin = true;
       } else if(condn[i].getType() == JoinDesc.ANTI_JOIN) {
-        hasAntiJoin = true;
+        hasLeftAntiSemiJoin = true;
       }
     }
 
@@ -514,7 +514,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   private void createForwardJoinObjectForAntiJoin(boolean[] skip) throws HiveException {
-    boolean forward = fillFwdCache(skip);
+    boolean forward = fillForwardCache(skip);
     if (forward) {
       internalForward(forwardCache, outputObjInspector);
       countAfterReport = 0;
@@ -522,7 +522,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   // fill forwardCache with skipvector
-  private boolean fillFwdCache(boolean[] skip) {
+  private boolean fillForwardCache(boolean[] skip) {
     Arrays.fill(forwardCache, null);
     boolean forward = false;
     for (int i = 0; i < numAliases; i++) {
@@ -538,7 +538,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   // returns whether a record was forwarded
   private boolean createForwardJoinObject(boolean[] skip, boolean antiJoin) throws HiveException {
-    boolean forward = fillFwdCache(skip);
+    boolean forward = fillForwardCache(skip);
     if (forward) {
       if (needsPostEvaluation) {
         forward = !JoinUtil.isFiltered(forwardCache, residualJoinFilters, residualJoinFiltersOIs);
@@ -659,7 +659,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         }
       } else if (type == JoinDesc.ANTI_JOIN) {
         if (innerJoin(skip, left, right)) {
-          // if anti join found a match then the condition is not matched for anti join, so we can skip rest of the
+          // if inner join found a match then the condition is not matched for anti join, so we can skip rest of the
           // record. But if there is some post evaluation we have to handle that.
           done = !needsPostEvaluation;
         }
@@ -1013,7 +1013,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
       if (!needsPostEvaluation && !hasEmpty && !mayHasMoreThanOne) {
         genAllOneUniqueJoinObject();
-      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin && !hasAntiJoin) {
+      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin && !hasLeftAntiSemiJoin) {
         genUniqueJoinObject(0, 0);
       } else {
         genJoinObject();

@@ -135,9 +135,20 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(rel), pkfk);
       }
-      return pkfk.fkInfo.rowCount * selectivity;
+      if (rel.getJoinType() == JoinRelType.ANTI) {
+        return pkfk.fkInfo.rowCount * (1 - selectivity);
+      } else {
+        return pkfk.fkInfo.rowCount * selectivity;
+      }
     }
-    return super.getRowCount(rel, mq);
+
+    //TODO : Need to handle anti join in calcite
+    // https://issues.apache.org/jira/browse/HIVE-23933
+    if (rel.getJoinType() == JoinRelType.ANTI) {
+      return mq.getRowCount(rel.getLeft()) - super.getRowCount(rel, mq);
+    } else {
+      return super.getRowCount(rel, mq);
+    }
   }
 
   @Override

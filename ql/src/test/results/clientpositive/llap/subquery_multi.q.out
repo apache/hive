@@ -4626,6 +4626,7 @@ POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND NOT EXISTS (select c from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null

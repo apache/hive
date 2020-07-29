@@ -39,8 +39,8 @@ import java.io.IOException;
  * This class has methods for generating vectorized join results for Anti joins.
  * The big difference between inner joins and anti joins is existence testing.
  * Inner joins use a hash map to lookup the 1 or more small table values.
- * Anti joins are a specialized join for outputting big table rows whose key exists
- * in the small table.
+ * Anti joins are a specialized join for outputting big table rows whose key does not
+ * exists in the small table.
  *
  * No small table values are needed for anti since they would be empty.  So,
  * we use a hash set as the hash table.  Hash sets just report whether a key exists.  This
@@ -109,7 +109,7 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
    */
 
   /**
-   * Generate the anti join output results for one vectorized row batch. The result is modified in the during hash
+   * Generate the anti join output results for one vectorized row batch. The result is modified during hash
    * table match to reverse the result for anti join. So here matching means, the row can be emitted as the row
    * is actually not matching.
    *
@@ -165,6 +165,15 @@ public abstract class VectorMapJoinAntiJoinGenerateResultOperator
       batch.selected[numSel++] = batchIndex;
     }
     return numSel;
+  }
+
+  protected JoinUtil.JoinResult inverseResultForAntiJoin(JoinUtil.JoinResult joinResult) {
+    if (joinResult == JoinUtil.JoinResult.NOMATCH) {
+      return JoinUtil.JoinResult.MATCH;
+    } else if (joinResult == JoinUtil.JoinResult.MATCH) {
+      return JoinUtil.JoinResult.NOMATCH;
+    }
+    return joinResult;
   }
 
   /**

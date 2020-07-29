@@ -182,11 +182,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
           int keyStart = start[0];
           int keyLength = length[0];
           joinResult = hashSet.contains(keyBytes, keyStart, keyLength, hashSetResults[0]);
-          if (joinResult == JoinUtil.JoinResult.NOMATCH) {
-            joinResult = JoinUtil.JoinResult.MATCH;
-          } else if (joinResult == JoinUtil.JoinResult.MATCH) {
-            joinResult = JoinUtil.JoinResult.NOMATCH;
-          }
+          joinResult = inverseResultForAntiJoin(joinResult);
         }
 
         /*
@@ -285,11 +281,7 @@ public class VectorMapJoinAntiJoinStringOperator extends VectorMapJoinAntiJoinGe
               int keyStart = start[batchIndex];
               int keyLength = length[batchIndex];
               saveJoinResult = hashSet.contains(keyBytes, keyStart, keyLength, hashSetResults[hashSetResultCount]);
-              if (saveJoinResult == JoinUtil.JoinResult.NOMATCH) {
-                saveJoinResult = JoinUtil.JoinResult.MATCH;
-              } else if (saveJoinResult == JoinUtil.JoinResult.MATCH) {
-                saveJoinResult = JoinUtil.JoinResult.NOMATCH;
-              }
+              saveJoinResult = inverseResultForAntiJoin(saveJoinResult);
             }
 
             /*

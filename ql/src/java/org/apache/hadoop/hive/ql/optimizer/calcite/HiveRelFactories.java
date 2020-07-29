@@ -193,20 +193,6 @@ public class HiveRelFactories {
     }
   }
 
-  /**
-   * Implementation of {@link AntiJoinFactory} that returns
-   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin}
-   * .
-   */
-  private static class HiveAntiJoinFactoryImpl implements SemiJoinFactory {
-    @Override
-    public RelNode createSemiJoin(RelNode left, RelNode right,
-                                  RexNode condition) {
-      final RelOptCluster cluster = left.getCluster();
-      return HiveAntiJoin.getAntiJoin(cluster, left.getTraitSet(), left, right, condition);
-    }
-  }
-
   private static class HiveSortFactoryImpl implements SortFactory {
     @Override
     public RelNode createSort(RelTraitSet traits, RelNode input, RelCollation collation,

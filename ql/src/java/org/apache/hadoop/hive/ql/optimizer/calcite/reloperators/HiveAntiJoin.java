@@ -35,6 +35,8 @@ import java.util.List;
 
 public class HiveAntiJoin extends Join implements HiveRelNode {
 
+  // The joinFilter holds the residual filter which is used during post processing.
+  // These are the join conditions that are not part of the join key.
   private final RexNode joinFilter;
 
   public static HiveAntiJoin getAntiJoin(
