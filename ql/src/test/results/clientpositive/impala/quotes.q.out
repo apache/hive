@@ -1,0 +1,895 @@
+PREHOOK: query: explain
+select count(distinct cs_order_number) as 'order count'
+   ,sum(cs_ext_ship_cost) as "total shipping cost"
+   ,sum(cs_net_profit) as `total net profit`
+from
+    impala_tpcds_catalog_sales cs1
+   ,impala_tpcds_date_dim
+   ,impala_tpcds_customer_address
+   ,impala_tpcds_call_center
+where
+    d_date between '2000-3-01' and
+             (cast('2000-3-01' as timestamp) + interval  60 days)
+    and cs1.cs_ship_date_sk = d_date_sk
+    and cs1.cs_ship_addr_sk = ca_address_sk
+    and ca_state = 'MD'
+    and cs1.cs_call_center_sk = cc_call_center_sk
+    and cc_county in ('Mobile County','Barrow County','Dauphin County','Williamson County',
+                   'Pennington County' )
+    and exists (select *
+             from impala_tpcds_catalog_sales cs2
+             where cs1.cs_order_number = cs2.cs_order_number
+               and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+               and not exists(select *
+                from impala_tpcds_catalog_returns cr1
+                where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number) limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_call_center
+PREHOOK: Input: default@impala_tpcds_catalog_returns
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_customer_address
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select count(distinct cs_order_number) as 'order count'
+   ,sum(cs_ext_ship_cost) as "total shipping cost"
+   ,sum(cs_net_profit) as `total net profit`
+from
+    impala_tpcds_catalog_sales cs1
+   ,impala_tpcds_date_dim
+   ,impala_tpcds_customer_address
+   ,impala_tpcds_call_center
+where
+    d_date between '2000-3-01' and
+             (cast('2000-3-01' as timestamp) + interval  60 days)
+    and cs1.cs_ship_date_sk = d_date_sk
+    and cs1.cs_ship_addr_sk = ca_address_sk
+    and ca_state = 'MD'
+    and cs1.cs_call_center_sk = cc_call_center_sk
+    and cc_county in ('Mobile County','Barrow County','Dauphin County','Williamson County',
+                   'Pennington County' )
+    and exists (select *
+             from impala_tpcds_catalog_sales cs2
+             where cs1.cs_order_number = cs2.cs_order_number
+               and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+               and not exists(select *
+                from impala_tpcds_catalog_returns cr1
+                where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number) limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_call_center
+POSTHOOK: Input: default@impala_tpcds_catalog_returns
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_customer_address
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: count(cs1.cs_order_number), _impala_builtins.sum(cs1.cs_ext_ship_cost), _impala_builtins.sum(cs1.cs_net_profit)
+  |  mem-estimate=40B mem-reservation=0B thread-reservation=0
+  |
+  24:AGGREGATE [FINALIZE]
+  |  output: count:merge(cs1.cs_order_number), sum:merge(cs1.cs_ext_ship_cost), sum:merge(cs1.cs_net_profit)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=14 row-size=40B cardinality=1
+  |  in pipelines: 24(GETNEXT), 13(OPEN)
+  |
+  23:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=14 row-size=40B cardinality=1
+     in pipelines: 13(GETNEXT)
+
+F07:PLAN FRAGMENT [HASH(cs1.cs_order_number)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=23, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:AGGREGATE
+  |  output: count(cs1.cs_order_number), sum:merge(cs1.cs_ext_ship_cost), sum:merge(cs1.cs_net_profit)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=14 row-size=40B cardinality=1
+  |  in pipelines: 13(GETNEXT), 22(OPEN)
+  |
+  22:AGGREGATE
+  |  output: _impala_builtins.sum:merge(cs1.cs_ext_ship_cost), _impala_builtins.sum:merge(cs1.cs_net_profit)
+  |  group by: cs1.cs_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=40B cardinality=0
+  |  in pipelines: 22(GETNEXT), 00(OPEN)
+  |
+  21:EXCHANGE [HASH(cs1.cs_order_number)]
+     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=40B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=137.78MB mem-reservation=43.69MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=21, HASH(cs1.cs_order_number)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:AGGREGATE [STREAMING]
+  |  output: sum(cs1.cs_ext_ship_cost), sum(cs1.cs_net_profit)
+  |  group by: cs1.cs_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=40B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  11:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_order_number = cr1.cr_order_number
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: _impala_builtins.if(TupleIsNull(12), NULL, TRUE) IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6,12N row-size=88B cardinality=0
+  |  in pipelines: 00(GETNEXT), 19(OPEN)
+  |
+  |--20:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=12 row-size=8B cardinality=0
+  |     in pipelines: 19(GETNEXT)
+  |
+  08:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_order_number = cs2.cs_order_number
+  |  other join predicates: cs1.cs_warehouse_sk != cs2.cs_warehouse_sk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=80B cardinality=0
+  |  in pipelines: 00(GETNEXT), 07(OPEN)
+  |
+  |--17:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=12B cardinality=0
+  |     in pipelines: 07(GETNEXT)
+  |
+  06:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_call_center_sk = default.impala_tpcds_call_center.cc_call_center_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4,6 row-size=80B cardinality=0
+  |  in pipelines: 00(GETNEXT), 05(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=6 row-size=16B cardinality=0
+  |     in pipelines: 05(GETNEXT)
+  |
+  04:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_ship_addr_sk = default.impala_tpcds_customer_address.ca_address_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2,4 row-size=64B cardinality=0
+  |  in pipelines: 00(GETNEXT), 03(OPEN)
+  |
+  |--15:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=0
+  |     in pipelines: 03(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_ship_date_sk = default.impala_tpcds_date_dim.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=48B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=16B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_catalog_sales cs1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cs1.cs_call_center_sk IS NOT NULL, cs1.cs_order_number IS NOT NULL, cs1.cs_ship_addr_sk IS NOT NULL, cs1.cs_ship_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=32B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('2000-03-01 00:00:00') AND _impala_builtins.casttotimestamp(default.impala_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp('2000-03-01 00:00:00'), INTERVAL CAST(5184000000 AS BIGINT) MILLISECOND)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=16B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=15, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  03:SCAN HDFS [default.impala_tpcds_customer_address, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_state = 'MD'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_customer_address.ca_state = 'MD'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=0
+     in pipelines: 03(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:SCAN HDFS [default.impala_tpcds_call_center, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpcds_call_center.cc_call_center_sk IS NOT NULL, default.impala_tpcds_call_center.cc_county IN ('Mobile County', 'Barrow County', 'Dauphin County', 'Williamson County', 'Pennington County')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpcds_call_center.cc_county IN ('Mobile County', 'Barrow County', 'Dauphin County', 'Williamson County', 'Pennington County')
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=17, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:SCAN HDFS [default.impala_tpcds_catalog_sales cs2, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cs2.cs_order_number IS NOT NULL, cs2.cs_warehouse_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=12B cardinality=0
+     in pipelines: 07(GETNEXT)
+
+F06:PLAN FRAGMENT [HASH(cr1.cr_order_number)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=20, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  19:AGGREGATE [FINALIZE]
+  |  group by: cr1.cr_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=8B cardinality=0
+  |  in pipelines: 19(GETNEXT), 09(OPEN)
+  |
+  18:EXCHANGE [HASH(cr1.cr_order_number)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=8B cardinality=0
+     in pipelines: 09(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=18, HASH(cr1.cr_order_number)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE [STREAMING]
+  |  group by: cr1.cr_order_number
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=8B cardinality=0
+  |  in pipelines: 09(GETNEXT)
+  |
+  09:SCAN HDFS [default.impala_tpcds_catalog_returns cr1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cr1.cr_order_number IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=10 row-size=8B cardinality=0
+     in pipelines: 09(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select "What\'s happening?" as single_within_double,
+       'I\'m not sure.' as single_within_single,
+       "Homer wrote \"The Iliad\"." as double_within_double,
+       'Homer also wrote "The Odyssey".' as double_within_single
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select "What\'s happening?" as single_within_double,
+       'I\'m not sure.' as single_within_single,
+       "Homer wrote \"The Iliad\"." as double_within_double,
+       'Homer also wrote "The Odyssey".' as double_within_single
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'What\'s happening?', 'I\'m not sure.', 'Homer wrote "The Iliad".', 'Homer also wrote "The Odyssey".'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select * from impala_tpch_customer "c" limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select * from impala_tpch_customer "c" limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: c.c_custkey, c.c_name, c.c_address, c.c_nationkey, c.c_phone, c.c_acctbal, c.c_mktsegment, c.c_comment
+  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |
+  00:SCAN HDFS [default.impala_tpch_customer c]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     limit: 10
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=78B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select * from impala_tpch_customer AS 'c' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select * from impala_tpch_customer AS 'c' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: c.c_custkey, c.c_name, c.c_address, c.c_nationkey, c.c_phone, c.c_acctbal, c.c_mktsegment, c.c_comment
+  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |
+  00:SCAN HDFS [default.impala_tpch_customer c]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     limit: 10
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=78B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select * from (select * from impala_tpch_customer) "c" limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select * from (select * from impala_tpch_customer) "c" limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_nationkey, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_mktsegment, default.impala_tpch_customer.c_comment
+  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |
+  00:SCAN HDFS [default.impala_tpch_customer]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     limit: 10
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=78B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select * from (select * from impala_tpch_customer) AS "c" limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select * from (select * from impala_tpch_customer) AS "c" limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_nationkey, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_mktsegment, default.impala_tpch_customer.c_comment
+  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |
+  00:SCAN HDFS [default.impala_tpch_customer]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     limit: 10
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=78B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select 'c' from impala_tpch_customer AS 'c' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select 'c' from impala_tpch_customer AS 'c' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: $f0
+  |  mem-estimate=1B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+  |  limit: 10
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=2 row-size=1B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_customer c]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: all
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select *, 'c' from impala_tpch_customer AS 'c' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select *, 'c' from impala_tpch_customer AS 'c' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=83.08KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment, _o__c1
+  |  mem-estimate=79B mem-reservation=0B thread-reservation=0
+  |
+  02:EXCHANGE [UNPARTITIONED]
+     limit: 10
+     mem-estimate=83.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=79B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=02, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:UNION
+  |  limit: 10
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=2 row-size=79B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_customer c, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=78B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select *
+from impala_tpcds_catalog_sales "cs1"
+  join impala_tpcds_date_dim "dd1"
+where
+  cs_ship_date_sk = d_date_sk
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpcds_catalog_sales
+PREHOOK: Input: default@impala_tpcds_date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select *
+from impala_tpcds_catalog_sales "cs1"
+  join impala_tpcds_date_dim "dd1"
+where
+  cs_ship_date_sk = d_date_sk
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpcds_catalog_sales
+POSTHOOK: Input: default@impala_tpcds_date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=360.34KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: cs1.cs_sold_date_sk, cs1.cs_sold_time_sk, cs1.cs_ship_date_sk, cs1.cs_bill_customer_sk, cs1.cs_bill_cdemo_sk, cs1.cs_bill_hdemo_sk, cs1.cs_bill_addr_sk, cs1.cs_ship_customer_sk, cs1.cs_ship_cdemo_sk, cs1.cs_ship_hdemo_sk, cs1.cs_ship_addr_sk, cs1.cs_call_center_sk, cs1.cs_catalog_page_sk, cs1.cs_ship_mode_sk, cs1.cs_warehouse_sk, cs1.cs_item_sk, cs1.cs_promo_sk, cs1.cs_order_number, cs1.cs_quantity, cs1.cs_wholesale_cost, cs1.cs_list_price, cs1.cs_sales_price, cs1.cs_ext_discount_amt, cs1.cs_ext_sales_price, cs1.cs_ext_wholesale_cost, cs1.cs_ext_list_price, cs1.cs_ext_tax, cs1.cs_coupon_amt, cs1.cs_ext_ship_cost, cs1.cs_net_paid, cs1.cs_net_paid_inc_tax, cs1.cs_net_paid_inc_ship, cs1.cs_net_paid_inc_ship_tax, cs1.cs_net_profit, dd1.d_date_sk, dd1.d_date_id, dd1.d_date, dd1.d_month_seq, dd1.d_week_seq, dd1.d_quarter_seq, dd1.d_year, dd1.d_dow, dd1.d_moy, dd1.d_dom, dd1.d_qoy, dd1.d_fy_year, dd1.d_fy_quarter_seq, dd1.d_fy_week_seq, dd1.d_day_name, dd1.d_quarter_name, dd1.d_holiday, dd1.d_weekend, dd1.d_following_holiday, dd1.d_first_dom, dd1.d_last_dom, dd1.d_same_day_ly, dd1.d_same_day_lq, dd1.d_current_day, dd1.d_current_week, dd1.d_current_month, dd1.d_current_quarter, dd1.d_current_year
+  |  mem-estimate=352B mem-reservation=0B thread-reservation=0
+  |
+  04:EXCHANGE [UNPARTITIONED]
+     limit: 10
+     mem-estimate=360.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0,2 row-size=352B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=2.14MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: cs1.cs_ship_date_sk = dd1.d_date_sk
+  |  fk/pk conjuncts: assumed fk/pk
+  |  limit: 10
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=352B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--03:EXCHANGE [BROADCAST]
+  |     mem-estimate=212.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=208B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpcds_catalog_sales cs1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: cs1.cs_ship_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=144B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=03, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.impala_tpcds_date_dim dd1, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: dd1.d_date_sk IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=208B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select 'value''alias'
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select 'value''alias'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'value'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select "value"'alias'
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select "value"'alias'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'value'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select 'value'"alias"
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select 'value'"alias"
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'value'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select 'value'alias
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select 'value'alias
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'value'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select "value"alias
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select "value"alias
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: 'value'
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -1,18 +1,18 @@
-PREHOOK: query: EXPLAIN SELECT 'face''book', 'face' 'book', 'face'
+PREHOOK: query: EXPLAIN SELECT 'face'||'book', 'face'|| 'book', 'face'||
                                             'book',
-               "face""book", "face" "book", "face"
-                                            "book",
-               'face' 'bo' 'ok', 'face'"book",
-               "face"'book', 'facebook' FROM src LIMIT 1
+               "face"||"book", "face"|| "book", "face"
+                                            ||"book",
+               'face'|| 'bo' ||'ok', 'face'||"book",
+               "face"||'book', 'facebook' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT 'face''book', 'face' 'book', 'face'
+POSTHOOK: query: EXPLAIN SELECT 'face'||'book', 'face'|| 'book', 'face'||
                                             'book',
-               "face""book", "face" "book", "face"
-                                            "book",
-               'face' 'bo' 'ok', 'face'"book",
-               "face"'book', 'facebook' FROM src LIMIT 1
+               "face"||"book", "face"|| "book", "face"
+                                            ||"book",
+               'face'|| 'bo' ||'ok', 'face'||"book",
+               "face"||'book', 'facebook' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -36,21 +36,21 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
+PREHOOK: query: SELECT 'face'||'book', 'face'|| 'book', 'face'||
                                     'book',
-       "face""book", "face" "book", "face"
-                                    "book",
-       'face' 'bo' 'ok', 'face'"book",
-       "face"'book', 'facebook' FROM src LIMIT 1
+       "face"||"book", "face"|| "book", "face"
+                                    ||"book",
+       'face'|| 'bo' ||'ok', 'face'||"book",
+       "face"||'book', 'facebook' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
+POSTHOOK: query: SELECT 'face'||'book', 'face'|| 'book', 'face'||
                                     'book',
-       "face""book", "face" "book", "face"
-                                    "book",
-       'face' 'bo' 'ok', 'face'"book",
-       "face"'book', 'facebook' FROM src LIMIT 1
+       "face"||"book", "face"|| "book", "face"
+                                    ||"book",
+       'face'|| 'bo' ||'ok', 'face'||"book",
+       "face"||'book', 'facebook' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
