@@ -89,4 +89,8 @@ public class VectorAggregationBufferRow {
   public void incrementAccessCount() {
     accessed++;
   }
+
+  public void resetAccessCount() {
+    accessed = 0;
+  }
 }

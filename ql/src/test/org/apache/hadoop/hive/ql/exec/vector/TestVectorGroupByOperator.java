@@ -692,11 +692,18 @@ public class TestVectorGroupByOperator {
 
     // This processing would trigger flush
     for (VectorizedRowBatch unit: data) {
+      long zeroAccessBeforeFlush = getElementsWithZeroAccess(processingMode.mapKeysAggregationBuffers);
       vgo.process(unit,  0);
       long freqElementsAfterFlush = getElementsHigherThan(processingMode.mapKeysAggregationBuffers, avgAccess);
 
       assertTrue("After flush: " + freqElementsAfterFlush + ", before flush: " + numElementsToBeRetained,
           (freqElementsAfterFlush >= numElementsToBeRetained));
+
+      // ensure that freq elements are reset for providing chance for others
+      long zeroAccessAfterFlush = getElementsWithZeroAccess(processingMode.mapKeysAggregationBuffers);
+      assertTrue("After flush: " + zeroAccessAfterFlush + ", before flush: " + zeroAccessBeforeFlush,
+          (zeroAccessAfterFlush > zeroAccessBeforeFlush));
+
       break;
     }
     vgo.close(false);
@@ -704,6 +711,10 @@ public class TestVectorGroupByOperator {
 
   long getElementsHigherThan(Map<KeyWrapper, VectorAggregationBufferRow> aggMap, int avgAccess) {
     return aggMap.values().stream().filter(v -> (v.getAccessCount() > avgAccess)).count();
+  }
+
+  long getElementsWithZeroAccess(Map<KeyWrapper, VectorAggregationBufferRow> aggMap) {
+    return aggMap.values().stream().filter(v -> (v.getAccessCount() == 0)).count();
   }
 
   @Test
