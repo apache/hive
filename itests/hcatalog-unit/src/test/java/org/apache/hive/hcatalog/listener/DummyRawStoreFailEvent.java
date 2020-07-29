@@ -1409,4 +1409,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
+
+  public void deleteAllPartitionColumnStatistics(TableName tn) {
+    return objectStore.deleteAllPartitionColumnStatistics(tn);
+  }
+
 }
