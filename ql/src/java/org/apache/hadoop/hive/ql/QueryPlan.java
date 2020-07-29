@@ -34,6 +34,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
@@ -674,7 +675,7 @@ public class QueryPlan implements Serializable {
       LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString("UTF-8");
+    return tmb.toString(StandardCharsets.UTF_8);
   }
 
   public String toBinaryString() throws IOException {
