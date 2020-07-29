@@ -114,7 +114,8 @@ public class Cleaner extends MetaStoreCompactorThread {
           try {
             Thread.sleep(cleanerCheckInterval - elapsedTime);
           } catch (InterruptedException ie) {
-            // What can I do about it?
+            LOG.error("Caught an exception while sleeping till next cleaner run, " +
+              StringUtils.stringifyException(ie));
           }
         }
       } while (!stop.get());
