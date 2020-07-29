@@ -3779,7 +3779,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),
-    HIVE_SERVER2_SERVICE_USERS("hive.server2.service.users", "",
+    HIVE_SERVER2_SERVICE_USERS("hive.server2.service.users", null,
         "Comma separated list of users to have HiveServer2 skip authorization when compiling queries."),
     HIVE_DISTCP_DOAS_USER("hive.distcp.privileged.doAs","hive",
         "This property allows privileged distcp executions done by hive\n" +

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import java.util.Set;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -187,13 +185,11 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public boolean skipAuthorization() {
-    SessionState ss = SessionState.get();
-    String serviceUsers = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS);
-    if (ss != null && StringUtils.isNotBlank(serviceUsers)) {
-      String[] users = StringUtils.split(serviceUsers, ",");
-      Set<String> superUsers = new HashSet<String>(Arrays.asList(users));
-      String authUser = ss.getAuthenticator().getUserName();
-      if (superUsers.contains(authUser)) {
+    String authUser = SessionState.getUserFromAuthenticator();
+    if (authUser != null) {
+      Set<String> servUsers = new HashSet<>(conf.getStringCollection(
+          HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname));
+      if (servUsers.contains(authUser)) {
         console.logInfo("Skip authorization as the current user: " + authUser +
             " is configured in " + HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname);
         return true;
