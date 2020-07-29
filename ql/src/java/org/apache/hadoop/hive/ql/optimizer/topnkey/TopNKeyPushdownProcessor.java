@@ -290,7 +290,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     LOG.debug("Pushing a copy of {} through {} and {}",
             topNKey.getName(), join.getName(), fkJoinInput.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(fkJoinInput, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(fkJoinInput, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
