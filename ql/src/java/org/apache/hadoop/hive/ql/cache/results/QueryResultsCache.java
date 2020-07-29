@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
@@ -227,10 +226,6 @@ public final class QueryResultsCache {
       }
       LOG.debug("addReader: entry: {}, readerCount: {}, added: {}", this, readerCount, added);
       return added;
-    }
-
-    private int numReaders() {
-      return readers.get();
     }
 
     private void invalidate() {
@@ -523,11 +518,10 @@ public final class QueryResultsCache {
    */
   public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
     Path queryResultsPath = null;
-    Path cachedResultsPath = null;
 
     try {
       // if we are here file sink op should have created files to fetch from
-      assert(fetchWork.getFilesToFetch() != null );
+      Preconditions.checkNotNull(fetchWork.getFilesToFetch());
 
       boolean requiresCaching = true;
       queryResultsPath = fetchWork.getTblDir();
@@ -571,7 +565,6 @@ public final class QueryResultsCache {
         fetchWorkForCache.setCachedResult(true);
         fetchWorkForCache.setFilesToFetch(fetchWork.getFilesToFetch());
         cacheEntry.fetchWork = fetchWorkForCache;
-        //cacheEntry.cachedResultsPath = cachedResultsPath;
         cacheEntry.size = resultSize;
         this.cacheSize += resultSize;
 
@@ -703,10 +696,9 @@ public final class QueryResultsCache {
 
           LOG.debug("Checking writeIds for table {}: currentWriteIdForTable {}, cachedWriteIdForTable {}",
               tableName, currentWriteIdForTable, cachedWriteIdForTable);
-          if (currentWriteIdForTable != null && cachedWriteIdForTable != null) {
-            if (TxnIdUtils.checkEquivalentWriteIds(currentWriteIdForTable, cachedWriteIdForTable)) {
-              writeIdCheckPassed = true;
-            }
+          if (currentWriteIdForTable != null && cachedWriteIdForTable != null && TxnIdUtils.checkEquivalentWriteIds(currentWriteIdForTable,
+        		  cachedWriteIdForTable)) {
+            writeIdCheckPassed = true;
           }
 
           if (!writeIdCheckPassed) {
@@ -748,13 +740,6 @@ public final class QueryResultsCache {
         .forEach(tableName -> removeFromEntryMap(tableToEntryMap, tableName, entry));
   }
 
-  private void calculateEntrySize(CacheEntry entry, FetchWork fetchWork) throws IOException {
-    Path queryResultsPath = fetchWork.getTblDir();
-    FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
-    ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
-    entry.size = cs.getLength();
-  }
-
   /**
    * Determines if the cache entry should be added to the results cache.
    */
@@ -773,7 +758,7 @@ public final class QueryResultsCache {
     return true;
   }
 
-  private boolean hasSpaceForCacheEntry(CacheEntry entry, long size) {
+  private boolean hasSpaceForCacheEntry(long size) {
     if (maxCacheSize >= 0) {
       return (cacheSize + size) <= maxCacheSize;
     }
@@ -796,7 +781,7 @@ public final class QueryResultsCache {
   }
 
   private boolean clearSpaceForCacheEntry(CacheEntry entry, long size) {
-    if (hasSpaceForCacheEntry(entry, size)) {
+    if (hasSpaceForCacheEntry(size)) {
       return true;
     }
 
@@ -809,7 +794,7 @@ public final class QueryResultsCache {
       removeEntry(removalCandidate);
       // TODO: Should we wait for the entry to actually be deleted from HDFS? Would have to
       // poll the reader count, waiting for it to reach 0, at which point cleanup should occur.
-      if (hasSpaceForCacheEntry(entry, size)) {
+      if (hasSpaceForCacheEntry(size)) {
         return true;
       }
     }
@@ -873,25 +858,17 @@ public final class QueryResultsCache {
   private void scheduleEntryInvalidation(final CacheEntry entry) {
     if (maxEntryLifetime >= 0) {
       // Schedule task to invalidate cache entry and remove from lookup.
-      ScheduledFuture<?> future = invalidationExecutor.schedule(new Runnable() {
-        @Override
-        public void run() {
-          removeEntry(entry);
-        }
-      }, maxEntryLifetime, TimeUnit.MILLISECONDS);
+      ScheduledFuture<?> future = invalidationExecutor.schedule(() -> removeEntry(entry), maxEntryLifetime, TimeUnit.MILLISECONDS);
       entry.invalidationFuture = future;
     }
   }
 
   private static void cleanupEntry(final CacheEntry entry) {
     Preconditions.checkState(entry.getStatus() == CacheEntryStatus.INVALID);
-    final HiveConf conf = getInstance().conf;
 
     if (entry.cachedResultsPath != null &&
         !getInstance().zeroRowsPath.equals(entry.cachedResultsPath)) {
-      deletionExecutor.execute(new Runnable() {
-        @Override
-        public void run() {
+    	deletionExecutor.execute(() -> {
           Path path = entry.cachedResultsPath;
           LOG.info("Cache directory cleanup: deleting {}", path);
           try {
@@ -899,7 +876,6 @@ public final class QueryResultsCache {
             fs.delete(entry.cachedResultsPath, true);
           } catch (Exception err) {
             LOG.error("Error while trying to delete " + path, err);
-          }
         }
       });
     }
@@ -928,22 +904,8 @@ public final class QueryResultsCache {
   }
 
   private static void registerMetrics(Metrics metrics, final QueryResultsCache cache) {
-    MetricsVariable<Long> maxCacheSize = new MetricsVariable<Long>() {
-      @Override
-      public Long getValue() {
-        return cache.maxCacheSize;
-      }
-    };
-
-    MetricsVariable<Long> curCacheSize = new MetricsVariable<Long>() {
-      @Override
-      public Long getValue() {
-        return cache.cacheSize;
-      }
-    };
-
-    metrics.addGauge(MetricsConstant.QC_MAX_SIZE, maxCacheSize);
-    metrics.addGauge(MetricsConstant.QC_CURRENT_SIZE, curCacheSize);
+    metrics.addGauge(MetricsConstant.QC_MAX_SIZE, () -> cache.maxCacheSize);
+    metrics.addGauge(MetricsConstant.QC_CURRENT_SIZE, () -> cache.cacheSize);
   }
 
   // EventConsumer to invalidate cache entries based on metastore notification events (alter table, add partition, etc).
