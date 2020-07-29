@@ -600,8 +600,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
         if (!all && avgAccess >= 1) {
-          // Retain entries when access pattern is > than average access
           if (pair.getValue().getAccessCount() > avgAccess) {
+            // resetting to give chance for other entries
+            totalAccessCount -= pair.getValue().getAccessCount();
+            pair.getValue().resetAccessCount();
             continue;
           }
         }
