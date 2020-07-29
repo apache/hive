@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,9 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
     private void pushDown(LimitOperator limit) throws SemanticException {
       Operator<? extends OperatorDesc> parent = limit.getParentOperators().get(0);
       switch (parent.getType()) {
+        case LIMIT:
+          combineLimits(limit);
+          break;
         case SELECT:
         case FORWARD:
           pushdownThroughParent(limit);
@@ -100,6 +104,18 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
           break;
         default:
           break;
+      }
+    }
+
+    private void combineLimits(LimitOperator childLimit) throws SemanticException {
+      LimitOperator parentLimit = (LimitOperator) childLimit.getParentOperators().get(0);
+      LimitDesc parentConf = parentLimit.getConf();
+      LimitDesc childConf = childLimit.getConf();
+      if (parentConf.getOffset() == childConf.getOffset()) {
+        int min = Math.min(parentConf.getLimit(), childConf.getLimit());
+        LOG.debug("Combining two limits child={}, parent={}, newLimit={}", childLimit, parentLimit, min);
+        parentConf.setLimit(min);
+        parentLimit.removeChildAndAdoptItsChildren(childLimit);
       }
     }
 
