@@ -9514,23 +9514,45 @@ public class ObjectStore implements RawStore, Configurable {
       Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
           normalizeIdentifier(catName));
 
-      List<Partition> parts = getPartitions(catName, dbName, tableName, -1);
-      for (Partition part : parts) {
-        Partition oldPart = new Partition(part);
-        oldPart.setParameters(part.getParameters());
-        alterPartition(catName, dbName, tableName, part.getValues(), part, writeIdList);
-      }
+      new GetHelper<Integer>(catName, dbName, tableName, true, true) {
+        private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
+        @Override
+        protected String describeResult() {
+          return "Partition count";
+        }
+
+        @Override
+        protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
+          return true;
+        }
+
+        @Override
+        protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
+          directSql.deleteColumnStatsState(getTable().getId());
+          return 0;
+        }
+
+        @Override
+        protected Integer getJdoResult(GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
+          try {
+            List<Partition> parts = getPartitions(catName, dbName, tableName, -1);
+            for (Partition part : parts) {
+              Partition newPart = new Partition(part);
+              StatsSetupConst.clearColumnStatsState(newPart.getParameters());
+              alterPartition(catName, dbName, tableName, part.getValues(), newPart, writeIdList);
+            }
+            return parts.size();
+          } catch (InvalidObjectException e) {
+            LOG.error("error updating parts", e);
+            return -1;
+          }
+        }
+      }.run(false);
 
       ret = commitTransaction();
-    } catch (InvalidObjectException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (MetaException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchObjectException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    } catch (Exception e) {
+      LOG.error("Couldn't clear stats for table", e);
     } finally {
       rollbackAndCleanup(ret, query);
     }
