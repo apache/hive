@@ -94,7 +94,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                       value expressions: smallint_col_25 (type: smallint), double_col_61 (type: double), timestamp_col_10 (type: timestamp)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -122,7 +122,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
                       value expressions: int_col_2 (type: int), smallint_col_38 (type: smallint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
