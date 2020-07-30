@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -143,6 +144,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
             + Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
+        sslContextFactory.setKeyStoreType(KeyStore.getDefaultType());
         connector = new ServerConnector(server, sslContextFactory, http);
       } else {
         connector = new ServerConnector(server, http);
