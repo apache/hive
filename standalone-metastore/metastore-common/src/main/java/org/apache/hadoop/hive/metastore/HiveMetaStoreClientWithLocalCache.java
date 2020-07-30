@@ -16,6 +16,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
+/**
+ * This class introduces a caching layer in HS2 for metadata for some selected query APIs. It extends
+ * HiveMetaStoreClient, and overrides some of its methods to add this feature.
+ * Its design is simple, relying on snapshot information being queried to cache and invalidate the metadata.
+ * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
+ * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
+ */
 public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   private static Cache<CacheKey, Object> mscLocalCache = null;
