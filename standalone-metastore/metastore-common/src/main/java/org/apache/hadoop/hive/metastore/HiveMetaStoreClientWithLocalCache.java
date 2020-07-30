@@ -19,7 +19,6 @@ import java.util.Objects;
 public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   private static Cache<CacheKey, Object> mscLocalCache = null;
-  //TODO: initialize in the init method
   private static boolean IS_CACHE_ENABLED;
   private static long MAX_SIZE;
   private static boolean RECORD_STATS;
@@ -186,12 +185,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       } catch (UncheckedCacheException e) {
         if (e.getCause() instanceof MetaException) {
           throw (MetaException) e.getCause();
+        } else if (e.getCause() instanceof TException) {
+          throw (TException) e.getCause();
         } else {
           throw new TException(e.getCause());
         }
       }
     } else {
-         r = client.get_partitions_by_expr(req);
+      r = client.get_partitions_by_expr(req);
     }
 
     return r;
@@ -214,12 +215,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       } catch (UncheckedCacheException e) {
         if (e.getCause() instanceof MetaException) {
           throw (MetaException) e.getCause();
+        } else if (e.getCause() instanceof TException) {
+          throw (TException) e.getCause();
         } else {
           throw new TException(e.getCause());
         }
       }
     } else {
-        r = client.get_partitions_spec_by_expr(req);
+      r = client.get_partitions_spec_by_expr(req);
     }
 
     return r;

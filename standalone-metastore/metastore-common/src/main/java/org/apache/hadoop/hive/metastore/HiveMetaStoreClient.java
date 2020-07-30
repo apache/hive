@@ -102,7 +102,6 @@ import com.google.common.collect.Lists;
 @InterfaceStability.Evolving
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
-  protected String logString = "HMS client {} call took {} nano seconds - dbName: {}, tblName: {}";
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
 
   /**
@@ -1050,22 +1049,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS);
 
-    if (colNames.isEmpty() || partNames.isEmpty()) {
-      LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
-      return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
-    }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
-    req.setCatName(catName);
-    req.setValidWriteIdList(writeIdList);
-    AggrStats res = client.get_aggr_stats_for(req);
+    try {
+      if (colNames.isEmpty() || partNames.isEmpty()) {
+        LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
+        return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
+      }
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
+      req.setCatName(catName);
+      req.setValidWriteIdList(writeIdList);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getAggrColStatsFor", perfLogger.getDuration(PerfLogger.GET_AGGR_COL_STATS), dbName,
-              tblName);
+      return client.get_aggr_stats_for(req);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -1887,17 +1883,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // TODO should we add capabilities here as well as it returns Partition objects
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO);
-    List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(catName,
-            dbName, conf), tableName, shrinkMaxtoShort(maxParts), userName, groupNames);
-    List<Partition> res = deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    try {
+      List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(catName,
+              dbName, conf), tableName, shrinkMaxtoShort(maxParts), userName, groupNames);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "listPartitionsWithAuthInfo(S, S, S, i, S, L)",
-              perfLogger.getDuration(PerfLogger.LIST_PARTS_WITH_AUTH_INFO), dbName, tableName);
+      return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -1918,18 +1911,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // TODO should we add capabilities here as well as it returns Partition objects
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2);
-    List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(catName,
-            dbName, conf), tableName, partialPvals, shrinkMaxtoShort(maxParts), userName, groupNames);
-    List<Partition> res = deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook,
-            parts));
+    try {
+      List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(catName,
+              dbName, conf), tableName, partialPvals, shrinkMaxtoShort(maxParts), userName, groupNames);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "listPartitionsWithAuthInfo(S, S, S, L, i, S, L)",
-              perfLogger.getDuration(PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2), dbName, tableName);
+      return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook,
+              parts));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2004,32 +1994,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_BY_EXPR);
 
-    assert result != null;
-    PartitionsByExprRequest req = buildPartitionsByExprRequest(catName, db_name, tbl_name, expr, default_partition_name,
-            max_parts);
-
-    PartitionsByExprResult r = null;
-
     try {
-      r = getPartitionsByExprResult(req);
-    } catch (TApplicationException te) {
-      rethrowException(te);
+      assert result != null;
+      PartitionsByExprRequest req = buildPartitionsByExprRequest(catName, db_name, tbl_name, expr, default_partition_name,
+              max_parts);
+
+      PartitionsByExprResult r = null;
+
+      try {
+        r = getPartitionsByExprResult(req);
+      } catch (TApplicationException te) {
+        rethrowException(te);
+      }
+
+      assert r != null;
+      r.setPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, r.getPartitions()));
+      // TODO: in these methods, do we really need to deepcopy?
+      //deepCopyPartitions(r.getPartitions(), result);
+      result.addAll(r.getPartitions());
+
+      return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_BY_EXPR, "HMS client");
     }
-
-    assert r != null;
-    r.setPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, r.getPartitions()));
-    // TODO: in these methods, do we really need to deepcopy?
-    //deepCopyPartitions(r.getPartitions(), result);
-    result.addAll(r.getPartitions());
-    boolean hasUnknownPartitions = !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_BY_EXPR);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "listPartitionsByExpr",
-              perfLogger.getDuration(PerfLogger.LIST_PARTS_BY_EXPR), db_name, tbl_name);
-    }
-
-    return hasUnknownPartitions;
   }
 
 
@@ -2054,29 +2041,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_SPECS_BY_EXPR);
 
-    assert result != null;
-    PartitionsSpecByExprResult r = null;
     try {
-      r = getPartitionsSpecByExprResult(req);
-    } catch (TApplicationException te) {
-      rethrowException(te);
+      assert result != null;
+      PartitionsSpecByExprResult r = null;
+      try {
+        r = getPartitionsSpecByExprResult(req);
+      } catch (TApplicationException te) {
+        rethrowException(te);
+      }
+
+      assert r != null;
+      // do client side filtering
+      r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
+              isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
+
+      result.addAll(r.getPartitionsSpec());
+
+      return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_SPECS_BY_EXPR, "HMS client");
     }
-
-    assert r != null;
-    // do client side filtering
-    r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
-            isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
-
-    result.addAll(r.getPartitionsSpec());
-    boolean hasUnknownPartitions =  !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_SPECS_BY_EXPR);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "listPartitionsSpecByExpr",
-              perfLogger.getDuration(PerfLogger.LIST_PARTS_SPECS_BY_EXPR), req.getDbName(), req.getTblName());
-    }
-
-    return hasUnknownPartitions;
   }
 
   @Override
@@ -2089,26 +2073,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_DATABASE);
 
-    GetDatabaseRequest request = new GetDatabaseRequest();
-    if (databaseName != null)
-      request.setName(databaseName);
-    if (catalogName != null)
-      request.setCatalogName(catalogName);
-    if (processorCapabilities != null) {
-      request.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
-    }
-    if (processorIdentifier != null) {
-      request.setProcessorIdentifier(processorIdentifier);
-    }
-    Database d = client.get_database_req(request);
-    Database res = deepCopy(FilterUtils.filterDbIfEnabled(isClientFilterEnabled, filterHook, d));
+    try {
+      GetDatabaseRequest request = new GetDatabaseRequest();
+      if (databaseName != null)
+        request.setName(databaseName);
+      if (catalogName != null)
+        request.setCatalogName(catalogName);
+      if (processorCapabilities != null) {
+        request.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
+      }
+      if (processorIdentifier != null) {
+        request.setProcessorIdentifier(processorIdentifier);
+      }
+      Database d = client.get_database_req(request);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_DATABASE);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getDatabase", perfLogger.getDuration(PerfLogger.GET_DATABASE), databaseName, "N/A");
+      return deepCopy(FilterUtils.filterDbIfEnabled(isClientFilterEnabled, filterHook, d));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_DATABASE, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2242,29 +2224,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE);
 
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setCapabilities(version);
-    req.setGetColumnStats(getColumnStats);
-    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
+    try {
+      GetTableRequest req = new GetTableRequest(dbName, tableName);
+      req.setCatName(catName);
+      req.setCapabilities(version);
+      req.setGetColumnStats(getColumnStats);
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
 
-    if (getColumnStats) {
-      req.setEngine(engine);
+      if (getColumnStats) {
+        req.setEngine(engine);
+      }
+      if (processorCapabilities != null)
+        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      if (processorIdentifier != null)
+        req.setProcessorIdentifier(processorIdentifier);
+
+      Table t = client.get_table_req(req).getTable();
+
+      return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE, "HMS client");
     }
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
-
-    Table t = client.get_table_req(req).getTable();
-    Table res = deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getTable(S, S, S, b, S)", perfLogger.getDuration(PerfLogger.GET_TABLE), dbName, tableName);
-    }
-
-    return res;
   }
 
   @Override
@@ -2279,33 +2259,30 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_2);
 
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setCapabilities(version);
-    if (validWriteIdList != null) {
-      req.setValidWriteIdList(validWriteIdList);
-    }else{
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-    }
-    req.setGetColumnStats(getColumnStats);
-    if (getColumnStats) {
-      req.setEngine(engine);
-    }
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
+    try {
+      GetTableRequest req = new GetTableRequest(dbName, tableName);
+      req.setCatName(catName);
+      req.setCapabilities(version);
+      if (validWriteIdList != null) {
+        req.setValidWriteIdList(validWriteIdList);
+      } else {
+        req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
+      }
+      req.setGetColumnStats(getColumnStats);
+      if (getColumnStats) {
+        req.setEngine(engine);
+      }
+      if (processorCapabilities != null)
+        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      if (processorIdentifier != null)
+        req.setProcessorIdentifier(processorIdentifier);
 
-    Table t = client.get_table_req(req).getTable();
-    Table res = deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+      Table t = client.get_table_req(req).getTable();
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_2);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getTable(S, S, S, S, b, S)",
-              perfLogger.getDuration(PerfLogger.GET_TABLE_2), dbName, tableName);
+      return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_2, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2714,18 +2691,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_PK);
 
-    if (!req.isSetCatName()) {
-      req.setCatName(getDefaultCatalog(conf));
-    }
-    List<SQLPrimaryKey> res = client.get_primary_keys(req).getPrimaryKeys();
+    try {
+      if (!req.isSetCatName()) {
+        req.setCatName(getDefaultCatalog(conf));
+      }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_PK);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getPrimaryKeys",
-              perfLogger.getDuration(PerfLogger.GET_PK), req.getDb_name(), req.getTbl_name());
+      return client.get_primary_keys(req).getPrimaryKeys();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_PK, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2734,18 +2708,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_FK);
 
-    if (!req.isSetCatName()) {
-      req.setCatName(getDefaultCatalog(conf));
-    }
-    List<SQLForeignKey> res = client.get_foreign_keys(req).getForeignKeys();
+    try {
+      if (!req.isSetCatName()) {
+        req.setCatName(getDefaultCatalog(conf));
+      }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_FK);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getForeignKeys",
-              perfLogger.getDuration(PerfLogger.GET_FK), req.getForeign_db_name(), req.getForeign_tbl_name());
+      return client.get_foreign_keys(req).getForeignKeys();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_FK, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2754,18 +2725,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_UNIQ_CONSTRAINTS);
 
-    if (!req.isSetCatName()) {
-      req.setCatName(getDefaultCatalog(conf));
-    }
-    List<SQLUniqueConstraint> res = client.get_unique_constraints(req).getUniqueConstraints();
+    try {
+      if (!req.isSetCatName()) {
+        req.setCatName(getDefaultCatalog(conf));
+      }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_UNIQ_CONSTRAINTS);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getUniqueConstraints",
-              perfLogger.getDuration(PerfLogger.GET_UNIQ_CONSTRAINTS), req.getDb_name(), req.getTbl_name());
+      return client.get_unique_constraints(req).getUniqueConstraints();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_UNIQ_CONSTRAINTS, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2774,18 +2742,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_NOT_NULL_CONSTRAINTS);
 
-    if (!req.isSetCatName()) {
-      req.setCatName(getDefaultCatalog(conf));
-    }
-    List<SQLNotNullConstraint> res = client.get_not_null_constraints(req).getNotNullConstraints();
+    try {
+      if (!req.isSetCatName()) {
+        req.setCatName(getDefaultCatalog(conf));
+      }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_NOT_NULL_CONSTRAINTS);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getNotNullConstraints",
-              perfLogger.getDuration(PerfLogger.GET_NOT_NULL_CONSTRAINTS), req.getDb_name(), req.getTbl_name());
+      return client.get_not_null_constraints(req).getNotNullConstraints();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_NOT_NULL_CONSTRAINTS, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2868,22 +2833,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS);
 
-    if (colNames.isEmpty()) {
-      return Collections.emptyList();
-    }
-    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
-    rqst.setCatName(catName);
-    rqst.setEngine(engine);
-    rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-    List<ColumnStatisticsObj> res = client.get_table_statistics_req(rqst).getTableStats();
+    try {
+      if (colNames.isEmpty()) {
+        return Collections.emptyList();
+      }
+      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
+      rqst.setCatName(catName);
+      rqst.setEngine(engine);
+      rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getTableColumnStatistics",
-              perfLogger.getDuration(PerfLogger.GET_TABLE_COL_STATS), dbName, tableName);
+      return client.get_table_statistics_req(rqst).getTableStats();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -2899,22 +2861,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS_2);
 
-    if (colNames.isEmpty()) {
-      return Collections.emptyList();
-    }
-    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
-    rqst.setEngine(engine);
-    rqst.setCatName(catName);
-    rqst.setValidWriteIdList(validWriteIdList);
-    List<ColumnStatisticsObj> res = client.get_table_statistics_req(rqst).getTableStats();
+    try {
+      if (colNames.isEmpty()) {
+        return Collections.emptyList();
+      }
+      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
+      rqst.setEngine(engine);
+      rqst.setCatName(catName);
+      rqst.setValidWriteIdList(validWriteIdList);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS_2);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getTableColumnStatistics",
-              perfLogger.getDuration(PerfLogger.GET_TABLE_COL_STATS_2), dbName, tableName);
+      return client.get_table_statistics_req(rqst).getTableStats();
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS_2, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -3002,15 +2961,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_CONFIG_VAL);
 
-    String res = client.get_config_value(name, defaultValue);
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_CONFIG_VAL);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString + " key: " + name, "getConfigValue",
-              perfLogger.getDuration(PerfLogger.GET_CONFIG_VAL), "N/A", "N/A");
+    try {
+      return client.get_config_value(name, defaultValue);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_CONFIG_VAL, "HMS client");
     }
-
-    return res;
   }
 
   @Override
@@ -3993,22 +3948,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS_2);
 
-    if (colNames.isEmpty() || partNames.isEmpty()) {
-      LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
-      return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
-    }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
-    req.setCatName(catName);
-    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
-    AggrStats res = client.get_aggr_stats_for(req);
+    try {
+      if (colNames.isEmpty() || partNames.isEmpty()) {
+        LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
+        return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
+      }
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
+      req.setCatName(catName);
+      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS_2);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getAggrColStatsFor",
-              perfLogger.getDuration(PerfLogger.GET_AGGR_COL_STATS_2), dbName, tblName);
+      return client.get_aggr_stats_for(req);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS_2, "HMS client");
     }
-
-    return res;
   }
 
   @Override

@@ -231,7 +231,6 @@ import org.slf4j.LoggerFactory;
 public class Hive {
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
-  private String logString = "HS2 {} call took {} milli seconds - dbName: {}, tblName: {}";
   private final String CLASS_NAME = Hive.class.getName();
 
   private HiveConf conf = null;
@@ -1635,13 +1634,11 @@ public class Hive {
           result = getMSC().getTables(dbName, ".*");
         }
       }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getTablesByType", perfLogger.getDuration(PerfLogger.HIVE_GET_TABLE), dbName, "");
-      }
       return result;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
     }
   }
 
@@ -2145,17 +2142,13 @@ public class Hive {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
     try {
-      Database db = getMSC().getDatabase(dbName);
-
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getDatabase(S)", perfLogger.getDuration(PerfLogger.HIVE_GET_DATABASE), dbName, "N/A");
-      }
-      return db;
+      return getMSC().getDatabase(dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE, "HS2-cache");
     }
   }
 
@@ -2170,17 +2163,13 @@ public class Hive {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
     try {
-      Database db = getMSC().getDatabase(catName, dbName);
-
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getDatabase(S, S)", perfLogger.getDuration(PerfLogger.HIVE_GET_DATABASE_2), dbName, "N/A");
-      }
-      return db;
+      return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2, "HS2-cache");
     }
   }
 
@@ -3695,43 +3684,38 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
 
-    if (tbl.isPartitioned()) {
-      List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-      try {
-        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
-        req.setTblName(tbl.getTableName());
-        req.setDbName(tbl.getDbName());
-        req.setUserName(getUserName());
-        req.setMaxParts((short) -1);
-        req.setGroupNames(getGroupNames());
-        if (AcidUtils.isTransactionalTable(tbl)) {
-          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        }
-        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
-        tParts = res.getPartitions();
+    try {
+      if (tbl.isPartitioned()) {
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+        try {
+          GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+          req.setTblName(tbl.getTableName());
+          req.setDbName(tbl.getDbName());
+          req.setUserName(getUserName());
+          req.setMaxParts((short) -1);
+          req.setGroupNames(getGroupNames());
+          if (AcidUtils.isTransactionalTable(tbl)) {
+            ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+            req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+          }
+          GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+          tParts = res.getPartitions();
 
-      } catch (Exception e) {
-        LOG.error(StringUtils.stringifyException(e));
-        throw new HiveException(e);
+        } catch (Exception e) {
+          LOG.error(StringUtils.stringifyException(e));
+          throw new HiveException(e);
+        }
+        List<Partition> parts = new ArrayList<>(tParts.size());
+        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+          parts.add(new Partition(tbl, tpart));
+        }
+
+        return parts;
+      } else {
+        return Collections.singletonList(new Partition(tbl));
       }
-      List<Partition> parts = new ArrayList<>(tParts.size());
-      for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-        parts.add(new Partition(tbl, tpart));
-      }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getPartitions(Table)",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_PARTITIONS), tbl.getDbName(), tbl.getTableName());
-      }
-      return parts;
-    } else {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getPartitions(Table)",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_PARTITIONS), tbl.getDbName(), tbl.getTableName());
-      }
-      return Collections.singletonList(new Partition(tbl));
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS, "HS2-cache");
     }
   }
 
@@ -3775,29 +3759,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
   throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2);
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
-    }
-
-    List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
     try {
-      partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-          partialPvals, limit, getUserName(), getGroupNames());
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
+      if (!tbl.isPartitioned()) {
+        throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+      }
 
-    List<Partition> qlPartitions = new ArrayList<Partition>();
-    for (org.apache.hadoop.hive.metastore.api.Partition p : partitions) {
-      qlPartitions.add( new Partition(tbl, p));
-    }
+      List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2);
-    LOG.debug(logString, "getPartitions(Table, Map, short)",
-            perfLogger.getDuration(PerfLogger.HIVE_GET_PARTITIONS_2), tbl.getDbName(), tbl.getTableName());
-    return qlPartitions;
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
+      try {
+        partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
+                partialPvals, limit, getUserName(), getGroupNames());
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+
+      List<Partition> qlPartitions = new ArrayList<Partition>();
+      for (org.apache.hadoop.hive.metastore.api.Partition p : partitions) {
+        qlPartitions.add(new Partition(tbl, p));
+      }
+
+      return qlPartitions;
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2, "HS2-cache");
+    }
   }
 
   /**
@@ -4014,28 +3999,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<Partition> partitions) throws HiveException, TException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
-    Preconditions.checkNotNull(partitions);
-    byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
-    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
-        new ArrayList<>();
-    ValidWriteIdList validWriteIdList = null;
-    if (AcidUtils.isTransactionalTable(tbl)) {
-      validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+    try {
+      Preconditions.checkNotNull(partitions);
+      byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+              new ArrayList<>();
+      ValidWriteIdList validWriteIdList = null;
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+      }
+
+      PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
+              validWriteIdList != null ? validWriteIdList.toString() : null);
+
+      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
+      partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
+
+      return hasUnknownParts;
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR, "HS2-cache");
     }
-
-    PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
-            validWriteIdList != null ? validWriteIdList.toString() : null);
-
-    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
-    partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(logString, "getPartitionsByExpr",
-              perfLogger.getDuration(PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR), tbl.getDbName(), tbl.getTableName());
-    }
-    return hasUnknownParts;
   }
 
   private PartitionsByExprRequest buildPartitionByExprRequest(Table tbl, byte[] exprBytes, String defaultPartitionName,
@@ -5408,15 +5392,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else {
         retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
       }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getTableColumnStatistics",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_TABLE_COLUMN_STATS), dbName, tableName);
-      }
+
       return retv;
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS, "HS2-cache");
     }
   }
 
@@ -5453,16 +5435,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       AggrStats result = getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, Constants.HIVE_ENGINE,
               writeIdList);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getAggrColStatsFor",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_AGGR_COL_STATS), dbName, tblName);
-      }
 
       return result;
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
   }
 
@@ -5841,17 +5820,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
           .filter(pk -> pk.isRely_cstr())
           .collect(Collectors.toList());
       }
-      PrimaryKeyInfo pki = new PrimaryKeyInfo(primaryKeys, tblName, dbName);
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PK);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getPrimaryKeys", perfLogger.getDuration(PerfLogger.HIVE_GET_PK), dbName,
-                tblName);
-      }
-
-      return pki;
+      return new PrimaryKeyInfo(primaryKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PK, "HS2-cache");
     }
   }
 
@@ -5890,17 +5864,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
           .filter(fk -> fk.isRely_cstr())
           .collect(Collectors.toList());
       }
-      ForeignKeyInfo fki = new ForeignKeyInfo(foreignKeys, tblName, dbName);
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_FK);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getForeignKeys", perfLogger.getDuration(PerfLogger.HIVE_GET_FK), dbName,
-                tblName);
-      }
-
-      return fki;
+      return new ForeignKeyInfo(foreignKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_FK, "HS2-cache");
     }
   }
 
@@ -5940,17 +5909,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
           .filter(uk -> uk.isRely_cstr())
           .collect(Collectors.toList());
       }
-      UniqueConstraint res = new UniqueConstraint(uniqueConstraints, tblName, dbName);
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getUniqueConstraints",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_UNIQ_CONSTRAINT), dbName, tblName);
-      }
-
-      return res;
+      return new UniqueConstraint(uniqueConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT, "HS2-cache");
     }
   }
 
@@ -6061,17 +6025,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
           .filter(nnc -> nnc.isRely_cstr())
           .collect(Collectors.toList());
       }
-      NotNullConstraint res = new NotNullConstraint(notNullConstraints, tblName, dbName);
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(logString, "getNotNullConstraints",
-                perfLogger.getDuration(PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT), dbName, tblName);
-      }
-
-      return res;
+      return new NotNullConstraint(notNullConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT, "HS2-cache");
     }
   }
 
