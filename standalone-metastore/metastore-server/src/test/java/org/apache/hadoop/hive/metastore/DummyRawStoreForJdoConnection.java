@@ -1342,7 +1342,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void deleteAllPartitionColumnStatistics(TableName tableName) {
+  public void deleteAllPartitionColumnStatistics(TableName tableName, String w) {
     throw new RuntimeException("unimplemented");
   }
 

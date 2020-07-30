@@ -1359,8 +1359,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteAllPartitionColumnStatistics(TableName tn) {
-    objectStore.deleteAllPartitionColumnStatistics(tn);
+  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
+    objectStore.deleteAllPartitionColumnStatistics(tn, w);
   }
 
 }

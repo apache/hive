@@ -3160,8 +3160,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteAllPartitionColumnStatistics(TableName tn) {
-    rawStore.deleteAllPartitionColumnStatistics(tn);
+  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
+    rawStore.deleteAllPartitionColumnStatistics(tn, w);
   }
 
 }

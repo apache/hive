@@ -9484,7 +9484,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteAllPartitionColumnStatistics(TableName tn) {
+  public void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList) {
 
     String catName = tn.getCat();
     String dbName = tn.getDb();
@@ -9514,59 +9514,23 @@ public class ObjectStore implements RawStore, Configurable {
       Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
           normalizeIdentifier(catName));
 
-//      pm.newQuery(MPartitionParams.class);
-//      throw new RuntimeException();
-      //      //      query = pm.newQuery(MPartitionp.class);
-      //
-      //      MPartitionColumnStatistics mStatsObj;
-      //      List<MPartitionColumnStatistics> mStatsObjColl;
-      //      if (mTable == null) {
-      //        throw new NoSuchObjectException("Table " + tableName + "  for which stats deletion is requested doesn't exist");
-      //      }
-      //      // Note: this does not verify ACID state; called internally when removing cols/etc.
-      //      //       Also called via an unused metastore API that checks for ACID tables.
-      //      MPartition mPartition = getMPartition(catName, dbName, tableName, partVals);
-      //      if (mPartition == null) {
-      //        throw new NoSuchObjectException(
-      //            "Partition " + partName + " for which stats deletion is requested doesn't exist");
-      //      }
-      //      query = pm.newQuery(MPartitionColumnStatistics.class);
-      //      String filter;
-      //      String parameters;
-      //      if (colName != null) {
-      //        query.setUnique(true);
-      //        if (engine != null) {
-      //          mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(), normalizeIdentifier(dbName),
-      //              normalizeIdentifier(tableName), normalizeIdentifier(colName), normalizeIdentifier(catName), engine);
-      //        } else {
-      //          mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(), normalizeIdentifier(dbName),
-      //              normalizeIdentifier(tableName), normalizeIdentifier(colName), normalizeIdentifier(catName));
-      //        }
-      //        pm.retrieve(mStatsObj);
-      //        if (mStatsObj != null) {
-      //          pm.deletePersistent(mStatsObj);
-      //        } else {
-      //          throw new NoSuchObjectException("Column stats doesn't exist for table="
-      //              + TableName.getQualified(catName, dbName, tableName) + " partition=" + partName + " col=" + colName);
-      //        }
-      //      } else {
-      //        if (engine != null) {
-      //          mStatsObjColl = (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
-      //              normalizeIdentifier(dbName), normalizeIdentifier(tableName), normalizeIdentifier(catName), engine);
-      //        } else {
-      //          mStatsObjColl = (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
-      //              normalizeIdentifier(dbName), normalizeIdentifier(tableName), normalizeIdentifier(catName));
-      //        }
-      //        pm.retrieveAll(mStatsObjColl);
-      //        if (mStatsObjColl != null) {
-      //          pm.deletePersistentAll(mStatsObjColl);
-      //        } else {
-      //          throw new NoSuchObjectException("Column stats don't exist for table="
-      //              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
-      //        }
-      //      }
-      //      ret = commitTransaction();
+      List<Partition> parts = getPartitions(catName, dbName, tableName, -1);
+      for (Partition part : parts) {
+        Partition oldPart = new Partition(part);
+        oldPart.setParameters(part.getParameters());
+        alterPartition(catName, dbName, tableName, part.getValues(), part, writeIdList);
+      }
+
       ret = commitTransaction();
+    } catch (InvalidObjectException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (MetaException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (NoSuchObjectException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     } finally {
       rollbackAndCleanup(ret, query);
     }

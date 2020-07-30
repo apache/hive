@@ -1863,5 +1863,5 @@ public interface RawStore extends Configurable {
 
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 
-  void deleteAllPartitionColumnStatistics(TableName tableName);
+  void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
 }

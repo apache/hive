@@ -367,7 +367,7 @@ public class HiveAlterHandler implements AlterHandler {
           runPartitionMetadataUpdate |=
               !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
           if (runPartitionMetadataUpdate) {
-            if (cascade) {
+            if (cascade || true) {
               parts = msdb.getPartitions(catName, dbname, name, -1);
               for (Partition part : parts) {
                 Partition oldPart = new Partition(part);
@@ -376,15 +376,23 @@ public class HiveAlterHandler implements AlterHandler {
                 List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
                     part.getValues(), oldCols, oldt, part, null, null);
                 assert (colStats.isEmpty());
+                if (cascade) {
+
                 msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
+                } else {
+                  // update changed properties (stats)
+                  oldPart.setParameters(part.getParameters());
+                  msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                }
+
               }
               // Don't validate table-level stats for a partitoned table.
               msdb.alterTable(catName, dbname, name, newt, null);
             } else {
               // clear all column stats to prevent incorract behaviour in case same column is reintroduced
               TableName tableName = new TableName(catName, dbname, name);
-              msdb.deleteAllPartitionColumnStatistics(tableName);
+              msdb.deleteAllPartitionColumnStatistics(tableName, writeIdList);
             }
           } else {
             LOG.warn("Alter table not cascaded to partitions.");
