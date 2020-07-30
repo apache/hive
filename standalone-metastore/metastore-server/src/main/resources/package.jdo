@@ -502,6 +502,7 @@
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <key mapped-by="PARAM_KEY"/>
         <value mapped-by="PARAM_VALUE"/>
+        <join column="PART_ID"/>
       </field>
 <!--      
       <field name="parameters" table="PARTITION_PARAMS">
