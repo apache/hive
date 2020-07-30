@@ -18,17 +18,28 @@
 package org.apache.hadoop.hive.ql.io;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
+import org.apache.hive.common.util.MockFileSystem;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -73,7 +84,7 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaConstructWithState() throws Exception {
     DeltaMetaData deltaMetaData = new AcidInputFormat
-        .DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0);
+        .DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0, null);
 
     assertThat(deltaMetaData.getMinWriteId(), is(2000L));
     assertThat(deltaMetaData.getMaxWriteId(), is(2001L));
@@ -81,6 +92,34 @@ public class TestAcidInputFormat {
     assertThat(deltaMetaData.getStmtIds().get(0), is(97));
     assertThat(deltaMetaData.getStmtIds().get(1), is(98));
     assertThat(deltaMetaData.getStmtIds().get(2), is(99));
+  }
+
+  @Test
+  public void testDeltaMetaWithFile() throws Exception {
+    FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
+    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0,
+        Collections.singletonList(new AcidUtils.HdfsFileStatusWithoutId(fs)));
+
+    assertEquals(2000L, deltaMetaData.getMinWriteId());
+    assertEquals(2001L, deltaMetaData.getMaxWriteId());
+    assertEquals(3, deltaMetaData.getStmtIds().size());
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    deltaMetaData.write(new DataOutputStream(byteArrayOutputStream));
+
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+    DeltaMetaData copy = new DeltaMetaData();
+    copy.readFields(new DataInputStream(new ByteArrayInputStream(bytes)));
+
+    assertEquals(2000L, copy.getMinWriteId());
+    assertEquals(2001L, copy.getMaxWriteId());
+    assertEquals(3, copy.getStmtIds().size());
+    Object fileId = copy.getDeltaFiles().get(0).getFileId(new Path("deleteDelta"), 1);
+    Assert.assertTrue(fileId instanceof SyntheticFileId);
+
+    assertEquals(100, ((SyntheticFileId)fileId).getModTime());
+    assertEquals(200, ((SyntheticFileId)fileId).getLength());
   }
 
   @Test
@@ -93,7 +132,7 @@ public class TestAcidInputFormat {
     statementIds.add(98);
     statementIds.add(99);
     DeltaMetaData deltaMetaData = new AcidInputFormat
-        .DeltaMetaData(2000L, 2001L, statementIds, 0);
+        .DeltaMetaData(2000L, 2001L, statementIds, 0, null);
     deltaMetaData.readFields(mockDataInput);
 
     verify(mockDataInput, times(3)).readInt();

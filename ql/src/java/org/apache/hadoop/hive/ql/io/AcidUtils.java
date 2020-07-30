@@ -954,23 +954,29 @@ public class AcidUtils {
   @Immutable
   public static final class ParsedDelta extends ParsedDeltaLight {
     private final boolean isRawFormat;
+    private final List<HdfsFileStatusWithId> files;
     /**
      * for pre 1.3.x delta files
      */
     private ParsedDelta(long min, long max, Path path, boolean isDeleteDelta,
-        boolean isRawFormat, long visibilityTxnId) {
-      this(min, max, path, -1, isDeleteDelta, isRawFormat, visibilityTxnId);
+        boolean isRawFormat, long visibilityTxnId, List<HdfsFileStatusWithId> files) {
+      this(min, max, path, -1, isDeleteDelta, isRawFormat, visibilityTxnId, files);
     }
     private ParsedDelta(long min, long max, Path path, int statementId,
-        boolean isDeleteDelta, boolean isRawFormat, long visibilityTxnId) {
+        boolean isDeleteDelta, boolean isRawFormat, long visibilityTxnId, List<HdfsFileStatusWithId> files) {
       super(min, max, path, statementId, isDeleteDelta, visibilityTxnId);
       this.isRawFormat = isRawFormat;
+      this.files = files;
     }
     /**
      * Files w/o Acid meta columns embedded in the file. See {@link AcidBaseFileType#ORIGINAL_BASE}
      */
     public boolean isRawFormat() {
       return isRawFormat;
+    }
+
+    public List<HdfsFileStatusWithId> getFiles() {
+      return files;
     }
   }
   /**
@@ -1113,10 +1119,13 @@ public class AcidUtils {
               && (last.getMinWriteId() == parsedDelta.getMinWriteId())
               && (last.getMaxWriteId() == parsedDelta.getMaxWriteId())) {
         last.getStmtIds().add(parsedDelta.getStatementId());
+        for(HadoopShims.HdfsFileStatusWithId fileStatus : parsedDelta.getFiles()) {
+          last.getDeltaFiles().add(new AcidInputFormat.DeltaFileMetaData(fileStatus));
+        }
         continue;
       }
       last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(),
-              parsedDelta.getMaxWriteId(), new ArrayList<>(), parsedDelta.getVisibilityTxnId());
+              parsedDelta.getMaxWriteId(), new ArrayList<>(), parsedDelta.getVisibilityTxnId(), parsedDelta.getFiles());
       result.add(last);
       if (parsedDelta.statementId >= 0) {
         last.getStmtIds().add(parsedDelta.getStatementId());
@@ -1137,13 +1146,7 @@ public class AcidUtils {
   public static Path[] deserializeDeleteDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deleteDeltas) throws IOException {
     List<Path> results = new ArrayList<>(deleteDeltas.size());
     for(AcidInputFormat.DeltaMetaData dmd : deleteDeltas) {
-      if(dmd.getStmtIds().isEmpty()) {
-        results.add(new Path(root, dmd.getName()));
-        continue;
-      }
-      for(Integer stmtId : dmd.getStmtIds()) {
-        results.add(new Path(root, dmd.getName(stmtId)));
-      }
+      results.addAll(dmd.getPaths(root));
     }
     return results.toArray(new Path[results.size()]);
   }
@@ -1165,8 +1168,14 @@ public class AcidUtils {
     throws IOException {
     ParsedDelta p = parsedDelta(path, deltaPrefix, fs, dirSnapshot);
     boolean isDeleteDelta = deltaPrefix.equals(DELETE_DELTA_PREFIX);
+    List<HdfsFileStatusWithId> files = new ArrayList<>();
+    for (FileStatus fileStatus : dirSnapshot.getFiles()) {
+      if (bucketFileFilter.accept(fileStatus.getPath())) {
+        files.add(new HdfsFileStatusWithoutId(fileStatus));
+      }
+    }
     return new ParsedDelta(p.getMinWriteId(),
-        p.getMaxWriteId(), path, p.statementId, isDeleteDelta, p.isRawFormat(), p.visibilityTxnId);
+        p.getMaxWriteId(), path, p.statementId, isDeleteDelta, p.isRawFormat(), p.visibilityTxnId, files);
   }
 
   public static ParsedDelta parsedDelta(Path deltaDir, String deltaPrefix, FileSystem fs, HdfsDirSnapshot dirSnapshot)
@@ -1182,12 +1191,16 @@ public class AcidUtils {
                                        deltaPrefix);
   }
 
+  public static ParsedDelta parsedDelta(Path deltaDir, boolean isRawFormat) {
+    return parsedDelta(deltaDir, isRawFormat, null);
+  }
+
   /**
    * This method just parses the file name.  It relies on caller to figure if
    * the file is in Acid format (i.e. has acid metadata columns) or not.
    * {@link #parsedDelta(Path, FileSystem)}
    */
-  public static ParsedDelta parsedDelta(Path deltaDir, boolean isRawFormat) {
+  public static ParsedDelta parsedDelta(Path deltaDir, boolean isRawFormat, List<HdfsFileStatusWithId> files) {
     String filename = deltaDir.getName();
     int idxOfVis = filename.indexOf(VISIBILITY_PREFIX);
     long visibilityTxnId = 0;//visibilityTxnId:0 is always visible
@@ -1209,11 +1222,11 @@ public class AcidUtils {
         Long.parseLong(rest.substring(split + 1)) :
         Long.parseLong(rest.substring(split + 1, split2));
     if(split2 == -1) {
-      return new ParsedDelta(min, max, null, isDeleteDelta, isRawFormat, visibilityTxnId);
+      return new ParsedDelta(min, max, null, isDeleteDelta, isRawFormat, visibilityTxnId, files);
     }
     int statementId = Integer.parseInt(rest.substring(split2 + 1));
     return new ParsedDelta(min, max, null, statementId, isDeleteDelta,
-        isRawFormat, visibilityTxnId);
+        isRawFormat, visibilityTxnId, files);
 
   }
 
@@ -1840,7 +1853,7 @@ public class AcidUtils {
     return childWithId != null ? childWithId : new HdfsFileStatusWithoutId(child);
   }
 
-  private static class HdfsFileStatusWithoutId implements HdfsFileStatusWithId {
+  public static class HdfsFileStatusWithoutId implements HdfsFileStatusWithId {
     private final FileStatus fs;
 
     public HdfsFileStatusWithoutId(FileStatus fs) {

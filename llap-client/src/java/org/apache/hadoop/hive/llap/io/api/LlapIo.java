@@ -29,6 +29,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.orc.impl.OrcTail;
 
+import javax.annotation.Nullable;
+
 public interface LlapIo<T> {
   InputFormat<NullWritable, T> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer serde);
@@ -47,10 +49,11 @@ public interface LlapIo<T> {
    * @param path Orc file path
    * @param conf jobConf
    * @param tag a CacheTag instance must be provided as that's needed for cache insertion
-   * @return
-   * @throws IOException
+   * @param fileKey fileId of the ORC file (either the Long fileId of HDFS or the SyntheticFileId)
+   * @return The tail of the ORC file
+   * @throws IOException ex
    */
-  OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag) throws IOException;
+  OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag, @Nullable Object fileKey) throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.

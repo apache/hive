@@ -19,12 +19,16 @@ package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
@@ -39,6 +43,7 @@ import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
 import org.apache.orc.impl.OrcTail;
 
@@ -250,18 +255,71 @@ public class TestOrcMetadataCache {
     Configuration jobConf = new Configuration();
     Configuration daemonConf = new Configuration();
     CacheTag tag = CacheTag.build("test-table");
-    OrcTail uncached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache);
+    OrcTail uncached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, null);
     jobConf.set(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname, "true");
-    OrcTail cached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache);
+    OrcTail cached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, null);
     assertEquals(uncached.getSerializedTail(), cached.getSerializedTail());
     assertEquals(uncached.getFileTail(), cached.getFileTail());
   }
+
+  @Test
+  public void testGetOrcTailForPathWithFileId() throws Exception {
+    DummyMemoryManager mm = new DummyMemoryManager();
+    DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+
+    Path path = new Path("../data/files/alltypesorc");
+    Configuration jobConf = new Configuration();
+    Configuration daemonConf = new Configuration();
+    CacheTag tag = CacheTag.build("test-table");
+    FileSystem fs = FileSystem.get(daemonConf);
+    FileStatus fileStatus = fs.getFileStatus(path);
+    OrcTail uncached = OrcEncodedDataReader.getOrcTailForPath(fileStatus.getPath(), jobConf, tag, daemonConf, cache, new SyntheticFileId(fileStatus));
+    jobConf.set(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname, "true");
+    // this should work from the cache, by recalculating the same fileId
+    OrcTail cached = OrcEncodedDataReader.getOrcTailForPath(fileStatus.getPath(), jobConf, tag, daemonConf, cache, null);
+    assertEquals(uncached.getSerializedTail(), cached.getSerializedTail());
+    assertEquals(uncached.getFileTail(), cached.getFileTail());
+  }
+
+  @Test
+  public void testGetOrcTailForPathWithFileIdChange() throws Exception {
+    DummyMemoryManager mm = new DummyMemoryManager();
+    DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+
+    Path path = new Path("../data/files/alltypesorc");
+    Configuration jobConf = new Configuration();
+    Configuration daemonConf = new Configuration();
+    CacheTag tag = CacheTag.build("test-table");
+    OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, new SyntheticFileId(path, 100, 100));
+    jobConf.set(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname, "true");
+    Exception ex = null;
+    try {
+      // this should miss the cache, since the fileKey changed
+      OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, new SyntheticFileId(path, 100, 101));
+    } catch (IOException e) {
+      ex = e;
+    }
+    Assert.assertNotNull(ex);
+    Assert.assertTrue(ex.getMessage().contains(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname));
+  }
+
+
 
   @Test(expected = IllegalCacheConfigurationException.class)
   public void testGetOrcTailForPathCacheNotReady() throws Exception {
     Path path = new Path("../data/files/alltypesorc");
     Configuration conf = new Configuration();
-    OrcEncodedDataReader.getOrcTailForPath(path, conf, null, conf, null);
+    OrcEncodedDataReader.getOrcTailForPath(path, conf, null, conf, null, null);
   }
 
   private static final int INCOMPLETE = 0, DRL = 1;
