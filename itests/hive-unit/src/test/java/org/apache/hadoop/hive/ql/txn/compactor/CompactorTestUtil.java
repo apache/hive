@@ -99,6 +99,14 @@ class CompactorTestUtil {
         .collect(Collectors.toList());
   }
 
+  static List<String> getBucketFileNamesForMMTables(FileSystem fs, Table table, String partitionName, String deltaName)
+      throws IOException {
+    Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
+        new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
+    return Arrays.stream(fs.listStatus(path, AcidUtils.hiddenFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
+        .collect(Collectors.toList());
+  }
+
   /**
    * Trigger a compaction run.
    * @param conf hive configuration

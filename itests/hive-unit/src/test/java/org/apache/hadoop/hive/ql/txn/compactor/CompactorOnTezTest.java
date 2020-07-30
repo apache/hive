@@ -55,6 +55,7 @@ public class CompactorOnTezTest {
   protected IMetaStoreClient msClient;
   protected IDriver driver;
   protected boolean runsOnTez = true;
+  protected boolean mmCompaction = false;
 
   @Before
   // Note: we create a new conf and driver object before every test
@@ -97,8 +98,10 @@ public class CompactorOnTezTest {
     conf.set("hive.tez.container.size", "128");
     conf.setBoolean("hive.merge.tezfiles", false);
     conf.setBoolean("hive.in.tez.test", true);
-    conf.set("tez.grouping.max-size", "1024");
-    conf.set("tez.grouping.min-size", "1");
+    if (!mmCompaction) {
+      conf.set("tez.grouping.max-size", "1024");
+      conf.set("tez.grouping.min-size", "1");
+    }
   }
 
   @After public void tearDown() {
