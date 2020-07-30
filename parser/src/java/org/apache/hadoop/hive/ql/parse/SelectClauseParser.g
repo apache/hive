@@ -84,8 +84,19 @@ selectItem
     (tableAllColumns) => tableAllColumns -> ^(TOK_SELEXPR tableAllColumns)
     |
     ( expression
-      ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
-    ) -> ^(TOK_SELEXPR expression identifier*)
+      ((KW_AS? columnAlias) | (KW_AS LPAREN columnAlias (COMMA columnAlias)* RPAREN))?
+    ) -> ^(TOK_SELEXPR expression columnAlias*)
+    ;
+
+columnAlias
+@init { gParent.pushMsg("column alias", state); }
+@after { gParent.popMsg(state); }
+    :
+    identifier
+    | StringLiteral {
+      String str = $StringLiteral.tree.getToken().getText();
+      $StringLiteral.tree.getToken().setText(str.substring(1, str.length() -1));
+    }
     ;
 
 trfmClause

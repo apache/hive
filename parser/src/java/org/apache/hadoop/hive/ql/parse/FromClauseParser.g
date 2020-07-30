@@ -198,7 +198,7 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=identifier)?
+    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=columnAlias)?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
     ;
 
@@ -232,7 +232,7 @@ subQuerySource
 @init { gParent.pushMsg("subquery source", state); }
 @after { gParent.popMsg(state); }
     :
-    LPAREN queryStatementExpression RPAREN KW_AS? identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+    LPAREN queryStatementExpression RPAREN KW_AS? columnAlias -> ^(TOK_SUBQUERY queryStatementExpression columnAlias)
     ;
 
 //---------------------- Rules for parsing PTF clauses -----------------------------
