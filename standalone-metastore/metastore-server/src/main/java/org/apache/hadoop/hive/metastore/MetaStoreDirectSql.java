@@ -2980,11 +2980,11 @@ class MetaStoreDirectSql {
 
   public void deleteColumnStatsState(long tbl_id) throws MetaException {
     // @formatter:off
-
     String queryText = ""
         + "delete from " + PARTITION_PARAMS + " pp"
-            + " join " + PARTITIONS + " p on (p.\"PART_ID\" = pp.\"PART_ID\")"
+            + " using " + PARTITIONS + " p "
             + " where "
+            + "   p.\"PART_ID = pp.\"PART_ID\""
             + "   p.\"TBL_ID\" =  "+tbl_id
             + "  and pp.\"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE+"'";
     // @formatter:on
@@ -2992,8 +2992,7 @@ class MetaStoreDirectSql {
     try {
       executeNoResult(queryText);
     } catch (SQLException e) {
-      throw new MetaException("Error : " + e.getMessage());
+      throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
-
   }
 }

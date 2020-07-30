@@ -9548,7 +9548,7 @@ public class ObjectStore implements RawStore, Configurable {
             return -1;
           }
         }
-      }.run(false);
+      }.run(true);
 
       ret = commitTransaction();
     } catch (Exception e) {
