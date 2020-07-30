@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -156,9 +157,9 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -1497,7 +1498,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private void processJoin(QB qb, ASTNode join) throws SemanticException {
     int numChildren = join.getChildCount();
-    if ((numChildren != 2) && (numChildren != 3)
+    if ((numChildren != 2) && (numChildren != 3) && (numChildren != 4)
         && join.getToken().getType() != HiveParser.TOK_UNIQUEJOIN) {
       throw new SemanticException(generateErrorMessage(join,
           "Join with multiple children"));
@@ -9881,6 +9882,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode left = (ASTNode) joinParseTree.getChild(0);
     ASTNode right = (ASTNode) joinParseTree.getChild(1);
+    if (joinParseTree.getChildren().size() >= 4) {
+      addPkFkInfo(joinTree, (ASTNode) joinParseTree.getChild(3));
+    }
+
     boolean isValidLeftToken = isValidJoinSide(left);
     boolean isJoinLeftToken = !isValidLeftToken && isJoinToken(left);
     boolean isValidRightToken = isValidJoinSide(right);
@@ -10012,6 +10017,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return joinTree;
+  }
+
+  private void addPkFkInfo(QBJoinTree joinTree, ASTNode hints) {
+    if (hints.getToken().getType() == HintParser.TOK_HINTLIST) {
+      Tree hint = hints.getChild(0);
+      if (hint.getType() == HintParser.TOK_HINT && hint.getChild(0).getType() == HintParser.TOK_PKFK_JOIN) {
+        Tree args = hint.getChild(1);
+        joinTree.setFkJoinTableIndex(Integer.parseInt(args.getChild(0).getText()));
+        joinTree.setNonFkSideIsFiltered(NON_FK_FILTERED.equals(args.getChild(1).getText()));
+      }
+    }
   }
 
   private boolean isValidJoinSide(ASTNode right) {

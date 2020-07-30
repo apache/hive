@@ -578,6 +578,11 @@ public class TezTask extends Task<TezWork> {
         dagClient = sessionState.getSession().submitDAG(dag);
       }
     } catch (Exception e) {
+      if (this.isShutdown) {
+        // Incase of taskShutdown, no need to retry
+        sessionDestroyOrReturnToPool(sessionStateRef, sessionState);
+        throw e;
+      }
       // In case of any other exception, retry. If this also fails, report original error and exit.
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
@@ -588,18 +593,23 @@ public class TezTask extends Task<TezWork> {
         // we failed to submit after retrying.
         // If this is a non-pool session, destroy it.
         // Otherwise move it to sessionPool, reopen will retry.
-        sessionStateRef.value = null;
-        if (sessionState.isDefault() && sessionState instanceof TezSessionPoolSession) {
-          sessionState.returnToSessionManager();
-        } else {
-          sessionState.destroy();
-        }
+        sessionDestroyOrReturnToPool(sessionStateRef, sessionState);
         throw retryException;
       }
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     return new SyncDagClient(dagClient);
+  }
+
+  private void sessionDestroyOrReturnToPool(Ref<TezSessionState> sessionStateRef,
+      TezSessionState sessionState) throws Exception{
+    sessionStateRef.value = null;
+    if (sessionState.isDefault() && sessionState instanceof TezSessionPoolSession) {
+      sessionState.returnToSessionManager();
+    } else {
+      sessionState.destroy();
+    }
   }
 
   /*

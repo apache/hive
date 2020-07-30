@@ -1226,16 +1226,8 @@ public class HiveCalciteUtil {
       // This is a validation check which can become quite handy debugging type
       // issues. Basically, we need both types to be equal, only difference should
       // be nullability.
-      // However, we make an exception for Hive wrt CHAR type because Hive encodes
-      // the STRING type for literals within CHAR value (see {@link HiveNlsString})
-      // while Calcite always considers these literals to be a CHAR, which means
-      // that the reference may be created as a STRING or VARCHAR from AST node
-      // at parsing time but the actual type referenced is a CHAR.
       if (refType2 == rightType) {
         return new RexInputRef(ref.getIndex(), refType2);
-      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER &&
-          rightType.getSqlTypeName() == SqlTypeName.CHAR && !rightType.isNullable()) {
-        return new RexInputRef(ref.getIndex(), rightType);
       }
       throw new AssertionError("mismatched type " + ref + " " + rightType);
     }
