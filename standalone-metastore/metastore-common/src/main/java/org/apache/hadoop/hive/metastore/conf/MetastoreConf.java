@@ -772,7 +772,7 @@ public class MetastoreConf {
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
     MSC_CACHE_ENABLED("metastore.client.cache.enabled",
-            "hive.metastore.client.cache.enabled", false,
+            "hive.metastore.client.cache.enabled", true,
             "This property enables a Caffeiene Cache for Metastore client"),
     MSC_CACHE_MAX_SIZE("metastore.client.cache.maxSize",
             "hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
