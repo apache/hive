@@ -192,7 +192,6 @@ import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
-import org.apache.hadoop.hive.metastore.model.MPartitionParams;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
@@ -9497,6 +9496,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (tableName == null) {
       throw new RuntimeException("Table name is null.");
     }
+    boolean ret = false;
     try {
       openTransaction();
       MTable mTable = getMTable(catName, dbName, tableName);
@@ -9514,8 +9514,8 @@ public class ObjectStore implements RawStore, Configurable {
       Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
           normalizeIdentifier(catName));
 
-      pm.newQuery(MPartitionParams.class);
-      throw new RuntimeException();
+//      pm.newQuery(MPartitionParams.class);
+//      throw new RuntimeException();
       //      //      query = pm.newQuery(MPartitionp.class);
       //
       //      MPartitionColumnStatistics mStatsObj;
@@ -9566,8 +9566,9 @@ public class ObjectStore implements RawStore, Configurable {
       //        }
       //      }
       //      ret = commitTransaction();
+      ret = commitTransaction();
     } finally {
-      //      rollbackAndCleanup(ret, query);
+      rollbackAndCleanup(ret, query);
     }
   }
 
