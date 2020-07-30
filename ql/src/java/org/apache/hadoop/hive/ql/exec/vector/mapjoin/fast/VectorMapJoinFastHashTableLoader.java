@@ -44,6 +44,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
+import org.apache.tez.runtime.api.AbstractLogicalInput;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -125,13 +126,18 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         KeyValueReader kvReader = (KeyValueReader) input.getReader();
 
         Long keyCountObj = parentKeyCounts.get(pos);
-        long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
+        long estKeyCount = (keyCountObj == null) ? -1 : keyCountObj;
+
+        long inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
+                findCounter(org.apache.tez.common.counters.TaskCounter.APPROXIMATE_INPUT_RECORDS).getValue();
+        long keyCount = Math.max(estKeyCount, inputRecords);
 
         VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer =
                 new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
-        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {}", inputName,
-          cacheKey, vectorMapJoinFastTableContainer.getClass().getSimpleName(), pos);
+        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} " +
+                "estKeyCount : {} keyCount : {}", inputName, cacheKey,
+                vectorMapJoinFastTableContainer.getClass().getSimpleName(), pos, estKeyCount, keyCount);
 
         vectorMapJoinFastTableContainer.setSerde(null, null); // No SerDes here.
         long startTime = System.currentTimeMillis();

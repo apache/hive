@@ -56,6 +56,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
+import org.apache.tez.runtime.api.AbstractLogicalInput;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -219,7 +220,11 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         isFirstKey = false;
         Long keyCountObj = parentKeyCounts.get(pos);
-        long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
+        long estKeyCount = (keyCountObj == null) ? -1 : keyCountObj;
+
+        long inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
+                findCounter(org.apache.tez.common.counters.TaskCounter.APPROXIMATE_INPUT_RECORDS).getValue();
+        long keyCount = Math.max(estKeyCount, inputRecords);
 
         long memory = 0;
         if (useHybridGraceHashJoin) {
@@ -242,8 +247,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           tableContainer = new HashMapWrapper(hconf, keyCount);
         }
 
-        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {}", inputName,
-          cacheKey, tableContainer.getClass().getSimpleName(), pos);
+        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} " +
+                        "estKeyCount : {} keyCount : {}", inputName, cacheKey,
+                tableContainer.getClass().getSimpleName(), pos, estKeyCount, keyCount);
 
         tableContainer.setSerde(keyCtx, valCtx);
         long startTime = System.currentTimeMillis();
