@@ -1410,8 +1410,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 
-  public void deleteAllPartitionColumnStatistics(TableName tn) {
-    objectStore.deleteAllPartitionColumnStatistics(tn);
+  public void deleteAllPartitionColumnStatistics(TableName tn,String s) {
+    objectStore.deleteAllPartitionColumnStatistics(tn,s);
   }
 
 }
