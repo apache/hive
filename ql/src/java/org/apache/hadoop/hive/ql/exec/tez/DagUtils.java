@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -41,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +54,13 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateDelegationTokenOptions;
+import org.apache.kafka.clients.admin.CreateDelegationTokenResult;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.security.token.delegation.DelegationToken;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.output.MROutput;
@@ -103,7 +112,9 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -116,11 +127,14 @@ import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
@@ -180,7 +194,7 @@ public class DagUtils {
       "hive.tez.current.merge.file.prefix";
   // "A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
-
+  private static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
   /**
    * Notifiers to synchronize resource localization across threads. If one thread is localizing
    * a file, other threads can wait on the corresponding notifier object instead of just sleeping
@@ -244,7 +258,7 @@ public class DagUtils {
   /**
    * Set up credentials for the base work on secure clusters
    */
-  public void addCredentials(BaseWork work, DAG dag) {
+  public void addCredentials(BaseWork work, DAG dag, JobConf conf) {
     if (work instanceof MapWork){
       Set<Path> paths = ((MapWork)work).getPathToAliases().keySet();
       if (!paths.isEmpty()) {
@@ -265,9 +279,68 @@ public class DagUtils {
         }
         dag.addURIsForCredentials(uris);
       }
+      getKafkaCredentials((MapWork)work, dag, conf);
+    }
+    getCredentialsForFileSinks(work, dag);
+  }
+
+  private void getKafkaCredentials(MapWork work, DAG dag, JobConf conf) {
+    Token<?> tokenCheck = dag.getCredentials().getToken(KAFKA_DELEGATION_TOKEN_KEY);
+    if (tokenCheck != null) {
+      LOG.debug("Kafka credentials already added, skipping...");
+      return;
+    }
+    LOG.info("Getting kafka credentials for mapwork: " + work.getName());
+
+    String kafkaBrokers = null;
+    Map<String, PartitionDesc> partitions = work.getAliasToPartnInfo();
+    for (PartitionDesc partition : partitions.values()) {
+      TableDesc tableDesc = partition.getTableDesc();
+      kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
+      if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
+        getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+        return;
+      }
+    }
+  }
+
+  private void getKafkaDelegationTokenForBrokers(DAG dag, JobConf conf, String kafkaBrokers) {
+    LOG.debug("Getting kafka credentials for brokers: {}", kafkaBrokers);
+
+    String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+    String principal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
+    try {
+      principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    getCredentialsForFileSinks(work, dag);
+    Properties config = new Properties();
+    config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+
+    String jaasConfig =
+        String.format("%s %s %s %s serviceName=\"%s\" keyTab=\"%s\" principal=\"%s\";",
+            "com.sun.security.auth.module.Krb5LoginModule required", "debug=true", "useKeyTab=true",
+            "storeKey=true", "kafka", keytab, principal);
+    config.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+
+    LOG.debug("Jaas config for requesting kafka credentials: {}", jaasConfig);
+    AdminClient admin = AdminClient.create(config);
+
+    CreateDelegationTokenOptions createDelegationTokenOptions = new CreateDelegationTokenOptions();
+    CreateDelegationTokenResult createResult =
+        admin.createDelegationToken(createDelegationTokenOptions);
+    DelegationToken token;
+    try {
+      token = createResult.delegationToken().get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException("Exception while getting kafka delegation tokens", e);
+    }
+    LOG.info("Got kafka delegation token: {}", token);
+
+    dag.getCredentials().addToken(KAFKA_DELEGATION_TOKEN_KEY,
+        new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka")));
   }
 
   private void getCredentialsForFileSinks(BaseWork baseWork, DAG dag) {
