@@ -141,6 +141,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
@@ -472,6 +474,13 @@ public class Hive {
 
   public static Hive get() throws HiveException {
     return get(true);
+  }
+
+  @VisibleForTesting
+  public static Hive get(IMetaStoreClient msc) throws HiveException, MetaException {
+    Hive hive = get(true);
+    hive.setMSC(msc);
+    return hive;
   }
 
   public static Hive get(boolean doRegisterAllFns) throws HiveException {
@@ -3725,6 +3734,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (AcidUtils.isTransactionalTable(t)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(t.getTTable().getId());
       }
       GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
       names = res.getNames();
@@ -3739,7 +3749,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     return names;
   }
-
+ 
   /**
    * get all the partitions that the table has
    *
@@ -3748,37 +3758,39 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
-    if (tbl.isPartitioned()) {
-      List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-      try {
-        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
-        req.setTblName(tbl.getTableName());
-        req.setDbName(tbl.getDbName());
-        req.setUserName(getUserName());
-        req.setMaxParts((short) -1);
-        req.setGroupNames(getGroupNames());
-        if (AcidUtils.isTransactionalTable(tbl)) {
-          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        }
-        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
-        tParts = res.getPartitions();
 
-      } catch (Exception e) {
-        LOG.error(StringUtils.stringifyException(e));
-        throw new HiveException(e);
-      }
-      List<Partition> parts = new ArrayList<Partition>(tParts.size());
-      for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-        parts.add(new Partition(tbl, tpart));
-      }
-      return parts;
-    } else {
-      Partition part = new Partition(tbl);
-      ArrayList<Partition> parts = new ArrayList<Partition>(1);
-      parts.add(part);
-      return parts;
-    }
+      if (tbl.isPartitioned()) {
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+        try {
+          GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+          req.setTblName(tbl.getTableName());
+          req.setDbName(tbl.getDbName());
+          req.setUserName(getUserName());
+          req.setMaxParts((short) -1);
+          req.setGroupNames(getGroupNames());
+          if (AcidUtils.isTransactionalTable(tbl)) {
+            ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+            req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+            req.setId(tbl.getTTable().getId());
+          }
+          GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+          tParts = res.getPartitions();
+
+        } catch (Exception e) {
+          LOG.error(StringUtils.stringifyException(e));
+          throw new HiveException(e);
+        }
+        List<Partition> parts = new ArrayList<>(tParts.size());
+        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+          parts.add(new Partition(tbl, tpart));
+        }
+          return parts;
+        } else {
+            Partition part = new Partition(tbl);
+            ArrayList<Partition> parts = new ArrayList<Partition>(1);
+            parts.add(part);
+            return parts;
+        }
   }
 
   /**
@@ -4002,7 +4014,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl The table containing the partitions.
    * @param expr A serialized expression for partition predicates.
    * @param conf Hive config.
-   * @param partitions the resulting list of partitions
+   * @param result the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
    */
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
@@ -4014,9 +4026,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    result.addAll(convertFromMetastore(tbl, msParts));    
+    result.addAll(convertFromMetastore(tbl, msParts));
     return hasUnknownParts;
-
   }
 
   /**
@@ -5204,6 +5215,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       syncMetaStoreClient = new SynchronizedMetaStoreClient(getMSC(true, false));
     }
     return syncMetaStoreClient;
+  }
+
+  /**
+   * Sets the metastore client for the current thread
+   * @throws MetaException
+   */
+  @VisibleForTesting
+  public synchronized void setMSC(IMetaStoreClient client)
+      throws MetaException {
+    metaStoreClient = client;
   }
 
   /**
