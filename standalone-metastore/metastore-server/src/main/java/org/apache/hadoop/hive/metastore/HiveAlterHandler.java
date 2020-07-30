@@ -366,8 +366,12 @@ public class HiveAlterHandler implements AlterHandler {
           // we may skip the update entirely if there are only new columns added
           runPartitionMetadataUpdate |=
               !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
+
+          boolean retainOnColRemoval =
+              MetastoreConf.getBoolVar(handler.getConf(), MetastoreConf.ConfVars.COLSTATS_RETAIN_ON_COLUMN_REMOVAL);
+
           if (runPartitionMetadataUpdate) {
-            if (cascade) {
+            if (cascade || retainOnColRemoval) {
               parts = msdb.getPartitions(catName, dbname, name, -1);
               for (Partition part : parts) {
                 Partition oldPart = new Partition(part);
