@@ -141,7 +141,9 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
         List<Operator<? extends OperatorDesc>> joinInputs = join.getParentOperators();
         final ReduceSinkOperator reduceSinkOperator = (ReduceSinkOperator) joinInputs.get(0);
 
-        pushDown((LimitOperator) copyDown(reduceSinkOperator, limit.getConf()));
+        pushDown((LimitOperator) copyDown(reduceSinkOperator, new LimitDesc(limit.getConf())));
+        // the copied limit will take care of the offset, need to reset the offset in the original to not to lose rows
+        limit.getConf().setOffset(0);
       }
     }
   }
