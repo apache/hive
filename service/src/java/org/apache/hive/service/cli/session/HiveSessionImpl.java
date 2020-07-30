@@ -306,8 +306,8 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private boolean updateIsUsingThriftJDBCBinarySerDe() {
-	return (8 <= getProtocolVersion().getValue())
-      && sessionConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS);
+    return 8 <= getProtocolVersion().getValue() &&
+      sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS);
   }
 
   @Override

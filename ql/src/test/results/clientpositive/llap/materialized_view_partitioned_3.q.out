@@ -27,6 +27,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_sdp
+POSTHOOK: Output: default@partition_mv_sdp
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -124,7 +125,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       partition columns: key string
       columns: value string
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_sdp`

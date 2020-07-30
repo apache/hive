@@ -33,11 +33,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1011,7 +1011,6 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
             "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
-            "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +

@@ -24,9 +24,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
@@ -53,12 +55,14 @@ public class ReplDumpWork implements Serializable {
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
-  private transient Iterator<DirCopyWork> dirCopyIterator;
-  private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
+  private transient Iterator<String> externalTblCopyPathIterator;
+  private transient Iterator<String> managedTblCopyPathIterator;
+  private transient Iterator<EximUtil.DataCopyPath>  functionCopyPathIterator;
   private Path currentDumpPath;
   private List<String> resultValues;
   private boolean shouldOverwrite;
   private transient ReplicationMetricCollector metricCollector;
+  private ReplicationSpec replicationSpec;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -130,22 +134,31 @@ public class ReplDumpWork implements Serializable {
     }
   }
 
-  public void setDirCopyIterator(Iterator<DirCopyWork> dirCopyIterator) {
-    if (this.dirCopyIterator != null) {
-      throw new IllegalStateException("Dir Copy iterator has already been initialized");
+  public void setExternalTblCopyPathIterator(Iterator<String> externalTblCopyPathIterator) {
+    if (this.externalTblCopyPathIterator != null) {
+      throw new IllegalStateException("External table copy path iterator has already been initialized");
     }
-    this.dirCopyIterator = dirCopyIterator;
+    this.externalTblCopyPathIterator = externalTblCopyPathIterator;
   }
 
-  public void setManagedTableCopyPathIterator(Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator) {
-    if (this.managedTableCopyPathIterator != null) {
+  public void setManagedTableCopyPathIterator(Iterator<String> managedTblCopyPathIterator) {
+    if (this.managedTblCopyPathIterator != null) {
       throw new IllegalStateException("Managed table copy path iterator has already been initialized");
     }
-    this.managedTableCopyPathIterator = managedTableCopyPathIterator;
+    this.managedTblCopyPathIterator = managedTblCopyPathIterator;
   }
 
-  public boolean tableDataCopyIteratorsInitialized() {
-    return dirCopyIterator != null || managedTableCopyPathIterator != null;
+  public void setFunctionCopyPathIterator(Iterator<EximUtil.DataCopyPath> functionCopyPathIterator) {
+    if (this.functionCopyPathIterator != null) {
+      throw new IllegalStateException("Function copy path iterator has already been initialized");
+    }
+    this.functionCopyPathIterator = functionCopyPathIterator;
+  }
+
+  public boolean dataCopyIteratorsInitialized() {
+    return externalTblCopyPathIterator != null
+            || managedTblCopyPathIterator != null
+            || functionCopyPathIterator != null;
   }
 
   public Path getCurrentDumpPath() {
@@ -169,8 +182,9 @@ public class ReplDumpWork implements Serializable {
       return Collections.emptyList();
     }
     List<Task<?>> tasks = new ArrayList<>();
-    while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
-      DirCopyWork dirCopyWork = dirCopyIterator.next();
+    while (externalTblCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+      DirCopyWork dirCopyWork = new DirCopyWork();
+      dirCopyWork.loadFromString(externalTblCopyPathIterator.next());
       Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
       tasks.add(task);
       tracker.addTask(task);
@@ -184,14 +198,34 @@ public class ReplDumpWork implements Serializable {
       return Collections.emptyList();
     }
     List<Task<?>> tasks = new ArrayList<>();
-    while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-      EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
+    while (managedTblCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+      ReplicationSpec replSpec = new ReplicationSpec();
+      replSpec.setIsReplace(true);
+      replSpec.setInReplicationScope(true);
+      EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
+      managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
               managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
+    }
+    return tasks;
+  }
+
+  public List<Task<?>> functionsBinariesCopyTasks(TaskTracker tracker, HiveConf conf) {
+    List<Task<?>> tasks = new ArrayList<>();
+    if (functionCopyPathIterator != null) {
+      while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+        EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
+        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+                binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf
+        );
+        tasks.add(copyTask);
+        tracker.addTask(copyTask);
+        LOG.debug("added task for {}", binaryCopyPath);
+      }
     }
     return tasks;
   }
@@ -206,5 +240,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setMetricCollector(ReplicationMetricCollector metricCollector) {
     this.metricCollector = metricCollector;
+  }
+
+  public ReplicationSpec getReplicationSpec() {
+    return replicationSpec;
+  }
+
+  public void setReplicationSpec(ReplicationSpec replicationSpec) {
+    this.replicationSpec = replicationSpec;
   }
 }

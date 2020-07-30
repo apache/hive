@@ -61,7 +61,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -85,7 +84,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -276,7 +274,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -300,7 +297,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -491,7 +487,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 96000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -515,7 +510,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -770,7 +764,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -794,7 +787,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -987,7 +979,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1011,7 +1002,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1149,6 +1139,7 @@ POSTHOOK: query: create table acid_ctas_part partitioned by (k)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_ctas_part
 POSTHOOK: Output: default@acid_ctas_part
 POSTHOOK: Output: default@acid_ctas_part@k=0
 POSTHOOK: Output: default@acid_ctas_part@k=10

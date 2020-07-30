@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.topnkey;
 
+import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyDown;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -24,10 +31,12 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
@@ -37,13 +46,6 @@ import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
-import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyDown;
 
 /**
  * Implementation of TopNKey operator pushdown.
@@ -203,7 +205,8 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
           throws SemanticException {
     CommonJoinOperator<? extends JoinDesc> parent =
             (CommonJoinOperator<? extends JoinDesc>) topNKey.getParentOperators().get(0);
-    JoinCondDesc[] joinConds = parent.getConf().getConds();
+    JoinDesc joinDesc = parent.getConf();
+    JoinCondDesc[] joinConds = joinDesc.getConds();
     JoinCondDesc firstJoinCond = joinConds[0];
     for (JoinCondDesc joinCond : joinConds) {
       if (!firstJoinCond.equals(joinCond)) {
@@ -212,6 +215,8 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     }
     if (firstJoinCond.getType() == JoinDesc.LEFT_OUTER_JOIN) {
       pushdownThroughLeftOuterJoin(topNKey);
+    } else if (firstJoinCond.getType() == JoinDesc.INNER_JOIN && joinDesc.isPkFkJoin()) {
+      pushdownInnerJoin(topNKey, joinDesc.getFkJoinTableIndex(), joinDesc.isNonFkSideIsFiltered());
     }
   }
 
@@ -253,6 +258,105 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
       LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
       join.removeChildAndAdoptItsChildren(topNKey);
     }
+  }
+
+  /**
+   * Tries to push the TopNKeyFilter through an inner join:
+   *  requirements:
+   *    - being PK-FK join
+   *    - PK side is not filtered
+   *    - First n TopNKey key columns (Order By) are originated from the FK side.
+   * @throws SemanticException
+   */
+  private void pushdownInnerJoin(TopNKeyOperator topNKey, int fkJoinInputIndex, boolean nonFkSideIsFiltered) throws SemanticException {
+    TopNKeyDesc topNKeyDesc = topNKey.getConf();
+    CommonJoinOperator<? extends JoinDesc> join =
+            (CommonJoinOperator<? extends JoinDesc>) topNKey.getParentOperators().get(0);
+    List<Operator<? extends OperatorDesc>> joinInputs = join.getParentOperators();
+    ReduceSinkOperator fkJoinInput = (ReduceSinkOperator) joinInputs.get(fkJoinInputIndex);
+    if (nonFkSideIsFiltered) {
+      LOG.debug("Not pushing {} through {} as non FK side of the join is filtered", topNKey.getName(), join.getName());
+      return;
+    }
+    // Check column origins:
+    //  1. If all OrderBy columns are coming from the child (FK) table:
+    //    -> move TopNKeyOperator
+    //  2. If the first n OrderBy columns are coming from the child (FK) table:
+    //    -> copy TopNKeyOperator with the first n columns, and leave the original in place
+    int prefixLength = keyColumnPrefixLength(join, topNKey, fkJoinInputIndex, topNKey.getConf().getKeyColumns());
+    if (prefixLength == 0) {
+      LOG.debug("Not pushing {} through {} as common key column prefix length is 0", topNKey.getName(), join.getName());
+      return;
+    }
+    LOG.debug("Pushing a copy of {} through {} and {}",
+            topNKey.getName(), join.getName(), fkJoinInput.getName());
+    TopNKeyDesc newTopNKeyDesc = topNKeyDesc.withKeyColumns(prefixLength);
+    newTopNKeyDesc.setKeyColumns(remapColumns(join, fkJoinInput, newTopNKeyDesc.getKeyColumns()));
+    pushdown(copyDown(fkJoinInput, newTopNKeyDesc));
+    if (topNKeyDesc.getKeyColumns().size() == prefixLength) {
+      LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
+      join.removeChildAndAdoptItsChildren(topNKey);
+    }
+  }
+
+  /**
+   * Check if the first n keyColumns of the TopNKeyFilter
+   * are coming from expected side of the join (indicated by the expectedTag).
+   * @return n
+   */
+  private int keyColumnPrefixLength(
+          CommonJoinOperator<? extends JoinDesc> join,
+          TopNKeyOperator topNKeyOperator,
+          int expectedTag,
+          List<ExprNodeDesc> keyColumns) {
+    int commonPrefixLength = 0;
+    for (ExprNodeDesc orderByKey : keyColumns) {
+      if (tag(join, topNKeyOperator, orderByKey) == expectedTag) {
+        commonPrefixLength++;
+      } else {
+        return commonPrefixLength;
+      }
+    }
+    return commonPrefixLength;
+  }
+
+  private int tag(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
+    String colName = columnOutputName(join, topNKeyOperator, column);
+    if (colName == null) {
+      return -1;
+    }
+    Byte tag = join.getConf().getReversedExprs().get(colName);
+    return tag == null ? -1 : tag;
+  }
+
+  private String columnOutputName(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
+    ExprNodeDesc joinExprNode = backtrack(join, topNKeyOperator, column);
+    if (joinExprNode == null) {
+      return null;
+    }
+    for (Map.Entry<String, ExprNodeDesc> e : join.getColumnExprMap().entrySet()) {
+      if (e.getValue() == joinExprNode) {
+        return e.getKey();
+      }
+    }
+    return null;
+  }
+
+  private ExprNodeDesc backtrack(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
+    try {
+      ExprNodeDesc joinExprNode = ExprNodeDescUtils.backtrack(column, topNKeyOperator, join);
+      if (joinExprNode == null || !(joinExprNode instanceof ExprNodeColumnDesc)) {
+        return null;
+      }
+      return joinExprNode;
+    } catch (SemanticException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private List<ExprNodeDesc> remapColumns(CommonJoinOperator<? extends JoinDesc> join, ReduceSinkOperator fkJoinInput, List<ExprNodeDesc> topNKeyColumns) {
+    List<ExprNodeDesc> joinCols = mapColumns(topNKeyColumns, join.getColumnExprMap());
+    return mapColumns(joinCols, fkJoinInput.getColumnExprMap());
   }
 
   private List<ExprNodeDesc> mapUntilColumnEquals(List<ExprNodeDesc> columns, Map<String,

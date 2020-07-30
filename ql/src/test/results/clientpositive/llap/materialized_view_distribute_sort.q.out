@@ -119,7 +119,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       distribute columns: key string
       columns: value string, key string
       sort columns: value string
@@ -401,7 +401,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       distribute columns: value string
       columns: key string, value string
       sort columns: value string, key string
@@ -935,7 +935,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       distribute columns: key string
       columns: value string, key string
       sort columns: value string, key string

@@ -79,7 +79,6 @@ STAGE PLANS:
                                 null sort order: zz
                                 sort order: ++
                                 Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
-                                TopN Hash Memory Usage: 0.1
                                 value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
                       Select Operator
                         expressions: array(1,2,3) (type: array<int>)
@@ -106,7 +105,6 @@ STAGE PLANS:
                                   null sort order: zz
                                   sort order: ++
                                   Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
-                                  TopN Hash Memory Usage: 0.1
                                   value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -131,7 +129,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 1 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap

@@ -675,8 +675,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_n5
 Plan optimized by CBO.
 
-Stage-1
-  Create View{"name:":"default.v_n5","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
+Stage-0
+  Create View{"original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte","name:":"default.v_n5"}
 
 PREHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte
@@ -711,7 +711,7 @@ Stage-0
       File Output Operator [FS_12]
         Limit [LIM_11] (rows=5/5 width=178)
           Number of rows:5
-          Select Operator [SEL_10] (rows=500/5 width=178)
+          Select Operator [SEL_10] (rows=500/36 width=178)
             Output:["_col0","_col1"]
           <-Map 1 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_9]

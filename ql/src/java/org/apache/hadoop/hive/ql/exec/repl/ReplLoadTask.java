@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -48,12 +49,14 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -103,6 +106,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      SecurityUtils.reloginExpiringKeytabUser();
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
         rootTask.setChildTasks(null);
@@ -115,6 +119,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
+      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY));
       if (work.isIncrementalLoad()) {
         return executeIncrementalLoad();
       } else {
@@ -182,6 +187,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Context loadContext = new Context(work.dumpDirectory, conf, getHive(),
         work.sessionStateLineageState, context);
     TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
+    addLazyDataCopyTask(loadTaskTracker);
     /*
         for now for simplicity we are doing just one directory ( one database ), come back to use
         of multiple databases once we have the basic flow to chain creating of tasks in place for
@@ -330,6 +336,22 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
+  private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
+    boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    if (dataCopyAtLoad) {
+      if (work.getExternalTableDataCopyItr() == null) {
+        Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);
+        try(FileList fileList = new FileList(extTableBackingFile, 0, conf)) {
+          work.setExternalTableDataCopyItr(fileList);
+        }
+      }
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
+      }
+      childTasks.addAll(work.externalTableCopyTasks(loadTaskTracker, conf));
+    }
+  }
+
   private TaskTracker addLoadPartitionTasks(Context loadContext, BootstrapEvent next, TaskTracker dbTracker,
                                             BootstrapEventsIterator iterator, Scope scope, TaskTracker loadTaskTracker,
                                             TaskTracker tableTracker) throws Exception {
@@ -381,21 +403,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
     TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
     String dbDotView = tableName.getNotEmptyDbTable();
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
-        table.getPartColNames(), false, false, false, table.getSd().getInputFormat(),
-        table.getSd().getOutputFormat(),
-        table.getSd().getSerdeInfo().getSerializationLib());
-    String originalText = table.getViewOriginalText();
-    String expandedText = table.getViewExpandedText();
 
+    String viewOriginalText = table.getViewOriginalText();
+    String viewExpandedText = table.getViewExpandedText();
     if (!dbName.equals(table.getDbName())) {
       // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
       // texts using new DB name. Currently it refers to the source database name.
     }
 
-    desc.setViewOriginalText(originalText);
-    desc.setViewExpandedText(expandedText);
-    desc.setPartCols(table.getPartCols());
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+        table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
+
     desc.setReplicationSpec(metaData.getReplicationSpec());
     desc.setOwnerName(table.getOwner());
 
@@ -545,6 +563,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     TaskTracker tracker = new TaskTracker(maxTasks);
+    addLazyDataCopyTask(tracker);
     childTasks.add(builder.build(context, getHive(), LOG, tracker));
     // If there are no more events to be applied, add a task to update the last.repl.id of the
     // target database to the event id of the last event considered by the dump. Next

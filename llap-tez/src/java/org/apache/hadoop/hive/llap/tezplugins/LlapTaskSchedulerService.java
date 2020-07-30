@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -67,7 +68,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
@@ -565,7 +565,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       // This shouldn't really happen on a byte array.
       throw new RuntimeException(e);
     }
-    return Base64.encodeBase64String(bytes);
+    return Base64.getEncoder().withoutPadding().encodeToString(bytes);
   }
 
 

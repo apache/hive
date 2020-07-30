@@ -101,7 +101,6 @@ STAGE PLANS:
                     null sort order: zzzz
                     sort order: ++++
                     Statistics: Num rows: 2 Data size: 706 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -247,7 +246,6 @@ STAGE PLANS:
                     null sort order: zzzz
                     sort order: ++++
                     Statistics: Num rows: 39 Data size: 13767 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -400,7 +398,6 @@ STAGE PLANS:
                     null sort order: zzzz
                     sort order: ++++
                     Statistics: Num rows: 110 Data size: 38830 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -545,7 +542,6 @@ STAGE PLANS:
                       null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 12500 Data size: 4412500 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -698,7 +694,6 @@ STAGE PLANS:
                       null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 1388 Data size: 489964 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -845,7 +840,6 @@ STAGE PLANS:
                       null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 8332 Data size: 2941196 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -994,7 +988,6 @@ STAGE PLANS:
                       null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 7 Data size: 2471 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1166,7 +1159,6 @@ STAGE PLANS:
                       null sort order: zzzzzz
                       sort order: ++++++
                       Statistics: Num rows: 4491 Data size: 2312973 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1350,7 +1342,6 @@ STAGE PLANS:
                       null sort order: zzzzzz
                       sort order: ++++++
                       Statistics: Num rows: 4491 Data size: 2312973 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1527,7 +1518,6 @@ STAGE PLANS:
                     null sort order: zzzzzz
                     sort order: ++++++
                     Statistics: Num rows: 354 Data size: 178440 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1712,7 +1702,6 @@ STAGE PLANS:
                       null sort order: zzzzzz
                       sort order: ++++++
                       Statistics: Num rows: 533 Data size: 278754 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1875,7 +1864,6 @@ STAGE PLANS:
                     null sort order: zzzzzz
                     sort order: ++++++
                     Statistics: Num rows: 4520 Data size: 174240 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2056,7 +2044,6 @@ STAGE PLANS:
                       null sort order: zzzzzz
                       sort order: ++++++
                       Statistics: Num rows: 4700 Data size: 2358403 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2278,7 +2265,6 @@ STAGE PLANS:
                       null sort order: zzzzzzzzzzzzzzzzzzzzzzzzz
                       sort order: +++++++++++++++++++++++++
                       Statistics: Num rows: 303750 Data size: 555861675 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col5 (type: string), _col11 (type: string), _col17 (type: string), _col23 (type: string), _col29 (type: string)
         Reducer 5 
             Execution mode: vectorized, llap
