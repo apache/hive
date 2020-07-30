@@ -1411,7 +1411,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   public void deleteAllPartitionColumnStatistics(TableName tn) {
-    return objectStore.deleteAllPartitionColumnStatistics(tn);
+    objectStore.deleteAllPartitionColumnStatistics(tn);
   }
 
 }
