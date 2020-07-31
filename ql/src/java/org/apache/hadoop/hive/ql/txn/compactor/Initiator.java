@@ -62,12 +62,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -78,10 +79,10 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private Executor compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
+  private ExecutorService compactionExecutor;
 
   @Override
   public void run() {
@@ -149,7 +150,7 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+              compactionList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                   scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
@@ -182,6 +183,10 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
+    } finally {
+      if (compactionExecutor != null) {
+        this.compactionExecutor.shutdownNow();
+      }
     }
   }
 
@@ -222,25 +227,13 @@ public class Initiator extends MetaStoreCompactorThread {
     return cache.get(fullTableName);
   }
 
-  private interface ThrowingRunnable<E extends Exception> {
-    void run() throws E;
-
-    static Runnable unchecked(ThrowingRunnable<?> r) {
-      return () -> {
-        try {
-          r.run();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      };
-    }
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
+    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
