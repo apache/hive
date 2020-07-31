@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.security.auth.login.LoginException;
 
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -188,36 +190,35 @@ public class FileOperations {
     if (dataPathList.isEmpty()) {
       return;
     }
-    Retry<Void> retryable = new Retry<Void>(IOException.class) {
-      @Override
-      public Void execute() throws Exception {
-        try (BufferedWriter writer = writer()) {
-          for (Path dataPath : dataPathList) {
-            writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
-          }
-        } catch (IOException e) {
-          if (e instanceof FileNotFoundException) {
-            logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
-            throw new FileNotFoundException(FILE_NOT_FOUND.format(e.getMessage()));
-          }
-          // in case of io error, reset the file system object
-          FileSystem.closeAllForUGI(Utils.getUGI());
-          dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
-          exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
-          Path exportPath = new Path(exportRootDataDir, EximUtil.FILES_NAME);
-          if (exportFileSystem.exists(exportPath)) {
-            exportFileSystem.delete(exportPath, true);
-          }
-          throw e;
-        }
-        return null;
-      }
-    };
-    try {
-      retryable.run();
-    } catch (Exception e) {
-      throw new SemanticException(e);
-    }
+     Retryable retryable = Retryable.builder()
+       .withHiveConf(hiveConf)
+       .withRetryOnException(IOException.class).build();
+     try {
+       retryable.executeCallable((Callable<Void>) () -> {
+         try (BufferedWriter writer = writer()) {
+           for (Path dataPath : dataPathList) {
+             writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+           }
+         } catch (IOException e) {
+           if (e instanceof FileNotFoundException) {
+             logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
+             throw new FileNotFoundException(FILE_NOT_FOUND.format(e.getMessage()));
+           }
+           // in case of io error, reset the file system object
+           FileSystem.closeAllForUGI(Utils.getUGI());
+           dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+           exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
+           Path exportPath = new Path(exportRootDataDir, EximUtil.FILES_NAME);
+           if (exportFileSystem.exists(exportPath)) {
+             exportFileSystem.delete(exportPath, true);
+           }
+           throw e;
+         }
+         return null;
+       });
+     } catch (Exception e) {
+       throw new SemanticException(e);
+     }
   }
 
   private void writeFilesList(FileStatus[] fileStatuses, BufferedWriter writer, String encodedSubDirs)
