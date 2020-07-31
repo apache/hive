@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
-import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 // If this is run as a pre or post execution hook, it writes a message to SessionState.err

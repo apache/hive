@@ -22,7 +22,7 @@ import java.util.Map;
 import org.junit.Assert;
 
 import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookType;
 
 public class VerifyContentSummaryCacheHook implements ExecuteWithHookContext {
 
