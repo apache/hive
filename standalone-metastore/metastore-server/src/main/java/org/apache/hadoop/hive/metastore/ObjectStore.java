@@ -9503,10 +9503,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       query = pm.newQuery(MPartitionColumnStatistics.class);
 
-      Object engine = null;
-      String filter = "dbName == t2 && tableName == t3 && catName == t4" + (engine != null ? " && engine == t5" : "");
-      String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4"
-          + (engine != null ? ", java.lang.String t5" : "");
+      String filter = "dbName == t2 && tableName == t3 && catName == t4";
+      String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4";
 
       query.setFilter(filter);
       query.declareParameters(parameters);
