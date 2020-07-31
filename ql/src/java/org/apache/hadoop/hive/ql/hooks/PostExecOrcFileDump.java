@@ -58,7 +58,7 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) throws Exception {
-    assert (hookContext.getHookType() == HookContext.HookType.POST_EXEC_HOOK);
+    assert (hookContext.getHookType() == HookType.POST_EXEC_HOOK);
     HiveConf conf = hookContext.getConf();
 
     LOG.info("Executing post execution hook to print orc file dump..");

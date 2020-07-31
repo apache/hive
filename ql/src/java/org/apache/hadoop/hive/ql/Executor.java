@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookType;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -151,7 +152,7 @@ public class Executor {
     SessionState.get().getHiveHistory().logPlanProgress(driverContext.getPlan());
     driverContext.setResStream(null);
 
-    hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
+    hookContext.setHookType(HookType.PRE_EXEC_HOOK);
     driverContext.getHookRunner().runPreHooks(hookContext);
 
     // Trigger query hooks before query execution.
@@ -479,7 +480,7 @@ public class Executor {
     // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions, remove them
     driverContext.getPlan().getOutputs().removeIf(x -> !x.isComplete());
 
-    hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
+    hookContext.setHookType(HookType.POST_EXEC_HOOK);
     driverContext.getHookRunner().runPostExecHooks(hookContext);
 
     SessionState.get().getHiveHistory().setQueryProperty(driverContext.getQueryId(), Keys.QUERY_RET_CODE,

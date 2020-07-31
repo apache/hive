@@ -28,7 +28,6 @@ import java.util.List;
 
 /**
  * The hook types
- *
  */
 public enum HookType {
 
@@ -36,23 +35,21 @@ public enum HookType {
       "Hooks that will be run when HiveServer2 stops due to OutOfMemoryError"),
   QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class, false,
       "Hooks that will be triggered before/after query compilation and before/after query execution"),
-  QUERY_LIFETIME_HOOKS_WITH_PARSE(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHookWithParseHooks.class, false,
-      "Hooks that will be invoked during pre and post query parsing"),
   SEMANTIC_ANALYZER_HOOK(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class, false,
       "Hooks that invoked before/after Hive performs its own semantic analysis on a statement"),
   DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class, false,
       "Hooks that Will be run at the beginning and end of Driver.run"),
-  PREEXECHOOKS(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class, false,
+  PRE_EXEC_HOOK(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class, false,
       "Pre-execution hooks to be invoked for each statement"),
-  POSTEXECHOOKS(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class, false,
+  POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class, false,
       "Post-execution hooks to be invoked for each statement"),
-  ONFAILUREHOOKS(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class, false,
+  ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class, false,
       "On-failure hooks to be invoked for each statement");
-  //
+
   private final HiveConf.ConfVars hookConfVar;
   // the super class or interface of the corresponding hooks
   private final Class hookClass;
-  // true for making added or loaded hooks store in hooks mainly for latter use,
+  // true for making the corresponding hooks permanent mainly for latter use,
   // otherwise false.
   private final boolean isGlobal;
   private final String description;
@@ -101,5 +98,12 @@ public enum HookType {
 
   public String getDescription() {
     return description;
+  }
+
+  public void reset() {
+    if (isGlobal) {
+      this.getHooks().clear();
+      setLoadedFromConf(false);
+    }
   }
 }

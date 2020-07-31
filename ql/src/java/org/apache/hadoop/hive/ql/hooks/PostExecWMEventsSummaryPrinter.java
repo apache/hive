@@ -36,8 +36,8 @@ public class PostExecWMEventsSummaryPrinter implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) throws Exception {
-    assert (hookContext.getHookType() == HookContext.HookType.POST_EXEC_HOOK ||
-      hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK);
+    assert (hookContext.getHookType() == HookType.POST_EXEC_HOOK ||
+      hookContext.getHookType() == HookType.ON_FAILURE_HOOK);
     HiveConf conf = hookContext.getConf();
     if (!"tez".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
       return;

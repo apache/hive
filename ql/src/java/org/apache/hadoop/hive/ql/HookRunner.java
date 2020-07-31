@@ -75,9 +75,10 @@ public class HookRunner {
         .withHiveConf(conf)
         .withCommand(command)
         .build();
-    for (QueryLifeTimeHookWithParseHooks hook :
-        loader.getHooks(QUERY_LIFETIME_HOOKS_WITH_PARSE, QueryLifeTimeHookWithParseHooks.class)) {
-      hook.beforeParse(qhc);
+    for (QueryLifeTimeHook hook : loader.getHooks(QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class)) {
+      if (hook instanceof QueryLifeTimeHookWithParseHooks) {
+        ((QueryLifeTimeHookWithParseHooks)hook).beforeParse(qhc);
+      }
     }
   }
 
@@ -94,9 +95,10 @@ public class HookRunner {
         .withHiveConf(conf)
         .withCommand(command)
         .build();
-    for (QueryLifeTimeHookWithParseHooks hook :
-        loader.getHooks(QUERY_LIFETIME_HOOKS_WITH_PARSE, QueryLifeTimeHookWithParseHooks.class)) {
-      hook.afterParse(qhc, parseError);
+    for (QueryLifeTimeHook hook : loader.getHooks(QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class)) {
+      if (hook instanceof QueryLifeTimeHookWithParseHooks) {
+        ((QueryLifeTimeHookWithParseHooks)hook).afterParse(qhc, parseError);
+      }
     }
   }
 
@@ -225,17 +227,17 @@ public class HookRunner {
   }
 
   public void runPreHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(PREEXECHOOKS, ExecuteWithHookContext.class),
+    invokeGeneralHook(loader.getHooks(PRE_EXEC_HOOK, ExecuteWithHookContext.class),
         PerfLogger.PRE_HOOK, hookContext);
   }
 
   public void runPostExecHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(POSTEXECHOOKS, ExecuteWithHookContext.class),
+    invokeGeneralHook(loader.getHooks(POST_EXEC_HOOK, ExecuteWithHookContext.class),
         PerfLogger.POST_HOOK, hookContext);
   }
 
   public void runFailureHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(ONFAILUREHOOKS, ExecuteWithHookContext.class),
+    invokeGeneralHook(loader.getHooks(ON_FAILURE_HOOK, ExecuteWithHookContext.class),
         PerfLogger.FAILURE_HOOK, hookContext);
   }
 
@@ -264,18 +266,19 @@ public class HookRunner {
   }
 
   public void addPreHook(ExecuteWithHookContext hook) {
-    loader.addHook(PREEXECHOOKS, hook);
+    loader.addHook(PRE_EXEC_HOOK, hook);
   }
 
   public void addPostHook(ExecuteWithHookContext hook) {
-    loader.addHook(POSTEXECHOOKS, hook);
+    loader.addHook(POST_EXEC_HOOK, hook);
   }
 
   public void addOnFailureHook(ExecuteWithHookContext hook) {
-    loader.addHook(ONFAILUREHOOKS, hook);
+    loader.addHook(ON_FAILURE_HOOK, hook);
   }
 
   public void addSemanticAnalyzerHook(HiveSemanticAnalyzerHook hook) {
     loader.addHook(SEMANTIC_ANALYZER_HOOK, hook);
   }
+
 }

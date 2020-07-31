@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.EventLogger;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.EventType;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.OtherInfoType;
-import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry;
 import org.apache.hadoop.hive.ql.log.PerfLogger;

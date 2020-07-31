@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookType;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -124,7 +125,7 @@ public final class DriverUtils {
 
   public static void invokeFailureHooks(DriverContext driverContext, PerfLogger perfLogger, HookContext hookContext,
       String errorMessage, Throwable exception) throws Exception {
-    hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+    hookContext.setHookType(HookType.ON_FAILURE_HOOK);
     hookContext.setErrorMessage(errorMessage);
     hookContext.setException(exception);
     // Get all the failure execution hooks and execute them.

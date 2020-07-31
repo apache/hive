@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import com.cronutils.utils.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -38,6 +39,8 @@ public class HooksLoader {
   // keep a flag that whether the hooks has been loaded from configuration or not
   private HookContainer[] containers;
 
+  private boolean forTest = false;
+
   public HooksLoader(HiveConf conf) {
     this.conf = conf;
     this.containers = new HookContainer[HookType.values().length];
@@ -46,11 +49,17 @@ public class HooksLoader {
     }
   }
 
+  HooksLoader(HiveConf conf, boolean forTest) {
+    this(conf);
+    this.forTest = forTest;
+  }
+
   /**
    * Loads the configured hooks corresponding to the specific hook type.
    * @param type hook type
    */
-  private void loadHooksFromConf(HookType type) {
+  @VisibleForTesting
+  void loadHooksFromConf(HookType type) {
     int index = type.ordinal();
     HookContainer container = containers[index];
 
@@ -89,11 +98,14 @@ public class HooksLoader {
    * @param hook the hook that will be added
    */
   public void addHook(HookType type, Object hook) {
-    int index = type.ordinal();
+    if (!forTest) {
+      loadHooksFromConf(type);
+    }
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
       if (type.isGlobal()) {
         type.getHooks().add(hook);
       } else {
+        int index = type.ordinal();
         containers[index].addHook(hook);
       }
     }
@@ -107,7 +119,9 @@ public class HooksLoader {
    * @return list of hooks
    */
   public <T> List<T> getHooks(HookType type, Class<T> clz) {
-    loadHooksFromConf(type);
+    if (!forTest) {
+      loadHooksFromConf(type);
+    }
     if (type.isGlobal()) {
       return type.getHooks();
     }
@@ -116,7 +130,9 @@ public class HooksLoader {
   }
 
   public List getHooks(HookType type) {
-    loadHooksFromConf(type);
+    if (!forTest) {
+      loadHooksFromConf(type);
+    }
     if (type.isGlobal()) {
       return type.getHooks();
     }
@@ -130,6 +146,7 @@ public class HooksLoader {
    * @param <T> the generic type of hooks
    */
   private class HookContainer<T> {
+
     private boolean loadedFromConf = false;
     private List<T> hooks = new ArrayList<T>();
     void addHook(T hook) {
@@ -139,7 +156,9 @@ public class HooksLoader {
     List<T> getHooks() {
       return this.hooks;
     }
+
   }
+
 }
 
 
