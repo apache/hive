@@ -222,8 +222,14 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         Long keyCountObj = parentKeyCounts.get(pos);
         long estKeyCount = (keyCountObj == null) ? -1 : keyCountObj;
 
-        long inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
-                findCounter(org.apache.tez.common.counters.TaskCounter.APPROXIMATE_INPUT_RECORDS).getValue();
+        long inputRecords = -1;
+        try {
+          inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
+                  findCounter("org.apache.tez.common.counters.TaskCounter",
+                          "APPROXIMATE_INPUT_RECORDS").getValue();
+        } catch (Exception e) {
+          LOG.debug("Failed to get value for counter APPROXIMATE_INPUT_RECORDS", e);
+        }
         long keyCount = Math.max(estKeyCount, inputRecords);
 
         long memory = 0;
