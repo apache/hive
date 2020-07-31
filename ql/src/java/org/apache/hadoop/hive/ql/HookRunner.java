@@ -54,7 +54,7 @@ public class HookRunner {
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
    */
-  public HookRunner(HiveConf conf, SessionState.LogHelper console) {
+  HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.console = console;
     this.loader = new HooksLoader(conf);

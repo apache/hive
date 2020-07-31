@@ -23,7 +23,6 @@ import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.hooks.HookType;
 
 public class VerifyIsLocalModeHook implements ExecuteWithHookContext {
 

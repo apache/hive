@@ -69,10 +69,11 @@ public enum HookType {
   }
 
   /**
-   * Get all hooks corresponding to this hook type
+   * Get all hooks corresponding to this hook type,
+   * use only in {@link HooksLoader}
    * @return the hooks or null if isGlobal is false
    */
-  public List getHooks() {
+  List getHooks() {
     return this.hooks;
   }
 
@@ -102,7 +103,7 @@ public enum HookType {
 
   public void reset() {
     if (isGlobal) {
-      this.getHooks().clear();
+      getHooks().clear();
       setLoadedFromConf(false);
     }
   }

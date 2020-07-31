@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import com.cronutils.utils.Preconditions;
 import com.cronutils.utils.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,9 +37,12 @@ import java.util.List;
  */
 public class HooksLoader {
 
+  private static final Logger LOG = LoggerFactory.getLogger(HooksLoader.class);
+
   private final HiveConf conf;
   // The containers that store different kinds of hooks
   private HookContainer[] containers;
+  // for unit test purpose, check change of the hooks after invoking loadHooksFromConf
   private boolean forTest = false;
 
   public HooksLoader(HiveConf conf) {
@@ -47,6 +53,7 @@ public class HooksLoader {
     }
   }
 
+  @VisibleForTesting
   HooksLoader(HiveConf conf, boolean forTest) {
     this(conf);
     this.forTest = forTest;
@@ -76,11 +83,13 @@ public class HooksLoader {
       try {
         Collection<String> csHooks = conf.getStringCollection(confVars.varname);
         for (String clzName : csHooks) {
-          Class hookCls = Class.forName(clzName.trim(), true,
-              Utilities.getSessionSpecifiedClassLoader());
+          Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
           if (type.getHookClass().isAssignableFrom(hookCls)) {
             Object hookObj = hookCls.newInstance();
             hooks.add(hookObj);
+          } else {
+            LOG.warn("The clazz: {} should be the subclass of {}, as the type {} defined, configuration key: {}",
+                clzName, type.getHookClass().getName(), type, confVars.varname);
           }
         }
       } catch (Exception e) {
@@ -91,11 +100,13 @@ public class HooksLoader {
   }
 
   /**
-   * Add the hook to the specific hook type.
-   * @param type hook type
-   * @param hook the hook that will be added
+   * Add the hook corresponding to the specific hook type.
+   * @param type The hook type
+   * @param hook The hook that will be added
    */
   public void addHook(HookType type, Object hook) {
+    Preconditions.checkNotNull(type);
+    Preconditions.checkNotNull(hook);
     if (!forTest) {
       loadHooksFromConf(type);
     }
@@ -106,17 +117,31 @@ public class HooksLoader {
         int index = type.ordinal();
         containers[index].addHook(hook);
       }
+    } else {
+      String message = "Error adding hook " + hook.getClass().getName() + " into type " + type +
+          ", as the hook doesn't implement or extend " + type.getHookClass().getName();
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
     }
   }
 
   /**
    * Get all hooks corresponding to the specific hook type.
-   * @param type hook type
-   * @param clz hook class
-   * @param <T> the generic type of the hooks
-   * @return list of hooks
+   * @param type The hook type
+   * @param clazz The hook class of returning hooks
+   * @param <T> The generic type of the hooks
+   * @return List of hooks
    */
-  public <T> List<T> getHooks(HookType type, Class<T> clz) {
+  public <T> List<T> getHooks(HookType type, Class<T> clazz) {
+    Preconditions.checkNotNull(type);
+    Preconditions.checkNotNull(clazz);
+    if (!type.getHookClass().isAssignableFrom(clazz)) {
+      String message = "The arg clazz: " + clazz.getName() + " should be the same as, "
+          + "or the subclass of " + type.getHookClass().getName()
+          + ", as the type " + type + " defined";
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
+    }
     if (!forTest) {
       loadHooksFromConf(type);
     }
@@ -128,6 +153,7 @@ public class HooksLoader {
   }
 
   public List getHooks(HookType type) {
+    Preconditions.checkNotNull(type);
     return getHooks(type, type.getHookClass());
   }
 

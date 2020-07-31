@@ -23,7 +23,6 @@ import java.util.List;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.hooks.HookType;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 public class VerifyHiveSortedInputFormatUsedHook implements ExecuteWithHookContext {
