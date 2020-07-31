@@ -33,7 +33,7 @@ public class HiveServer2OomHookRunner implements Runnable {
   @Override
   public synchronized void run() {
     try {
-      hookRunner.runHs2OomHooks();
+      //hookRunner.runHs2OomHooks();
     } finally {
       hiveServer2.stop();
     }
