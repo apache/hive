@@ -32,8 +32,10 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
@@ -1600,6 +1602,27 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] {"1", "2"});
   }
 
+  @Test
+  public void testRangerReplicationRetryExhausted() throws Throwable {
+    List<String> clause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA + "'='true'",
+      "'" + HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY + "'='1s'", "'" + HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION
+        + "'='30s'", "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL + "'='false'", "'" + HiveConf.ConfVars.HIVE_IN_TEST
+        + "'='false'");
+    try {
+      primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+          "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)")
+        .dump(primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_RETRY_EXHAUSTED.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+  }
+
   /*
   Can't test complete replication as mini ranger is not supported
   Testing just the configs and no impact on existing replication
@@ -1617,7 +1640,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       primary.dump(primaryDbName, clause);
     } catch (SemanticException e) {
-      assertEquals("Authorizer sentry not supported for replication ", e.getMessage());
+      assertEquals("Invalid config error : Authorizer sentry not supported for replication  " +
+        "for ranger service.", e.getMessage());
+      assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
   }
 
@@ -1732,7 +1758,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       }
       Assert.fail(conf + " is mandatory config for Atlas metadata replication but it didn't fail.");
     } catch (SemanticException e) {
-      assertEquals(e.getMessage(), (conf + " is mandatory config for Atlas metadata replication"));
+      assertEquals(e.getMessage(), ("Invalid config error : " + conf
+        + " is mandatory config for Atlas metadata replication for atlas service."));
     }
   }
 
