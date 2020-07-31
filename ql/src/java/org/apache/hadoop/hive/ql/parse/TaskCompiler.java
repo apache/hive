@@ -481,7 +481,8 @@ public abstract class TaskCompiler {
       boolean isExternal = false;
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
-        isExternal = pCtx.getCreateTable().isExternal();
+        isExternal = (pCtx.getCreateTable().isExternal()
+                || (pCtx.getCreateTable().getTblProps().get("transactional").equalsIgnoreCase("false")));
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
       }
