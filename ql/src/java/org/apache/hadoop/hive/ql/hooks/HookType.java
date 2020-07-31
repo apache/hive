@@ -53,7 +53,7 @@ public enum HookType {
   // otherwise false.
   private final boolean isGlobal;
   private final String description;
-  // store the hooks when isGlobal is true
+  // cache the hooks in the enum instance when isGlobal is true
   private List hooks = null;
   // flag that indicates whether the hooks have been loaded from configuration or not
   private boolean loadedFromConf = false;
@@ -77,7 +77,7 @@ public enum HookType {
   }
 
   public boolean hasLoadedFromConf() {
-    return loadedFromConf;
+    return this.loadedFromConf;
   }
 
   public void setLoadedFromConf(boolean loadedFromConf) {
@@ -93,11 +93,11 @@ public enum HookType {
   }
 
   public HiveConf.ConfVars getHookConfVar() {
-    return hookConfVar;
+    return this.hookConfVar;
   }
 
   public String getDescription() {
-    return description;
+    return this.description;
   }
 
   public void reset() {

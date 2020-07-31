@@ -35,10 +35,8 @@ import java.util.List;
 public class HooksLoader {
 
   private final HiveConf conf;
-  // The container stores kinds of hooks and
-  // keep a flag that whether the hooks has been loaded from configuration or not
+  // The containers that store different kinds of hooks
   private HookContainer[] containers;
-
   private boolean forTest = false;
 
   public HooksLoader(HiveConf conf) {
@@ -93,7 +91,7 @@ public class HooksLoader {
   }
 
   /**
-   * Register the hook to the specific hook type.
+   * Add the hook to the specific hook type.
    * @param type hook type
    * @param hook the hook that will be added
    */
@@ -141,7 +139,7 @@ public class HooksLoader {
   }
 
   /**
-   * Inner class, keep tracks of the hooks that be loaded or added,
+   * Inner class which keeps track of the hooks that be loaded or added,
    * should not be used outside the class
    * @param <T> the generic type of hooks
    */
