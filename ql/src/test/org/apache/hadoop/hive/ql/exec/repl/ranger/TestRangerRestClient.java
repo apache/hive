@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +33,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Unit test class for testing Ranger Dump.
@@ -46,23 +49,34 @@ public class TestRangerRestClient {
   @Mock
   private UserGroupInformation userGroupInformation;
 
+  @Mock
+  private HiveConf conf;
+
   @Before
   public void setup() throws Exception {
     PowerMockito.mockStatic(UserGroupInformation.class);
     Mockito.when(UserGroupInformation.getLoginUser()).thenReturn(userGroupInformation);
     Mockito.when(userGroupInformation.doAs((PrivilegedAction<Object>) Mockito.any())).thenCallRealMethod();
+    Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Object>) Mockito.any())).thenCallRealMethod();
     Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenCallRealMethod();
     Mockito.when(mockClient.getRangerImportUrl(Mockito.anyString(), Mockito.anyString()))
       .thenCallRealMethod();
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
+    Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
+      .thenReturn(10L);
+    Mockito.when(conf.getFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f))
+      .thenReturn(1.0f);
   }
 
   @Test
   public void testSuccessSimpleAuthCheckConnection() throws Exception {
     Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
     Mockito.when(mockClient.checkConnectionPlain(Mockito.anyString())).thenReturn(true);
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenCallRealMethod();
-    mockClient.checkConnection("http://localhost:6080/ranger");
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
+    mockClient.checkConnection("http://localhost:6080/ranger", conf);
     ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
     Mockito.verify(mockClient,
       Mockito.times(1)).checkConnectionPlain(urlCaptor.capture());
@@ -70,21 +84,6 @@ public class TestRangerRestClient {
     ArgumentCaptor<PrivilegedAction> privilegedActionArgumentCaptor = ArgumentCaptor.forClass(PrivilegedAction.class);
     Mockito.verify(userGroupInformation,
       Mockito.times(0)).doAs(privilegedActionArgumentCaptor.capture());
-  }
-
-  @Test
-  public void testSuccessKerberosAuthCheckConnection() throws Exception {
-    Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(true);
-    Mockito.when(mockClient.checkConnectionPlain(Mockito.anyString())).thenReturn(true);
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenCallRealMethod();
-    mockClient.checkConnection("http://localhost:6080/ranger");
-    ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(mockClient,
-      Mockito.times(1)).checkConnectionPlain(urlCaptor.capture());
-    Assert.assertEquals("http://localhost:6080/ranger", urlCaptor.getValue());
-    ArgumentCaptor<PrivilegedAction> privilegedActionArgumentCaptor = ArgumentCaptor.forClass(PrivilegedAction.class);
-    Mockito.verify(userGroupInformation,
-      Mockito.times(3)).doAs(privilegedActionArgumentCaptor.capture());
   }
 
   @Test
@@ -92,45 +91,23 @@ public class TestRangerRestClient {
     Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
     Mockito.when(mockClient.exportRangerPoliciesPlain(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
       .thenReturn(new RangerExportPolicyList());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenCallRealMethod();
     mockClient.exportRangerPolicies("http://localhost:6080/ranger", "db",
-      "hive");
+      "hive", conf);
     ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> dbCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
       Mockito.times(1)).exportRangerPolicies(urlCaptor.capture(), dbCaptor.capture(),
-      serviceCaptor.capture());
+      serviceCaptor.capture(), confCaptor.capture());
     Assert.assertEquals("http://localhost:6080/ranger", urlCaptor.getValue());
     Assert.assertEquals("db", dbCaptor.getValue());
     Assert.assertEquals("hive", serviceCaptor.getValue());
     ArgumentCaptor<PrivilegedAction> privilegedActionArgumentCaptor = ArgumentCaptor.forClass(PrivilegedAction.class);
     Mockito.verify(userGroupInformation,
       Mockito.times(0)).doAs(privilegedActionArgumentCaptor.capture());
-  }
-
-  @Test
-  public void testSuccessKerberosAuthRangerExport() throws Exception {
-    Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(true);
-    Mockito.when(mockClient.exportRangerPoliciesPlain(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-      .thenReturn(new RangerExportPolicyList());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-      .thenCallRealMethod();
-    mockClient.exportRangerPolicies("http://localhost:6080/ranger", "db",
-      "hive");
-    ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<String> dbCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<String> serviceCaptor = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(mockClient,
-      Mockito.times(1)).exportRangerPolicies(urlCaptor.capture(), dbCaptor.capture(),
-      serviceCaptor.capture());
-    Assert.assertEquals("http://localhost:6080/ranger", urlCaptor.getValue());
-    Assert.assertEquals("db", dbCaptor.getValue());
-    Assert.assertEquals("hive", serviceCaptor.getValue());
-    ArgumentCaptor<PrivilegedExceptionAction> privilegedActionArgumentCaptor = ArgumentCaptor
-      .forClass(PrivilegedExceptionAction.class);
-    Mockito.verify(userGroupInformation,
-      Mockito.times(1)).doAs(privilegedActionArgumentCaptor.capture());
   }
 }
