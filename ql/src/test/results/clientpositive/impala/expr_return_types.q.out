@@ -63,11 +63,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=121.11KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=121.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.type_test.tt_tinyint, default.type_test.tt_smallint, default.type_test.tt_int, default.type_test.tt_bigint, default.type_test.tt_float, default.type_test.tt_double, default.type_test.tt_double_precision, default.type_test.tt_decimal, default.type_test.tt_decimal_pre, default.type_test.tt_numeric, default.type_test.tt_numeric_pre, default.type_test.tt_timestamp, default.type_test.tt_string, default.type_test.tt_varchar, default.type_test.tt_char, default.type_test.tt_boolean, default.type_test.tt_date
-  |  mem-estimate=117B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=121.00KB mem-reservation=0B thread-reservation=0
@@ -114,10 +113,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: CAST(1 AS INT) < default.type_test.tt_int
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -164,10 +162,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: _impala_builtins.casttobigint(default.type_test.tt_int)
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -213,11 +210,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=16.01KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.type_test.tt_decimal, 'literal'
-  |  mem-estimate=8B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -264,10 +260,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: CASE WHEN default.type_test.tt_int > CAST(34 AS INT) THEN CAST(34 AS INT) ELSE default.type_test.tt_int END
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -314,10 +309,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: default.type_test.tt_int IN (CAST(1 AS INT), CAST(2 AS INT), CAST(3 AS INT), CAST(4 AS INT))
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -362,8 +356,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('01/01/1984')), INTERVAL CAST(86400000 AS BIGINT) MILLISECOND)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -397,11 +390,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=20.01KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=20.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: _impala_builtins.lag(default.type_test.tt_int, 1)
-  |  mem-estimate=12B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   04:EXCHANGE [UNPARTITIONED]
      mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
@@ -470,8 +462,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: FALSE
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -506,10 +497,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: default.type_test.tt_int IS NULL
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -556,10 +546,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: default.type_test.tt_int > CAST(4 AS INT) AND default.type_test.tt_int < CAST(10 AS INT) OR default.type_test.tt_int = CAST(33 AS INT)
-  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
@@ -604,8 +593,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: DATE '1984-01-01'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |

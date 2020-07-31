@@ -32,10 +32,9 @@ STAGE PLANS:
       Impala Plan: 
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: _impala_builtins.ndv(default.impala_tpch_lineitem.l_returnflag)
-  |  mem-estimate=8B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.ndv:merge(default.impala_tpch_lineitem.l_returnflag)

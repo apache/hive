@@ -148,10 +148,9 @@ STAGE PLANS:
       Impala Plan: 
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_discount_amt)
-  |  mem-estimate=16B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_discount_amt)

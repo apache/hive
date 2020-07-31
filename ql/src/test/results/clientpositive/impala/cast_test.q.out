@@ -14,8 +14,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: _impala_builtins.casttostring(CAST(3 AS TINYINT))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |

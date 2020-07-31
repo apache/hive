@@ -100,11 +100,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=24.02KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
-  |  mem-estimate=20B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   11:MERGING-EXCHANGE [UNPARTITIONED]
      order by: _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST

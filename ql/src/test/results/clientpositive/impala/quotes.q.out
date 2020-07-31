@@ -74,10 +74,9 @@ STAGE PLANS:
       Impala Plan: 
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: order count, total shipping cost, total net profit
-  |  mem-estimate=48B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   15:TOP-N [LIMIT=100]
   |  order by: (tok_functiondi count (tok_table_or_col cs_order_number)) ASC NULLS LAST
@@ -335,8 +334,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'What\'s happening?', 'I\'m not sure.', 'Homer wrote "The Iliad".', 'Homer also wrote "The Odyssey".'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -372,11 +370,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: c.c_custkey, c.c_name, c.c_address, c.c_nationkey, c.c_phone, c.c_acctbal, c.c_mktsegment, c.c_comment
-  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:SCAN HDFS [default.impala_tpch_customer c]
      HDFS partitions=1/1 files=0 size=0B
@@ -415,11 +412,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: c.c_custkey, c.c_name, c.c_address, c.c_nationkey, c.c_phone, c.c_acctbal, c.c_mktsegment, c.c_comment
-  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:SCAN HDFS [default.impala_tpch_customer c]
      HDFS partitions=1/1 files=0 size=0B
@@ -458,11 +454,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_nationkey, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_mktsegment, default.impala_tpch_customer.c_comment
-  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:SCAN HDFS [default.impala_tpch_customer]
      HDFS partitions=1/1 files=0 size=0B
@@ -501,11 +496,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=78B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_nationkey, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_mktsegment, default.impala_tpch_customer.c_comment
-  |  mem-estimate=78B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:SCAN HDFS [default.impala_tpch_customer]
      HDFS partitions=1/1 files=0 size=0B
@@ -544,11 +538,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=12B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: $f0
-  |  mem-estimate=12B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:UNION
   |  limit: 10
@@ -592,11 +585,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=94.09KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=94.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment, _o__c1
-  |  mem-estimate=90B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   02:EXCHANGE [UNPARTITIONED]
      limit: 10
@@ -662,11 +654,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=360.34KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=360.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: cs1.cs_sold_date_sk, cs1.cs_sold_time_sk, cs1.cs_ship_date_sk, cs1.cs_bill_customer_sk, cs1.cs_bill_cdemo_sk, cs1.cs_bill_hdemo_sk, cs1.cs_bill_addr_sk, cs1.cs_ship_customer_sk, cs1.cs_ship_cdemo_sk, cs1.cs_ship_hdemo_sk, cs1.cs_ship_addr_sk, cs1.cs_call_center_sk, cs1.cs_catalog_page_sk, cs1.cs_ship_mode_sk, cs1.cs_warehouse_sk, cs1.cs_item_sk, cs1.cs_promo_sk, cs1.cs_order_number, cs1.cs_quantity, cs1.cs_wholesale_cost, cs1.cs_list_price, cs1.cs_sales_price, cs1.cs_ext_discount_amt, cs1.cs_ext_sales_price, cs1.cs_ext_wholesale_cost, cs1.cs_ext_list_price, cs1.cs_ext_tax, cs1.cs_coupon_amt, cs1.cs_ext_ship_cost, cs1.cs_net_paid, cs1.cs_net_paid_inc_tax, cs1.cs_net_paid_inc_ship, cs1.cs_net_paid_inc_ship_tax, cs1.cs_net_profit, dd1.d_date_sk, dd1.d_date_id, dd1.d_date, dd1.d_month_seq, dd1.d_week_seq, dd1.d_quarter_seq, dd1.d_year, dd1.d_dow, dd1.d_moy, dd1.d_dom, dd1.d_qoy, dd1.d_fy_year, dd1.d_fy_quarter_seq, dd1.d_fy_week_seq, dd1.d_day_name, dd1.d_quarter_name, dd1.d_holiday, dd1.d_weekend, dd1.d_following_holiday, dd1.d_first_dom, dd1.d_last_dom, dd1.d_same_day_ly, dd1.d_same_day_lq, dd1.d_current_day, dd1.d_current_week, dd1.d_current_month, dd1.d_current_quarter, dd1.d_current_year
-  |  mem-estimate=352B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   04:EXCHANGE [UNPARTITIONED]
      limit: 10
@@ -742,8 +733,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'value'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -778,8 +768,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'value'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -814,8 +803,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'value'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -850,8 +838,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'value'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
@@ -886,8 +873,7 @@ STAGE PLANS:
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+  PLAN-ROOT SINK
   |  output exprs: 'value'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |

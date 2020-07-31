@@ -4134,8 +4134,8 @@ public class HiveConf extends Configuration {
         "Chooses whether query fragments will run in container or in llap"),
 
     // Impala specific configuration properties
-    HIVE_IMPALA_RESULT_METHOD("hive.impala.result.method", ImpalaResultMethod.FILE.toString(), new StringSet(true,
-          ImpalaResultMethod.FILE.toString(), ImpalaResultMethod.STREAMING.toString()),
+    HIVE_IMPALA_RESULT_METHOD("hive.impala.result.method", ImpalaResultMethod.STREAMING.toString(),
+        new StringSet(true, ImpalaResultMethod.FILE.toString(), ImpalaResultMethod.STREAMING.toString()),
         "Chooses method used to convey results from Impala. file mode writes the result set to a " +
         "file determined during planning, streaming mode sends the results over the network."),
 

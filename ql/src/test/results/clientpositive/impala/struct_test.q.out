@@ -15,11 +15,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=12B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: _col0
-  |  mem-estimate=12B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:UNION
      constant-operands=1
@@ -53,11 +52,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=12B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: _o__c0
-  |  mem-estimate=12B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0

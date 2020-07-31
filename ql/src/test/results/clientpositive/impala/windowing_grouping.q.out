@@ -317,11 +317,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=116.11KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: $func_2, $f0, $f1, $func_0, _impala_builtins.rank()
-  |  mem-estimate=108B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=116.00KB mem-reservation=0B thread-reservation=0
@@ -497,11 +496,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=108.10KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=108.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: $func_2, i_category, i_class, $func_0, _impala_builtins.rank()
-  |  mem-estimate=100B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=108.00KB mem-reservation=0B thread-reservation=0
@@ -677,11 +675,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=116.11KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: $func_2, $f0, $f1, $func_0, _impala_builtins.rank()
-  |  mem-estimate=108B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
      mem-estimate=116.00KB mem-reservation=0B thread-reservation=0

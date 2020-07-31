@@ -289,11 +289,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F24:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=192.16KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=192.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.impala_tpcds_customer_address_1.ca_county, CAST(1999 AS INT), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
-  |  mem-estimate=168B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   70:EXCHANGE [UNPARTITIONED]
      mem-estimate=192.00KB mem-reservation=0B thread-reservation=0

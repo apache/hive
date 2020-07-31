@@ -500,11 +500,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F23:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=76.07KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=76.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: CASE valid_tid(39,40,41) WHEN 39 THEN channel WHEN 40 THEN channel WHEN 41 THEN NULL END, CASE valid_tid(39,40,41) WHEN 39 THEN id WHEN 40 THEN NULL WHEN 41 THEN NULL END, aggif(valid_tid(39,40,41) IN (39, 40, 41), CASE valid_tid(39,40,41) WHEN 39 THEN _impala_builtins.sum(sales) WHEN 40 THEN sum(sales) WHEN 41 THEN sum(sales) END), aggif(valid_tid(39,40,41) IN (39, 40, 41), CASE valid_tid(39,40,41) WHEN 39 THEN _impala_builtins.sum(returns) WHEN 40 THEN sum(returns) WHEN 41 THEN sum(returns) END), aggif(valid_tid(39,40,41) IN (39, 40, 41), CASE valid_tid(39,40,41) WHEN 39 THEN _impala_builtins.sum(profit) WHEN 40 THEN sum(profit) WHEN 41 THEN sum(profit) END)
-  |  mem-estimate=72B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   63:MERGING-EXCHANGE [UNPARTITIONED]
      order by: CASE valid_tid(39,40,41) WHEN 39 THEN channel WHEN 40 THEN channel WHEN 41 THEN NULL END ASC NULLS LAST, CASE valid_tid(39,40,41) WHEN 39 THEN id WHEN 40 THEN NULL WHEN 41 THEN NULL END ASC NULLS LAST

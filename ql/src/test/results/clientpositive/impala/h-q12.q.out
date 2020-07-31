@@ -144,11 +144,10 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=32.03KB mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [_result_db_._result_table_, OVERWRITE=false]
-  |  partitions=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
   |  output exprs: default.impala_tpch_lineitem.l_shipmode, _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority IN ('1-URGENT', '2-HIGH') THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN 1 ELSE 0 END))
-  |  mem-estimate=28B mem-reservation=0B thread-reservation=0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:MERGING-EXCHANGE [UNPARTITIONED]
      order by: default.impala_tpch_lineitem.l_shipmode ASC NULLS LAST
