@@ -2982,10 +2982,9 @@ class MetaStoreDirectSql {
     // @formatter:off
     String queryText = ""
         + "delete from " + PARTITION_PARAMS + " pp"
-            + " using " + PARTITIONS + " p "
             + " where "
-            + "   p.\"PART_ID = pp.\"PART_ID\""
-            + "   p.\"TBL_ID\" =  "+tbl_id
+            + "   pp.\"PART_ID\" in (select p.\"PART_ID\"  from "+PARTITIONS+" p where"
+            + "   p.\"TBL_ID\" =  "+tbl_id +")"
             + "  and pp.\"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE+"'";
     // @formatter:on
 
