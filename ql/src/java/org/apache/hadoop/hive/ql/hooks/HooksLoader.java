@@ -128,14 +128,7 @@ public class HooksLoader {
   }
 
   public List getHooks(HookType type) {
-    if (!forTest) {
-      loadHooksFromConf(type);
-    }
-    if (type.isGlobal()) {
-      return type.getHooks();
-    }
-    int index = type.ordinal();
-    return containers[index].getHooks();
+    return getHooks(type, type.getHookClass());
   }
 
   /**
