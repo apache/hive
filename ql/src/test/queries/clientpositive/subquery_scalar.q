@@ -149,10 +149,8 @@ explain select * from part_null_n0 where p_name IN (select p_name from part wher
 select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type));
 
 -- non corr, is null , is not converted to anti join.
-set hive.auto.convert.anti.join=true;
 explain select * from part where (select i from tnull_n0 limit 1) is null;
 select * from part where (select i from tnull_n0 limit 1) is null;
-set hive.auto.convert.anti.join=false;
 
 drop table tnull_n0;
 drop table part_null_n0;

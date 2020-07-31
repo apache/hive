@@ -143,7 +143,7 @@ select * from part ws1 where
                             and ws1.p_retailprice <> ws2.p_retailprice)
     and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
 
-set hive.auto.convert.anti.join=true;
+set hive.auto.convert.anti.join=false;
 
 explain select * from part_null where p_size IN (select p_size from part_null) AND NOT EXISTS (select c from tempty);
 select * from part_null where p_size IN (select p_size from part_null) AND NOT EXISTS (select c from tempty);
@@ -185,8 +185,6 @@ select * from part ws1 where
     exists (select * from part ws2 where ws1.p_type= ws2.p_type
                             and ws1.p_retailprice <> ws2.p_retailprice)
     and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
-
-set hive.auto.convert.anti.join=false;
 
 drop table tnull;
 drop table tempty;
