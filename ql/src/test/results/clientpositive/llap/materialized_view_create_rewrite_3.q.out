@@ -213,7 +213,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       columns: a int, c decimal(10,2)
       expanded text: SELECT `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
   FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (`cmv_basetable`.`a` = `cmv_basetable_2`.`a`)

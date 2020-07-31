@@ -27,6 +27,7 @@ import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasEntity;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
@@ -82,6 +83,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     return invokeWithRetry(new Callable<InputStream>() {
       @Override
       public InputStream call() throws Exception {
+        SecurityUtils.reloginExpiringKeytabUser();
         return clientV2.exportData(request);
       }
     }, null);
@@ -100,6 +102,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
       public AtlasImportResult call() throws Exception {
         InputStream is = null;
         try {
+          SecurityUtils.reloginExpiringKeytabUser();
           is = fs.open(exportFilePath);
           return clientV2.importData(request, is);
         } finally {

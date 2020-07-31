@@ -116,10 +116,10 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
-    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
+    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
@@ -198,7 +198,7 @@
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
-    <scala.version>2.12.4</scala.version>
+    <scala.version>2.12.10</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -215,7 +215,7 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.4.0</json-path.version>
     <janino.version>3.0.11</janino.version>
-    <datasketches.version>1.0.0-incubating</datasketches.version>
+    <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
   </properties>
 
@@ -1107,12 +1107,6 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>${spotbugs.version}</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 

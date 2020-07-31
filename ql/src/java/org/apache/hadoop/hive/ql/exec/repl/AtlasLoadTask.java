@@ -24,6 +24,7 @@ import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
@@ -68,6 +69,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      SecurityUtils.reloginExpiringKeytabUser();
       AtlasReplInfo atlasReplInfo  = createAtlasReplInfo();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);

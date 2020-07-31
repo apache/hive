@@ -22,7 +22,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -736,9 +735,9 @@ public class TestTxnCommands2 {
     boolean sawNewBase = false;
     for (int i = 0; i < status.length; i++) {
       if (status[i].getPath().getName().matches("base_.*")) {
-        //should be base_-9223372036854775808_v0000022 but 22 is a txn id not write id so it makes
+        //should be base_-9223372036854775808_v0000021 but 21 is a txn id not write id so it makes
         //the tests fragile
-        Assert.assertTrue(status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000022"));
+        Assert.assertTrue(status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000021"));
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -790,7 +789,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
       } else if (status[i].getPath().getName().matches("base_.*")) {
-        Assert.assertTrue("base_-9223372036854775808", status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000022"));//_v0000022
+        Assert.assertTrue("base_-9223372036854775808", status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000021"));//_v0000021
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -827,12 +826,12 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numBase == 1) {
-          Assert.assertEquals("base_-9223372036854775808_v0000022", status[i].getPath().getName());
+          Assert.assertEquals("base_-9223372036854775808_v0000021", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000002_v0000030", status[i].getPath().getName());
+          Assert.assertEquals("base_10000002_v0000028", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -858,7 +857,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_10000002_v0000030", status[0].getPath().getName());
+    Assert.assertEquals("base_10000002_v0000028", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -1465,7 +1464,7 @@ public class TestTxnCommands2 {
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a,b");
     int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
     Assert.assertEquals(stringifyValues(targetVals), r);
-    //currently multi-insrt doesn't allow same table/partition in > 1 output branch
+    //currently multi-insert doesn't allow same table/partition in > 1 output branch
     String s = "from " + Table.ACIDTBLPART + "  target right outer join " +
       Table.NONACIDPART2 + " source on target.a = source.a2 " +
       " INSERT INTO TABLE " + Table.ACIDTBLPART + " PARTITION(p='even') select source.a2, source.b2 where source.a2=target.a " +
@@ -2211,20 +2210,7 @@ public class TestTxnCommands2 {
    * sorts rows in dictionary order
    */
   static List<String> stringifyValues(int[][] rowsIn) {
-    assert rowsIn.length > 0;
-    int[][] rows = rowsIn.clone();
-    Arrays.sort(rows, new RowComp());
-    List<String> rs = new ArrayList<String>();
-    for(int[] row : rows) {
-      assert row.length > 0;
-      StringBuilder sb = new StringBuilder();
-      for(int value : row) {
-        sb.append(value).append("\t");
-      }
-      sb.setLength(sb.length() - 1);
-      rs.add(sb.toString());
-    }
-    return rs;
+    return TxnCommandsBaseForTests.stringifyValues(rowsIn);
   }
 
   /**
@@ -2272,19 +2258,6 @@ public class TestTxnCommands2 {
     return rs;
   }
 
-  static class RowComp implements Comparator<int[]> {
-    @Override
-    public int compare(int[] row1, int[] row2) {
-      assert row1 != null && row2 != null && row1.length == row2.length;
-      for(int i = 0; i < row1.length; i++) {
-        int comp = Integer.compare(row1[i], row2[i]);
-        if(comp != 0) {
-          return comp;
-        }
-      }
-      return 0;
-    }
-  }
   static String makeValuesClause(int[][] rows) {
     assert rows.length > 0;
     StringBuilder sb = new StringBuilder(" values");

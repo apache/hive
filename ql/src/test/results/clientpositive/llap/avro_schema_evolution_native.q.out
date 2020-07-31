@@ -49,6 +49,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned_n0 PARTITION (docto
 SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_n0
+POSTHOOK: Output: default@episodes_partitioned_n0
 POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=1
 POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=11
 POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=2

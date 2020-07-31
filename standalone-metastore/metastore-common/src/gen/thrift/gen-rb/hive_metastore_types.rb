@@ -2991,15 +2991,15 @@ class CommitTxnRequest
   TXNID = 1
   REPLPOLICY = 2
   WRITEEVENTINFOS = 3
-  KEYVALUE = 4
-  REPLLASTIDINFO = 5
+  REPLLASTIDINFO = 4
+  KEYVALUE = 5
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
     WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
-    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
-    REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true}
+    REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true},
+    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3166,6 +3166,83 @@ class AllocateTableWriteIdsResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnToWriteIds is unset!') unless @txnToWriteIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class MaxAllocatedTableWriteIdRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class MaxAllocatedTableWriteIdResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAXWRITEID = 1
+
+  FIELDS = {
+    MAXWRITEID => {:type => ::Thrift::Types::I64, :name => 'maxWriteId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxWriteId is unset!') unless @maxWriteId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SeedTableWriteIdsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  SEEDWRITEID = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    SEEDWRITEID => {:type => ::Thrift::Types::I64, :name => 'seedWriteId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field seedWriteId is unset!') unless @seedWriteId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SeedTxnIdRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SEEDTXNID = 1
+
+  FIELDS = {
+    SEEDTXNID => {:type => ::Thrift::Types::I64, :name => 'seedTxnId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field seedTxnId is unset!') unless @seedTxnId
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -6308,6 +6385,22 @@ class GetReplicationMetricsRequest
     SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId', :optional => true},
     POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy', :optional => true},
     DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetOpenTxnsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EXCLUDETXNTYPES = 1
+
+  FIELDS = {
+    EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

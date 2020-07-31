@@ -60,7 +60,6 @@ STAGE PLANS:
                         null sort order: az
                         sort order: -+
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized, llap

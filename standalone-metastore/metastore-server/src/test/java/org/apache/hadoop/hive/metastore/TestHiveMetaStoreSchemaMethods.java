@@ -91,7 +91,7 @@ public class TestHiveMetaStoreSchemaMethods {
     MetastoreConf.setClass(conf, ConfVars.PRE_EVENT_LISTENERS, SchemaPreEventListener.class,
         MetaStorePreEventListener.class);
     int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-        conf);
+        conf, false, false, false, false, false);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     client = new HiveMetaStoreClient(conf);
   }

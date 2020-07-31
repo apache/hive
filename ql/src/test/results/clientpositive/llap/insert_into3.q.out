@@ -73,7 +73,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                   Top N Key Operator
                     sort order: ++
                     keys: key (type: string), value (type: string)
@@ -89,7 +88,6 @@ STAGE PLANS:
                         null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

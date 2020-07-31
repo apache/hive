@@ -24,9 +24,9 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -294,7 +294,7 @@ public final class LazyUtils {
       BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
       byte[] toEncode = new byte[bw.getLength()];
       System.arraycopy(bw.getBytes(), 0,toEncode, 0, bw.getLength());
-      byte[] toWrite = Base64.encodeBase64(toEncode);
+      byte[] toWrite = Base64.getEncoder().withoutPadding().encode(toEncode);
       out.write(toWrite, 0, toWrite.length);
       break;
     }

@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@org.junit.Ignore("HIVE-22620")
 public class TestSSL {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -499,6 +500,19 @@ public class MetaStoreServerUtils {
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
+  }
+
+  /**
+   * Returns true if p is a prefix of s.
+   */
+  public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
+    if (p == s) {
+      return true;
+    }
+    if (p.size() > s.size()) {
+      return false;
+    }
+    return ListUtils.isEqualList(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
@@ -1343,6 +1357,17 @@ public class MetaStoreServerUtils {
   public static List<Partition> getAllPartitionsOf(IMetaStoreClient msc, Table table) throws MetastoreException {
     try {
       return msc.listPartitions(table.getCatName(), table.getDbName(), table.getTableName(), (short)-1);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
+  public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
+                                                 String defaultPartName, List<Partition> results)
+      throws MetastoreException {
+    try {
+      msc.listPartitionsByExpr(table.getCatName(), table.getDbName(), table.getTableName(), filterExp,
+          defaultPartName, (short) -1, results);
     } catch (Exception e) {
       throw new MetastoreException(e);
     }

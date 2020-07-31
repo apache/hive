@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -42,6 +43,7 @@ import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -73,7 +75,6 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -294,27 +295,27 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     } else {
       switch (literal.getType().getSqlTypeName()) {
       case BOOLEAN:
-        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
-            .booleanValue(literal)));
+        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
+            RexLiteral.booleanValue(literal));
       case TINYINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
-            .getValue3()).byteValue()));
+        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo,
+            ((Number) literal.getValue3()).byteValue());
       case SMALLINT:
         return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
-            Short.valueOf(((Number) literal.getValue3()).shortValue()));
+            ((Number) literal.getValue3()).shortValue());
       case INTEGER:
         return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
-            Integer.valueOf(((Number) literal.getValue3()).intValue()));
+            ((Number) literal.getValue3()).intValue());
       case BIGINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
-            .getValue3()).longValue()));
+        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo,
+            ((Number) literal.getValue3()).longValue());
       case FLOAT:
       case REAL:
         return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
-            Float.valueOf(((Number) literal.getValue3()).floatValue()));
+            ((Number) literal.getValue3()).floatValue());
       case DOUBLE:
         return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
-            Double.valueOf(((Number) literal.getValue3()).doubleValue()));
+            ((Number) literal.getValue3()).doubleValue());
       case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
             Date.valueOf(literal.getValueAs(DateString.class).toString()));
@@ -341,26 +342,22 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case DECIMAL:
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-      case VARCHAR:
       case CHAR: {
-        if (literal.getValue() instanceof HiveNlsString) {
-          HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
-          switch (mxNlsString.interpretation) {
-          case STRING:
-            return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          case CHAR: {
-            int precision = lType.getPrecision();
-            HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
-          }
-          case VARCHAR: {
-            int precision = lType.getPrecision();
-            HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
-          }
-          }
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "char values must use NlsString for correctness");
+        int precision = lType.getPrecision();
+        HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+      }
+      case VARCHAR: {
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "varchar/string values must use NlsString for correctness");
+        int precision = lType.getPrecision();
+        if (precision == Integer.MAX_VALUE) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
         }
-        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
+        HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:

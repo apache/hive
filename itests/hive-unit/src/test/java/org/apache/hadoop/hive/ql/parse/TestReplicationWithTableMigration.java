@@ -64,6 +64,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestReplicationWithTableMigration {
   private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
+  private static String fullyQualifiedReplicaExternalBase;
 
   @Rule
   public final TestName testName = new TestName();
@@ -119,6 +120,8 @@ public class TestReplicationWithTableMigration {
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
     hiveConfigs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
+    fullyQualifiedReplicaExternalBase = miniDFSCluster.getFileSystem().getFileStatus(
+            new Path("/")).getPath().toString();
   }
 
   private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
@@ -557,6 +560,7 @@ public class TestReplicationWithTableMigration {
     withConfigs.add("'hive.repl.bootstrap.acid.tables'='true'");
     withConfigs.add("'hive.repl.dump.include.acid.tables'='true'");
     withConfigs.add("'hive.repl.include.external.tables'='true'");
+    withConfigs.add("'hive.repl.replica.external.table.base.dir' = '" + fullyQualifiedReplicaExternalBase + "'");
     withConfigs.add("'hive.distcp.privileged.doAs' = '" + UserGroupInformation.getCurrentUser().getUserName() + "'");
     tuple = primary.dump(primaryDbName, withConfigs);
     replica.load(replicatedDbName, primaryDbName, withConfigs);

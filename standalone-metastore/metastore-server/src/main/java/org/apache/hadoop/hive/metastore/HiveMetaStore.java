@@ -562,9 +562,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
           MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(conf));
-      listeners.add(new AcidEventListener(conf));
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
           conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+      transactionalListeners.add(new AcidEventListener(conf));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
       }
@@ -6262,8 +6262,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)
             throws MetaException, NoSuchObjectException, TException {
       String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
-      List<Partition> partitions = get_partitions_ps_with_auth(dbName, req.getTblName(),
-              req.getPartVals(), req.getMaxParts(), req.getUserName(), req.getGroupNames());
+      List<Partition> partitions = null;
+      if (req.getPartVals() == null) {
+        partitions = get_partitions_with_auth(dbName, req.getTblName(), req.getMaxParts(), req.getUserName(),
+            req.getGroupNames());
+      } else {
+        partitions =
+            get_partitions_ps_with_auth(dbName, req.getTblName(), req.getPartVals(), req.getMaxParts(),
+                req.getUserName(), req.getGroupNames());
+      }
       GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
       res.setPartitions(partitions);
       return res;
@@ -8168,6 +8175,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return getTxnHandler().getOpenTxns();
     }
 
+    @Override
+    public GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest) throws TException {
+      return getTxnHandler().getOpenTxns(getOpenTxnsRequest.getExcludeTxnTypes());
+    }
+
     // Transaction and locking methods
     @Override
     public GetOpenTxnsInfoResponse get_open_txns_info() throws TException {
@@ -8320,6 +8332,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                         rqst.getTableName(), this));
       }
       return response;
+    }
+
+    @Override
+    public MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(MaxAllocatedTableWriteIdRequest rqst)
+        throws MetaException {
+      return getTxnHandler().getMaxAllocatedTableWrited(rqst);
+    }
+
+    @Override
+    public void seed_write_id(SeedTableWriteIdsRequest rqst) throws MetaException {
+      getTxnHandler().seedWriteId(rqst);
+    }
+
+    @Override
+    public void seed_txn_id(SeedTxnIdRequest rqst) throws MetaException {
+      getTxnHandler().seedTxnId(rqst);
     }
 
     private void addTxnWriteNotificationLog(Table tableObj, Partition ptnObj, WriteNotificationLogRequest rqst)
@@ -8828,7 +8856,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = getMS();
       if (!ms.isFileMetadataSupported()) {
         result.setIsSupported(false);
-        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
         return result;
       }
       result.setIsSupported(true);
@@ -8857,13 +8885,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         result.putToMetadata(fileIds.get(i), mpr);
       }
       if (!result.isSetMetadata()) {
-        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
       }
       return result;
     }
-
-    private final static Map<Long, ByteBuffer> EMPTY_MAP_FM1 = new HashMap<>(1);
-    private final static Map<Long, MetadataPpdResult> EMPTY_MAP_FM2 = new HashMap<>(1);
 
     @Override
     public GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req) throws TException {
@@ -8871,7 +8896,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = getMS();
       if (!ms.isFileMetadataSupported()) {
         result.setIsSupported(false);
-        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
         return result;
       }
       result.setIsSupported(true);
@@ -8887,7 +8912,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         result.putToMetadata(fileIds.get(i), bb);
       }
       if (!result.isSetMetadata()) {
-        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
+        result.setMetadata(Collections.emptyMap()); // Set the required field.
       }
       return result;
     }

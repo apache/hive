@@ -83,6 +83,7 @@ PREHOOK: Output: default@emp1_part_bucket
 POSTHOOK: query: insert overwrite table emp1_part_bucket partition (dept, country) select * from emp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp1
+POSTHOOK: Output: default@emp1_part_bucket
 POSTHOOK: Output: default@emp1_part_bucket@dept=2000/country=UK
 POSTHOOK: Output: default@emp1_part_bucket@dept=2000/country=USA
 POSTHOOK: Output: default@emp1_part_bucket@dept=3000/country=UK

@@ -186,6 +186,8 @@ public class BeeLine implements Closeable {
       "tsv", new DeprecatedSeparatedValuesOutputFormat(this, '\t'),
       "xmlattr", new XMLAttributeOutputFormat(this),
       "xmlelements", new XMLElementOutputFormat(this),
+      "json", new JSONOutputFormat(this),
+      "jsonfile", new JSONFileOutputFormat(this),
   });
 
   private List<String> supportedLocalDriver =

@@ -52,6 +52,7 @@ import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -1376,15 +1377,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     return listPartitionsSpecByExpr(getDefaultCatalog(conf), dbName, tblName, expr, defaultPartName,
-        maxParts, result);
+        maxParts, result, validWriteIdList);
   }
 
   @Override
   public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
       throws TException {
     assert result != null;
     PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName, ByteBuffer.wrap(expr));
@@ -1394,6 +1395,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     if (maxParts >= 0) {
       req.setMaxParts(maxParts);
     }
+    req.setValidWriteIdList(validWriteIdList);
     PartitionsSpecByExprResult r;
     try {
       r = client.get_partitions_spec_by_expr(req);
@@ -1482,6 +1484,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       String defaultPartName, byte[] exprBytes, String order,
       short maxParts) throws MetaException, TException, NoSuchObjectException {
 
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException {
     throw new UnsupportedOperationException();
   }
 
@@ -2305,17 +2313,31 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public GetOpenTxnsResponse getOpenTxns() throws TException {
-    return client.get_open_txns();
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return client.get_open_txns_req(getOpenTxnsRequest);
   }
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), 0);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), currentTxn);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), currentTxn);
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(excludeTxnTypes);
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest),
+      currentTxn);
   }
 
   @Override
@@ -3806,5 +3828,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
     client.scheduled_query_maintenance(request);
+  }
+
+  @Override
+  public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedTxnId(long seedTxnId) throws TException {
+    throw new NotImplementedException("");
   }
 }

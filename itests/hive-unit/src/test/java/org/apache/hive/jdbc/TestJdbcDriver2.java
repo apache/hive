@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -188,8 +189,11 @@ public class TestJdbcDriver2 {
 
   @SuppressWarnings("deprecation")
   @BeforeClass
-  public static void setUpBeforeClass() throws SQLException, ClassNotFoundException {
+  public static void setUpBeforeClass() throws Exception {
     conf = new HiveConf(TestJdbcDriver2.class);
+    HiveConf initConf = new HiveConf(conf);
+    TxnDbUtil.setConfValues(initConf);
+    TxnDbUtil.prepDb(initConf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -286,6 +290,21 @@ public class TestJdbcDriver2 {
     Connection con = getConnection(testDbName + ";fetchSize=1234");
     Statement stmt = con.createStatement();
     assertEquals(stmt.getFetchSize(), 1234);
+    stmt.close();
+    con.close();
+  }
+
+  @Test
+  /**
+   * Test setting create external purge table by default in jdbc config
+   * @throws SQLException
+   */
+  public void testCreateTableAsExternal() throws SQLException {
+    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true");
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
+    assertTrue("ResultSet is empty", res.next());
+    assertEquals("hive.create.as.external.legacy=true", res.getObject(1));
     stmt.close();
     con.close();
   }

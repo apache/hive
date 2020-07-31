@@ -73,6 +73,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@transactional_table_test
 POSTHOOK: Output: default@transactional_table_test@ds=2008-04-08
 POSTHOOK: Output: default@transactional_table_test@ds=2008-04-09
 POSTHOOK: Lineage: transactional_table_test PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -102,6 +103,7 @@ PREHOOK: Output: default@target
 POSTHOOK: query: insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
@@ -186,6 +188,7 @@ POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=2

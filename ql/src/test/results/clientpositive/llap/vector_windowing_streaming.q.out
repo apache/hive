@@ -249,12 +249,12 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: p_mfgr (type: string)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkOperator
-                          native: false
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          nativeConditionsNotMet: No PTF TopN IS false
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 2:string, 1:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 2:string
                       Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -263,7 +263,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
@@ -473,12 +473,12 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: t (type: tinyint)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkOperator
-                            native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            nativeConditionsNotMet: No PTF TopN IS false
+                            className: VectorReduceSinkObjectHashOperator
+                            keyColumns: 0:tinyint, 4:float
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            partitionColumns: 0:tinyint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -487,7 +487,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
@@ -718,7 +718,6 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: ctinyint (type: tinyint)
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.8
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -869,12 +868,12 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: ctinyint (type: tinyint)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkOperator
-                          native: false
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          nativeConditionsNotMet: No PTF TopN IS false
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 0:tinyint, 5:double
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 0:tinyint
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.8
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -883,7 +882,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
