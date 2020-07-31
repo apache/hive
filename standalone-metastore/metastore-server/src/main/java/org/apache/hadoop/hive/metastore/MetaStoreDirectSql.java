@@ -997,8 +997,7 @@ class MetaStoreDirectSql {
       partitions.put(partitionId, part);
 
 
-      if (sdId == null)
-       {
+      if (sdId == null) {
         continue; // Probably a view.
       }
       assert serdeId != null;
