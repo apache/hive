@@ -6993,11 +6993,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // request them separately.
           for (Partition part: ret) {
             String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
-            List<ColumnStatistics> partColStatsList =
-                    getMS().getPartitionColumnStatistics(parsedCatName, parsedDbName, tblName,
-                            Collections.singletonList(partName),
-                            StatsSetupConst.getColumnsHavingStats(part.getParameters()),
-                            engine);
+            List<ColumnStatistics> partColStatsList = null;
+            List<String> colNames = StatsSetupConst.getColumnsHavingStats(part.getParameters());
+            if (colNames == null || colNames.isEmpty()) {
+              LOG.debug("No column of the partition {} is having statistics", partName);
+            } else {
+              partColStatsList = getMS().getPartitionColumnStatistics(parsedCatName, parsedDbName, tblName,
+                      Collections.singletonList(partName),
+                      colNames,
+                      engine);
+            }
             if (partColStatsList != null && !partColStatsList.isEmpty()) {
               ColumnStatistics partColStats = partColStatsList.get(0);
               if (partColStats != null) {
