@@ -9226,6 +9226,10 @@ public class ObjectStore implements RawStore, Configurable {
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     // Note: this will get stats without verifying ACID.
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.info("PartNames and/or ColNames are empty");
+      return null;
+    }
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
   }
@@ -9236,7 +9240,8 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
       throws MetaException, NoSuchObjectException {
-    if (partNames == null || partNames.isEmpty()) {
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.info("PartNames and/or ColNames are empty");
       return null;
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
