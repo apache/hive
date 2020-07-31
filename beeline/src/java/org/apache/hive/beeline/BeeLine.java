@@ -2306,7 +2306,7 @@ public class BeeLine implements Closeable {
         driverClasses.add(driver);
     }
     info("scan complete in "
-        + (TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS) + "ms");
+        + (TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS) + "ms"));
     return driverClasses.toArray(new Driver[0]);
   }
 
