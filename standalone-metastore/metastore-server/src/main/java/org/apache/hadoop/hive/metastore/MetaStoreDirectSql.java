@@ -2981,11 +2981,11 @@ class MetaStoreDirectSql {
   public void deleteColumnStatsState(long tbl_id) throws MetaException {
     // @formatter:off
     String queryText = ""
-        + "delete from " + PARTITION_PARAMS + " pp"
+        + "delete from " + PARTITION_PARAMS + " "
             + " where "
-            + "   pp.\"PART_ID\" in (select p.\"PART_ID\"  from "+PARTITIONS+" p where"
+            + "   \"PART_ID\" in (select p.\"PART_ID\"  from "+PARTITIONS+" p where"
             + "   p.\"TBL_ID\" =  "+tbl_id +")"
-            + "  and pp.\"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE+"'";
+            + "  and \"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE+"'";
     // @formatter:on
 
     try {
