@@ -73,6 +73,7 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -1797,7 +1798,7 @@ public class BeeLine implements Closeable {
 
     if (seenWarnings.get(warn) == null) {
       // don't re-display warnings we have already seen
-      seenWarnings.put(warn, System.currentTimeMillis());
+      seenWarnings.put(warn, System.nanoTime());
       handleSQLException(warn);
     }
 
@@ -2295,7 +2296,7 @@ public class BeeLine implements Closeable {
   }
 
   Driver[] scanDrivers(boolean knownOnly) throws IOException {
-    long start = System.currentTimeMillis();
+    long start = System.nanoTime();
 
     ServiceLoader<Driver> sqlDrivers = ServiceLoader.load(Driver.class);
 
@@ -2305,7 +2306,7 @@ public class BeeLine implements Closeable {
         driverClasses.add(driver);
     }
     info("scan complete in "
-        + (System.currentTimeMillis() - start) + "ms");
+        + (TimeUnit.SECONDS.convert(System.nanoTime() - start, null)) + "ms");
     return driverClasses.toArray(new Driver[0]);
   }
 

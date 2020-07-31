@@ -112,7 +112,7 @@ public class HDFSCleanup extends Thread {
         }
 
         long sleepMillis = (long) (Math.random() * interval);
-        LOG.info("Next execution: " + (System.currentTimeMillis() + sleepMillis));
+        LOG.info("Next execution in {}ms", sleepMillis);
         Thread.sleep(sleepMillis);
 
       } catch (Exception e) {
