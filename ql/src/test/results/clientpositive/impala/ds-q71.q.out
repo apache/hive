@@ -115,7 +115,7 @@ ImpalaProjectPassthroughRel(brand_id=[$0], brand=[$1], t_hour=[$2], t_minute=[$3
             ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand_id=[$7], i_brand=[$8])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(=($20, 1), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(IN($9, _UTF-16LE'breakfast', _UTF-16LE'dinner'), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(IN($9, _UTF-16LE'breakfast':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dinner':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
 PREHOOK: query: explain select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
       sum(ext_price) ext_price

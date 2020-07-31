@@ -79,9 +79,9 @@ ImpalaSortRel(sort0=[$2], sort1=[$3], sort2=[$0], sort3=[$1], sort4=[$6], dir0=[
           ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(d_date_sk=[$0])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'1998-01-06'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'1998-01-06'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'1998-01-06':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'1998-01-06':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($12, _UTF-16LE'Electronics', _UTF-16LE'Books', _UTF-16LE'Women'), IS NOT NULL($0))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($12, _UTF-16LE'Electronics':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Women':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  i_item_id
       ,i_item_desc 

@@ -116,7 +116,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$2], sort2=[$1], sort3=[$3], dir0=[DESC], dir1=
           ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], ps_supplycost=[$3])
             ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($3))])
           ImpalaProjectPassthroughRel(p_partkey=[$0], p_mfgr=[$2])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(=($5, 15), LIKE($4, _UTF-16LE'%BRASS'), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(=($5, 15), LIKE($4, _UTF-16LE'%BRASS':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
         ImpalaAggregateRel(group=[{0}], agg#0=[min($2)], condition=[IS NOT NULL($1)])
           ImpalaJoinRel(condition=[=($4, $5)], joinType=[inner])
             ImpalaJoinRel(condition=[=($3, $1)], joinType=[inner])

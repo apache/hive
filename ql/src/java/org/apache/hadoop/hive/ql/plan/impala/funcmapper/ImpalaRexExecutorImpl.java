@@ -17,31 +17,18 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexExecutorImpl;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitor;
-import org.apache.calcite.rex.RexVisitorImpl;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimestampString;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlanner;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
@@ -130,9 +117,8 @@ public class ImpalaRexExecutorImpl extends RexExecutorImpl {
       try {
         // CDPD-14514: Investigate handling of unicode strings.
         String newString = new String(bytes, "US-ASCII");
-        Interpretation interpretation = getInterpretation(returnType);
         NlsString newHiveNlsString =
-            RexNodeExprFactory.makeHiveUnicodeString(interpretation, newString);
+            RexNodeExprFactory.makeHiveUnicodeString(newString);
         return builder.makeLiteral(newHiveNlsString, returnType, true);
       } catch (UnsupportedEncodingException e) {
         LOG.debug("Could not interpret return value for " + colVal);
@@ -142,13 +128,4 @@ public class ImpalaRexExecutorImpl extends RexExecutorImpl {
     return builder.makeNullLiteral(returnType);
   }
 
-  private Interpretation getInterpretation(RelDataType returnType) {
-    if (returnType.getSqlTypeName() == SqlTypeName.CHAR) {
-      return Interpretation.CHAR;
-    }
-    Preconditions.checkState(returnType.getSqlTypeName() == SqlTypeName.VARCHAR);
-    return returnType.getPrecision() == Integer.MAX_VALUE
-        ? Interpretation.STRING
-        : Interpretation.VARCHAR;
-  }
 }

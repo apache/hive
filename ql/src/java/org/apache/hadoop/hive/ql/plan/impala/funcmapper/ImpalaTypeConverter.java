@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
@@ -28,15 +27,11 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.apache.impala.catalog.PrimitiveType;
 import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TPrimitiveType;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -272,20 +267,16 @@ public class ImpalaTypeConverter {
    * to dig a bit deeper into its interpretation type.
    */
   private static RelDataType getInterpretationType(RexLiteral rexLiteral) {
-    RexNodeExprFactory.HiveNlsString nlsString =
-        (RexNodeExprFactory.HiveNlsString) rexLiteral.getValue();
-    if (nlsString == null) {
-      return rexLiteral.getType();
-    }
-    switch (nlsString.interpretation) {
+    switch (rexLiteral.getType().getSqlTypeName()) {
       case CHAR:
         return impalaToCalciteMap.get(Type.CHAR);
       case VARCHAR:
+        if (rexLiteral.getType().getPrecision() == Integer.MAX_VALUE) {
+          return impalaToCalciteMap.get(Type.STRING);
+        }
         return impalaToCalciteMap.get(Type.VARCHAR);
-      case STRING:
-        return impalaToCalciteMap.get(Type.STRING);
     }
-    throw new RuntimeException("Unknown Interpretation");
+    throw new RuntimeException("Not a char/varchar/string type: " + rexLiteral.getType());
   }
 
   private static Type getType(SqlTypeName calciteTypeName) {

@@ -85,7 +85,7 @@ ImpalaProjectPassthroughRel(order count=[$0], total shipping cost=[$1], total ne
                 ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_state=[CAST(_UTF-16LE'IL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(=($8, _UTF-16LE'IL'), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(cc_call_center_sk=[$0], cc_county=[$25])
-                ImpalaHdfsScanRel(table=[[default, impala_tpcds_call_center]], condition=[AND(IN($25, _UTF-16LE'Richland County', _UTF-16LE'Bronx County', _UTF-16LE'Maverick County', _UTF-16LE'Mesa County', _UTF-16LE'Raleigh County'), IS NOT NULL($0))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_call_center]], condition=[AND(IN($25, _UTF-16LE'Richland County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Bronx County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Maverick County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Mesa County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Raleigh County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(cs_warehouse_sk=[$14], cs_order_number=[$17])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($17), IS NOT NULL($14))])
           ImpalaProjectPassthroughRel(literalTrue=[true], cr_order_number0=[$0])

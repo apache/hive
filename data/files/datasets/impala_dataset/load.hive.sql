@@ -1,4 +1,10 @@
-drop tablE IF EXISTS impala_tpch_customer;
+DROP TABLE IF EXISTS simple_char_tbl;
+CREATE TABLE simple_char_tbl(
+  c1 CHAR(10)
+) STORED AS PARQUET
+TBLPROPERTIES ("transactional"="false");
+
+DROP TABLE IF EXISTS impala_tpch_customer;
 CREATE TABLE impala_tpch_customer (
   c_custkey BIGINT,
   c_name STRING,

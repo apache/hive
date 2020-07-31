@@ -78,9 +78,9 @@ ImpalaSortRel(sort0=[$5], sort1=[$0], dir0=[DESC], dir1=[ASC])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($6, 2000, +(2000, 1), +(2000, 2)), BETWEEN(false, $9, 1, 2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(s_store_sk=[$0])
-                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($23, _UTF-16LE'Lea County', _UTF-16LE'Furnas County', _UTF-16LE'Pennington County', _UTF-16LE'Bronx County'), IS NOT NULL($0))])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($23, _UTF-16LE'Lea County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Furnas County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Pennington County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Bronx County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(>($4, 0), IN($2, _UTF-16LE'>10000', _UTF-16LE'5001-10000'), CASE(>($4, 0), >(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 1), false), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(>($4, 0), IN($2, _UTF-16LE'>10000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'5001-10000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), CASE(>($4, 0), >(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 1), false), IS NOT NULL($0))])
 
 PREHOOK: query: explain select c_last_name
        ,c_first_name

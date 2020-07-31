@@ -119,12 +119,12 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
             ImpalaProjectPassthroughRel(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9], sr_return_quantity=[$10], CAST=[CAST($10):BIGINT])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($15, _UTF-16LE'2000Q1', _UTF-16LE'2000Q2', _UTF-16LE'2000Q3'), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($15, _UTF-16LE'2000Q1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
             ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_quantity=[$18], CAST=[CAST($18):BIGINT])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($3), IS NOT NULL($15), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($15, _UTF-16LE'2000Q1', _UTF-16LE'2000Q2', _UTF-16LE'2000Q3'), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($15, _UTF-16LE'2000Q1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  i_item_id
        ,i_item_desc

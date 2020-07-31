@@ -99,7 +99,7 @@ ImpalaSortRel(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[
             ImpalaProjectPassthroughRel(cd_demo_sk=[$0])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
           ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_county=[$7], ca_state=[$8], ca_country=[$10])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN($8, _UTF-16LE'AR', _UTF-16LE'TX', _UTF-16LE'NC', _UTF-16LE'GA', _UTF-16LE'MS', _UTF-16LE'WV', _UTF-16LE'AL'), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IN($8, _UTF-16LE'AR':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'TX':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'NC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'GA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MS':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'WV':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'AL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  i_item_id,
         ca_country,

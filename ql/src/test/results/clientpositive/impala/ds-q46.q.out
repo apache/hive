@@ -98,7 +98,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], dir0=[
                   ImpalaProjectPassthroughRel(d_date_sk=[$0])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($7, 6, 0), IN($6, 2000, +(2000, 1), +(2000, 2)), IS NOT NULL($0))])
                 ImpalaProjectPassthroughRel(s_store_sk=[$0])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($22, _UTF-16LE'Five Forks', _UTF-16LE'Oakland', _UTF-16LE'Fairview', _UTF-16LE'Winchester', _UTF-16LE'Farmington'), IS NOT NULL($0))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($22, _UTF-16LE'Five Forks':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Oakland':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Fairview':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Winchester':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Farmington':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(hd_demo_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(OR(=($3, 0), =($4, 1)), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_city=[$6])

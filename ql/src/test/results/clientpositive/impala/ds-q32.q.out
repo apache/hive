@@ -76,7 +76,7 @@ ImpalaSortRel(fetch=[100])
             ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_discount_amt=[$22])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(_UTF-16LE'2002-03-29'):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2002-03-29'):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(_UTF-16LE'2002-03-29':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2002-03-29':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  sum(cs_ext_discount_amt)  as `excess discount amount` 
 from 

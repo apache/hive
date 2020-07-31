@@ -68,7 +68,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(s_store_sk=[$0], s_state=[$24])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($24, _UTF-16LE'AL', _UTF-16LE'IN', _UTF-16LE'SC', _UTF-16LE'NY', _UTF-16LE'OH', _UTF-16LE'FL'), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IN($24, _UTF-16LE'AL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'IN':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'SC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'NY':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'OH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'FL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IS NOT NULL($0)])
 
