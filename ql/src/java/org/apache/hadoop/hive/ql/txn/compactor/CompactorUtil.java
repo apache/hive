@@ -17,6 +17,38 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
+
+  public interface ThrowingRunnable<E extends Exception> {
+    void run() throws E;
+
+    static Runnable unchecked(ThrowingRunnable<?> r) {
+      return () -> {
+        try {
+          r.run();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      };
+    }
+  }
+
+  public static ThreadFactory createThreadFactory(String threadNameFormat) {
+    return new ThreadFactoryBuilder()
+      .setPriority(Thread.currentThread().getPriority())
+      .setDaemon(Thread.currentThread().isDaemon())
+      .setNameFormat(threadNameFormat)
+      .build();
+  }
+
+  public static ExecutorService createExecutorWithThreadFactory(int threadCount, String threadNameFormat) {
+    return Executors.newFixedThreadPool(threadCount, createThreadFactory(threadNameFormat));
+  }
 }
