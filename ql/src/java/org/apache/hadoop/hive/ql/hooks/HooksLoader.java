@@ -160,6 +160,3 @@ public class HooksLoader {
   }
 
 }
-
-
-
