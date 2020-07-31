@@ -34,6 +34,7 @@ PREHOOK: query: CREATE TABLE over10k_n9(t tinyint,
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over10k_n9
@@ -50,6 +51,7 @@ POSTHOOK: query: CREATE TABLE over10k_n9(t tinyint,
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k_n9

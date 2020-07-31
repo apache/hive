@@ -15,6 +15,7 @@ PREHOOK: query: CREATE TABLE test_serializer(string1 STRING,
                              fixed1 BINARY)
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
+ TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_serializer
@@ -35,6 +36,7 @@ POSTHOOK: query: CREATE TABLE test_serializer(string1 STRING,
                              fixed1 BINARY)
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
+ TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_serializer

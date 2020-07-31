@@ -18,7 +18,8 @@ PREHOOK: query: CREATE TABLE text_llap(
 row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 
- outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@text_llap
@@ -38,7 +39,8 @@ POSTHOOK: query: CREATE TABLE text_llap(
 row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 
- outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_llap
@@ -82,6 +84,7 @@ row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 
 outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@text_llap2
@@ -101,6 +104,7 @@ row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 
 outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_llap2

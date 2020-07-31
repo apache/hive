@@ -14,7 +14,8 @@ create table windowing_distinct(
            `dec` decimal,
            bin binary)
        row format delimited
-       fields terminated by '|';
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 load data local inpath '../../data/files/windowing_distinct.txt' into table windowing_distinct;
 

@@ -37,7 +37,8 @@ CREATE TABLE over10k_n9(t tinyint,
            `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
-STORED AS TEXTFILE;
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 --oddly this has 9999 rows not > 10K
 LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n9;

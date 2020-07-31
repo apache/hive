@@ -12,6 +12,7 @@ PREHOOK: query: create table over10k_n23(
            bin binary)
        row format delimited
        fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over10k_n23
@@ -29,6 +30,7 @@ POSTHOOK: query: create table over10k_n23(
            bin binary)
        row format delimited
        fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k_n23
