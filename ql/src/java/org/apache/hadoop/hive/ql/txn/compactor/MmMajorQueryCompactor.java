@@ -58,7 +58,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     Path resultBaseDir = QueryCompactor.Util.getCompactionResultDir(
-        storageDescriptor, writeIds, driverConf, true, true, false);
+        storageDescriptor, writeIds, driverConf, true, true, false, null);
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor,
         resultBaseDir.toString());
