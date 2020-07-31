@@ -197,6 +197,15 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      new BaseSharedWorkOptimizer().sharedWorkOptimization(
+          pctx, optimizerCache, tableNameToOps, sortedTables, false);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
+      }
+    }
+
     if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
       // Try to reuse cache for broadcast side in mapjoin operators that
       // share same input.
@@ -249,18 +258,6 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Before SharedWorkOptimizer #2:\n" + Operator.toString(pctx.getTopOps().values()));
-    }
-
-    // Execute shared work optimization
-    new BaseSharedWorkOptimizer().sharedWorkOptimization(
-        pctx, optimizerCache, tableNameToOps, sortedTables, false);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("After SharedWorkOptimizer #2:\n" + Operator.toString(pctx.getTopOps().values()));
-    }
-
     // If we are running tests, we are going to verify that the contents of the cache
     // correspond with the contents of the plan, and otherwise we fail.
     // This check always run when we are running in test mode, independently on whether
@@ -287,6 +284,12 @@ public class SharedWorkOptimizer extends Transform {
     return pctx;
   }
 
+  /**
+   * Class wrapping shared work optimizer.
+   * This implementation enables merging of TS with different schemas by taking the union of the
+   * {@link TableScanDesc#getNeededColumns()} and {@link TableScanDesc#getNeededColumnIDs()}
+   * from both {@link TableScanOperator}s.
+   */
   private static class BaseSharedWorkOptimizer {
 
     public boolean sharedWorkOptimization(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
@@ -584,6 +587,10 @@ public class SharedWorkOptimizer extends Transform {
     }
   }
 
+  /**
+   * More strict implementation of shared work optimizer.
+   * This implementation doesn't merge {@link TableScanOperator}s with different schema.
+   */
   private static class SchemaAwareSharedWorkOptimizer extends BaseSharedWorkOptimizer {
     @Override
     protected boolean areMergeable(ParseContext pctx, TableScanOperator tsOp1, TableScanOperator tsOp2)
