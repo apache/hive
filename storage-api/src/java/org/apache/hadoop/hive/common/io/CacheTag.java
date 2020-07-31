@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.common.io;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,7 +80,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     return new TableCacheTag(tableName);
   }
 
-  public static final CacheTag build(String tableName, Map<String, String> partDescMap) {
+  public static final CacheTag build(String tableName, LinkedHashMap<String, String> partDescMap) {
     if (StringUtils.isEmpty(tableName) || partDescMap == null || partDescMap.isEmpty()) {
       throw new IllegalArgumentException();
     }
@@ -179,7 +179,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
      * Returns a map of partition keys and values built from the information of this CacheTag.
      * @return the map
      */
-    public abstract Map<String, String> getPartitionDescMap();
+    public abstract LinkedHashMap<String, String> getPartitionDescMap();
 
   }
 
@@ -204,8 +204,8 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     }
 
     @Override
-    public Map<String, String> getPartitionDescMap() {
-      Map<String, String> result = new HashMap<>();
+    public LinkedHashMap<String, String> getPartitionDescMap() {
+      LinkedHashMap<String, String> result = new LinkedHashMap<>();
       String[] partition = CacheTag.decodePartDesc(partitionDesc);
       result.put(partition[0], partition[1]);
       return result;
@@ -305,8 +305,8 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     }
 
     @Override
-    public Map<String, String> getPartitionDescMap() {
-      Map<String, String> result = new HashMap<>();
+    public LinkedHashMap<String, String> getPartitionDescMap() {
+      LinkedHashMap<String, String> result = new LinkedHashMap<>();
       for (String partDesc : partitionDesc) {
         String[] partition = CacheTag.decodePartDesc(partDesc);
         result.put(partition[0], partition[1]);

@@ -1805,6 +1805,55 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testManagedTableLazyCopy() throws Throwable {
+    List<String> withClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (12)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "12"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (13)")
+            .run("create table t3(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t4(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t3 values (21)")
+            .run("insert into t4 values (31)")
+            .run("insert into t4 values (32)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "12", "13"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3", "t4"})
+            .run("select * from t3")
+            .verifyResults(new String[]{"21"})
+            .run("select * from t4")
+            .verifyResults(new String[]{"31","32"});
+  }
+
+  @Test
   public void testCheckPointingWithSourceTableDeleted() throws Throwable {
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(

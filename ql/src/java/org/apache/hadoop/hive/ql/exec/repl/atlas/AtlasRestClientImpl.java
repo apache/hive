@@ -27,6 +27,8 @@ import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasEntity;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
@@ -48,12 +50,18 @@ import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 /**
  * Implementation of RESTClient, encapsulates Atlas' REST APIs.
  */
-public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClient {
+public class AtlasRestClientImpl extends RetryingClientTimeBased implements AtlasRestClient {
   private static final Logger LOG = LoggerFactory.getLogger(AtlasRestClientImpl.class);
   private final AtlasClientV2 clientV2;
 
-  public AtlasRestClientImpl(AtlasClientV2 clientV2) {
+  public AtlasRestClientImpl(AtlasClientV2 clientV2, HiveConf conf) {
     this.clientV2 = clientV2;
+    this.totalDurationInSeconds = conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS);
+    this.initialDelayInSeconds = conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS);
+    this.maxRetryDelayInSeconds = conf.getTimeVar(HiveConf.ConfVars
+      .REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS);
+    this.backOff = conf.getFloatVar(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT);
+    this.maxJitterInSeconds = (int) conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS);
   }
 
   private <T> T runWithTimeout(Callable<T> callable, long timeout, TimeUnit timeUnit) throws Exception {
@@ -82,6 +90,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     return invokeWithRetry(new Callable<InputStream>() {
       @Override
       public InputStream call() throws Exception {
+        SecurityUtils.reloginExpiringKeytabUser();
         return clientV2.exportData(request);
       }
     }, null);
@@ -100,6 +109,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
       public AtlasImportResult call() throws Exception {
         InputStream is = null;
         try {
+          SecurityUtils.reloginExpiringKeytabUser();
           is = fs.open(exportFilePath);
           return clientV2.importData(request, is);
         } finally {

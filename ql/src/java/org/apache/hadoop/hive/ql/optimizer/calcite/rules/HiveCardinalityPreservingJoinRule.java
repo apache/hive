@@ -23,7 +23,10 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +50,17 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
       return node;
     }
 
+    RelNode chosen = choosePlan(node, optimized);
+    new JoinAlgorithmSetter().visit(chosen);
+    return chosen;
+  }
+
+  private RelNode choosePlan(RelNode node, RelNode optimized) {
     JaninoRelMetadataProvider original = RelMetadataQuery.THREAD_PROVIDERS.get();
     try {
-      RelMetadataQuery.THREAD_PROVIDERS.set(getJaninoRelMetadataProvider());
+      RelMetadataQuery.THREAD_PROVIDERS.set(
+          HiveTezModelRelMetadataProvider.DEFAULT);
+      node.getCluster().invalidateMetadataQuery();
       RelMetadataQuery metadataQuery = RelMetadataQuery.instance();
 
       RelOptCost optimizedCost = metadataQuery.getCumulativeCost(optimized);
@@ -66,11 +77,16 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
       return node;
     }
     finally {
+      node.getCluster().invalidateMetadataQuery();
       RelMetadataQuery.THREAD_PROVIDERS.set(original);
     }
   }
 
-  private JaninoRelMetadataProvider getJaninoRelMetadataProvider() {
-    return new HiveDefaultTezModelRelMetadataProvider().getMetadataProvider();
+  private static class JoinAlgorithmSetter extends HiveRelShuttleImpl {
+    @Override
+    public RelNode visit(HiveJoin join) {
+      join.setJoinAlgorithm(HiveDefaultCostModel.DefaultJoinAlgorithm.INSTANCE);
+      return super.visit(join);
+    }
   }
 }

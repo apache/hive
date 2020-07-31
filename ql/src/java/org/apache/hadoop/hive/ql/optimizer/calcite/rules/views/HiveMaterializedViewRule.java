@@ -217,7 +217,7 @@ public class HiveMaterializedViewRule {
       List<RexNode> identityFields = relBuilder.fields(
           ImmutableBitSet.range(0, rel.getRowType().getFieldCount()).asList());
       RelNode newRel = relBuilder
-          .project(identityFields, ImmutableList.<String>of(), true)
+          .project(identityFields, ImmutableList.of(), true)
           .build();
       call.transformTo(fil.copy(fil.getTraitSet(), ImmutableList.of(newRel)));
     }
@@ -253,7 +253,7 @@ public class HiveMaterializedViewRule {
       relBuilder.push(join);
       List<RexNode> identityFields = relBuilder.fields(
           ImmutableBitSet.range(0, join.getRowType().getFieldCount()).asList());
-      relBuilder.project(identityFields, ImmutableList.<String>of(), true);
+      relBuilder.project(identityFields, ImmutableList.of(), true);
       call.transformTo(relBuilder.build());
     }
 

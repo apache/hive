@@ -282,7 +282,6 @@ STAGE PLANS:
                             null sort order: zz
                             sort order: ++
                             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                            TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 

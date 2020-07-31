@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
@@ -153,6 +154,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
     // the smallest stripe size would be 5120 rows, which changes the output
     // of some of the tests.)
     private int batchSize = 1000;
+    private boolean isCompaction;
 
     WriterOptions(Properties tableProperties, Configuration conf) {
       super(tableProperties, conf);
@@ -161,6 +163,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
         LlapProxy.isDaemon()) {
         memory(getThreadLocalOrcLlapMemoryManager(conf));
       }
+      isCompaction = AcidUtils.isCompactionTable(tableProperties);
     }
 
    /**
@@ -348,6 +351,10 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     int getBatchSize() {
       return batchSize;
+    }
+
+    boolean isCompaction() {
+      return isCompaction;
     }
   }
 

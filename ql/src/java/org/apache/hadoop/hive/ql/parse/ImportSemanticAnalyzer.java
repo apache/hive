@@ -501,8 +501,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
+      boolean copyAtLoad = x.getConf().getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf(),
-              isSkipTrash, needRecycle, copyToMigratedTxnTable, false);
+              isSkipTrash, needRecycle, copyToMigratedTxnTable, copyAtLoad);
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, destPath, false));
     }
@@ -648,8 +649,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
+        boolean copyAtLoad = x.getConf().getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
         copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, new Path(srcLocation), destPath,
-                x.getConf(), isSkipTrash, needRecycle, copyToMigratedTxnTable, false);
+                x.getConf(), isSkipTrash, needRecycle, copyToMigratedTxnTable, copyAtLoad);
       } else {
         copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation), destPath, false));
       }
@@ -1248,10 +1250,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (!replicationSpec.isMetadataOnly()
               && !shouldSkipDataCopyInReplScope(tblDesc, replicationSpec)) {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
-        dependentTasks = new ArrayList<>(1);
-        dependentTasks.add(loadTable(fromURI, table, replicationSpec.isReplace(),
-                                  new Path(tblDesc.getLocation()), replicationSpec,
-                                  x, writeId, stmtId));
+        dependentTasks = Collections.singletonList(loadTable(fromURI, table, replicationSpec.isReplace(),
+            new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId));
       }
 
       // During replication, by the time we replay a commit transaction event, the table should

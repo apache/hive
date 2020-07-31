@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,6 +77,8 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
         withinContext.hiveConf);
     Iterable<String> files = eventMessage.getFiles();
 
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+
     /*
       * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple tables.
       * But, Insert event is generated for each partition to which the data is inserted.
@@ -83,9 +86,20 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
      */
     Partition ptn = (null == qlPtns || qlPtns.isEmpty()) ? null : qlPtns.get(0);
     if (files != null) {
-      // encoded filename/checksum of files, write into _files
-      for (String file : files) {
-        writeFileEntry(qlMdTable, ptn, file, withinContext);
+      if (copyAtLoad) {
+        // encoded filename/checksum of files, write into _files
+        Path dataPath = null;
+        if ((null == qlPtns) || qlPtns.isEmpty()) {
+          dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+        } else {
+          dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                  + qlPtns.get(0).getName());
+        }
+        writeEncodedDumpFiles(withinContext, files, dataPath);
+      } else {
+        for (String file : files) {
+          writeFileEntry(qlMdTable, ptn, file, withinContext);
+        }
       }
     }
 

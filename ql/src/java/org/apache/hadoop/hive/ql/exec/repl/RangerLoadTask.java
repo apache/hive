@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
@@ -82,6 +83,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       LOG.info("Importing Ranger Metadata");
       RangerExportPolicyList rangerExportPolicyList = null;
       List<RangerPolicy> rangerPolicies = null;
+      SecurityUtils.reloginExpiringKeytabUser();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
@@ -93,7 +95,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       conf.addResource(url);
       String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
       String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
-      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
+      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint, conf)) {
         throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
       if (work.getCurrentDumpPath() != null) {
@@ -132,7 +134,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         }
         rangerExportPolicyList.setPolicies(updatedRangerPolicies);
         rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
-                rangerHiveServiceName);
+                rangerHiveServiceName, conf);
         LOG.info("Number of ranger policies imported {}", rangerExportPolicyList.getListSize());
         importCount = rangerExportPolicyList.getListSize();
         work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), importCount);

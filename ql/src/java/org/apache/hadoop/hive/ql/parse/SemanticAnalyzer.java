@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -155,9 +157,9 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -1496,7 +1498,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private void processJoin(QB qb, ASTNode join) throws SemanticException {
     int numChildren = join.getChildCount();
-    if ((numChildren != 2) && (numChildren != 3)
+    if ((numChildren != 2) && (numChildren != 3) && (numChildren != 4)
         && join.getToken().getType() != HiveParser.TOK_UNIQUEJOIN) {
       throw new SemanticException(generateErrorMessage(join,
           "Join with multiple children"));
@@ -8653,9 +8655,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .createConversionCast(column, TypeInfoFactory.intTypeInfo);
     }
-    List<ExprNodeDesc> rlist = new ArrayList<ExprNodeDesc>(1);
-    rlist.add(column);
-    return rlist;
+    return Collections.singletonList(column);
   }
 
   private List<ExprNodeDesc> genConvertCol(String dest, QB qb, TableDesc tableDesc, Operator input,
@@ -9882,6 +9882,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode left = (ASTNode) joinParseTree.getChild(0);
     ASTNode right = (ASTNode) joinParseTree.getChild(1);
+    if (joinParseTree.getChildren().size() >= 4) {
+      addPkFkInfo(joinTree, (ASTNode) joinParseTree.getChild(3));
+    }
+
     boolean isValidLeftToken = isValidJoinSide(left);
     boolean isJoinLeftToken = !isValidLeftToken && isJoinToken(left);
     boolean isValidRightToken = isValidJoinSide(right);
@@ -10013,6 +10017,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return joinTree;
+  }
+
+  private void addPkFkInfo(QBJoinTree joinTree, ASTNode hints) {
+    if (hints.getToken().getType() == HintParser.TOK_HINTLIST) {
+      Tree hint = hints.getChild(0);
+      if (hint.getType() == HintParser.TOK_HINT && hint.getChild(0).getType() == HintParser.TOK_PKFK_JOIN) {
+        Tree args = hint.getChild(1);
+        joinTree.setFkJoinTableIndex(Integer.parseInt(args.getChild(0).getText()));
+        joinTree.setNonFkSideIsFiltered(NON_FK_FILTERED.equals(args.getChild(1).getText()));
+      }
+    }
   }
 
   private boolean isValidJoinSide(ASTNode right) {
@@ -10550,17 +10565,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo qbp = qb.getParseInfo();
 
-    SortedSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
-
-    List<List<String>> commonGroupByDestGroups = new ArrayList<List<String>>();
+    Set<String> ks = new TreeSet<>(qbp.getClauseNames());
+    List<List<String>> commonGroupByDestGroups = new ArrayList<>();
 
     // If this is a trivial query block return
-    if (ks.size() <= 1) {
-      List<String> oneList = new ArrayList<String>(1);
-      if (ks.size() == 1) {
-        oneList.add(ks.first());
-      }
-      commonGroupByDestGroups.add(oneList);
+    if (ks.isEmpty()) {
+      commonGroupByDestGroups.add(Collections.emptyList());
+      return commonGroupByDestGroups;
+    }
+    if (ks.size() == 1) {
+      commonGroupByDestGroups.add(Collections.singletonList(ks.iterator().next()));
       return commonGroupByDestGroups;
     }
 
@@ -10731,8 +10745,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (commonGroupByDestGroups == null) {
-      commonGroupByDestGroups = new ArrayList<List<String>>();
-      commonGroupByDestGroups.add(new ArrayList<String>(ks));
+      commonGroupByDestGroups = Collections.singletonList(new ArrayList<>(ks));
     }
 
     if (!commonGroupByDestGroups.isEmpty()) {
@@ -12546,7 +12559,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           pCtx = t.transform(pCtx);
         }
       }
-      return;
     }
 
     // 5. Take care of view creation
@@ -12566,38 +12578,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       createVwDesc.setTablesUsed(getTablesUsed(pCtx));
     }
 
-    // 6. Generate table access stats if required
-    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
-      TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
-      setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
+    // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
+    // it means that in step 2, the ColumnAccessInfo was already created
+    if (!forViewCreation ||  getColumnAccessInfo() == null) {
+      // 6. Generate table access stats if required
+      if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
+        TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
+        setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
+      }
+      AuxOpTreeSignature.linkAuxSignatures(pCtx);
+      // 7. Perform Logical optimization
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
+      }
+      Optimizer optm = new Optimizer();
+      optm.setPctx(pCtx);
+      optm.initialize(conf);
+      pCtx = optm.optimize();
+      if (pCtx.getColumnAccessInfo() != null) {
+        // set ColumnAccessInfo for view column authorization
+        setColumnAccessInfo(pCtx.getColumnAccessInfo());
+      }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
+      }
+
+      // 8. Generate column access stats if required - wait until column pruning
+      // takes place during optimization
+      boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
+              && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
+      if (isColumnInfoNeedForAuth
+              || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
+        ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
+        // view column access info is carried by this.getColumnAccessInfo().
+        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+      }
     }
 
-    AuxOpTreeSignature.linkAuxSignatures(pCtx);
-    // 7. Perform Logical optimization
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
-    }
-    Optimizer optm = new Optimizer();
-    optm.setPctx(pCtx);
-    optm.initialize(conf);
-    pCtx = optm.optimize();
-    if (pCtx.getColumnAccessInfo() != null) {
-      // set ColumnAccessInfo for view column authorization
-      setColumnAccessInfo(pCtx.getColumnAccessInfo());
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
-    }
-
-    // 8. Generate column access stats if required - wait until column pruning
-    // takes place during optimization
-    boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
-        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
-    if (isColumnInfoNeedForAuth
-        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
-      ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
-      // view column access info is carried by this.getColumnAccessInfo().
-      setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    if (forViewCreation) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
@@ -13092,7 +13111,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<String, String> validateAndAddDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
       String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable, boolean isTransactional) throws SemanticException {
+      boolean isTemporaryTable, boolean isTransactional, boolean isManaged) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
     String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
@@ -13123,6 +13142,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
         conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
     boolean makeAcid = !isTemporaryTable && makeAcid();
+    // if not specify managed table and create.table.as.external is true
+    // ignore makeInsertOnly and makeAcid.
+    if (!isManaged && HiveConf.getBoolVar(conf, ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
+      makeInsertOnly = false;
+      makeAcid = false;
+    }
     if ((makeInsertOnly || makeAcid || isTransactional)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
@@ -13232,6 +13257,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean ifNotExists = false;
     boolean isExt = false;
     boolean isTemporary = false;
+    boolean isManaged = false;
     boolean isMaterialization = false;
     boolean isTransactional = false;
     ASTNode selectStmt = null;
@@ -13270,6 +13296,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_EXTERNAL:
         isExt = true;
+        break;
+      case HiveParser.KW_MANAGED:
+        isManaged = true;
         break;
       case HiveParser.KW_TEMPORARY:
         isTemporary = true;
@@ -13448,7 +13477,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Partition columns can only declared using their name and types in regular CREATE TABLE statements");
       }
       tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
+          isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13476,7 +13506,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional);
+          isTemporary, isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, false, tblProps);
 
@@ -13499,7 +13529,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
 
       tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
+          isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13584,7 +13615,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
+          isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,

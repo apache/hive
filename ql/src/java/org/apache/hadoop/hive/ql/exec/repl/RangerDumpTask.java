@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
@@ -80,6 +81,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       long exportCount = 0;
       Path filePath = null;
       LOG.info("Exporting Ranger Metadata");
+      SecurityUtils.reloginExpiringKeytabUser();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.POLICIES.name(), 0L);
       work.getMetricCollector().reportStageStart(getName(), metricMap);
@@ -96,11 +98,11 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       conf.addResource(url);
       String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
       String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
-      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
+      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint, conf)) {
         throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
       RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,
-              work.getDbName(), rangerHiveServiceName);
+              work.getDbName(), rangerHiveServiceName, conf);
       List<RangerPolicy> rangerPolicies = rangerExportPolicyList.getPolicies();
       if (rangerPolicies.isEmpty()) {
         LOG.info("Ranger policy export request returned empty list or failed, Please refer Ranger admin logs.");

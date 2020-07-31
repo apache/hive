@@ -400,7 +400,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return getOpenTxnsList(false).toOpenTxnsResponse();
+    return getOpenTxnsList(false).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
   }
 
   @Override
@@ -668,9 +668,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>(numTxns);
-        List<String> params = new ArrayList<>(1);
+        List<String> params = Collections.singletonList(rqst.getReplPolicy());
         List<List<String>> paramsList = new ArrayList<>(numTxns);
-        params.add(rqst.getReplPolicy());
         for (int i = 0; i < numTxns; i++) {
           rowsRepl.add("?," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
           paramsList.add(params);

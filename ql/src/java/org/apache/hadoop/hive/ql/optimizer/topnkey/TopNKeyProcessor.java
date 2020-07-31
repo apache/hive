@@ -98,6 +98,7 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
 
 
     copyDown(reduceSinkOperator, topNKeyDesc);
+    reduceSinkDesc.setTopN(-1);
     return null;
   }
 

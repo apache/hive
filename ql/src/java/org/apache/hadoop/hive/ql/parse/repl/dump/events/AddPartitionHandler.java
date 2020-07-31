@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -95,6 +96,7 @@ class AddPartitionHandler extends AbstractEventHandler {
         withinContext.replicationSpec,
         withinContext.hiveConf);
 
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
     Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
 
     // We expect one to one mapping between partitions and file iterators. For external table, this
@@ -103,9 +105,15 @@ class AddPartitionHandler extends AbstractEventHandler {
       for (Partition qlPtn : qlPtns) {
         Iterable<String> files = partitionFilesIter.next().getFiles();
         if (files != null) {
-          // encoded filename/checksum of files, write into _files
-          for (String file : files) {
-            writeFileEntry(qlMdTable, qlPtn, file, withinContext);
+          if (copyAtLoad) {
+            // encoded filename/checksum of files, write into _files
+            Path ptnDataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                    + qlPtn.getName());
+            writeEncodedDumpFiles(withinContext, files, ptnDataPath);
+          } else {
+            for (String file : files) {
+              writeFileEntry(qlMdTable, qlPtn, file, withinContext);
+            }
           }
         }
       }
