@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Properties;
@@ -1144,12 +1145,18 @@ public class TestVectorizedOrcAcidRowBatchReader {
   private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
     String tableDir = "";//hdfs://localhost:59316/base/warehouse/acid_test/";
     AcidOutputFormat.Options ao = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(tableDir + splitPath), conf);
-    if (expected) {
-      assertTrue(VectorizedOrcAcidRowBatchReader.ColumnizedDeleteEventRegistry.isQualifiedDeleteDeltaForSplit(ao,
-          new Path(tableDir + deleteDeltaPath)));
-    } else {
-      assertFalse(VectorizedOrcAcidRowBatchReader.ColumnizedDeleteEventRegistry.isQualifiedDeleteDeltaForSplit(ao,
-          new Path(tableDir + deleteDeltaPath)));
+    AcidUtils.ParsedDelta parsedDelta = AcidUtils.parsedDelta(new Path(tableDir + deleteDeltaPath), false);
+    AcidInputFormat.DeltaMetaData deltaMetaData =
+        new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(), new ArrayList<>(),
+            parsedDelta.getVisibilityTxnId(), new ArrayList<>());
+    Integer stmtId = null;
+    if (parsedDelta.getStatementId() > -1) {
+      deltaMetaData.getStmtIds().add(parsedDelta.getStatementId());
+      stmtId = parsedDelta.getStatementId();
     }
+    boolean result = VectorizedOrcAcidRowBatchReader.ColumnizedDeleteEventRegistry.isQualifiedDeleteDeltaForSplit(ao,
+        deltaMetaData, stmtId);
+    assertTrue(expected == result);
+
   }
 }

@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -108,7 +111,7 @@ import java.util.stream.Collectors;
  *   to provide access to the RowId.  Other implementations of AcidInputFormat can use either
  *   mechanism.
  * </p>
- * 
+ *
  * @param <VALUE> The row type
  */
 public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
@@ -128,15 +131,16 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     public DeltaMetaData() {
       this(0, 0, new ArrayList<>(), 0, new ArrayList<>());
     }
+
     /**
      * @param minWriteId min writeId of the delta directory
      * @param maxWriteId max writeId of the delta directory
      * @param stmtIds delta dir suffixes when a single txn writes > 1 delta in the same partition
      * @param visibilityTxnId maybe 0, if the dir name didn't have it.  txnid:0 is always visible
-     * @param deltaFileStatuses bucketFiles in the directory
+     * @param deltaFiles bucketFiles in the directory
      */
-    DeltaMetaData(long minWriteId, long maxWriteId, List<Integer> stmtIds, long visibilityTxnId,
-        List<HadoopShims.HdfsFileStatusWithId> deltaFileStatuses) {
+    public DeltaMetaData(long minWriteId, long maxWriteId, List<Integer> stmtIds, long visibilityTxnId,
+        List<DeltaFileMetaData> deltaFiles) {
       this.minWriteId = minWriteId;
       this.maxWriteId = maxWriteId;
       if (stmtIds == null) {
@@ -144,30 +148,35 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       }
       this.stmtIds = stmtIds;
       this.visibilityTxnId = visibilityTxnId;
-      this.deltaFiles = new ArrayList<>();
-      for(HadoopShims.HdfsFileStatusWithId fileStatus : deltaFileStatuses) {
-        deltaFiles.add(new DeltaFileMetaData(fileStatus));
-      }
+      this.deltaFiles = ObjectUtils.defaultIfNull(deltaFiles, new ArrayList<>());
     }
 
-    long getMinWriteId() {
+    public long getMinWriteId() {
       return minWriteId;
     }
 
-    long getMaxWriteId() {
+    public long getMaxWriteId() {
       return maxWriteId;
     }
 
-    List<Integer> getStmtIds() {
+    public List<Integer> getStmtIds() {
       return stmtIds;
     }
 
-    long getVisibilityTxnId() {
+    public long getVisibilityTxnId() {
       return visibilityTxnId;
     }
 
     public List<DeltaFileMetaData> getDeltaFiles() {
       return deltaFiles;
+    }
+
+    public List<DeltaFileMetaData> getDeltaFilesForStmtId(final Integer stmtId) {
+      if (stmtIds.size() == 0 || stmtId == null) {
+        return deltaFiles;
+      } else {
+        return deltaFiles.stream().filter(df -> stmtId.equals(df.getStmtId())).collect(Collectors.toList());
+      }
     }
 
     @Override
@@ -198,39 +207,44 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
 
       deltaFiles.clear();
       int numFiles = in.readInt();
-      for(int i = 0; i< numFiles; i++) {
+      for (int i = 0; i < numFiles; i++) {
         DeltaFileMetaData file = new DeltaFileMetaData();
         file.readFields(in);
         deltaFiles.add(file);
       }
     }
+
     private String getName() {
       assert stmtIds.isEmpty() : "use getName(int)";
-      return AcidUtils.addVisibilitySuffix(AcidUtils
-          .deleteDeltaSubdir(minWriteId, maxWriteId), visibilityTxnId);
+      return AcidUtils.addVisibilitySuffix(AcidUtils.deleteDeltaSubdir(minWriteId, maxWriteId), visibilityTxnId);
     }
+
     private String getName(int stmtId) {
       assert !stmtIds.isEmpty() : "use getName()";
       return AcidUtils.addVisibilitySuffix(AcidUtils
           .deleteDeltaSubdir(minWriteId, maxWriteId, stmtId), visibilityTxnId);
     }
 
-    public List<Path> getPaths(Path root) {
+    public List<Pair<Path, Integer>> getPaths(Path root) {
       if (stmtIds.isEmpty()) {
-        return Collections.singletonList(new Path(root, getName()));
+        return Collections.singletonList(new ImmutablePair<>(new Path(root, getName()), null));
       } else {
         // To support multistatement transactions we may have multiple directories corresponding to one DeltaMetaData
-        return getStmtIds().stream().map(stmtId -> new Path(root, getName(stmtId))).collect(Collectors.toList());
+        return getStmtIds().stream()
+            .map(stmtId -> new ImmutablePair<>(new Path(root, getName(stmtId)), stmtId)).collect(Collectors.toList());
       }
     }
+
     @Override
     public String toString() {
       return "Delta(?," + minWriteId + "," + maxWriteId + "," + stmtIds + "," + visibilityTxnId + ")";
     }
   }
+
   final class DeltaFileMetaData implements Writable {
     private static final int HAS_LONG_FILEID_FLAG = 1;
     private static final int HAS_ATTEMPTID_FLAG = 2;
+    private static final int HAS_STMTID_FLAG = 4;
 
     private long modTime;
     private long length;
@@ -238,30 +252,43 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     private Integer attemptId;
     // Optional
     private Long fileId;
+    // Optional, if the deltaMeta contains multiple stmtIds, it will contain this files parent's stmtId
+    private Integer stmtId;
 
     public DeltaFileMetaData() {
     }
 
-    public DeltaFileMetaData(HadoopShims.HdfsFileStatusWithId fileStatus) {
+    public DeltaFileMetaData(HadoopShims.HdfsFileStatusWithId fileStatus, Integer stmtId) {
       modTime = fileStatus.getFileStatus().getModificationTime();
       length = fileStatus.getFileStatus().getLen();
       String attempt = AcidUtils.parseAttemptId(fileStatus.getFileStatus().getPath());
       attemptId = StringUtils.isEmpty(attempt) ? null : Integer.parseInt(attempt);
       fileId = fileStatus.getFileId();
+      this.stmtId = stmtId;
     }
 
-    public DeltaFileMetaData(long modTime, long length, @Nullable Integer attemptId, @Nullable Long fileId) {
+    public DeltaFileMetaData(long modTime, long length, @Nullable Integer attemptId, @Nullable Long fileId,
+        @Nullable Integer stmtId) {
       this.modTime = modTime;
       this.length = length;
       this.attemptId = attemptId;
       this.fileId = fileId;
+      this.stmtId = stmtId;
     }
 
+    public void clearStmtId() {
+      stmtId = null;
+    }
+
+    public Integer getStmtId() {
+      return stmtId;
+    }
 
     @Override
     public void write(DataOutput out) throws IOException {
       int flags = (fileId != null ? HAS_LONG_FILEID_FLAG : 0) |
-          (attemptId != null ? HAS_ATTEMPTID_FLAG : 0);
+          (attemptId != null ? HAS_ATTEMPTID_FLAG : 0) |
+          (stmtId != null ? HAS_STMTID_FLAG : 0);
       out.writeByte(flags);
       out.writeLong(modTime);
       out.writeLong(length);
@@ -271,13 +298,17 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       if (fileId != null) {
         out.writeLong(fileId);
       }
+      if (stmtId != null) {
+        out.writeInt(stmtId);
+      }
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
       byte flags = in.readByte();
       boolean hasLongFileId = (HAS_LONG_FILEID_FLAG & flags) != 0,
-          hasAttemptId = (HAS_ATTEMPTID_FLAG & flags) != 0;
+          hasAttemptId = (HAS_ATTEMPTID_FLAG & flags) != 0,
+          hasStmtId = (HAS_STMTID_FLAG & flags) != 0;
       modTime = in.readLong();
       length = in.readLong();
       if (hasAttemptId) {
@@ -285,6 +316,9 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       }
       if (hasLongFileId) {
         fileId = in.readLong();
+      }
+      if (hasStmtId) {
+        stmtId = in.readInt();
       }
     }
 
@@ -296,10 +330,12 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       Path realPath = getPath(deltaDirectory, bucketId);
       return new SyntheticFileId(realPath, length, modTime);
     }
+
     public Path getPath(Path deltaDirectory, int bucketId) {
       return AcidUtils.createBucketFile(deltaDirectory, bucketId, attemptId == null ? null : String.valueOf(attemptId));
     }
   }
+
   /**
    * Options for controlling the record readers.
    */

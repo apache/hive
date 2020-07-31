@@ -54,12 +54,12 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaDataReadFieldsNoStatementIds() throws Exception {
     when(mockDataInput.readLong()).thenReturn(1L, 2L);
-    when(mockDataInput.readInt()).thenReturn(0);
+    when(mockDataInput.readInt()).thenReturn(0, 0);
 
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData();
     deltaMetaData.readFields(mockDataInput);
 
-    verify(mockDataInput, times(1)).readInt();
+    verify(mockDataInput, times(2)).readInt();
     assertThat(deltaMetaData.getMinWriteId(), is(1L));
     assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().isEmpty(), is(true));
@@ -68,12 +68,12 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaDataReadFieldsWithStatementIds() throws Exception {
     when(mockDataInput.readLong()).thenReturn(1L, 2L);
-    when(mockDataInput.readInt()).thenReturn(2, 100, 101);
+    when(mockDataInput.readInt()).thenReturn(2, 100, 101, 0);
 
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData();
     deltaMetaData.readFields(mockDataInput);
 
-    verify(mockDataInput, times(3)).readInt();
+    verify(mockDataInput, times(4)).readInt();
     assertThat(deltaMetaData.getMinWriteId(), is(1L));
     assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().size(), is(2));
@@ -97,8 +97,101 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaWithFile() throws Exception {
     FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
+    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), null)));
+
+    assertEquals(2000L, deltaMetaData.getMinWriteId());
+    assertEquals(2001L, deltaMetaData.getMaxWriteId());
+    assertEquals(0, deltaMetaData.getStmtIds().size());
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    deltaMetaData.write(new DataOutputStream(byteArrayOutputStream));
+
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+    DeltaMetaData copy = new DeltaMetaData();
+    copy.readFields(new DataInputStream(new ByteArrayInputStream(bytes)));
+
+    assertEquals(2000L, copy.getMinWriteId());
+    assertEquals(2001L, copy.getMaxWriteId());
+    assertEquals(0, copy.getStmtIds().size());
+    AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+
+    Assert.assertTrue(fileId instanceof SyntheticFileId);
+    assertEquals(100, ((SyntheticFileId)fileId).getModTime());
+    assertEquals(200, ((SyntheticFileId)fileId).getLength());
+
+    String fileName = fileMetaData.getPath(new Path("deleteDelta"), 1).getName();
+    Assert.assertEquals("bucket_00001", fileName);
+  }
+
+  @Test
+  public void testDeltaMetaWithHdfsFileId() throws Exception {
+    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, null, 123L, null)));
+
+    assertEquals(2000L, deltaMetaData.getMinWriteId());
+    assertEquals(2001L, deltaMetaData.getMaxWriteId());
+    assertEquals(0, deltaMetaData.getStmtIds().size());
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    deltaMetaData.write(new DataOutputStream(byteArrayOutputStream));
+
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+    DeltaMetaData copy = new DeltaMetaData();
+    copy.readFields(new DataInputStream(new ByteArrayInputStream(bytes)));
+
+    assertEquals(2000L, copy.getMinWriteId());
+    assertEquals(2001L, copy.getMaxWriteId());
+    assertEquals(0, copy.getStmtIds().size());
+    AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
+
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+    Assert.assertTrue(fileId instanceof Long);
+    long fId = (Long)fileId;
+    assertEquals(123L, fId);
+
+    String fileName = fileMetaData.getPath(new Path("deleteDelta"), 1).getName();
+    Assert.assertEquals("bucket_00001", fileName);
+  }
+  @Test
+  public void testDeltaMetaWithAttemptId() throws Exception {
+    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, 123, null, null)));
+
+    assertEquals(2000L, deltaMetaData.getMinWriteId());
+    assertEquals(2001L, deltaMetaData.getMaxWriteId());
+    assertEquals(0, deltaMetaData.getStmtIds().size());
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    deltaMetaData.write(new DataOutputStream(byteArrayOutputStream));
+
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+    DeltaMetaData copy = new DeltaMetaData();
+    copy.readFields(new DataInputStream(new ByteArrayInputStream(bytes)));
+
+    assertEquals(2000L, copy.getMinWriteId());
+    assertEquals(2001L, copy.getMaxWriteId());
+    assertEquals(0, copy.getStmtIds().size());
+    AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+
+    Assert.assertTrue(fileId instanceof SyntheticFileId);
+    assertEquals(100, ((SyntheticFileId)fileId).getModTime());
+    assertEquals(200, ((SyntheticFileId)fileId).getLength());
+
+    String fileName = fileMetaData.getPath(new Path("deleteDelta"), 1).getName();
+    Assert.assertEquals("bucket_00001_123", fileName);
+  }
+
+  @Test
+  public void testDeltaMetaWithFileMultiStatement() throws Exception {
+    FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0,
-        Collections.singletonList(new AcidUtils.HdfsFileStatusWithoutId(fs)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), 97)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
@@ -120,12 +213,14 @@ public class TestAcidInputFormat {
 
     assertEquals(100, ((SyntheticFileId)fileId).getModTime());
     assertEquals(200, ((SyntheticFileId)fileId).getLength());
+    assertEquals(1, copy.getDeltaFilesForStmtId(97).size());
+    assertEquals(0, copy.getDeltaFilesForStmtId(99).size());
   }
 
   @Test
   public void testDeltaMetaDataReadFieldsWithStatementIdsResetsState() throws Exception {
     when(mockDataInput.readLong()).thenReturn(1L, 2L);
-    when(mockDataInput.readInt()).thenReturn(2, 100, 101);
+    when(mockDataInput.readInt()).thenReturn(2, 100, 101, 0);
 
     List<Integer> statementIds = new ArrayList<>();
     statementIds.add(97);
@@ -135,7 +230,7 @@ public class TestAcidInputFormat {
         .DeltaMetaData(2000L, 2001L, statementIds, 0, null);
     deltaMetaData.readFields(mockDataInput);
 
-    verify(mockDataInput, times(3)).readInt();
+    verify(mockDataInput, times(4)).readInt();
     assertThat(deltaMetaData.getMinWriteId(), is(1L));
     assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().size(), is(2));
