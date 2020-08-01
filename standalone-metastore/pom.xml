@@ -116,14 +116,6 @@
 
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>${caffeine.version}</version>
-    </dependency>
-  </dependencies>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -319,6 +311,11 @@
         <groupId>com.cronutils</groupId>
         <artifactId>cron-utils</artifactId>
         <version>${cron-utils.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>${caffeine.version}</version>
       </dependency>
 
       <!-- test scope dependencies -->
