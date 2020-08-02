@@ -1148,7 +1148,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1176,7 +1176,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  filterExpr: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
+                  filterExpr: (((s_floor_space > 1000) and s_store_sk is not null) or s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
@@ -1191,14 +1191,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
-                  filterExpr: s_store_sk is not null (type: boolean)
-                  Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
                     Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
