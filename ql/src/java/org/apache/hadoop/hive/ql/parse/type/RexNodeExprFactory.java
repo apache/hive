@@ -287,7 +287,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+  public RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
     HiveDecimal hd = HiveDecimal.create(value);
     if (!allowNullValueConstantExpr && hd == null) {
       return null;

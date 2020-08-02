@@ -63,18 +63,19 @@ execute pcharv using 'c1', 'v1';
 drop table tcharvchar;
 
 -- date,timestamp
-create table tdatets(t timestamp, d date) stored as orc;
-insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date));
-insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date));
+create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc;
+insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date), 5.00);
+insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date), 4.00);
 
 explain
-    prepare ptsd from select count(*) from tdatets where t != ? and d != ?;
-prepare ptsd from select count(*) from tdatets where t != ? and d != ?;
+    prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?;
+prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?;
 
 explain
-    execute ptsd using '2012-01-01 00:01:01', '2020-01-01';
-execute ptsd using '2012-01-01 00:01:01', '2020-01-01';
+    execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00;
+execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00;
 drop table tdatets;
+
 
 
 -- multiple parameters

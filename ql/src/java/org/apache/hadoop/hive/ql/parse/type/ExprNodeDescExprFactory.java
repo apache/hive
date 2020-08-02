@@ -292,7 +292,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected ExprNodeConstantDesc createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+  public ExprNodeConstantDesc createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
     HiveDecimal hd = HiveDecimal.create(value);
     if (!allowNullValueConstantExpr && hd == null) {
       return null;

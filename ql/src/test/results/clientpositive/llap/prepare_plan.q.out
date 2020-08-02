@@ -832,41 +832,43 @@ POSTHOOK: query: drop table tcharvchar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcharvchar
 POSTHOOK: Output: default@tcharvchar
-PREHOOK: query: create table tdatets(t timestamp, d date) stored as orc
+PREHOOK: query: create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tdatets
-POSTHOOK: query: create table tdatets(t timestamp, d date) stored as orc
+POSTHOOK: query: create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tdatets
-PREHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date))
+PREHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date), 5.00)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tdatets
-POSTHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date))
+POSTHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date), 5.00)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tdatets
 POSTHOOK: Lineage: tdatets.d SCRIPT []
+POSTHOOK: Lineage: tdatets.dc SCRIPT []
 POSTHOOK: Lineage: tdatets.t SCRIPT []
-PREHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date))
+PREHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date), 4.00)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tdatets
-POSTHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date))
+POSTHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date), 4.00)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tdatets
 POSTHOOK: Lineage: tdatets.d SCRIPT []
+POSTHOOK: Lineage: tdatets.dc SCRIPT []
 POSTHOOK: Lineage: tdatets.t SCRIPT []
 PREHOOK: query: explain
-    prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+    prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-    prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+    prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
@@ -886,16 +888,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tdatets
-                  filterExpr: ((t <> CAST( Dynamic Parameter  index: 1 AS TIMESTAMP)) and (d <> CAST( Dynamic Parameter  index: 2 AS DATE))) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((t <> CAST( Dynamic Parameter  index: 1 AS TIMESTAMP)) and (d <> CAST( Dynamic Parameter  index: 2 AS DATE)) and (dc > CAST( Dynamic Parameter  index: 3 AS decimal(10,2)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t <> CAST( Dynamic Parameter  index: 1 AS TIMESTAMP)) and (d <> CAST( Dynamic Parameter  index: 2 AS DATE))) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((t <> CAST( Dynamic Parameter  index: 1 AS TIMESTAMP)) and (d <> CAST( Dynamic Parameter  index: 2 AS DATE)) and (dc > CAST( Dynamic Parameter  index: 3 AS decimal(10,2)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -928,11 +930,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
-POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
@@ -952,16 +954,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tdatets
-                  filterExpr: ((t <> CAST( TIMESTAMP'2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( DATE'2020-01-01' AS DATE))) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((t <> CAST( TIMESTAMP'2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( DATE'2020-01-01' AS DATE)) and (dc > CAST( 1 AS decimal(10,2)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t <> CAST( TIMESTAMP'2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( DATE'2020-01-01' AS DATE))) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((t <> CAST( TIMESTAMP'2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( DATE'2020-01-01' AS DATE)) and (dc > CAST( 1 AS decimal(10,2)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -994,11 +996,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
-POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ?
+POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####

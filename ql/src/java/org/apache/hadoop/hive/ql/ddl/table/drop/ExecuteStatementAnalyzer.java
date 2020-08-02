@@ -42,9 +42,11 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.parquet.format.DecimalType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -183,6 +185,8 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
     } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)) {
       //TODO: is it okay to create string
       return factory.createStringConstantExpr(value);
+    } else if (typeInfo instanceof DecimalTypeInfo) {
+      return factory.createDecimalConstantExpr(value, true);
     }
     // we will let constant expression itself infer the type
     return new ExprNodeConstantDesc(parameterMap.get(dynamicExpr.getIndex()));

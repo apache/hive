@@ -158,7 +158,7 @@ public abstract class ExprFactory<T> {
    * 1) a constant expression containing null value if allowNullValueConstantExpr is true, or
    * 2) null if allowNullValueConstantExpr is false.
    */
-  protected abstract T createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr);
+  public abstract T createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr);
 
   /**
    * Creates a string constant expression from input value.
