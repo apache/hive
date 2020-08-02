@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
-import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -1046,8 +1045,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (colNames.isEmpty() || partNames.isEmpty()) {
@@ -1060,7 +1058,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_aggr_stats_for(req);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAggrColStatsFor",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -1881,15 +1883,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                     int maxParts, String userName,
                                                     List<String> groupNames) throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO);
+    long t1 = System.currentTimeMillis();
     try {
       List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(catName,
               dbName, conf), tableName, shrinkMaxtoShort(maxParts), userName, groupNames);
 
       return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsWithAuthInfo",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -1909,8 +1914,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                     String userName, List<String> groupNames)
       throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2);
+    long t1 = System.currentTimeMillis();
     try {
       List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(catName,
               dbName, conf), tableName, partialPvals, shrinkMaxtoShort(maxParts), userName, groupNames);
@@ -1918,7 +1922,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook,
               parts));
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_WITH_AUTH_INFO_2, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsWithAuthInfo",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -1991,8 +1999,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr,
       String default_partition_name, int max_parts, List<Partition> result)
           throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_BY_EXPR);
+    long t1 = System.currentTimeMillis();
 
     try {
       assert result != null;
@@ -2015,7 +2022,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_BY_EXPR, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsByExpr",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2038,8 +2049,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LIST_PARTS_SPECS_BY_EXPR);
+    long t1 = System.currentTimeMillis();
 
     try {
       assert result != null;
@@ -2059,7 +2069,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LIST_PARTS_SPECS_BY_EXPR, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsSpecByExpr",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2070,8 +2084,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public Database getDatabase(String catalogName, String databaseName) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_DATABASE);
+    long t1 = System.currentTimeMillis();
 
     try {
       GetDatabaseRequest request = new GetDatabaseRequest();
@@ -2089,7 +2102,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return deepCopy(FilterUtils.filterDbIfEnabled(isClientFilterEnabled, filterHook, d));
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_DATABASE, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getDatabase",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2221,8 +2238,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE);
+    long t1 = System.currentTimeMillis();
 
     try {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
@@ -2243,7 +2259,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTable",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2256,8 +2276,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
       boolean getColumnStats, String engine) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_2);
+    long t1 = System.currentTimeMillis();
 
     try {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
@@ -2281,7 +2300,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_2, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTable",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2688,8 +2711,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest req) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_PK);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (!req.isSetCatName()) {
@@ -2698,15 +2720,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_primary_keys(req).getPrimaryKeys();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_PK, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getPrimaryKeys",
+            diff, "HMS client");
+      }
     }
   }
 
   @Override
   public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest req) throws MetaException,
       NoSuchObjectException, TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_FK);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (!req.isSetCatName()) {
@@ -2715,15 +2740,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_foreign_keys(req).getForeignKeys();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_FK, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getForeignKeys",
+            diff, "HMS client");
+      }
     }
   }
 
   @Override
   public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest req)
       throws MetaException, NoSuchObjectException, TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_UNIQ_CONSTRAINTS);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (!req.isSetCatName()) {
@@ -2732,15 +2760,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_unique_constraints(req).getUniqueConstraints();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_UNIQ_CONSTRAINTS, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getUniqueConstraints",
+            diff, "HMS client");
+      }
     }
   }
 
   @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest req)
       throws MetaException, NoSuchObjectException, TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_NOT_NULL_CONSTRAINTS);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (!req.isSetCatName()) {
@@ -2749,7 +2780,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_not_null_constraints(req).getNotNullConstraints();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_NOT_NULL_CONSTRAINTS, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getNotNullConstraints",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2830,8 +2865,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (colNames.isEmpty()) {
@@ -2844,7 +2878,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_table_statistics_req(rqst).getTableStats();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTableColumnStatistics",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2858,8 +2896,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS_2);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (colNames.isEmpty()) {
@@ -2872,7 +2909,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_table_statistics_req(rqst).getTableStats();
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_TABLE_COL_STATS_2, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTableColumnStatistics",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -2958,13 +2999,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public String getConfigValue(String name, String defaultValue)
       throws TException, ConfigValSecurityException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_CONFIG_VAL);
+    long t1 = System.currentTimeMillis();
 
     try {
       return client.get_config_value(name, defaultValue);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_CONFIG_VAL, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getConfigValue",
+            diff, "HMS client");
+      }
     }
   }
 
@@ -3945,8 +3989,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
       List<String> colNames, List<String> partNames, String engine) throws TException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS_2);
+    long t1 = System.currentTimeMillis();
 
     try {
       if (colNames.isEmpty() || partNames.isEmpty()) {
@@ -3959,7 +4002,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       return client.get_aggr_stats_for(req);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_AGGR_COL_STATS_2, "HMS client");
+      long diff = System.currentTimeMillis() - t1;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAggrColStatsFor",
+            diff, "HMS client");
+      }
     }
   }
 
