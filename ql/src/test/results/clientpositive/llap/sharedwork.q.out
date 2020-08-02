@@ -618,12 +618,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Map 8 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-        Reducer 6 <- Map 4 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 10 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 9 <- Map 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -647,52 +647,6 @@ STAGE PLANS:
                       tag: 0
                       value expressions: _col0 (type: string), _col1 (type: string)
                       auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: part
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    bucketing_version 2
-                    column.name.delimiter ,
-                    columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                    name default.part
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments 
-                      columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                      name default.part
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.part
-                  name: default.part
-            Truncated Path -> Alias:
-              /part [part]
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: part
-                  filterExpr: (p_size is not null or (p_size is not null and p_type is not null)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                  GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_size is not null (type: boolean)
@@ -782,7 +736,7 @@ STAGE PLANS:
                   name: default.part
             Truncated Path -> Alias:
               /part [part]
-        Map 8 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: part
@@ -862,25 +816,6 @@ STAGE PLANS:
                   name: default.part
             Truncated Path -> Alias:
               /part [part]
-        Reducer 10 
-            Execution mode: vectorized, llap
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  bucketingVersion: 2
-                  key expressions: _col0 (type: int)
-                  null sort order: z
-                  numBuckets: -1
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-                  tag: 1
-                  auto parallelism: true
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -950,7 +885,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: false
                       MultiFileSpray: false
-        Reducer 5 
+        Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -992,7 +927,7 @@ STAGE PLANS:
                       tag: 1
                       value expressions: _col1 (type: bigint), _col2 (type: bigint)
                       auto parallelism: true
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1016,7 +951,7 @@ STAGE PLANS:
                     tag: 0
                     value expressions: _col0 (type: string)
                     auto parallelism: true
-        Reducer 7 
+        Reducer 6 
             Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1044,6 +979,25 @@ STAGE PLANS:
                     tag: 1
                     value expressions: _col2 (type: boolean)
                     auto parallelism: true
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  bucketingVersion: 2
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  numBuckets: -1
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                  tag: 1
+                  auto parallelism: true
 
   Stage: Stage-0
     Fetch Operator
