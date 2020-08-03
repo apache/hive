@@ -682,7 +682,9 @@ public class VectorizedOrcAcidRowBatchReader
    * @param path The Orc file path we want to get the OrcTail for
    * @param conf The Configuration to access LLAP
    * @param cacheTag The cacheTag needed to get OrcTail from LLAP IO cache
-   * @param fileKey fileId of the Orc file (either the Long fileId of HDFS or the SyntheticFileId)
+   * @param fileKey fileId of the Orc file (either the Long fileId of HDFS or the SyntheticFileId).
+   *                Optional, if it is not provided, it will be generated, see:
+   *                {@link org.apache.hadoop.hive.ql.io.HdfsUtils.getFileId()}
    * @return ReaderData object where the orcTail is not null. Reader can be null, but if we had to create
    * one we return that as well for further reuse.
    */
@@ -1583,7 +1585,7 @@ public class VectorizedOrcAcidRowBatchReader
           int totalDeleteEventCount = 0;
           for (AcidInputFormat.DeltaMetaData deltaMetaData : orcSplit.getDeltas()) {
             // We got one path for each statement in a multiStmt transaction
-            for (Pair<Path,Integer> deleteDeltaDir : deltaMetaData.getPaths(orcSplit.getRootDir())) {
+            for (Pair<Path, Integer> deleteDeltaDir : deltaMetaData.getPaths(orcSplit.getRootDir())) {
               Integer stmtId = deleteDeltaDir.getRight();
               if (!isQualifiedDeleteDeltaForSplit(orcSplitMinMaxWriteIds, deltaMetaData, stmtId)) {
                 LOG.debug("Skipping delete delta dir {}", deleteDeltaDir);
@@ -1593,7 +1595,7 @@ public class VectorizedOrcAcidRowBatchReader
               for (AcidInputFormat.DeltaFileMetaData fileMetaData : deltaMetaData.getDeltaFilesForStmtId(stmtId)) {
                 Path deleteDeltaFile = fileMetaData.getPath(deleteDeltaPath, bucket);
                 ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag,
-                    fileMetaData.getFileId(deleteDeltaPath, bucket));
+                    fileMetaData.getFileId(deleteDeltaPath, bucket, conf));
                 OrcTail orcTail = readerData.orcTail;
                 if (orcTail.getFooter().getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.

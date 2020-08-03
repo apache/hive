@@ -1122,12 +1122,14 @@ public class AcidUtils {
         if (stmtId != null) {
           last.getStmtIds().add(stmtId);
         }
-        last.getStmtIds().add(parsedDelta.getStatementId());
         for (HadoopShims.HdfsFileStatusWithId fileStatus : parsedDelta.getFiles()) {
           last.getDeltaFiles().add(new AcidInputFormat.DeltaFileMetaData(fileStatus, stmtId));
         }
       } else {
-        List<Integer> stmtIds = stmtId == null ? Collections.emptyList() : Collections.singletonList(stmtId);
+        List<Integer> stmtIds = new ArrayList<>();
+        if (stmtId != null) {
+          stmtIds.add(stmtId);
+        }
         last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(),
             stmtIds, parsedDelta.getVisibilityTxnId(), parsedDelta.getFiles().stream().map(fs -> new AcidInputFormat.DeltaFileMetaData(fs, stmtId)).collect(
             Collectors.toList()));
@@ -2514,7 +2516,7 @@ public class AcidUtils {
       }
       FileStatus[] dataFiles;
       try {
-        dataFiles = fs.listStatus(baseOrDeltaDir , originalBucketFilter);
+        dataFiles = fs.listStatus(baseOrDeltaDir, originalBucketFilter);
       } catch (FileNotFoundException e) {
         // HIVE-22001: If the file was not found, this means that baseOrDeltaDir (which was listed
         // earlier during AcidUtils.getAcidState()) was removed sometime between the FS list call

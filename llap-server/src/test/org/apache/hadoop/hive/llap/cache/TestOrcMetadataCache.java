@@ -306,14 +306,12 @@ public class TestOrcMetadataCache {
     try {
       // this should miss the cache, since the fileKey changed
       OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, new SyntheticFileId(path, 100, 101));
+      fail();
     } catch (IOException e) {
       ex = e;
     }
-    Assert.assertNotNull(ex);
     Assert.assertTrue(ex.getMessage().contains(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname));
   }
-
-
 
   @Test(expected = IllegalCacheConfigurationException.class)
   public void testGetOrcTailForPathCacheNotReady() throws Exception {
@@ -336,6 +334,4 @@ public class TestOrcMetadataCache {
     }
     assertNull(result);
   }
-
-
 }

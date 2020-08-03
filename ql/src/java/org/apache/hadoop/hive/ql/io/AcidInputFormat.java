@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.Writable;
@@ -323,8 +324,9 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       }
     }
 
-    public Object getFileId(Path deltaDirectory, int bucketId) {
-      if (fileId != null) {
+    public Object getFileId(Path deltaDirectory, int bucketId, Configuration conf) {
+      boolean forceSynthetic = !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH);
+      if (fileId != null && !forceSynthetic) {
         return fileId;
       }
       // Calculate the synthetic fileid

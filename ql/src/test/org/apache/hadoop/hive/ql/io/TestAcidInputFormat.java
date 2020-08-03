@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
 import org.apache.hive.common.util.MockFileSystem;
 import org.junit.Assert;
@@ -116,7 +117,7 @@ public class TestAcidInputFormat {
     assertEquals(2001L, copy.getMaxWriteId());
     assertEquals(0, copy.getStmtIds().size());
     AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
-    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1, new HiveConf());
 
     Assert.assertTrue(fileId instanceof SyntheticFileId);
     assertEquals(100, ((SyntheticFileId)fileId).getModTime());
@@ -148,7 +149,7 @@ public class TestAcidInputFormat {
     assertEquals(0, copy.getStmtIds().size());
     AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
 
-    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1, new HiveConf());
     Assert.assertTrue(fileId instanceof Long);
     long fId = (Long)fileId;
     assertEquals(123L, fId);
@@ -177,7 +178,7 @@ public class TestAcidInputFormat {
     assertEquals(2001L, copy.getMaxWriteId());
     assertEquals(0, copy.getStmtIds().size());
     AcidInputFormat.DeltaFileMetaData fileMetaData = copy.getDeltaFiles().get(0);
-    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1);
+    Object fileId = fileMetaData.getFileId(new Path("deleteDelta"), 1, new HiveConf());
 
     Assert.assertTrue(fileId instanceof SyntheticFileId);
     assertEquals(100, ((SyntheticFileId)fileId).getModTime());
@@ -208,7 +209,7 @@ public class TestAcidInputFormat {
     assertEquals(2000L, copy.getMinWriteId());
     assertEquals(2001L, copy.getMaxWriteId());
     assertEquals(3, copy.getStmtIds().size());
-    Object fileId = copy.getDeltaFiles().get(0).getFileId(new Path("deleteDelta"), 1);
+    Object fileId = copy.getDeltaFiles().get(0).getFileId(new Path("deleteDelta"), 1, new HiveConf());
     Assert.assertTrue(fileId instanceof SyntheticFileId);
 
     assertEquals(100, ((SyntheticFileId)fileId).getModTime());
