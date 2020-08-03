@@ -4,18 +4,21 @@
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=false;
 
-explain extended prepare pcount from select count(*) from src where key > ?;
-prepare pcount from select count(*) from src where key > ?;
-execute pcount using 200;
 
 -- single param
-explain extended prepare p1 from select * from src where key > ? order by key limit 10;
-prepare p1 from select * from src where key > ? order by key limit 10;
-
-execute p1 using 200;
+explain extended prepare pcount from select count(*) from src where key > ?;
+prepare pcount from select count(*) from src where key > ?;
+explain execute pcount using '200';
+execute pcount using '200';
 
 -- same query, different param
-execute p1 using 0;
+execute pcount using '0';
+
+-- single param
+explain prepare p1 from select * from src where key > ? order by key limit 10;
+prepare p1 from select * from src where key > ? order by key limit 10;
+explain execute p1 using '100';
+execute p1 using '100';
 
 -- same query, negative param
 --TODO: fails (constant in grammar do not support negatives)
