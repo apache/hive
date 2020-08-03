@@ -257,33 +257,54 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     // Optional, if the deltaMeta contains multiple stmtIds, it will contain this files parent's stmtId
     private Integer stmtId;
 
+    // Not serialized
+    private int bucketId;
+
     public DeltaFileMetaData() {
     }
 
-    public DeltaFileMetaData(HadoopShims.HdfsFileStatusWithId fileStatus, Integer stmtId) {
+    public DeltaFileMetaData(HadoopShims.HdfsFileStatusWithId fileStatus, Integer stmtId, int bucketId) {
       modTime = fileStatus.getFileStatus().getModificationTime();
       length = fileStatus.getFileStatus().getLen();
       String attempt = AcidUtils.parseAttemptId(fileStatus.getFileStatus().getPath());
       attemptId = StringUtils.isEmpty(attempt) ? null : Integer.parseInt(attempt);
       fileId = fileStatus.getFileId();
       this.stmtId = stmtId;
+      this.bucketId = bucketId;
     }
 
     public DeltaFileMetaData(long modTime, long length, @Nullable Integer attemptId, @Nullable Long fileId,
-        @Nullable Integer stmtId) {
+        @Nullable Integer stmtId, int bucketId) {
       this.modTime = modTime;
       this.length = length;
       this.attemptId = attemptId;
       this.fileId = fileId;
       this.stmtId = stmtId;
-    }
-
-    public void clearStmtId() {
-      stmtId = null;
+      this.bucketId = bucketId;
     }
 
     public Integer getStmtId() {
       return stmtId;
+    }
+
+    public long getModTime() {
+      return modTime;
+    }
+
+    public long getLength() {
+      return length;
+    }
+
+    public Integer getAttemptId() {
+      return attemptId;
+    }
+
+    public Long getFileId() {
+      return fileId;
+    }
+
+    public int getBucketId() {
+      return bucketId;
     }
 
     @Override

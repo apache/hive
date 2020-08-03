@@ -1123,7 +1123,7 @@ public class AcidUtils {
           last.getStmtIds().add(stmtId);
         }
         for (HadoopShims.HdfsFileStatusWithId fileStatus : parsedDelta.getFiles()) {
-          last.getDeltaFiles().add(new AcidInputFormat.DeltaFileMetaData(fileStatus, stmtId));
+          last.getDeltaFiles().add(new AcidInputFormat.DeltaFileMetaData(fileStatus, stmtId, parseBucketId(fileStatus.getFileStatus().getPath())));
         }
       } else {
         List<Integer> stmtIds = new ArrayList<>();
@@ -1131,14 +1131,13 @@ public class AcidUtils {
           stmtIds.add(stmtId);
         }
         last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(),
-            stmtIds, parsedDelta.getVisibilityTxnId(), parsedDelta.getFiles().stream().map(fs -> new AcidInputFormat.DeltaFileMetaData(fs, stmtId)).collect(
-            Collectors.toList()));
+            stmtIds, parsedDelta.getVisibilityTxnId(), parsedDelta.getFiles().stream()
+            .map(fs -> new AcidInputFormat.DeltaFileMetaData(fs, stmtId, parseBucketId(fs.getFileStatus().getPath())))
+            .collect(Collectors.toList()));
         result.add(last);
       }
     }
-    // For a small optimization clear the stmtIds for deltas that don't have more
-    result.stream().filter(delta -> delta.getStmtIds().size() <= 1).forEach(
-        deltaMetaData -> deltaMetaData.getDeltaFiles().forEach(AcidInputFormat.DeltaFileMetaData::clearStmtId));
+
     return result;
   }
 

@@ -99,7 +99,7 @@ public class TestAcidInputFormat {
   public void testDeltaMetaWithFile() throws Exception {
     FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), null)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), null, 1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
@@ -130,7 +130,7 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaWithHdfsFileId() throws Exception {
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, null, 123L, null)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, null, 123L, null,1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
@@ -160,7 +160,7 @@ public class TestAcidInputFormat {
   @Test
   public void testDeltaMetaWithAttemptId() throws Exception {
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, 123, null, null)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(100, 200, 123, null, null, 1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
@@ -192,7 +192,7 @@ public class TestAcidInputFormat {
   public void testDeltaMetaWithFileMultiStatement() throws Exception {
     FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), 97)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), 97, 1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());

@@ -234,7 +234,7 @@ public abstract class TxnCommandsBaseForTests {
     try {
       d.run(stmt);
     } catch (CommandProcessorException e) {
-      throw new RuntimeException(stmt + " failed: ", e);
+      throw new RuntimeException(stmt + " failed: " + e);
     }
     List<String> rs = new ArrayList<>();
     d.getResults(rs);
