@@ -27,6 +27,7 @@ import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mappings.TargetMapping;
 
 import com.google.common.collect.Ordering;
@@ -82,7 +83,14 @@ public class HiveRelDistribution implements RelDistribution {
     }
     List<Integer> newKeys = new ArrayList<>(keys.size());
     for (Integer key : keys) {
-      newKeys.add(mapping.getTargetOpt(key));
+      // Instead of this inner for loop newKeys.add(mapping.getTargetOpt(key)); should be called but not all the
+      // mapping supports that. See HIVE-23963. Replace this when this is fixed in calcite.
+      for (IntPair aMapping : mapping) {
+        if (aMapping.source == key) {
+          newKeys.add(aMapping.target);
+          break;
+        }
+      }
     }
     return new HiveRelDistribution(type, newKeys);
   }
