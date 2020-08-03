@@ -2033,9 +2033,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
       } else {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
@@ -2373,20 +2373,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final HepProgramBuilder program = new HepProgramBuilder();
-      // Pull non-filtering column appending join and remove Projects between Joins
-      // so that JoinToMultiJoinRule can merge them to MultiJoin
+      // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
+      // If FK-PK are declared, it tries to pull non-filtering column appending join nodes.
       List<RelOptRule> rules = Lists.newArrayList();
-      rules.add(HiveJoinSwapConstraintsRule.INSTANCE);
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(HiveJoinSwapConstraintsRule.INSTANCE);
+      }
       rules.add(HiveSemiJoinProjectTransposeRule.INSTANCE);
       rules.add(HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN);
       rules.add(HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
       rules.add(HiveProjectMergeRule.INSTANCE);
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING_ON_JOIN);
-      } else {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_ON_JOIN);
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ?
+            HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN :
+            HiveFilterProjectTransposeRule.DETERMINISTIC_ON_NON_FILTERING_JOIN);
+        rules.add(HiveFilterJoinRule.FILTER_ON_NON_FILTERING_JOIN);
       }
-      rules.add(HiveFilterJoinRule.FILTER_ON_JOIN);
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           rules.toArray(new RelOptRule[0]));
       // Join reordering

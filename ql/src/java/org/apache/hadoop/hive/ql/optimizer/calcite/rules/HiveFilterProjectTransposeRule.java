@@ -46,21 +46,21 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
-  public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC_WINDOWING_ON_JOIN =
+  public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
           HiveRelFactories.HIVE_BUILDER, true, true);
 
-  public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC_WINDOWING =
+  public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
                   HiveRelFactories.HIVE_BUILDER, true, true);
 
-  public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC_ON_JOIN =
+  public static final HiveFilterProjectTransposeRule DETERMINISTIC_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
           HiveRelFactories.HIVE_BUILDER, true, false);
 
-  public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC =
+  public static final HiveFilterProjectTransposeRule DETERMINISTIC =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
                   HiveRelFactories.HIVE_BUILDER, true, false);
 
