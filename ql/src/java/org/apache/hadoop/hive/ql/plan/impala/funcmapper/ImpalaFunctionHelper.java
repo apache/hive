@@ -264,4 +264,72 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     // Currently Impala does not support multi-column IN clauses.
     return false;
   }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isAndFunction(FunctionInfo fi) {
+    return fi.getDisplayName().equals("and");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isOrFunction(FunctionInfo fi) {
+    return fi.getDisplayName().equals("or");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isInFunction(FunctionInfo fi) {
+    return fi.getDisplayName().equals("in");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isCompareFunction(FunctionInfo fi) {
+    switch (fi.getDisplayName()) {
+      case "=":
+      case "==":
+      case "<":
+      case "<=":
+      case ">":
+      case ">=":
+      case "!=":
+      case "<>":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isEqualFunction(FunctionInfo fi) {
+    return fi.getDisplayName().equals("=") || fi.getDisplayName().equals("==");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isConsistentWithinQuery(FunctionInfo fi) {
+    throw new RuntimeException("not implemented");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isStateful(FunctionInfo fi) {
+    //TODO: CDPD-15770: need to implement for validation checks.
+    return false;
+  }
 }

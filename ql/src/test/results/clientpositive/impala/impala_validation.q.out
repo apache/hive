@@ -1,0 +1,12 @@
+PREHOOK: query: explain cbo
+select now()
+PREHOOK: type: QUERY
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select now()
+POSTHOOK: type: QUERY
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(_o__c0=[now()])
+  ImpalaUnionRel
+
