@@ -22,14 +22,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +51,7 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
   private String[] hiveColumnNames;
   List<TypeInfo> hiveColumnTypesList;
 
-  public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs, Configuration conf) {
+  public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs, Configuration conf) throws HiveJdbcDatabaseAccessException {
     this.conn = conn;
     this.ps = ps;
     this.rs = rs;
@@ -58,9 +61,26 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
       fieldNamesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_NAMES));
       fieldTypesProperty = Preconditions.checkNotNull(conf.get(Constants.JDBC_QUERY_FIELD_TYPES));
     } else {
-      fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
+      try {
+        if (conf.get(Constants.JDBC_QUERY) == null) {
+          ResultSetMetaData metadata = rs.getMetaData();
+          int numColumns = metadata.getColumnCount();
+          List<String> columnNames = new ArrayList<String>(numColumns);
+          for (int i = 0; i < numColumns; i++) {
+            columnNames.add(metadata.getColumnName(i + 1));
+          }
+          fieldNamesProperty = String.join(",",columnNames);
+        } else {
+          fieldNamesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMNS));
+        }
+      }
+      catch (Exception e) {
+        LOGGER.error("Error while trying to get column names.", e);
+        throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
+      }
       fieldTypesProperty = Preconditions.checkNotNull(conf.get(serdeConstants.LIST_COLUMN_TYPES));
     }
+    LOGGER.debug("Iterator ColumnNames = {}", fieldNamesProperty);
     hiveColumnNames = fieldNamesProperty.trim().split(",");
     hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
   }

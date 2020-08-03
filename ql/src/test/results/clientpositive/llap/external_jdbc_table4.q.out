@@ -582,6 +582,42 @@ POSTHOOK: Input: default@db1_ext_auth1
 100
 20
 44
+PREHOOK: query: SELECT * FROM db1_ext_auth1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM db1_ext_auth1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+-20	-20	-20.0	-20.0
+100	-15	65.0	-74.0
+20	20	20.0	20.0
+44	53	-455.454	330.76
+PREHOOK: query: SELECT * FROM db2_ext_auth2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db2_ext_auth2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM db2_ext_auth2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db2_ext_auth2
+#### A masked pattern was here ####
+-20	8	9.0	11.0
+101	-16	66.0	-75.0
+20	20	20.0	20.0
+40	50	-455.4543	330.767
+PREHOOK: query: SELECT * FROM db1_ext_auth2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM db1_ext_auth2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth2
+#### A masked pattern was here ####
+-20	8	9.0	11.0
+101	-16	66.0	-75.0
+20	20	20.0	20.0
+40	50	-455.4543	330.767
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1
