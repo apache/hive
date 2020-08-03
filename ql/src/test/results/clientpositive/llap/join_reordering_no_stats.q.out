@@ -228,7 +228,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[52][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select count(1) from part_nostats,supplier_nostats,lineitem_nostats where p_partkey = l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem_nostats
@@ -602,7 +602,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[52][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee_part_n1

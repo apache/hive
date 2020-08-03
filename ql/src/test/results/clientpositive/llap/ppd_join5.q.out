@@ -32,7 +32,7 @@ POSTHOOK: Lineage: t1_n79.id1 SIMPLE []
 POSTHOOK: Lineage: t1_n79.id2 SIMPLE []
 POSTHOOK: Lineage: t2_n48.d SIMPLE []
 POSTHOOK: Lineage: t2_n48.id SIMPLE []
-Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
@@ -163,7 +163,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select * from (
 select a.*,b.d d1,c.d d2 from
@@ -300,7 +300,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from (
 select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
