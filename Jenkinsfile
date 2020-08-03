@@ -81,11 +81,13 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-sw java 11
 ls -l
 set -x
 . /etc/profile.d/java.sh
 . /etc/profile.d/confs.sh
+
+sw java 11
+
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
