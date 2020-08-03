@@ -1266,7 +1266,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1050 Data size: 190050 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 1
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: name (type: string), id (type: int), (flag = 'N') (type: boolean)
                       outputColumnNames: _col0, _col1, _col2

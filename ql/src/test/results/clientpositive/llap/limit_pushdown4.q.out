@@ -36,7 +36,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 5
-                    Statistics: Num rows: 5 Data size: 799 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
