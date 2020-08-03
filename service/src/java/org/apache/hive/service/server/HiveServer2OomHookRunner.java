@@ -26,19 +26,20 @@ import java.util.List;
 
 public class HiveServer2OomHookRunner implements Runnable {
   private final HiveServer2 hiveServer2;
-  private final HiveConf hiveConf;
 
-  HiveServer2OomHookRunner(HiveServer2 hiveServer2, HiveConf hiveConf) {
+  HiveServer2OomHookRunner(HiveServer2 hiveServer2) {
     this.hiveServer2 = hiveServer2;
-    this.hiveConf = hiveConf;
   }
 
   @Override
   public synchronized void run() {
     try {
-      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.OOM);
-      for (Runnable runnable : hooks) {
-        runnable.run();
+      HiveConf hiveConf = hiveServer2.getHiveConf();
+      if (hiveConf != null) {
+        List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.OOM);
+        for (Runnable runnable : hooks) {
+          runnable.run();
+        }
       }
     } finally {
       hiveServer2.stop();
