@@ -1,0 +1,368 @@
+PREHOOK: query: create database x
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:x
+POSTHOOK: query: create database x
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:x
+PREHOOK: query: use x
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:x
+POSTHOOK: query: use x
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:x
+PREHOOK: query: drop table if exists lineitem
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists lineitem
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table lineitem 
+(L_ORDERKEY BIGINT,
+ L_PARTKEY BIGINT,
+ L_SUPPKEY BIGINT,
+ L_LINENUMBER INT,
+ L_QUANTITY DOUBLE,
+ L_EXTENDEDPRICE DOUBLE,
+ L_DISCOUNT DOUBLE,
+ L_TAX DOUBLE,
+ L_RETURNFLAG STRING,
+ L_LINESTATUS STRING,
+ L_SHIPDATE STRING,
+ L_COMMITDATE STRING,
+ L_RECEIPTDATE STRING,
+ L_SHIPINSTRUCT STRING,
+ L_SHIPMODE STRING,
+ L_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@lineitem
+POSTHOOK: query: create external table lineitem 
+(L_ORDERKEY BIGINT,
+ L_PARTKEY BIGINT,
+ L_SUPPKEY BIGINT,
+ L_LINENUMBER INT,
+ L_QUANTITY DOUBLE,
+ L_EXTENDEDPRICE DOUBLE,
+ L_DISCOUNT DOUBLE,
+ L_TAX DOUBLE,
+ L_RETURNFLAG STRING,
+ L_LINESTATUS STRING,
+ L_SHIPDATE STRING,
+ L_COMMITDATE STRING,
+ L_RECEIPTDATE STRING,
+ L_SHIPINSTRUCT STRING,
+ L_SHIPMODE STRING,
+ L_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@lineitem
+PREHOOK: query: drop table if exists part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table part (P_PARTKEY BIGINT,
+ P_NAME STRING,
+ P_MFGR STRING,
+ P_BRAND STRING,
+ P_TYPE STRING,
+ P_SIZE INT,
+ P_CONTAINER STRING,
+ P_RETAILPRICE DOUBLE,
+ P_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@part
+POSTHOOK: query: create external table part (P_PARTKEY BIGINT,
+ P_NAME STRING,
+ P_MFGR STRING,
+ P_BRAND STRING,
+ P_TYPE STRING,
+ P_SIZE INT,
+ P_CONTAINER STRING,
+ P_RETAILPRICE DOUBLE,
+ P_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@part
+PREHOOK: query: drop table if exists supplier
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists supplier
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table supplier (S_SUPPKEY BIGINT,
+ S_NAME STRING,
+ S_ADDRESS STRING,
+ S_NATIONKEY BIGINT,
+ S_PHONE STRING,
+ S_ACCTBAL DOUBLE,
+ S_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@supplier
+POSTHOOK: query: create external table supplier (S_SUPPKEY BIGINT,
+ S_NAME STRING,
+ S_ADDRESS STRING,
+ S_NATIONKEY BIGINT,
+ S_PHONE STRING,
+ S_ACCTBAL DOUBLE,
+ S_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@supplier
+PREHOOK: query: drop table if exists partsupp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists partsupp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table partsupp (PS_PARTKEY BIGINT,
+ PS_SUPPKEY BIGINT,
+ PS_AVAILQTY INT,
+ PS_SUPPLYCOST DOUBLE,
+ PS_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@partsupp
+POSTHOOK: query: create external table partsupp (PS_PARTKEY BIGINT,
+ PS_SUPPKEY BIGINT,
+ PS_AVAILQTY INT,
+ PS_SUPPLYCOST DOUBLE,
+ PS_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@partsupp
+PREHOOK: query: drop table if exists nation
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists nation
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table nation (N_NATIONKEY BIGINT,
+ N_NAME STRING,
+ N_REGIONKEY BIGINT,
+ N_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@nation
+POSTHOOK: query: create external table nation (N_NATIONKEY BIGINT,
+ N_NAME STRING,
+ N_REGIONKEY BIGINT,
+ N_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@nation
+PREHOOK: query: drop table if exists region
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists region
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table region (R_REGIONKEY BIGINT,
+ R_NAME STRING,
+ R_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@region
+POSTHOOK: query: create external table region (R_REGIONKEY BIGINT,
+ R_NAME STRING,
+ R_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@region
+PREHOOK: query: drop table if exists customer
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists customer
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table customer (C_CUSTKEY BIGINT,
+ C_NAME STRING,
+ C_ADDRESS STRING,
+ C_NATIONKEY BIGINT,
+ C_PHONE STRING,
+ C_ACCTBAL DOUBLE,
+ C_MKTSEGMENT STRING,
+ C_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@customer
+POSTHOOK: query: create external table customer (C_CUSTKEY BIGINT,
+ C_NAME STRING,
+ C_ADDRESS STRING,
+ C_NATIONKEY BIGINT,
+ C_PHONE STRING,
+ C_ACCTBAL DOUBLE,
+ C_MKTSEGMENT STRING,
+ C_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@customer
+PREHOOK: query: drop table if exists orders
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists orders
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table orders (O_ORDERKEY BIGINT,
+ O_CUSTKEY BIGINT,
+ O_ORDERSTATUS STRING,
+ O_TOTALPRICE DOUBLE,
+ O_ORDERDATE STRING,
+ O_ORDERPRIORITY STRING,
+ O_CLERK STRING,
+ O_SHIPPRIORITY INT,
+ O_COMMENT STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
+PREHOOK: Output: x@orders
+POSTHOOK: query: create external table orders (O_ORDERKEY BIGINT,
+ O_CUSTKEY BIGINT,
+ O_ORDERSTATUS STRING,
+ O_TOTALPRICE DOUBLE,
+ O_ORDERDATE STRING,
+ O_ORDERPRIORITY STRING,
+ O_CLERK STRING,
+ O_SHIPPRIORITY INT,
+ O_COMMENT STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@orders
+PREHOOK: query: analyze table lineitem compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: x@lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: x@lineitem
+POSTHOOK: query: analyze table lineitem compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: x@lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: x@lineitem
+PREHOOK: query: analyze table customer compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: x@customer
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: x@customer
+POSTHOOK: query: analyze table customer compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: x@customer
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: x@customer
+PREHOOK: query: analyze table orders compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: x@orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: x@orders
+POSTHOOK: query: analyze table orders compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: x@orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: x@orders
+PREHOOK: query: create view q18_tmp_cached as
+select
+	l_orderkey,
+	sum(l_quantity) as t_sum_quantity
+from
+	lineitem
+where
+	l_orderkey is not null
+group by
+	l_orderkey
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: x@lineitem
+PREHOOK: Output: database:x
+PREHOOK: Output: x@q18_tmp_cached
+POSTHOOK: query: create view q18_tmp_cached as
+select
+	l_orderkey,
+	sum(l_quantity) as t_sum_quantity
+from
+	lineitem
+where
+	l_orderkey is not null
+group by
+	l_orderkey
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: x@lineitem
+POSTHOOK: Output: database:x
+POSTHOOK: Output: x@q18_tmp_cached
+POSTHOOK: Lineage: q18_tmp_cached.l_orderkey SIMPLE [(lineitem)lineitem.FieldSchema(name:l_orderkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: q18_tmp_cached.t_sum_quantity EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_quantity, type:double, comment:null), ]
+PREHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: x@customer
+PREHOOK: Input: x@lineitem
+PREHOOK: Input: x@orders
+PREHOOK: Input: x@q18_tmp_cached
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x@customer
+POSTHOOK: Input: x@lineitem
+POSTHOOK: Input: x@orders
+POSTHOOK: Input: x@q18_tmp_cached
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
+  HiveProject(c_name=[$4], c_custkey=[$3], o_orderkey=[$0], o_orderdate=[$2], o_totalprice=[$1], $f5=[$5])
+    HiveAggregate(group=[{0, 2, 3, 5, 6}], agg#0=[sum($8)])
+      HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                HiveTableScan(table=[[x, orders]], table:alias=[orders])
+            HiveProject($f0=[$0])
+              HiveFilter(condition=[>($1, 3E2)])
+                HiveAggregate(group=[{0}], agg#0=[sum($4)])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[x, lineitem]], table:alias=[lineitem])
+          HiveProject(c_custkey=[$0], c_name=[$1])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[x, customer]], table:alias=[customer])
+        HiveProject(l_orderkey=[$0], l_quantity=[$4])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[x, lineitem]], table:alias=[l])
+
