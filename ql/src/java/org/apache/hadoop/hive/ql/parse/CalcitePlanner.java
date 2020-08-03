@@ -165,6 +165,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -1981,7 +1983,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveExceptRewriteRule.INSTANCE);
 
       //1. Distinct aggregate rewrite
-
       if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
@@ -2032,9 +2033,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
       } else {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
@@ -2072,7 +2073,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveUnionPullUpConstantsRule.INSTANCE);
       rules.add(HiveAggregatePullUpConstantsRule.INSTANCE);
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          rules.toArray(new RelOptRule[rules.size()]));
+          rules.toArray(new RelOptRule[0]));
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.
@@ -2372,10 +2373,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final HepProgramBuilder program = new HepProgramBuilder();
-      // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin
+      // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
+      // If FK-PK are declared, it tries to pull non-filtering column appending join nodes.
+      List<RelOptRule> rules = Lists.newArrayList();
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(HiveJoinSwapConstraintsRule.INSTANCE);
+      }
+      rules.add(HiveSemiJoinProjectTransposeRule.INSTANCE);
+      rules.add(HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN);
+      rules.add(HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
+      rules.add(HiveProjectMergeRule.INSTANCE);
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ?
+            HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN :
+            HiveFilterProjectTransposeRule.DETERMINISTIC_ON_NON_FILTERING_JOIN);
+        rules.add(HiveFilterJoinRule.FILTER_ON_NON_FILTERING_JOIN);
+      }
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN, HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN,
-          HiveProjectMergeRule.INSTANCE);
+          rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
           new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
