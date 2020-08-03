@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
@@ -35,21 +36,27 @@ public class HivePartitionPruneRule extends RelOptRule {
   HiveConf conf;
 
   public HivePartitionPruneRule(HiveConf conf) {
-    super(operand(HiveFilter.class, operand(HiveTableScan.class, none())));
+    super(operand(RelNode.class, operand(HiveTableScan.class, none())));
     this.conf = conf;
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    HiveFilter filter = call.rel(0);
     HiveTableScan tScan = call.rel(1);
-    perform(call, filter, tScan);
+    HiveFilter filter = null;
+    if (call.rel(0) instanceof HiveFilter) {
+      performWithFilter(call, (HiveFilter) call.rel(0), tScan);
+    } else {
+      performWithoutFilter(call, tScan);
+    }
   }
 
-  protected void perform(RelOptRuleCall call, Filter filter,
+  private void performWithFilter(RelOptRuleCall call, Filter filter,
       HiveTableScan tScan) {
     // Original table
     RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
+    if (filter == null && !hiveTable.isPartitionListFetched()) {
+    }
 
     // Copy original table scan and table
     HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
@@ -69,5 +76,23 @@ public class HivePartitionPruneRule extends RelOptRule {
 
     call.transformTo(filter.copy(
         filter.getTraitSet(), Collections.singletonList(tScanCopy)));
+  }
+
+  private void performWithoutFilter(RelOptRuleCall call, HiveTableScan tScan) {
+    // Original table
+    RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
+    if (hiveTable.isPartitionListFetched()) {
+      return;
+    }
+
+    // Copy original table scan and table
+    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
+    RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
+
+    hiveTableCopy.computePartitionList(conf, null, tScanCopy.getPartOrVirtualCols());
+
+    RelNode relNode = call.rel(0);
+    call.transformTo(relNode.copy(
+        relNode.getTraitSet(), Collections.singletonList(tScanCopy)));
   }
 }

@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -430,11 +431,7 @@ public class RelOptHiveTable implements RelOptTable {
   @Override
   public double getRowCount() {
     if (rowCount == -1) {
-      if (null == partitionList) {
-        // we are here either unpartitioned table or partitioned table with no
-        // predicates
-        computePartitionList(hiveConf, null, new HashSet<Integer>());
-      }
+      Preconditions.checkNotNull(partitionList);
       rowCount = StatsUtils.getNumRows(hiveConf, getNonPartColumns(), hiveTblMetadata,
           partitionList, noColsMissingStats);
     }
@@ -509,11 +506,7 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
 
-    if (null == partitionList) {
-      // We could be here either because its an unpartitioned table or because
-      // there are no pruning predicates on a partitioned table.
-      computePartitionList(hiveConf, null, new HashSet<Integer>());
-    }
+    Preconditions.checkNotNull(partitionList);
 
     String partitionListKey = partitionList.getKey().orElse(null);
     ColumnStatsList colStatsCached = colStatsCache.get(partitionListKey);
@@ -755,4 +748,7 @@ public class RelOptHiveTable implements RelOptTable {
     return partitionList != null ? partitionList.getKey().orElse(null) : null;
   }
 
+  public boolean isPartitionListFetched() {
+    return partitionList != null; 
+  }
 }
