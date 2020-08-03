@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
@@ -70,7 +71,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -148,7 +154,7 @@ public class HiveFunctionHelper implements FunctionHelper {
   @Override
   public FunctionInfo getFunctionInfo(String functionText)
       throws SemanticException {
-    return FunctionRegistry.getFunctionInfo(functionText);
+    return new HiveFunctionInfo(FunctionRegistry.getFunctionInfo(functionText));
   }
 
   /**
@@ -613,6 +619,66 @@ public class HiveFunctionHelper implements FunctionHelper {
   @Override
   public boolean isMultiColumnClauseSupported() {
     return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public boolean isAndFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isOrFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isInFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFIn;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isEqualFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqual
+        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isStateful(FunctionInfo fi) {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    if (genericUDF == null) {
+      return false;
+    }
+    return FunctionRegistry.isStateful(fi.getGenericUDF());
   }
 
 }
