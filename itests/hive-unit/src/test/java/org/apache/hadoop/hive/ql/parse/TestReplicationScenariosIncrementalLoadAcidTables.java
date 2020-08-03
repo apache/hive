@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.shims.Utils;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -106,6 +107,11 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   @Before
   public void setup() throws Throwable {
+    // set up metastore client cache
+    if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
+
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
