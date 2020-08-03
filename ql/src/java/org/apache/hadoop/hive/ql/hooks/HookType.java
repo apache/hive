@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HiveDriverRunHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
@@ -31,8 +32,6 @@ import java.util.List;
  */
 public enum HookType {
 
-  OOM(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class, true,
-      "Hooks that will be run when HiveServer2 stops due to OutOfMemoryError"),
   QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class, false,
       "Hooks that will be triggered before/after query compilation and before/after query execution"),
   SEMANTIC_ANALYZER_HOOK(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class, false,
@@ -44,13 +43,19 @@ public enum HookType {
   POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class, false,
       "Post-execution hooks to be invoked for each statement"),
   ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class, false,
-      "On-failure hooks to be invoked for each statement");
+      "On-failure hooks to be invoked for each statement"),
+  REDACTOR(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class, false,
+      "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
+  // The HiveSessionHook.class cannot access, use Hook.class instead
+  HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class, false,
+      "Hooks to be executed when session manager starts a new session"),
+  OOM(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class, true,
+      "Hooks that will be run when HiveServer2 stops due to OutOfMemoryError");
 
-  private final HiveConf.ConfVars hookConfVar;
+  private final HiveConf.ConfVars confVar;
   // the super class or interface of the corresponding hooks
   private final Class hookClass;
-  // true for making the corresponding hooks permanent mainly for latter use,
-  // otherwise false.
+  // true for making the corresponding hooks permanent mainly for latter use, otherwise false.
   private final boolean isGlobal;
   private final String description;
   // cache the hooks in the enum instance when isGlobal is true
@@ -58,13 +63,13 @@ public enum HookType {
   // flag that indicates whether the hooks have been loaded from configuration or not
   private boolean loadedFromConf = false;
 
-  HookType(HiveConf.ConfVars hookConfVar, Class hookClass, boolean isGlobal, String description) {
-    this.hookConfVar = hookConfVar;
-    this.hookClass = hookClass;
+  HookType(HiveConf.ConfVars confVar, Class hookClass, boolean isGlobal, String description) {
+    this.confVar = confVar;
     this.isGlobal = isGlobal;
     this.description = description;
+    this.hookClass = hookClass;
     if (isGlobal) {
-     hooks = Collections.synchronizedList(new ArrayList());
+      hooks = Collections.synchronizedList(new ArrayList());
     }
   }
 
@@ -94,7 +99,7 @@ public enum HookType {
   }
 
   public HiveConf.ConfVars getHookConfVar() {
-    return this.hookConfVar;
+    return this.confVar;
   }
 
   public String getDescription() {

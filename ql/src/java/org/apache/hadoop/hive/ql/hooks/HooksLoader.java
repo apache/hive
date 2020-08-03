@@ -23,6 +23,7 @@ import com.cronutils.utils.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class HooksLoader {
 
   private final HiveConf conf;
   // The containers that store different kinds of hooks
-  private HookContainer[] containers;
+  private final HookContainer[] containers;
   // for unit test purpose, check change of the hooks after invoking loadHooksFromConf
   private boolean forTest = false;
 
@@ -85,10 +86,10 @@ public class HooksLoader {
         for (String clzName : csHooks) {
           Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
           if (type.getHookClass().isAssignableFrom(hookCls)) {
-            Object hookObj = hookCls.newInstance();
+            Object hookObj = ReflectionUtil.newInstance(hookCls, conf);
             hooks.add(hookObj);
           } else {
-            LOG.warn("The clazz: {} should be the subclass of {}, as the type {} defined, configuration key: {}",
+            LOG.warn("The clazz: {} should be the subclass of {}, as the type: {} defined, configuration key: {}",
                 clzName, type.getHookClass().getName(), type, confVars.varname);
           }
         }
@@ -118,8 +119,8 @@ public class HooksLoader {
         containers[index].addHook(hook);
       }
     } else {
-      String message = "Error adding hook " + hook.getClass().getName() + " into type " + type +
-          ", as the hook doesn't implement or extend " + type.getHookClass().getName();
+      String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
+          ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
@@ -138,7 +139,7 @@ public class HooksLoader {
     if (!type.getHookClass().isAssignableFrom(clazz)) {
       String message = "The arg clazz: " + clazz.getName() + " should be the same as, "
           + "or the subclass of " + type.getHookClass().getName()
-          + ", as the type " + type + " defined";
+          + ", as the type: " + type + " defined";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
@@ -153,7 +154,6 @@ public class HooksLoader {
   }
 
   public List getHooks(HookType type) {
-    Preconditions.checkNotNull(type);
     return getHooks(type, type.getHookClass());
   }
 
