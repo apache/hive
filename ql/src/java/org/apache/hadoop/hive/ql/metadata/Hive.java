@@ -137,6 +137,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
@@ -3258,8 +3260,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public org.apache.hadoop.hive.metastore.api.Partition getPartition(String dbName, String tableName,
       List<String> params) throws HiveException {
+    Table t = getTable(dbName, tableName);
     try {
-      return getMSC().getPartition(dbName, tableName, params);
+      GetPartitionRequest req = new GetPartitionRequest();
+      req.setDbName(dbName);
+      req.setTblName(tableName);
+      req.setPartVals(params);
+      if (AcidUtils.isTransactionalTable(t)) {
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tableName);
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(t.getTTable().getId());
+      }
+      GetPartitionResponse res = getMSC().getPartitionRequest(req);
+      return res.getPartition();
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -3623,6 +3636,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (AcidUtils.isTransactionalTable(t)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(t.getTTable().getId());
       }
       GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
       names = res.getNames();
@@ -3661,6 +3675,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (AcidUtils.isTransactionalTable(tbl)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(tbl.getTTable().getId());
       }
       names = getMSC().listPartitionNames(req);
 
@@ -3697,6 +3712,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (AcidUtils.isTransactionalTable(tbl)) {
             ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
             req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+            req.setId(tbl.getTTable().getId());
           }
           GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
           tParts = res.getPartitions();
