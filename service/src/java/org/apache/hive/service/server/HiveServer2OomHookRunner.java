@@ -19,7 +19,7 @@
 package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.hooks.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 
 import java.util.List;

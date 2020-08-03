@@ -77,18 +77,18 @@ public class TestHooksLoader {
         OomRunner.class.getName() + "," + OomRunner.class.getName() + "," + OomRunner.class.getName());
 
     HooksLoader loader = new HooksLoader(hiveConf, true);
-    verify(HookType.OOM, loader, OomRunner.class, 0, 3);
-    verify(HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
-    verify(HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
-    verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 0,1);
+    verify(HookContext.HookType.OOM, loader, OomRunner.class, 0, 3);
+    verify(HookContext.HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
+    verify(HookContext.HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
+    verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 0,1);
     // load again
-    verify(HookType.OOM, loader, OomRunner.class, 3, 3);
-    verify(HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 2, 2);
-    verify(HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 1,1);
-    verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 1,1);
+    verify(HookContext.HookType.OOM, loader, OomRunner.class, 3, 3);
+    verify(HookContext.HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 2, 2);
+    verify(HookContext.HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 1,1);
+    verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 1,1);
   }
 
-  private <T> void verify(HookType type, HooksLoader loader, Class<T> expectedCls,
+  private <T> void verify(HookContext.HookType type, HooksLoader loader, Class<T> expectedCls,
       int beforeSize, int afterSize) throws Exception {
     List<T> loadedHooks = loader.getHooks(type, expectedCls);
     Assert.assertTrue(loadedHooks.size() == beforeSize);
@@ -109,13 +109,13 @@ public class TestHooksLoader {
   public void testAddHooks() throws Exception {
     HiveConf hiveConf = new HiveConf();
     HooksLoader loader = new HooksLoader(hiveConf);
-    verify(HookType.OOM, loader, Runnable.class, OomRunner.class);
-    verify(HookType.PRE_EXEC_HOOK, loader, ExecuteWithHookContext.class, PreExecHook.class);
-    verify(HookType.POST_EXEC_HOOK, loader, ExecuteWithHookContext.class, PostExecHook.class);
-    verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, HiveSemanticAnalyzerHook.class, SemanticAnalysisHook.class);
+    verify(HookContext.HookType.OOM, loader, Runnable.class, OomRunner.class);
+    verify(HookContext.HookType.PRE_EXEC_HOOK, loader, ExecuteWithHookContext.class, PreExecHook.class);
+    verify(HookContext.HookType.POST_EXEC_HOOK, loader, ExecuteWithHookContext.class, PostExecHook.class);
+    verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, HiveSemanticAnalyzerHook.class, SemanticAnalysisHook.class);
   }
 
-  private<T> void verify(HookType type, HooksLoader loader, Class<T> superCls, Class realCls)
+  private<T> void verify(HookContext.HookType type, HooksLoader loader, Class<T> superCls, Class realCls)
       throws Exception {
     List<T> origHooks = loader.getHooks(type, superCls);
     int size = origHooks.size();

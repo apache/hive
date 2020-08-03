@@ -29,7 +29,7 @@ public class HookUtils {
     String redactedString = logString;
 
     if (conf != null && logString != null) {
-      List<Redactor> queryRedactors = readHooksFromConf(conf, HookType.REDACTOR);
+      List<Redactor> queryRedactors = readHooksFromConf(conf, HookContext.HookType.REDACTOR);
       for (Redactor redactor : queryRedactors) {
         redactedString = redactor.redactQuery(redactedString);
       }
@@ -37,7 +37,7 @@ public class HookUtils {
     return redactedString;
   }
 
-  public static <T> List<T> readHooksFromConf(HiveConf conf, HookType type) {
+  public static <T> List<T> readHooksFromConf(HiveConf conf, HookContext.HookType type) {
     return new HooksLoader(conf).getHooks(type);
   }
 }

@@ -30,7 +30,7 @@ public class PrintCompletedTasksHook implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) {
-    if (hookContext.getHookType() == HookType.POST_EXEC_HOOK) {
+    if (hookContext.getHookType() == HookContext.HookType.POST_EXEC_HOOK) {
       SessionState.LogHelper console = SessionState.getConsole();
       if (console != null && !hookContext.getQueryPlan().isExplain()) {
         for (TaskRunner runner : hookContext.getCompleteTaskList()) {

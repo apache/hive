@@ -39,7 +39,7 @@ public class PostExecOrcRowGroupCountPrinter implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) throws Exception {
-    assert (hookContext.getHookType() == HookType.POST_EXEC_HOOK);
+    assert (hookContext.getHookType() == HookContext.HookType.POST_EXEC_HOOK);
     HiveConf conf = hookContext.getConf();
     if (!"tez".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
       return;

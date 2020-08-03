@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 
@@ -39,7 +38,7 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
 
     @Override
     public void run(HookContext hookContext) throws Exception {
-      if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
+      if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
 
         if (exception != null && exception.getMessage() != null

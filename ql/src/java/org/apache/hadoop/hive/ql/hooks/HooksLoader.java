@@ -33,8 +33,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- *  Loads and stores different kinds of hooks, provides {@link HooksLoader#addHook(HookType, Object)}} to
- *  add hook alone or {@link HooksLoader#getHooks(HookType, Class)} to get all hooks
+ *  Loads and stores different kinds of hooks, provides {@link HooksLoader#addHook(HookContext.HookType, Object)}} to
+ *  add hook alone or {@link HooksLoader#getHooks(HookContext.HookType, Class)} to get all hooks
  *  corresponding to the specific hook type.
  */
 public class HooksLoader {
@@ -51,7 +51,7 @@ public class HooksLoader {
 
   public HooksLoader(HiveConf conf) {
     this.conf = conf;
-    this.containers = new HookContainer[HookType.values().length];
+    this.containers = new HookContainer[HookContext.HookType.values().length];
     for (int i = 0; i < containers.length; i++) {
       containers[i] = new HookContainer();
     }
@@ -73,7 +73,7 @@ public class HooksLoader {
    * @param type hook type
    */
   @VisibleForTesting
-  void loadHooksFromConf(HookType type) {
+  void loadHooksFromConf(HookContext.HookType type) {
     HookContainer container = containers[type.ordinal()];
     if (!container.loadedFromConf) {
       container.loadedFromConf = true;
@@ -113,7 +113,7 @@ public class HooksLoader {
    * @param type The hook type
    * @param hook The hook that will be added
    */
-  public void addHook(HookType type, Object hook) {
+  public void addHook(HookContext.HookType type, Object hook) {
     Preconditions.checkNotNull(type);
     Preconditions.checkNotNull(hook);
     if (!forTest) {
@@ -136,7 +136,7 @@ public class HooksLoader {
    * @param <T> The generic type of the hooks
    * @return List of hooks
    */
-  public <T> List<T> getHooks(HookType type, Class<T> clazz) {
+  public <T> List<T> getHooks(HookContext.HookType type, Class<T> clazz) {
     Preconditions.checkNotNull(type);
     Preconditions.checkNotNull(clazz);
     if (!type.getHookClass().isAssignableFrom(clazz)) {
@@ -152,7 +152,7 @@ public class HooksLoader {
     return containers[type.ordinal()].getHooks();
   }
 
-  public List getHooks(HookType type) {
+  public List getHooks(HookContext.HookType type) {
     return getHooks(type, type.getHookClass());
   }
 

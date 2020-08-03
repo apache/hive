@@ -39,7 +39,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 import java.util.List;
 
-import static org.apache.hadoop.hive.ql.hooks.HookType.*;
+import static org.apache.hadoop.hive.ql.hooks.HookContext.HookType.*;
 
 /**
  * Handles hook executions for {@link Driver}.

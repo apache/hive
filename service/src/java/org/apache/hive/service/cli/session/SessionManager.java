@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.hooks.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -711,7 +711,7 @@ public class SessionManager extends CompositeService {
   // execute session hooks
   private void executeSessionHooks(HiveSession session) throws Exception {
     List<HiveSessionHook> sessionHooks =
-        HookUtils.readHooksFromConf(hiveConf, HookType.HIVE_SERVER2_SESSION_HOOK);
+        HookUtils.readHooksFromConf(hiveConf, HookContext.HookType.HIVE_SERVER2_SESSION_HOOK);
     for (HiveSessionHook sessionHook : sessionHooks) {
       sessionHook.run(new HiveSessionHookContextImpl(session));
     }

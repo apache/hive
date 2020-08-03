@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.hooks.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
