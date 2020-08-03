@@ -4187,26 +4187,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         files = new FileStatus[] {src};
       }
 
-      if (isCompactionTable) {
-        // Helper tables used for query-based compaction have a special file structure after
-        // filesink: tmpdir/attemptid/bucketid.
-        // We don't care about the attemptId anymore and don't want it in the table's final
-        // structure so just move the bucket files.
+      if (isCompactionTable && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE)) {
         try {
-          List<FileStatus> fileStatuses = new ArrayList<>();
-          for (FileStatus file : files) {
-            if (file.isDirectory() && AcidUtils.originalBucketFilter.accept(file.getPath())) {
-              FileStatus[] taskDir = srcFs.listStatus(file.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-              fileStatuses.addAll(Arrays.asList(taskDir));
-            } else {
-              fileStatuses.add(file);
-            }
-          }
-          files = fileStatuses.toArray(new FileStatus[files.length]);
-
-          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE)) {
-            AcidUtils.OrcAcidVersion.writeVersionFile(destf, destFs);
-          }
+          AcidUtils.OrcAcidVersion.writeVersionFile(destf, destFs);
         } catch (IOException e) {
           if (null != pool) {
             pool.shutdownNow();

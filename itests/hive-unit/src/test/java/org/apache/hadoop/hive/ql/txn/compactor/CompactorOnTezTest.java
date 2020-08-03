@@ -99,6 +99,13 @@ public class CompactorOnTezTest {
     conf.setBoolean("hive.merge.tezfiles", false);
     conf.setBoolean("hive.in.tez.test", true);
     if (!mmCompaction) {
+      // We need these settings to create a table which is not bucketed, but contains multiple files.
+      // If these parameters are set when inserting 100 rows into the table, the rows will
+      // be distributed into multiple files. This setup is used in the testMinorCompactionWithoutBuckets,
+      // testMinorCompactionWithoutBucketsInsertOverwrite and testMajorCompactionWithoutBucketsInsertAndDeleteInsertOverwrite
+      // tests in the TestCrudCompactorOnTez class.
+      // This use case has to be tested because of HIVE-23763. The MM compaction is not affected by this issue,
+      // therefore no need to set these configs for MM compaction.
       conf.set("tez.grouping.max-size", "1024");
       conf.set("tez.grouping.min-size", "1");
     }
@@ -224,6 +231,19 @@ public class CompactorOnTezTest {
       executeStatementOnDriver("delete from " + tblName + " where a = '1'", driver);
     }
 
+    /**
+     * This method is for creating a non-bucketed table in which the data is distributed
+     * into multiple splits. The initial data is 100 rows and it should be split into
+     * multiple files, like bucket_000001, bucket_000002, ...
+     * This is needed because the MINOR compactions had issues with tables like this. (HIVE-23763)
+     * @param dbName
+     * @param tblName
+     * @param tempTblName
+     * @param createDeletes
+     * @param createInserts
+     * @param insertOverwrite
+     * @throws Exception
+     */
     void createTableWithoutBucketWithMultipleSplits(String dbName, String tblName, String tempTblName,
         boolean createDeletes, boolean createInserts, boolean insertOverwrite) throws Exception {
       if (dbName != null) {

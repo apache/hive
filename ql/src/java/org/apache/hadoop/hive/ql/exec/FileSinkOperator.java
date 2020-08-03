@@ -743,6 +743,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
+  /**
+   * There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
+   * was not correlated correctly with the bucket numbers. So it could happen that rows from different buckets ended up in the same
+   * FileSinkOperator and got written out into one file. This is not correct, one bucket file must contain rows from the same bucket.
+   * Therefore the FileSinkOperator got extended with this method to be able to handle rows from different buckets.
+   * In this case it will create separate files from each bucket. This logic is similar to the one in the createDynamicBucket method.
+   * @param fsp
+   * @throws HiveException
+   */
   protected void createBucketFilesForCompaction(FSPaths fsp) throws HiveException {
     try {
       if (fsp.outPaths.length < bucketId + 1) {
