@@ -229,7 +229,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createBooleanConstantExpr(String value) {
+  protected ExprNodeConstantDesc createBooleanConstantExpr(String value) {
     Boolean b = value != null ? Boolean.valueOf(value) : null;
     return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, b);
   }
@@ -238,7 +238,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createBigintConstantExpr(String value) {
+  protected ExprNodeConstantDesc createBigintConstantExpr(String value) {
     Long l = Long.valueOf(value);
     return new ExprNodeConstantDesc(l);
   }
@@ -247,7 +247,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createIntConstantExpr(String value) {
+  protected ExprNodeConstantDesc createIntConstantExpr(String value) {
     Integer i = Integer.valueOf(value);
     return new ExprNodeConstantDesc(i);
   }
@@ -256,7 +256,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createSmallintConstantExpr(String value) {
+  protected ExprNodeConstantDesc createSmallintConstantExpr(String value) {
     Short s = Short.valueOf(value);
     return new ExprNodeConstantDesc(s);
   }
@@ -265,7 +265,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createTinyintConstantExpr(String value) {
+  protected ExprNodeConstantDesc createTinyintConstantExpr(String value) {
     Byte b = Byte.valueOf(value);
     return new ExprNodeConstantDesc(b);
   }
@@ -274,7 +274,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createFloatConstantExpr(String value) {
+  protected ExprNodeConstantDesc createFloatConstantExpr(String value) {
     Float f = Float.valueOf(value);
     return new ExprNodeConstantDesc(f);
   }
@@ -283,7 +283,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createDoubleConstantExpr(String value) {
+  protected ExprNodeConstantDesc createDoubleConstantExpr(String value) {
     Double d = Double.valueOf(value);
     return new ExprNodeConstantDesc(d);
   }
@@ -292,7 +292,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+  protected ExprNodeConstantDesc createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
     HiveDecimal hd = HiveDecimal.create(value);
     if (!allowNullValueConstantExpr && hd == null) {
       return null;
@@ -410,7 +410,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createStringConstantExpr(String value) {
+  protected ExprNodeConstantDesc createStringConstantExpr(String value) {
     return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, value);
   }
 
@@ -418,7 +418,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createDateConstantExpr(String value) {
+  protected ExprNodeConstantDesc createDateConstantExpr(String value) {
     Date d = Date.valueOf(value);
     return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, d);
   }
@@ -427,7 +427,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createTimestampConstantExpr(String value) {
+  protected ExprNodeConstantDesc createTimestampConstantExpr(String value) {
     Timestamp t = Timestamp.valueOf(value);
     return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, t);
   }
@@ -445,7 +445,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createIntervalYearMonthConstantExpr(String value) {
+  protected ExprNodeConstantDesc createIntervalYearMonthConstantExpr(String value) {
     return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
         HiveIntervalYearMonth.valueOf(value));
   }
@@ -454,7 +454,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  public ExprNodeConstantDesc createIntervalDayTimeConstantExpr(String value) {
+  protected ExprNodeConstantDesc createIntervalDayTimeConstantExpr(String value) {
     return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
         HiveIntervalDayTime.valueOf(value));
   }

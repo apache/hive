@@ -58,6 +58,7 @@ executeStatement
     -> ^(TOK_EXECUTE executeParamList identifier)
     ;
 
+//TODO: instead of constant using expression will provide richer and broader parameters
 executeParamList
 @init { gParent.pushMsg("execute param list", state); }
 @after { gParent.popMsg(state); }

@@ -16,14 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.drop;
+package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -56,8 +52,6 @@ public class PrepareStatementAnalyzer extends CalcitePlanner {
       throw new SemanticException("Prepare query: " + queryName + " already exists.");
     }
     ss.getPreparePlans().put(queryName, this);
-
-    ss.getQueryConfig().put(queryName, this.conf);
   }
 
 

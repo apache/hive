@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.drop;
+package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -25,28 +25,20 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.ExprNodeDescExprFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.parquet.format.DecimalType;
+import org.apache.parquet.Preconditions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -60,7 +52,7 @@ import java.util.Set;
 /**
  * Analyzer for Execute statement.
  * This analyzer
- *  retreives cached {@link BaseSemanticAnalyzer},
+ *  retrieves cached {@link BaseSemanticAnalyzer},
  *  makes copy of all tasks by serializing/deserializing it,
  *  bind dynamic parameters inside cached {@link BaseSemanticAnalyzer} using values provided
  */
@@ -100,7 +92,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Utility method to create copy of provided object using kyro serialization/de-serialization.
+   * Utility method to create copy of provided object using kryo serialization/de-serialization.
    */
   private <T> T makeCopy(final Object task, Class<T> objClass) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -122,7 +114,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private String getParamLiteralValue(Map<Integer, ASTNode> paramMap, int paramIndex) {
-    assert(paramMap.containsKey(paramIndex));
+    Preconditions.checkArgument(paramMap.containsKey(paramIndex), "Index not found.");
     ASTNode node = paramMap.get(paramIndex);
 
     if (node.getType() == HiveParser.StringLiteral) {
@@ -134,6 +126,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+
   /**
    * This method creates a constant expression to replace the given dynamic expression.
    * @param dynamicExpr Expression node representing Dynamic expression
@@ -141,55 +134,17 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
    * @param parameterMap Integer to AST node map
    */
   private ExprNodeConstantDesc getConstant(ExprDynamicParamDesc dynamicExpr, TypeInfo typeInfo,
-      Map<Integer, ASTNode> parameterMap) {
-    assert(parameterMap.containsKey(dynamicExpr.getIndex()));
+      Map<Integer, ASTNode> parameterMap) throws SemanticException {
+    Preconditions.checkArgument(parameterMap.containsKey(dynamicExpr.getIndex()),
+        "Paramter index not found");
 
-    String value = getParamLiteralValue(parameterMap, dynamicExpr.getIndex());
+    ASTNode paramNode = parameterMap.get(dynamicExpr.getIndex());
 
-    ExprNodeDescExprFactory factory = new ExprNodeDescExprFactory();
-
-    if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
-      return factory.createBooleanConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo)) {
-      return factory.createIntConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
-      return factory.createBigintConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
-      return factory.createStringConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.charTypeInfo)
-        // CHAR and VARCHAR typeinfo could differ due to different length, therefore an extra
-        // check is used (based on instanceof) to determine if it is char/varchar types
-        || typeInfo instanceof CharTypeInfo) {
-      //TODO: is it okay to create string
-      return factory.createStringConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.varcharTypeInfo)
-        || typeInfo instanceof VarcharTypeInfo) {
-      //TODO: is it okay to create string
-      return factory.createStringConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.floatTypeInfo)) {
-      return factory.createFloatConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
-      return factory.createDoubleConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
-      return factory.createTinyintConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
-      return factory.createSmallintConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
-      return factory.createDateConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
-      return factory.createTimestampConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {
-      return factory.createIntervalYearMonthConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.intervalDayTimeTypeInfo)) {
-      return factory.createIntervalDayTimeConstantExpr(value);
-    } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)) {
-      //TODO: is it okay to create string
-      return factory.createStringConstantExpr(value);
-    } else if (typeInfo instanceof DecimalTypeInfo) {
-      return factory.createDecimalConstantExpr(value, true);
-    }
-    // we will let constant expression itself infer the type
-    return new ExprNodeConstantDesc(parameterMap.get(dynamicExpr.getIndex()));
+    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+    ExprNodeDesc node = ExprNodeTypeCheck.genExprNode(paramNode, typeCheckCtx).get(paramNode);
+    Preconditions.checkArgument(node instanceof ExprNodeConstantDesc,
+        "Invalid expression created");
+    return (ExprNodeConstantDesc)node;
   }
 
   /**
@@ -199,7 +154,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
    * @param paramMap
    */
   private List<ExprNodeDesc> replaceDynamicParamsInExprList(List<ExprNodeDesc> exprList,
-      Map<Integer, ASTNode> paramMap) {
+      Map<Integer, ASTNode> paramMap) throws SemanticException{
     List<ExprNodeDesc> updatedExprList = new ArrayList<>();
     for (ExprNodeDesc expr:exprList) {
       expr = replaceDynamicParamsWithConstant(expr, expr.getTypeInfo(), paramMap);
@@ -218,7 +173,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
    * which isn't dynamic parameter
    */
   private ExprNodeDesc replaceDynamicParamsWithConstant(ExprNodeDesc expr, TypeInfo typeInfo,
-      Map<Integer, ASTNode> paramMap) {
+      Map<Integer, ASTNode> paramMap) throws SemanticException{
     if (expr.getChildren() == null || expr.getChildren().isEmpty()) {
       if (expr instanceof ExprDynamicParamDesc) {
         return getConstant((ExprDynamicParamDesc)expr, typeInfo, paramMap);
@@ -230,22 +185,20 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
       // we need typeinfo
       if(child instanceof ExprDynamicParamDesc) {
         continue;
-      } else if( child.getTypeInfo() != TypeInfoFactory.voidTypeInfo
-          && !child.getTypeInfo().getTypeName().equals(
-          TypeInfoFactory.voidTypeInfo.getTypeName())){
+      } else if( child.getTypeInfo() != TypeInfoFactory.voidTypeInfo) {
         typeInfo = child.getTypeInfo();
         break;
       }
     }
-    assert(typeInfo != null);
+    Preconditions.checkArgument(typeInfo != null, "TypeInfo is null");
 
     List<ExprNodeDesc> exprList = new ArrayList<>();
     for(ExprNodeDesc child: expr.getChildren()) {
-      if(child instanceof ExprDynamicParamDesc) {
-        child = getConstant((ExprDynamicParamDesc)child, typeInfo, paramMap);
-      } else {
+      //if(child instanceof ExprDynamicParamDesc) {
+      //  child = getConstant((ExprDynamicParamDesc)child, typeInfo, paramMap);
+      //} else {
         child = replaceDynamicParamsWithConstant(child, typeInfo, paramMap);
-      }
+      //}
       exprList.add(child);
     }
     expr.getChildren().clear();
@@ -258,7 +211,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
    * including Fetch Task and all root tasks to find and replace all dynamic expressions
    */
   private void bindDynamicParams(Map<Integer, ASTNode> parameterMap) throws SemanticException{
-    assert(!parameterMap.isEmpty());
+    Preconditions.checkArgument(!parameterMap.isEmpty(), "Parameter map is empty");
 
     Set<Operator<?>> operators = new HashSet<>();
     if (this.getFetchTask() != null) {
@@ -292,22 +245,6 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
         filterOp.getConf().setPredicate(
             replaceDynamicParamsWithConstant(predicate, TypeInfoFactory.booleanTypeInfo, parameterMap));
         break;
-      case SELECT:
-        if (op instanceof VectorSelectOperator) {
-          VectorSelectOperator selectOperator = (VectorSelectOperator) op;
-          List<ExprNodeDesc> selectExprList = selectOperator.getConf().getColList();
-          if (selectExprList != null) {
-            selectOperator.getConf().setColList(replaceDynamicParamsInExprList(selectExprList, parameterMap));
-          }
-        } else {
-          SelectOperator selectOperator = (SelectOperator)op;
-          List<ExprNodeDesc> selectExprList = selectOperator.getConf().getColList();
-          if (selectExprList != null) {
-            selectOperator.getConf().setColList(replaceDynamicParamsInExprList(selectExprList, parameterMap));
-          }
-        }
-        break;
-      default:
       }
     }
   }
@@ -316,7 +253,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
 
     SessionState ss = SessionState.get();
-    assert(ss != null);
+    Preconditions.checkNotNull(ss, "SessionState object must not be NULL");
     String queryName = getQueryName(root);
     if (ss.getPreparePlans().containsKey(queryName)) {
       // retrieve cached plan from session state
@@ -365,9 +302,11 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
    * of the parameter
    */
   private Map<Integer, ASTNode> findParams(ASTNode executeRoot) {
-    assert(executeRoot.getType() == HiveParser.TOK_EXECUTE);
+    Preconditions.checkArgument(executeRoot.getType() == HiveParser.TOK_EXECUTE,
+        "Unexpected ASTNode type");
     ASTNode executeParamList = (ASTNode)executeRoot.getChildren().get(0);
-    assert (executeParamList.getType() == HiveParser.TOK_EXECUTE_PARAM_LIST);
+    Preconditions.checkArgument(executeParamList.getType() == HiveParser.TOK_EXECUTE_PARAM_LIST,
+        "Unexpected execute parameter type");
 
     Map<Integer, ASTNode> paramMap = new HashMap<>();
 

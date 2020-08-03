@@ -205,7 +205,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createBooleanConstantExpr(String value) {
+  protected RexNode createBooleanConstantExpr(String value) {
     Boolean b = value != null ? Boolean.valueOf(value) : null;
     return rexBuilder.makeLiteral(b,
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN),
@@ -216,7 +216,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createBigintConstantExpr(String value) {
+  protected RexNode createBigintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
         new BigDecimal(Long.valueOf(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
@@ -227,7 +227,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createIntConstantExpr(String value) {
+  protected RexNode createIntConstantExpr(String value) {
     return rexBuilder.makeLiteral(
         new BigDecimal(Integer.valueOf(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.INTEGER),
@@ -238,7 +238,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createSmallintConstantExpr(String value) {
+  protected RexNode createSmallintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
         new BigDecimal(Short.valueOf(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.SMALLINT),
@@ -249,7 +249,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createTinyintConstantExpr(String value) {
+  protected RexNode createTinyintConstantExpr(String value) {
     return rexBuilder.makeLiteral(
         new BigDecimal(Byte.valueOf(value)),
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.TINYINT),
@@ -260,7 +260,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createFloatConstantExpr(String value) {
+  protected RexNode createFloatConstantExpr(String value) {
     Float f = Float.valueOf(value);
     return rexBuilder.makeApproxLiteral(
         new BigDecimal(Float.toString(f)),
@@ -271,7 +271,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createDoubleConstantExpr(String value) throws SemanticException {
+  protected RexNode createDoubleConstantExpr(String value) throws SemanticException {
     Double d = Double.valueOf(value);
     // TODO: The best solution is to support NaN in expression reduction.
     if (Double.isNaN(d)) {
@@ -286,7 +286,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+  protected RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
     HiveDecimal hd = HiveDecimal.create(value);
     if (!allowNullValueConstantExpr && hd == null) {
       return null;
@@ -414,7 +414,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexLiteral createStringConstantExpr(String value) {
+  protected RexLiteral createStringConstantExpr(String value) {
     RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
         Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
@@ -428,7 +428,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexLiteral createDateConstantExpr(String value) {
+  protected RexLiteral createDateConstantExpr(String value) {
     Date d = Date.valueOf(value);
     return rexBuilder.makeDateLiteral(
         DateString.fromDaysSinceEpoch(d.toEpochDay()));
@@ -438,7 +438,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexLiteral createTimestampConstantExpr(String value) {
+  protected RexLiteral createTimestampConstantExpr(String value) {
     Timestamp t = Timestamp.valueOf(value);
     return (RexLiteral) rexBuilder.makeLiteral(
         TimestampString.fromMillisSinceEpoch(t.toEpochMilli()).withNanos(t.getNanos()),
@@ -473,7 +473,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexLiteral createIntervalYearMonthConstantExpr(String value) {
+  protected RexLiteral createIntervalYearMonthConstantExpr(String value) {
     BigDecimal totalMonths = BigDecimal.valueOf(HiveIntervalYearMonth.valueOf(value).getTotalMonths());
     return rexBuilder.makeIntervalLiteral(totalMonths,
         new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1, 1)));
@@ -483,7 +483,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  public RexLiteral createIntervalDayTimeConstantExpr(String value) {
+  protected RexLiteral createIntervalDayTimeConstantExpr(String value) {
     HiveIntervalDayTime v = HiveIntervalDayTime.valueOf(value);
     BigDecimal secsValueBd = BigDecimal
         .valueOf(v.getTotalSeconds() * 1000);

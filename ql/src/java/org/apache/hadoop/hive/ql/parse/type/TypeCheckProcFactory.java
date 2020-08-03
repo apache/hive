@@ -296,11 +296,6 @@ public class TypeCheckProcFactory<T> {
         return null;
       }
 
-      T desc = processGByExpr(nd, procCtx);
-      if (desc != null) {
-        return desc;
-      }
-
       ASTNode node = (ASTNode)nd;
       String indexStr = ((ASTNode)(node)).getText();
       int index = Integer.parseInt(indexStr);

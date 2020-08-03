@@ -22,8 +22,6 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.ddl.table.drop.ExecuteStatementAnalyzer;
-import org.apache.hadoop.hive.ql.ddl.table.drop.PrepareStatementAnalyzer;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

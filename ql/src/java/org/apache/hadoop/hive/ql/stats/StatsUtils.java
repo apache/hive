@@ -1621,7 +1621,10 @@ public class StatsUtils {
       colType = enfd.getTypeString();
       countDistincts = numRows;
     } else if (end instanceof ExprDynamicParamDesc) {
-      //skip colecting stats for parameters
+      //skip collecting stats for parameters
+      // ideally we should estimate and create colstats object, because otherwise it could lead to
+      // planning as if stats are missing. But since colstats require column name and type it is not
+      // possible to create colstats object
       return null;
     } else {
       throw new IllegalArgumentException("not supported expr type " + end.getClass());

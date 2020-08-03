@@ -434,9 +434,9 @@ public class Driver implements IDriver {
     driverState.lock();
     try {
       if (driverContext != null && driverContext.getPlan() != null
-          && driverContext.getPlan().getIsPrepareQuery()
+          && driverContext.getPlan().isPrepareQuery()
           && !driverContext.getPlan().isExplain()) {
-        //TODO: LOG
+        LOG.info("Skip running tasks for prepare plan");
         return;
       }
       if (alreadyCompiled) {

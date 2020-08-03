@@ -34,7 +34,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
- * A constant expression.
+ * An expression representing dynamic parameter.
+ * This is required for Prepare/Execute statements
  */
 public class ExprDynamicParamDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -63,7 +64,7 @@ public class ExprDynamicParamDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public String toString() {
-    return "Dynamic Parameter " + " index: " + index;
+    return "$" + index;
   }
 
   @Override

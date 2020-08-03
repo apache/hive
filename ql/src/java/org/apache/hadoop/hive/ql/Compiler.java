@@ -339,16 +339,16 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
-    // this is require so that later driver can skip executing prepare queries
+    // this is required so that later driver can skip executing prepare queries
     if (sem.getIsPrepareQuery()) {
-      plan.setIsPrepareQuery(true);
+      plan.setPrepareQuery(true);
     }
     return plan;
   }
 
   protected void initializeFetchTask(QueryPlan plan) {
     // for PREPARE statement we should avoid initializing operators
-    if (plan.getIsPrepareQuery()) {
+    if (plan.isPrepareQuery()) {
       return;
     }
     // initialize FetchTask right here

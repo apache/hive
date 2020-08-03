@@ -24,14 +24,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -49,8 +48,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import static org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer.getAllOperatorsForSimpleFetch;
 
 public class OperatorUtils {
 
@@ -671,6 +668,20 @@ public class OperatorUtils {
     return null;
   }
 
+  public static Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {
+    Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
+    Stack<Operator<?>> opStack = new Stack<Operator<?>>();
+    // add all children
+    opStack.addAll(opSet);
+    while (!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      returnSet.add(op);
+      if (op.getChildOperators() != null) {
+        opStack.addAll(op.getChildOperators());
+      }
+    }
+    return returnSet;
+  }
 
   /**
    * Given a {@link FetchTask} this returns a set of all the operators within the task

@@ -120,37 +120,37 @@ public abstract class ExprFactory<T> {
   /**
    * Creates a boolean constant expression from input value.
    */
-  public abstract T createBooleanConstantExpr(String value);
+  protected abstract T createBooleanConstantExpr(String value);
 
   /**
    * Creates a bigint constant expression from input value.
    */
-  public abstract T createBigintConstantExpr(String value);
+  protected abstract T createBigintConstantExpr(String value);
 
   /**
    * Creates a int constant expression from input value.
    */
-  public abstract T createIntConstantExpr(String value);
+  protected abstract T createIntConstantExpr(String value);
 
   /**
    * Creates a smallint constant expression from input value.
    */
-  public abstract T createSmallintConstantExpr(String value);
+  protected abstract T createSmallintConstantExpr(String value);
 
   /**
    * Creates a tinyint constant expression from input value.
    */
-  public abstract T createTinyintConstantExpr(String value);
+  protected abstract T createTinyintConstantExpr(String value);
 
   /**
    * Creates a float constant expression from input value.
    */
-  public abstract T createFloatConstantExpr(String value);
+  protected abstract T createFloatConstantExpr(String value);
 
   /**
    * Creates a double constant expression from input value.
    */
-  public abstract T createDoubleConstantExpr(String value) throws SemanticException;
+  protected abstract T createDoubleConstantExpr(String value) throws SemanticException;
 
   /**
    * Creates a decimal constant expression from input value.
@@ -158,22 +158,22 @@ public abstract class ExprFactory<T> {
    * 1) a constant expression containing null value if allowNullValueConstantExpr is true, or
    * 2) null if allowNullValueConstantExpr is false.
    */
-  public abstract T createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr);
+  protected abstract T createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr);
 
   /**
    * Creates a string constant expression from input value.
    */
-  public abstract T createStringConstantExpr(String value);
+  protected abstract T createStringConstantExpr(String value);
 
   /**
    * Creates a date constant expression from input value.
    */
-  public abstract T createDateConstantExpr(String value);
+  protected abstract T createDateConstantExpr(String value);
 
   /**
    * Creates a timestamp constant expression from input value.
    */
-  public abstract T createTimestampConstantExpr(String value);
+  protected abstract T createTimestampConstantExpr(String value);
 
   /**
    * Creates a timestamp with local time zone constant expression from input value.
@@ -184,12 +184,12 @@ public abstract class ExprFactory<T> {
   /**
    * Creates a interval year-month constant expression from input value.
    */
-  public abstract T createIntervalYearMonthConstantExpr(String value);
+  protected abstract T createIntervalYearMonthConstantExpr(String value);
 
   /**
    * Creates a interval day-time constant expression from input value.
    */
-  public abstract T createIntervalDayTimeConstantExpr(String value);
+  protected abstract T createIntervalDayTimeConstantExpr(String value);
 
   /**
    * Creates a interval year constant expression from input value.
