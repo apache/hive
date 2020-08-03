@@ -487,6 +487,13 @@ public class HiveConf extends Configuration {
    * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
+    MSC_CACHE_ENABLED("hive.metastore.client.cache.enabled", true,
+            "This property enables a Caffeiene Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+            "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
+                    "Only in effect when the cache is enabled"),
+    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.recordStats", false,
+            "This property enables recording metastore client cache stats in DEBUG logs"),
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
@@ -617,6 +624,22 @@ public class HiveConf extends Configuration {
             "Name of the source cluster for the replication."),
     REPL_TARGET_CLUSTER_NAME("hive.repl.target.cluster.name", null,
             "Name of the target cluster for the replication."),
+    REPL_RETRY_INTIAL_DELAY("hive.repl.retry.initial.delay", "60s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "Initial Delay before retry starts."),
+    REPL_RETRY_BACKOFF_COEFFICIENT("hive.repl.retry.backoff.coefficient", 1.2f,
+      "The backoff coefficient for exponential retry delay between retries. " +
+        "Previous Delay * Backoff Coefficient will determine the next retry interval"),
+    REPL_RETRY_JITTER("hive.repl.retry.jitter", "30s", new TimeValidator(TimeUnit.SECONDS),
+      "A random jitter to be applied to avoid all retries happening at the same time."),
+    REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES("hive.repl.retry.max.delay.between.retries", "60m",
+      new TimeValidator(TimeUnit.MINUTES),
+      "Maximum allowed retry delay in minutes after including exponential backoff. " +
+        "If this limit is reached, retry will continue with this retry duration."),
+    REPL_RETRY_TOTAL_DURATION("hive.repl.retry.total.duration", "24h",
+      new TimeValidator(TimeUnit.HOURS),
+      "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
+        "the policy instance will be marked as failed and will need manual intervention to restart."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2535,6 +2558,10 @@ public class HiveConf extends Configuration {
         "Whether to enable shared work extended optimizer for semijoins. The optimizer tries to merge\n" +
         "scan operators if one of them reads the full table, even if the other one is the target for\n" +
         "one or more semijoin edges. Tez only."),
+    HIVE_SHARED_WORK_MERGE_TS_SCHEMA("hive.optimize.shared.work.merge.ts.schema", true,
+        "Whether to enable merging scan operators over the same table but with different schema." +
+            "The optimizer tries to merge the scan operators by taking the union of needed columns from " +
+            "all scan operators. Requires hive.optimize.shared.work to be set to true. Tez only."),
     HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE("hive.optimize.shared.work.mapjoin.cache.reuse", true,
         "When shared work optimizer is enabled, whether we should reuse the cache for the broadcast side\n" +
         "of mapjoin operators that share same broadcast input. Requires hive.optimize.shared.work\n" +
@@ -3027,6 +3054,9 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
+    HIVE_COMPACTOR_CLEANER_THREADS_NUM("hive.compactor.cleaner.threads.num", 1,
+      "Enables parallelization of the cleaning directories after compaction, that includes many file \n" +
+      "related checks and may be expensive"),
     COMPACTOR_JOB_QUEUE("hive.compactor.job.queue", "", "Used to specify name of Hadoop queue to which\n" +
       "Compaction jobs will be submitted.  Set to empty string to let Hadoop choose the queue."),
 

@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
@@ -1011,5 +1013,13 @@ public class MetaStoreUtils {
       orderSpecs.add(spec);
     }
     return orderSpecs;
+  }
+
+  public static void addPartitonSpecsToList(PartitionsSpecByExprResult r, List<PartitionSpec> result) {
+    result.addAll(r.getPartitionsSpec());
+  }
+
+  public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 }

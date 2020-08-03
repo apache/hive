@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import java.nio.charset.Charset;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.type.RelDataType;
@@ -31,6 +32,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
+import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -39,6 +41,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -60,7 +63,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOpe
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -718,19 +720,30 @@ public class RexNodeConverter {
       if (value instanceof HiveChar) {
         value = ((HiveChar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.CHAR, (String) value));
+      final int lengthChar = TypeInfoUtils.getCharacterLengthForType(hiveType);
+      RelDataType charType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.CHAR, lengthChar),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), charType, false);
       break;
     case VARCHAR:
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.VARCHAR, (String) value));
+      final int lengthVarchar = TypeInfoUtils.getCharacterLengthForType(hiveType);
+      RelDataType varcharType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, lengthVarchar),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), varcharType, true);
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.STRING, (String) value));
+      RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), stringType, true);
       break;
     case DATE:
       final Date date = (Date) value;
