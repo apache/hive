@@ -66,20 +66,10 @@ public class HooksLoader {
    */
   @VisibleForTesting
   void loadHooksFromConf(HookType type) {
-    int index = type.ordinal();
-    HookContainer container = containers[index];
-
-    List hooks = null;
-    if (type.isGlobal()) {
-      if (!type.hasLoadedFromConf()) {
-        type.setLoadedFromConf(true);
-        hooks = type.getHooks();
-      }
-    } else if (!container.loadedFromConf) {
+    HookContainer container = containers[type.ordinal()];
+    if (!container.loadedFromConf) {
       container.loadedFromConf = true;
-      hooks = container.getHooks();
-    }
-    if (hooks != null) {
+      List hooks = container.getHooks();
       HiveConf.ConfVars confVars = type.getHookConfVar();
       try {
         Collection<String> csHooks = conf.getStringCollection(confVars.varname);
@@ -112,12 +102,7 @@ public class HooksLoader {
       loadHooksFromConf(type);
     }
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
-      if (type.isGlobal()) {
-        type.getHooks().add(hook);
-      } else {
-        int index = type.ordinal();
-        containers[index].addHook(hook);
-      }
+      containers[type.ordinal()].addHook(hook);
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
@@ -146,11 +131,7 @@ public class HooksLoader {
     if (!forTest) {
       loadHooksFromConf(type);
     }
-    if (type.isGlobal()) {
-      return type.getHooks();
-    }
-    int index = type.ordinal();
-    return containers[index].getHooks();
+    return containers[type.ordinal()].getHooks();
   }
 
   public List getHooks(HookType type) {

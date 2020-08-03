@@ -20,23 +20,23 @@ package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.HookType;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
+import org.apache.hadoop.hive.ql.hooks.HookUtils;
 
 import java.util.List;
 
 public class HiveServer2OomHookRunner implements Runnable {
   private final HiveServer2 hiveServer2;
-  private final HooksLoader loader;
+  private final HiveConf hiveConf;
 
   HiveServer2OomHookRunner(HiveServer2 hiveServer2, HiveConf hiveConf) {
     this.hiveServer2 = hiveServer2;
-    this.loader = new HooksLoader(hiveConf);
+    this.hiveConf = hiveConf;
   }
 
   @Override
   public synchronized void run() {
     try {
-      List<Runnable> hooks = loader.getHooks(HookType.OOM, Runnable.class);
+      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.OOM);
       for (Runnable runnable : hooks) {
         runnable.run();
       }

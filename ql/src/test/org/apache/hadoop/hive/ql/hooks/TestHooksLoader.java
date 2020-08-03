@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestHooksLoader {
@@ -76,27 +75,17 @@ public class TestHooksLoader {
         SemanticAnalysisHook.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS,
         OomRunner.class.getName() + "," + OomRunner.class.getName() + "," + OomRunner.class.getName());
-    HookType.OOM.reset();
 
     HooksLoader loader = new HooksLoader(hiveConf, true);
     verify(HookType.OOM, loader, OomRunner.class, 0, 3);
     verify(HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
     verify(HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
     verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 0,1);
-
     // load again
     verify(HookType.OOM, loader, OomRunner.class, 3, 3);
     verify(HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 2, 2);
     verify(HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 1,1);
     verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 1,1);
-
-    // recreate a loader
-    loader = new HooksLoader(hiveConf, true);
-    // the oom hooks are permanent
-    verify(HookType.OOM, loader, OomRunner.class, 3, 3);
-    verify(HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
-    verify(HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
-    verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 0,1);
   }
 
   private <T> void verify(HookType type, HooksLoader loader, Class<T> expectedCls,
@@ -120,38 +109,10 @@ public class TestHooksLoader {
   public void testAddHooks() throws Exception {
     HiveConf hiveConf = new HiveConf();
     HooksLoader loader = new HooksLoader(hiveConf);
-    HookType.OOM.reset();
-
     verify(HookType.OOM, loader, Runnable.class, OomRunner.class);
-
-    List<ExecuteWithHookContext> origPreExecHooks = new ArrayList<>(
-        loader.getHooks(HookType.PRE_EXEC_HOOK, ExecuteWithHookContext.class));
     verify(HookType.PRE_EXEC_HOOK, loader, ExecuteWithHookContext.class, PreExecHook.class);
-
-    List<ExecuteWithHookContext> origPostExecHooks = new ArrayList<>(
-        loader.getHooks(HookType.POST_EXEC_HOOK, ExecuteWithHookContext.class));
     verify(HookType.POST_EXEC_HOOK, loader, ExecuteWithHookContext.class, PostExecHook.class);
-
-    List<HiveSemanticAnalyzerHook> origSemHooks = new ArrayList<>(
-        loader.getHooks(HookType.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class));
     verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, HiveSemanticAnalyzerHook.class, SemanticAnalysisHook.class);
-
-    // recreate a loader
-    loader = new HooksLoader(hiveConf);
-    verify(HookType.OOM, loader, OomRunner.class, 1, 1);
-    // the above added hook will be disappear
-    verify(HookType.PRE_EXEC_HOOK, loader, origPreExecHooks);
-    verify(HookType.POST_EXEC_HOOK, loader, origPostExecHooks);
-    verify(HookType.SEMANTIC_ANALYZER_HOOK, loader, origSemHooks);
-  }
-
-  private void verify(HookType type, HooksLoader loader, List origHooks) {
-    List hooks = loader.getHooks(type);
-    Assert.assertTrue(hooks.size() == origHooks.size());
-    for (int i = 0; i < hooks.size(); i++) {
-      Assert.assertTrue(hooks.get(i) != origHooks.get(i));
-      Assert.assertTrue(hooks.get(i).getClass() == origHooks.get(i).getClass());
-    }
   }
 
   private<T> void verify(HookType type, HooksLoader loader, Class<T> superCls, Class realCls)

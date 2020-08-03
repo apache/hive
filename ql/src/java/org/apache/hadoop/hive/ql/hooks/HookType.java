@@ -18,80 +18,45 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HiveDriverRunHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * The hook types
  */
 public enum HookType {
 
-  QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class, false,
+  QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class,
       "Hooks that will be triggered before/after query compilation and before/after query execution"),
-  SEMANTIC_ANALYZER_HOOK(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class, false,
+  SEMANTIC_ANALYZER_HOOK(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class,
       "Hooks that invoked before/after Hive performs its own semantic analysis on a statement"),
-  DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class, false,
+  DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class,
       "Hooks that Will be run at the beginning and end of Driver.run"),
-  PRE_EXEC_HOOK(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class, false,
+  PRE_EXEC_HOOK(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class,
       "Pre-execution hooks to be invoked for each statement"),
-  POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class, false,
+  POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class,
       "Post-execution hooks to be invoked for each statement"),
-  ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class, false,
+  ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class,
       "On-failure hooks to be invoked for each statement"),
-  REDACTOR(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class, false,
+  REDACTOR(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
       "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
   // The HiveSessionHook.class cannot access, use Hook.class instead
-  HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class, false,
+  HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class,
       "Hooks to be executed when session manager starts a new session"),
-  OOM(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class, true,
+  OOM(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class,
       "Hooks that will be run when HiveServer2 stops due to OutOfMemoryError");
 
   private final HiveConf.ConfVars confVar;
   // the super class or interface of the corresponding hooks
   private final Class hookClass;
-  // true for making the corresponding hooks permanent mainly for latter use, otherwise false.
-  private final boolean isGlobal;
-  private final String description;
-  // cache the hooks in the enum instance when isGlobal is true
-  private List hooks = null;
-  // flag that indicates whether the hooks have been loaded from configuration or not
-  private boolean loadedFromConf = false;
 
-  HookType(HiveConf.ConfVars confVar, Class hookClass, boolean isGlobal, String description) {
+  private final String description;
+
+  HookType(HiveConf.ConfVars confVar, Class hookClass, String description) {
     this.confVar = confVar;
-    this.isGlobal = isGlobal;
     this.description = description;
     this.hookClass = hookClass;
-    if (isGlobal) {
-      hooks = Collections.synchronizedList(new ArrayList());
-    }
-  }
-
-  /**
-   * Get all hooks corresponding to this hook type,
-   * use only in {@link HooksLoader}
-   * @return the hooks or null if isGlobal is false
-   */
-  List getHooks() {
-    return this.hooks;
-  }
-
-  public boolean hasLoadedFromConf() {
-    return this.loadedFromConf;
-  }
-
-  public void setLoadedFromConf(boolean loadedFromConf) {
-    this.loadedFromConf = loadedFromConf;
-  }
-
-  public boolean isGlobal() {
-    return this.isGlobal;
   }
 
   public Class getHookClass() {
@@ -106,10 +71,4 @@ public enum HookType {
     return this.description;
   }
 
-  public void reset() {
-    if (isGlobal) {
-      getHooks().clear();
-      setLoadedFromConf(false);
-    }
-  }
 }
