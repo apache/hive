@@ -172,7 +172,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     }
 
     public List<DeltaFileMetaData> getDeltaFilesForStmtId(final Integer stmtId) {
-      if (stmtIds.size() == 0 || stmtId == null) {
+      if (stmtIds.size() <= 1 || stmtId == null) {
+        // If it is not a multistatement delta, we do not store the stmtId in the file list
         return deltaFiles;
       } else {
         return deltaFiles.stream().filter(df -> stmtId.equals(df.getStmtId())).collect(Collectors.toList());
