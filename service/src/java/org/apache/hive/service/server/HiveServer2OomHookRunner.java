@@ -35,11 +35,9 @@ public class HiveServer2OomHookRunner implements Runnable {
   public synchronized void run() {
     try {
       HiveConf hiveConf = hiveServer2.getHiveConf();
-      if (hiveConf != null) {
-        List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.OOM);
-        for (Runnable runnable : hooks) {
-          runnable.run();
-        }
+      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.OOM);
+      for (Runnable runnable : hooks) {
+        runnable.run();
       }
     } finally {
       hiveServer2.stop();

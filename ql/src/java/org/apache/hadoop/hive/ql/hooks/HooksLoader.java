@@ -22,6 +22,7 @@ import com.cronutils.utils.Preconditions;
 import com.cronutils.utils.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
@@ -46,6 +47,8 @@ public class HooksLoader {
   // for unit test purpose, check change of the hooks after invoking loadHooksFromConf
   private boolean forTest = false;
 
+  private SessionState.LogHelper console;
+
   public HooksLoader(HiveConf conf) {
     this.conf = conf;
     this.containers = new HookContainer[HookType.values().length];
@@ -58,6 +61,11 @@ public class HooksLoader {
   HooksLoader(HiveConf conf, boolean forTest) {
     this(conf);
     this.forTest = forTest;
+  }
+
+  public HooksLoader(HiveConf conf, SessionState.LogHelper console) {
+    this(conf);
+    this.console = console;
   }
 
   /**
@@ -79,14 +87,24 @@ public class HooksLoader {
             Object hookObj = ReflectionUtil.newInstance(hookCls, conf);
             hooks.add(hookObj);
           } else {
-            LOG.warn("The clazz: {} should be the subclass of {}, as the type: {} defined, configuration key: {}",
-                clzName, type.getHookClass().getName(), type, confVars.varname);
+            String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName() +
+                ", as the type: " + type + " defined";
+            logErrorMessage(message);
+            throw new ClassCastException(clzName + " cannot be cast to " + type.getHookClass().getName());
           }
         }
       } catch (Exception e) {
         String message = "Error loading hooks(" + confVars + "): " + HiveStringUtils.stringifyException(e);
         throw new RuntimeException(message, e);
       }
+    }
+  }
+
+  private void logErrorMessage(String message) {
+    if (console != null) {
+      console.printError(message);
+    } else {
+      LOG.error(message);
     }
   }
 
@@ -106,7 +124,7 @@ public class HooksLoader {
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
-      LOG.warn(message);
+      logErrorMessage(message);
       throw new IllegalArgumentException(message);
     }
   }
@@ -122,10 +140,10 @@ public class HooksLoader {
     Preconditions.checkNotNull(type);
     Preconditions.checkNotNull(clazz);
     if (!type.getHookClass().isAssignableFrom(clazz)) {
-      String message = "The arg clazz: " + clazz.getName() + " should be the same as, "
+      String message = "The arg class: " + clazz.getName() + " should be the same as, "
           + "or the subclass of " + type.getHookClass().getName()
           + ", as the type: " + type + " defined";
-      LOG.warn(message);
+      logErrorMessage(message);
       throw new IllegalArgumentException(message);
     }
     if (!forTest) {
