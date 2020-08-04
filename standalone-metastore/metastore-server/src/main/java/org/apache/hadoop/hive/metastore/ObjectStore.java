@@ -9227,7 +9227,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     // Note: this will get stats without verifying ACID.
     if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
-      LOG.info("PartNames and/or ColNames are empty");
+      LOG.debug("PartNames and/or ColNames are empty");
       return null;
     }
     return getPartitionColumnStatisticsInternal(
@@ -9241,7 +9241,7 @@ public class ObjectStore implements RawStore, Configurable {
       String engine, String writeIdList)
       throws MetaException, NoSuchObjectException {
     if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
-      LOG.info("PartNames and/or ColNames are empty");
+      LOG.debug("PartNames and/or ColNames are empty");
       return null;
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
