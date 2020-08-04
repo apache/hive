@@ -130,6 +130,8 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         long inputRecords = -1;
         try {
+          //TODO : Need to use class instead of string.
+          // https://issues.apache.org/jira/browse/HIVE-23981
           inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
                   findCounter("org.apache.tez.common.counters.TaskCounter",
                           "APPROXIMATE_INPUT_RECORDS").getValue();
@@ -175,11 +177,11 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         mapJoinTables[pos] = vectorMapJoinFastTableContainer;
         if (doMemCheck) {
           LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
-              "estimatedMemoryUsage: {}", inputName, cacheKey, numEntries,
-            vectorMapJoinFastTableContainer.getEstimatedMemorySize());
+              "estimatedMemoryUsage: {} Load Time : {} ", inputName, cacheKey, numEntries,
+            vectorMapJoinFastTableContainer.getEstimatedMemorySize(), delta);
         } else {
-          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {}", inputName, cacheKey,
-            numEntries);
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} Load Time : {} ",
+                  inputName, cacheKey, numEntries, delta);
         }
       } catch (IOException e) {
         throw new HiveException(e);

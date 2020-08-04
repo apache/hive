@@ -224,6 +224,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
         long inputRecords = -1;
         try {
+          //TODO : Need to use class instead of string.
+          // https://issues.apache.org/jira/browse/HIVE-23981
           inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
                   findCounter("org.apache.tez.common.counters.TaskCounter",
                           "APPROXIMATE_INPUT_RECORDS").getValue();
@@ -284,11 +286,12 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
         if (doMemCheck) {
-          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} estimatedMemoryUsage: {}",
-            inputName, cacheKey, numEntries, tableContainer.getEstimatedMemorySize());
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
+                          "estimatedMemoryUsage: {} Load Time : {} ",
+            inputName, cacheKey, numEntries, tableContainer.getEstimatedMemorySize(), delta);
         } else {
-          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {}", inputName, cacheKey,
-            numEntries);
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} Load Time : {} ",
+                  inputName, cacheKey, numEntries, delta);
         }
       } catch (Exception e) {
         throw new HiveException(e);
