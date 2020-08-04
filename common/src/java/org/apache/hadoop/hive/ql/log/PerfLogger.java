@@ -207,11 +207,11 @@ public class PerfLogger {
   }
 
 
-  public ImmutableMap<String, Long> getStartTimes() {
+  public Map<String, Long> getStartTimes() {
     return ImmutableMap.copyOf(startTimes);
   }
 
-  public ImmutableMap<String, Long> getEndTimes() {
+  public Map<String, Long> getEndTimes() {
     return ImmutableMap.copyOf(endTimes);
   }
 
