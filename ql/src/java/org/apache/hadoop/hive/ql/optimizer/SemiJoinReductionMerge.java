@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import jline.internal.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -122,15 +123,15 @@ public class SemiJoinReductionMerge extends Transform {
       ops.add(smjEntry.getKey());
     }
     for (Map.Entry<SJSourceTarget, List<ReduceSinkOperator>> sjMergeCandidate : sameTableSJ.entrySet()) {
-      final List<ReduceSinkOperator> sjBrances = sjMergeCandidate.getValue();
-      if (sjBrances.size() < 2) {
+      final List<ReduceSinkOperator> sjBranches = sjMergeCandidate.getValue();
+      if (sjBranches.size() < 2) {
         continue;
       }
       // Order does not really matter but it is necessary to keep plans stable
-      sjBrances.sort(Comparator.comparing(Operator::getIdentifier));
+      sjBranches.sort(Comparator.comparing(Operator::getIdentifier));
 
-      List<SelectOperator> selOps = new ArrayList<>(sjBrances.size());
-      for (ReduceSinkOperator rs : sjBrances) {
+      List<SelectOperator> selOps = new ArrayList<>(sjBranches.size());
+      for (ReduceSinkOperator rs : sjBranches) {
         selOps.add(OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0));
       }
       SelectOperator selectOp = mergeSelectOps(sjMergeCandidate.getKey().source, selOps);
@@ -149,10 +150,10 @@ public class SemiJoinReductionMerge extends Transform {
       parseContext.getRsToSemiJoinBranchInfo().put(rsCompleteOp, sjInfo);
 
       // Save the info that is required at query time to resolve dynamic/runtime values.
-      RuntimeValuesInfo valuesInfo = createRuntimeValuesInfo(rsCompleteOp, sjBrances, parseContext);
+      RuntimeValuesInfo valuesInfo = createRuntimeValuesInfo(rsCompleteOp, sjBranches, parseContext);
       parseContext.getRsToRuntimeValuesInfoMap().put(rsCompleteOp, valuesInfo);
 
-      ExprNodeGenericFuncDesc sjPredicate = createSemiJoinPredicate(sjBrances, valuesInfo, parseContext);
+      ExprNodeGenericFuncDesc sjPredicate = createSemiJoinPredicate(sjBranches, valuesInfo, parseContext);
 
       // Update filter operators with the new semi-join predicate
       for (Operator<?> op : sjTargetTable.getChildOperators()) {
@@ -164,7 +165,7 @@ public class SemiJoinReductionMerge extends Transform {
       // Update tableScan with the new semi-join predicate
       sjTargetTable.getConf().setFilterExpr(and(Arrays.asList(sjTargetTable.getConf().getFilterExpr(), sjPredicate)));
 
-      for (ReduceSinkOperator rs : sjBrances) {
+      for (ReduceSinkOperator rs : sjBranches) {
         GenTezUtils.removeSemiJoinOperator(parseContext, rs, sjTargetTable);
         GenTezUtils.removeBranch(rs);
       }
