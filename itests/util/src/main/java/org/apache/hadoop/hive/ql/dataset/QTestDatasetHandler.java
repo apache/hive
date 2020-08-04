@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 public class QTestDatasetHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
-  private File datasetDir;
+  private final File datasetDir;
   /**
    * All tables already loaded in the database.
    */
@@ -58,7 +58,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   /**
    * Tables mentioned explicitly inside a single QFile and not yet loaded to the database.
    */
-  private Set<String> explicitTables = new HashSet<>();
+  private final Set<String> explicitTables = new HashSet<>();
   /**
    * Indicates if implicit tables (srcTables MINUS explicitTables) need to be unloaded.
    */
