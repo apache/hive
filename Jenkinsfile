@@ -83,10 +83,10 @@ def buildHive(args) {
       sh '''#!/bin/bash -e
 ls -l
 set -x
-. /etc/profile.d/java.sh
 . /etc/profile.d/confs.sh
 
 sw java 11
+. /etc/profile.d/java.sh
 
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
