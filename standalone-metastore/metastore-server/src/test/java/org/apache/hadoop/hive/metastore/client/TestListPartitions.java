@@ -503,7 +503,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionSpecs(DB_NAME, null, -1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1444,7 +1444,7 @@ public class TestListPartitions extends MetaStoreClientTest {
               partitionSchema);
       client.listPartitionValues(request);
       fail("Should have thrown exception");
-    } catch (IndexOutOfBoundsException | TTransportException e) {
+    } catch (IndexOutOfBoundsException | TException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
