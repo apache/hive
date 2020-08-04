@@ -89,7 +89,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -211,7 +211,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -340,7 +340,7 @@ STAGE PLANS:
                           Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -463,7 +463,7 @@ STAGE PLANS:
                           Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

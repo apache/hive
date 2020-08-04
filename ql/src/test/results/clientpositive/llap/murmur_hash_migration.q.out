@@ -189,7 +189,7 @@ STAGE PLANS:
                       Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -292,7 +292,7 @@ STAGE PLANS:
                       Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -429,7 +429,7 @@ STAGE PLANS:
                           sort order: ++++
                           Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -451,7 +451,7 @@ STAGE PLANS:
                         Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -573,7 +573,7 @@ STAGE PLANS:
                           sort order: ++++
                           Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -595,7 +595,7 @@ STAGE PLANS:
                         Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

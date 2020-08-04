@@ -1008,7 +1008,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(11,1))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -1153,7 +1153,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(2,1))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -1298,7 +1298,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(11,1))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -1443,7 +1443,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(11,1))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

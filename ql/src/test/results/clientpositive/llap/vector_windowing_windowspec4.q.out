@@ -91,7 +91,7 @@ STAGE PLANS:
                         partitionColumns: 1:string
                     Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

@@ -43,7 +43,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -142,7 +142,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -249,7 +249,7 @@ STAGE PLANS:
                           TopN Hash Memory Usage: 0.3
                           value expressions: _col1 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -358,7 +358,7 @@ STAGE PLANS:
                           TopN Hash Memory Usage: 0.3
                           value expressions: _col1 (type: double), _col2 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -919,7 +919,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1040,7 +1040,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 0.3
                         value expressions: key (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1141,7 +1141,7 @@ STAGE PLANS:
                         TopN Hash Memory Usage: 2.0E-5
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1285,7 +1285,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1487,7 +1487,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 2.0E-5
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

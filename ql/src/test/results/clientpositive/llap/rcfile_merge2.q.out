@@ -77,7 +77,7 @@ STAGE PLANS:
                           Statistics: Num rows: 500 Data size: 658500 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
