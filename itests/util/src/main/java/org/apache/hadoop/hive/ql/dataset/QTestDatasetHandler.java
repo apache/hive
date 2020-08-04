@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.dataset;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,9 +51,18 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
+  /**
+   * All tables already loaded in the database.
+   */
   private static Set<String> srcTables;
-  private Set<String> missingTables = new HashSet<>();
-  private Set<String> tablesToUnload = new HashSet<>();
+  /**
+   * Tables mentioned explicitly inside a single QFile and not yet loaded to the database.
+   */
+  private Set<String> explicitTables = new HashSet<>();
+  /**
+   * Indicates if implicit tables (srcTables MINUS explicitTables) need to be unloaded.
+   */
+  private boolean unloadImplicitTables = false;
 
   public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
@@ -159,11 +169,9 @@ public class QTestDatasetHandler implements QTestOptionHandler {
         if (args.length > 2 || !args[1].equalsIgnoreCase("ONLY")) {
           throw new RuntimeException("unknown option: " + args[1]);
         }
-        tablesToUnload.addAll(getSrcTables());
-        tablesToUnload.removeAll(tableNames);
+        unloadImplicitTables = true;
       }
-      tableNames.removeAll(getSrcTables());
-      missingTables.addAll(tableNames);
+      explicitTables.addAll(tableNames);
     }
   }
 
@@ -182,24 +190,46 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    if (missingTables.isEmpty() && tablesToUnload.isEmpty()) {
+    if (explicitTables.isEmpty() && !unloadImplicitTables) {
       return;
     }
+    // Concurrency note: Determining the tables to load/unload
+    // and performing the respective operation should happen
+    // under the same lock in an atomic way otherwise we may
+    // suffer from check-then-act race conditions.
     synchronized (QTestUtil.class) {
       qt.newSession(true);
       try {
-        for (String table : missingTables) {
+        for (String table : tablesToLoad()) {
           initDataset(table, qt.getCliDriver());
         }
-        for (String table : tablesToUnload) {
+        for (String table : tablesToUnload()) {
           unloadDataset(table, qt.getCliDriver());
         }
       } finally {
-        missingTables.clear();
-        tablesToUnload.clear();
+        explicitTables.clear();
+        unloadImplicitTables = false;
         qt.newSession(true);
       }
     }
+  }
+
+  private Set<String> tablesToLoad() {
+    if (explicitTables.isEmpty()) {
+      return Collections.emptySet();
+    }
+    Set<String> tables = new HashSet<>(explicitTables);
+    tables.removeAll(getSrcTables());
+    return tables;
+  }
+
+  private Set<String> tablesToUnload() {
+    if (unloadImplicitTables) {
+      return Collections.emptySet();
+    }
+    Set<String> tables = new HashSet<>(getSrcTables());
+    tables.removeAll(explicitTables);
+    return tables;
   }
 
   @Override
@@ -207,7 +237,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   }
 
   public DatasetCollection getDatasets() {
-    return new DatasetCollection(missingTables);
+    return new DatasetCollection(explicitTables);
   }
 
 }
