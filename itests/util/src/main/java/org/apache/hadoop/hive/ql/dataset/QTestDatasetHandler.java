@@ -97,7 +97,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     } catch (CommandProcessorException e) {
       throw new RuntimeException("Failed while loading table " + table, e);
     }
-    // Add the talbe in sources if it is loaded sucessfully
+    // Add the table in sources if it is loaded successfully
     addSrcTable(table);
   }
 
