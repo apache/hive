@@ -95,6 +95,19 @@ public class PerfLogger {
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_DATABASE = "getDatabase";
+  public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
+  public static final String HIVE_GET_PARTITIONS = "getPartitions";
+  public static final String HIVE_GET_PARTITIONS_2 = "getPartitions2";
+  public static final String HIVE_GET_PARTITIONS_BY_EXPR = "getPartitionsByExpr";
+  public static final String HIVE_GET_TABLE_COLUMN_STATS = "getTableColumnStatistics";
+  public static final String HIVE_GET_AGGR_COL_STATS = "getAggrColStatsFor";
+  public static final String HIVE_GET_PK = "getPrimaryKeys";
+  public static final String HIVE_GET_FK = "getForeignKeys";
+  public static final String HIVE_GET_UNIQ_CONSTRAINT = "getUniqueConstraints";
+  public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
+
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
