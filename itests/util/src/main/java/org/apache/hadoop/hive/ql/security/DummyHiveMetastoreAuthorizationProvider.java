@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.ql.security;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -116,7 +119,8 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
   }
 
   @Override
-  public void authorize(Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+  public void authorizeDbLevelOperations(Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv,
+      Collection<ReadEntity> inputs, Collection<WriteEntity> outputs)
       throws HiveException, AuthorizationException {
     debugLog("DHMAP.authorize " +
       "read:" + debugPrivPrint(readRequiredPriv) +

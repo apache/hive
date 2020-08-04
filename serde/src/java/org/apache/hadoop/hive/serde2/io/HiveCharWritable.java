@@ -53,6 +53,7 @@ public class HiveCharWritable extends HiveBaseCharWritable
 
   public void set(HiveCharWritable val) {
     value.set(val.value);
+    charLength = -1;
   }
 
   public void set(HiveCharWritable val, int maxLength) {
@@ -78,6 +79,9 @@ public class HiveCharWritable extends HiveBaseCharWritable
   }
 
   public Text getStrippedValue() {
+    if (value.charAt(value.getLength() - 1) != ' ') {
+      return value;
+    }
     // A lot of these methods could be done more efficiently by operating on the Text value
     // directly, rather than converting to HiveChar.
     return new Text(getHiveChar().getStrippedValue());
@@ -88,7 +92,11 @@ public class HiveCharWritable extends HiveBaseCharWritable
   }
 
   public int getCharacterLength() {
-    return HiveStringUtils.getTextUtfLength(getStrippedValue());
+    if (charLength != -1) {
+      return charLength;
+    }
+    charLength = HiveStringUtils.getTextUtfLength(getStrippedValue());
+    return charLength;
   }
 
   public int compareTo(HiveCharWritable rhs) {

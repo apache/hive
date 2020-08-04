@@ -209,6 +209,8 @@ public class Table implements Serializable {
       // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does
       // not support a table with no columns.
       sd.getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
+      //TODO setting serializaton format here is hacky. Only lazy simple serde needs it
+      // so should be set by serde only. Setting it here sets it unconditionally.
       sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setInputFormat(SequenceFileInputFormat.class.getName());
       sd.setOutputFormat(HiveSequenceFileOutputFormat.class.getName());
@@ -1313,6 +1315,23 @@ public class Table implements Serializable {
 
     this.cc = tbl.cc;
     this.isCheckFetched = tbl.isCheckFetched;
+  }
+
+  /**
+   * This method ignores the write Id, while comparing two tables.
+   *
+   * @param tbl table to compare with
+   * @return
+   */
+  public boolean equalsWithIgnoreWriteId(Table tbl ) {
+    long targetWriteId = getTTable().getWriteId();
+    long entityWriteId = tbl.getTTable().getWriteId();
+    getTTable().setWriteId(0L);
+    tbl.getTTable().setWriteId(0L);
+    boolean result = equals(tbl);
+    getTTable().setWriteId(targetWriteId);
+    tbl.getTTable().setWriteId(entityWriteId);
+    return result;
   }
 
 };

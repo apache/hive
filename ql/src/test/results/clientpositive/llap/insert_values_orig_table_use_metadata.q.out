@@ -119,8 +119,6 @@ Compressed:         	No
 Num Buckets:        	1                   	 
 Bucket Columns:     	[cint]              	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: insert into acid_ivot select * from acid_ivot_stage
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot_stage
@@ -186,8 +184,6 @@ Compressed:         	No
 Num Buckets:        	1                   	 
 Bucket Columns:     	[cint]              	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot
@@ -357,8 +353,6 @@ Compressed:         	No
 Num Buckets:        	1                   	 
 Bucket Columns:     	[cint]              	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot
@@ -455,8 +449,6 @@ Compressed:         	No
 Num Buckets:        	1                   	 
 Bucket Columns:     	[cint]              	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot
@@ -549,8 +541,6 @@ Compressed:         	No
 Num Buckets:        	1                   	 
 Bucket Columns:     	[cint]              	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot

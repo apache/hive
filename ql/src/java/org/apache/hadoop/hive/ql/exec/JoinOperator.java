@@ -83,6 +83,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       alias = (byte) tag;
 
       List<Object> nr = getFilteredValue(alias, row);
+      addToAliasFilterTags(alias, nr, false);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);
@@ -231,7 +232,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
         Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath + "(spec " + specPath + ")");
         Utilities.rename(fs, tmpPath, intermediatePath);
         // Step2: remove any tmp file or double-committed output files
-        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, false);
+        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, hconf, false);
         // Step3: move to the file destination
         Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
         Utilities.renameOrMoveFiles(fs, intermediatePath, specPath);

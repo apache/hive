@@ -306,8 +306,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: desc formatted acid2_n0
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@acid2_n0
@@ -342,8 +340,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table non_mm0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@non_mm0

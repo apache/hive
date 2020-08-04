@@ -281,7 +281,6 @@ STAGE PLANS:
                                 native: true
                                 nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
-                            TopN Hash Memory Usage: 0.1
                             value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

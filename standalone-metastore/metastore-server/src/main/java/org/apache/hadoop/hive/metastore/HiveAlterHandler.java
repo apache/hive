@@ -59,7 +59,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -362,7 +361,12 @@ public class HiveAlterHandler implements AlterHandler {
 
         if (isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
-          if(!MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
+          boolean runPartitionMetadataUpdate =
+              (cascade && !MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols()));
+          // we may skip the update entirely if there are only new columns added
+          runPartitionMetadataUpdate |=
+              !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
+          if (runPartitionMetadataUpdate) {
             parts = msdb.getPartitions(catName, dbname, name, -1);
             for (Partition part : parts) {
               Partition oldPart = new Partition(part);
@@ -426,9 +430,9 @@ public class HiveAlterHandler implements AlterHandler {
           assert(olddb != null);
           assert(oldt != null);
           Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
-          boolean isAutoPurge = "true".equalsIgnoreCase(oldt.getParameters().get("auto.purge"));
+          boolean isSkipTrash = MetaStoreUtils.isSkipTrash(oldt.getParameters());
           try {
-            wh.deleteDir(deleteOldDataLoc, true, isAutoPurge,
+            wh.deleteDir(deleteOldDataLoc, true, isSkipTrash,
                     ReplChangeManager.shouldEnableCm(olddb, oldt));
             LOG.info("Deleted the old data location: {} for the table: {}",
                     deleteOldDataLoc, dbname + "." + name);

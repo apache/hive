@@ -223,6 +223,10 @@ public class ScheduledQueryExecutionService implements Closeable {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
+        conf.set(Constants.SCHEDULED_QUERY_NAMESPACE, q.getScheduleKey().getClusterNamespace());
+        conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, q.getScheduleKey().getScheduleName());
+        conf.set(Constants.SCHEDULED_QUERY_USER, q.getUser());
+        conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, Long.toString(q.getExecutionId()));
         conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
         state = new SessionState(conf, q.getUser());
         state.setIsHiveServerQuery(true);

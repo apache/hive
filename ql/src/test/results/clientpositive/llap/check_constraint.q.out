@@ -52,8 +52,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[i]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1330,8 +1328,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[i]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -1478,7 +1474,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: decimal(5,2)), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -1798,7 +1793,6 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col2 (type: int), _col3 (type: decimal(5,2))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -1820,7 +1814,6 @@ STAGE PLANS:
                     null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: int), _col1 (type: decimal(5,2))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2293,8 +2286,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[value]             	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -3124,8 +3115,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -3174,8 +3163,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -3329,8 +3316,6 @@ Compressed:         	No
 Num Buckets:        	2                   	 
 Bucket Columns:     	[b]                 	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 	 	 
 # Constraints	 	 
 	 	 
@@ -3587,7 +3572,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs

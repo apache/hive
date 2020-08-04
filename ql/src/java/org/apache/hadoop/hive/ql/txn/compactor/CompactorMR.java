@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,6 +212,7 @@ public class CompactorMR {
    * @param sd metastore storage descriptor
    * @param writeIds list of valid write ids
    * @param ci CompactionInfo
+   * @param su StatsUpdater which is null if no stats gathering is needed
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
@@ -262,7 +264,7 @@ public class CompactorMR {
             maxDeltasToHandle, -1, conf, msc, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
-      dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false, null, false);
+      dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false);
     }
 
     StringableList dirsToSearch = new StringableList();
@@ -294,7 +296,9 @@ public class CompactorMR {
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
-    su.gatherStats();
+    if (su != null) {
+      su.gatherStats();
+    }
   }
 
   /**
@@ -881,8 +885,10 @@ public class CompactorMR {
       Path tmpLocation = AcidUtils.createFilename(rootDir, options);
       FileSystem fs = tmpLocation.getFileSystem(jobConf);
 
-      if (fs.exists(tmpLocation)) {
+      try {
         fs.delete(tmpLocation, true);
+      } catch (FileNotFoundException e) {
+        // no problem
       }
     }
 
@@ -1025,10 +1031,13 @@ public class CompactorMR {
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
         fs.mkdirs(newDeltaDir);
-        AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
+        }
         return;
       }
       FileStatus[] contents = fs.listStatus(tmpLocation);
+      AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
       //minor compaction may actually have delta_x_y and delete_delta_x_y
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
@@ -1038,7 +1047,9 @@ public class CompactorMR {
         * it will make A a child of B...  thus make sure the rename() is done before creating the
         * meta files which will create base_x/ (i.e. B)...*/
         fs.rename(fileStatus.getPath(), newPath);
-        AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
+        }
       }
       fs.delete(tmpLocation, true);
     }

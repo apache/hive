@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -40,10 +42,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -65,13 +67,23 @@ public final class ReplExternalTables {
   private ReplExternalTables(){}
 
   public static String externalTableLocation(HiveConf hiveConf, String location) throws SemanticException {
-    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    Path basePath = new Path(baseDir);
+    Path basePath = getExternalTableBaseDir(hiveConf);
     Path currentPath = new Path(location);
     Path dataLocation = externalTableDataPath(hiveConf, basePath, currentPath);
 
     LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
     return dataLocation.toString();
+  }
+
+  public static Path getExternalTableBaseDir(HiveConf hiveConf) throws SemanticException {
+    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    URI baseDirUri  = StringUtils.isEmpty(baseDir) ? null : new Path(baseDir).toUri();
+    if (baseDirUri == null || baseDirUri.getScheme() == null || baseDirUri.getAuthority() == null) {
+      throw new SemanticException(
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",
+                      baseDir == null ? "" : "- ('" + baseDir + "')"));
+    }
+    return new Path(baseDirUri);
   }
 
   public static Path externalTableDataPath(HiveConf hiveConf, Path basePath, Path sourcePath)
@@ -110,7 +122,7 @@ public final class ReplExternalTables {
       dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
               hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE);
       if (shouldWrite()) {
-        this.writer = FileSystem.get(hiveConf).create(writePath);
+        this.writer = writePath.getFileSystem(hiveConf).create(writePath);
       }
     }
 
@@ -123,10 +135,10 @@ public final class ReplExternalTables {
      * table if the table is partitioned and the partition location is outside the table.
      * It returns list of all the external table locations.
      */
-    List<Path> dataLocationDump(Table table) throws InterruptedException, IOException, HiveException {
-      List<Path> extTableLocations = new LinkedList<>();
+    void dataLocationDump(Table table, FileList fileList, HiveConf conf)
+            throws InterruptedException, IOException, HiveException {
       if (!shouldWrite()) {
-        return extTableLocations;
+        return;
       }
       if (!TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
         throw new IllegalArgumentException(
@@ -136,7 +148,7 @@ public final class ReplExternalTables {
       Path fullyQualifiedDataLocation =
           PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-      extTableLocations.add(fullyQualifiedDataLocation);
+      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -145,7 +157,7 @@ public final class ReplExternalTables {
           if (e.getCause() instanceof NoSuchObjectException) {
             // If table is dropped when dump in progress, just skip partitions data location dump
             LOG.debug(e.getMessage());
-            return extTableLocations;
+            return;
           }
           throw e;
         }
@@ -158,11 +170,17 @@ public final class ReplExternalTables {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-            extTableLocations.add(fullyQualifiedDataLocation);
+            dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
           }
         }
       }
-      return extTableLocations;
+    }
+
+    private void dirLocationToCopy(FileList fileList, Path sourcePath, HiveConf conf)
+            throws HiveException {
+      Path basePath = getExternalTableBaseDir(conf);
+      Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
+      fileList.add(new DirCopyWork(sourcePath, targetPath).convertToString());
     }
 
     private static String lineFor(String tableName, Path dataLoc, HiveConf hiveConf)

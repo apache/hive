@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.io.ByteArrayInputStream;
 
 /**
@@ -36,6 +38,7 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
     super(buf, offset, length);
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Intended")
   public void reset(byte[] input, int start, int length) {
     buf = input;
     count = start + length;

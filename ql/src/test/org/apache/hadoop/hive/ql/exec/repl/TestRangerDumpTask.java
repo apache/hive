@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,10 +40,11 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.ArrayList;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 
 /**
  * Unit test class for testing Ranger Dump.
@@ -62,16 +64,26 @@ public class TestRangerDumpTask {
   @Mock
   private RangerDumpWork work;
 
+  @Mock
+  private ReplicationMetricCollector metricCollector;
+
   @Before
   public void setup() throws Exception {
     task = new RangerDumpTask(mockClient, conf, work);
     Mockito.when(mockClient.removeMultiResourcePolicies(Mockito.anyList())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
+    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() throws Exception {
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn(null);
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn(null);
+    int status = task.execute();
+    Assert.assertEquals(40000, status);
+  }
+
+  @Test
+  public void testFailureInvalidRangerConfig() throws Exception {
     int status = task.execute();
     Assert.assertEquals(40000, status);
   }
@@ -80,12 +92,14 @@ public class TestRangerDumpTask {
   public void testSuccessValidAuthProviderEndpoint() throws Exception {
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -104,16 +118,18 @@ public class TestRangerDumpTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
     Path policyFile = new Path(rangerDumpPath, ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME);
     Mockito.when(mockClient.saveRangerPoliciesToFile(rangerPolicyList, rangerDumpPath,
       ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME, conf)).thenReturn(policyFile);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
   }
@@ -124,12 +140,14 @@ public class TestRangerDumpTask {
     Whitebox.setInternalState(ReplState.class, logger);
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
-    Mockito.when(conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT)).thenReturn("rangerEndpoint");
-    Mockito.when(conf.getVar(REPL_RANGER_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);

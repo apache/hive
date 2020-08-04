@@ -421,6 +421,31 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
+  // Mostly dup of genIncludedColumns
+  public static String[] genIncludedColNames(TypeDescription fileSchema,
+         List<Integer> included, Integer recursiveStruct) {
+    String[] originalColNames = new String[included.size()];
+    List<TypeDescription> children = fileSchema.getChildren();
+    for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
+      int indexInBatchCols = included.indexOf(columnNumber);
+      if (indexInBatchCols >= 0) {
+        // child Index and FiledIdx should be the same
+        originalColNames[indexInBatchCols] = fileSchema.getFieldNames().get(columnNumber);
+      } else if (recursiveStruct != null && recursiveStruct == columnNumber) {
+        // This assumes all struct cols immediately follow struct
+        List<TypeDescription> nestedChildren = children.get(columnNumber).getChildren();
+        for (int columnNumberDelta = 0; columnNumberDelta < nestedChildren.size(); ++columnNumberDelta) {
+          int columnNumberNested = columnNumber + 1 + columnNumberDelta;
+          int nestedIxInBatchCols = included.indexOf(columnNumberNested);
+          if (nestedIxInBatchCols >= 0) {
+            originalColNames[nestedIxInBatchCols] = children.get(columnNumber).getFieldNames().get(columnNumberDelta);
+          }
+        }
+      }
+    }
+    return originalColNames;
+  }
+
 
   private static void addColumnToIncludes(TypeDescription child, boolean[] result) {
     for(int col = child.getId(); col <= child.getMaximumId(); ++col) {
@@ -1215,8 +1240,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * For plain or acid tables this is the root of the partition (or table if not partitioned).
      * For MM table this is delta/ or base/ dir.  In MM case applying of the ValidTxnList that
-     * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} normally does has already
-     * been done in {@link HiveInputFormat#processPathsForMmRead(List, JobConf, ValidWriteIdList)}.
+     * {@link AcidUtils#getAcidState(FileSystem, Path, Configuration, ValidWriteIdList, Ref, boolean)}
+     * normally does has already been done in
+     * {@link HiveInputFormat#processPathsForMmRead(List, Configuration, ValidWriteIdList, List, List)}
      */
     private final Path dir;
     private final Ref<Boolean> useFileIds;
@@ -1257,10 +1283,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private Directory getAcidState() throws IOException {
       if (context.isAcid && context.splitStrategyKind == SplitStrategyKind.BI) {
         return AcidUtils.getAcidStateFromCache(fs, dir, context.conf,
-            context.writeIdList, useFileIds, true, null, true);
+            context.writeIdList, useFileIds, true);
       } else {
         return AcidUtils.getAcidState(fs.get(), dir, context.conf, context.writeIdList,
-            useFileIds, true, null, true);
+            useFileIds, true);
       }
     }
 
@@ -2142,9 +2168,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         LOG.warn("Can't determine bucket ID for " + split.getPath() + "; ignoring");
       }
       bucket = acidIOOptions.getBucketId();
-      if(split.isOriginal()) {
-        mergerOptions.copyIndex(acidIOOptions.getCopyNumber()).bucketPath(split.getPath());
-      }
     } else {
       bucket = (int) split.getStart();
       assert false : "We should never have a split w/o base in acid 2.0 for full acid: " + split.getPath();

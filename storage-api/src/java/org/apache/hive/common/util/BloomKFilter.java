@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -138,7 +139,7 @@ import java.util.Arrays;
   }
 
   public void addString(String val) {
-    addBytes(val.getBytes());
+    addBytes(val.getBytes(StandardCharsets.UTF_8));
   }
 
   public void addByte(byte val) {
@@ -217,7 +218,7 @@ import java.util.Arrays;
   }
 
   public boolean testString(String val) {
-    return testBytes(val.getBytes());
+    return testBytes(val.getBytes(StandardCharsets.UTF_8));
   }
 
   public boolean testByte(byte val) {
@@ -382,6 +383,7 @@ import java.util.Arrays;
      *
      * @param data - bit array
      */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
     public BitSet(long[] data) {
       assert data.length > 0 : "data length is zero!";
       this.data = data;
@@ -413,6 +415,7 @@ import java.util.Arrays;
       return data.length * Long.SIZE;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
     public long[] getData() {
       return data;
     }

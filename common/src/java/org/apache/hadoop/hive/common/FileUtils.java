@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,7 +255,7 @@ public final class FileUtils {
   }
 
   static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {
@@ -341,7 +343,7 @@ public final class FileUtils {
   }
 
   private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
-    if (fileStatus.isDir()) {
+    if (fileStatus.isDirectory()) {
       for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
         generalListStatusRecursively(fs, stat, results);
       }
@@ -479,15 +481,13 @@ public final class FileUtils {
     return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true);
   }
 
+  @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "Intended, dir privilege all-around bug")
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, FsAction action, boolean recurse) throws Exception {
-    boolean isDir = fileStatus.isDir();
+    boolean isDir = fileStatus.isDirectory();
 
-    FsAction dirActionNeeded = action;
-    if (isDir) {
-      // for dirs user needs execute privileges as well
-      dirActionNeeded.and(FsAction.EXECUTE);
-    }
+    // for dirs user needs execute privileges as well
+    FsAction dirActionNeeded = (isDir) ? action.and(FsAction.EXECUTE) : action;
 
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
@@ -580,7 +580,7 @@ public final class FileUtils {
       return false;
     }
 
-    if ((!fileStatus.isDir()) || (!recurse)) {
+    if ((!fileStatus.isDirectory()) || (!recurse)) {
       // no sub dirs to be checked
       return true;
     }
@@ -925,6 +925,7 @@ public final class FileUtils {
   /**
    * delete a temporary file and remove it from delete-on-exit hook.
    */
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Intended")
   public static boolean deleteTmpFile(File tempFile) {
     if (tempFile != null) {
       tempFile.delete();

@@ -41,6 +41,7 @@ PREHOOK: Output: default@datatype_stats_n0
 POSTHOOK: query: INSERT INTO datatype_stats_n0 values(3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin', 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
 POSTHOOK: Output: default@datatype_stats_n0@t=2
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=2).b SCRIPT []
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=2).bin SCRIPT []
@@ -62,6 +63,7 @@ PREHOOK: Output: default@datatype_stats_n0
 POSTHOOK: query: INSERT INTO datatype_stats_n0 values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
 POSTHOOK: Output: default@datatype_stats_n0@t=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=__HIVE_DEFAULT_PARTITION__).b EXPRESSION []
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=__HIVE_DEFAULT_PARTITION__).bin EXPRESSION []
@@ -349,6 +351,7 @@ PREHOOK: Output: default@datatype_stats_n0
 POSTHOOK: query: INSERT INTO datatype_stats_n0 values(2, 44, 455, 45454.3, 454.6564, 2354, '2012-01-01 01:02:02', '2011-12-31', 'update_statistic', 'stat', 'hi', 'false', 'bi', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
 POSTHOOK: Output: default@datatype_stats_n0@t=1
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=1).b SCRIPT []
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=1).bin SCRIPT []
@@ -636,6 +639,7 @@ PREHOOK: Output: default@datatype_stats_n0
 POSTHOOK: query: INSERT INTO datatype_stats_n0 values(4, 46, 457, 45454.5, 454.6566, 2356, '2012-01-01 01:02:04', '2012-01-02', 'update_statisticsss', 'statsss', 'hiveee', 'true', 'binnn', 4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
 POSTHOOK: Output: default@datatype_stats_n0@t=4
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=4).b SCRIPT []
 POSTHOOK: Lineage: datatype_stats_n0 PARTITION(t=4).bin SCRIPT []

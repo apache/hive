@@ -839,7 +839,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -848,10 +848,9 @@ STAGE PLANS:
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -929,7 +928,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -938,10 +937,9 @@ STAGE PLANS:
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1085,7 +1083,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -1094,10 +1092,9 @@ STAGE PLANS:
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1114,15 +1111,14 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: _col3 (type: string)
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
-                      null sort order: z
+                      null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -1203,7 +1199,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: -
                       keys: s (type: string)
-                      null sort order: z
+                      null sort order: a
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 3
                       Select Operator
@@ -1212,10 +1208,9 @@ STAGE PLANS:
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: string)
-                          null sort order: z
+                          null sort order: a
                           sort order: -
                           Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1232,15 +1227,14 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -
                     keys: _col3 (type: string)
-                    null sort order: z
+                    null sort order: a
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
-                      null sort order: z
+                      null sort order: a
                       sort order: -
                       Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -186,8 +187,10 @@ public class FixAcidKeyIndex {
 
     Path recoveredPath = getRecoveryFile(inputPath);
     // make sure that file does not exist
-    if (fs.exists(recoveredPath)) {
+    try {
       fs.delete(recoveredPath, false);
+    } catch (FileNotFoundException e) {
+      // no problem, we're just making sure the file doesn't exist
     }
 
     // Writer should match the orc configuration from the original file

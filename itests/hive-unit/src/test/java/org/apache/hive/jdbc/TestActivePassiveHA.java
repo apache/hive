@@ -72,7 +72,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
+@Ignore("HIVE-23548")
 public class TestActivePassiveHA {
   private MiniHS2 miniHS2_1 = null;
   private MiniHS2 miniHS2_2 = null;

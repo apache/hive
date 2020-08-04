@@ -69,6 +69,8 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -1307,6 +1309,21 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
   }
 
   @Override

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -59,12 +62,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -75,10 +79,10 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private Executor compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
+  private ExecutorService compactionExecutor;
 
   @Override
   public void run() {
@@ -92,6 +96,7 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -109,8 +114,12 @@ public class Initiator extends MetaStoreCompactorThread {
           long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
           prevStart = startedAt;
 
-          //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+
+          if (metricsEnabled) {
+            // Update compaction metrics based on showCompactions result
+            updateCompactionMetrics(currentCompactions);
+          }
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
@@ -141,7 +150,7 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+              compactionList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                   scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
@@ -174,6 +183,10 @@ public class Initiator extends MetaStoreCompactorThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
+    } finally {
+      if (compactionExecutor != null) {
+        this.compactionExecutor.shutdownNow();
+      }
     }
   }
 
@@ -214,25 +227,13 @@ public class Initiator extends MetaStoreCompactorThread {
     return cache.get(fullTableName);
   }
 
-  private interface ThrowingRunnable<E extends Exception> {
-    void run() throws E;
-
-    static Runnable unchecked(ThrowingRunnable<?> r) {
-      return () -> {
-        try {
-          r.run();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      };
-    }
-  }
-
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
+    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -314,13 +315,13 @@ public class Initiator extends MetaStoreCompactorThread {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false, tblproperties, false);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
     Path base = dir.getBaseDirectory();
     long baseSize = 0;
     FileStatus stat = null;
     if (base != null) {
       stat = fs.getFileStatus(base);
-      if (!stat.isDir()) {
+      if (!stat.isDirectory()) {
         LOG.error("Was assuming base " + base.toString() + " is directory, but it's a file!");
         return null;
       }
@@ -336,7 +337,7 @@ public class Initiator extends MetaStoreCompactorThread {
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     for (AcidUtils.ParsedDelta delta : deltas) {
       stat = fs.getFileStatus(delta.getPath());
-      if (!stat.isDir()) {
+      if (!stat.isDirectory()) {
         LOG.error("Was assuming delta " + delta.getPath().toString() + " is a directory, " +
             "but it's a file!");
         return null;
@@ -353,18 +354,25 @@ public class Initiator extends MetaStoreCompactorThread {
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD) :
           Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
+      boolean multiBase = dir.getObsolete().stream()
+              .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).findAny().isPresent();
+
       if (LOG.isDebugEnabled()) {
         StringBuilder msg = new StringBuilder("delta size: ");
         msg.append(deltaSize);
         msg.append(" base size: ");
         msg.append(baseSize);
+        msg.append(" multiBase ");
+        msg.append(multiBase);
+        msg.append(" deltaSize ");
+        msg.append(deltaSize);
         msg.append(" threshold: ");
         msg.append(deltaPctThreshold);
         msg.append(" will major compact: ");
         msg.append(bigEnough);
         LOG.debug(msg.toString());
       }
-      if (bigEnough) return CompactionType.MAJOR;
+      if (bigEnough || (deltaSize == 0  && multiBase)) return CompactionType.MAJOR;
     }
 
     String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
@@ -486,5 +494,43 @@ public class Initiator extends MetaStoreCompactorThread {
       }
     }
     return true;
+  }
+
+  @VisibleForTesting
+  protected static void updateCompactionMetrics(ShowCompactResponse showCompactResponse) {
+    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+    long oldestEnqueueTime = Long.MAX_VALUE;
+
+    // Get the last compaction for each db/table/partition
+    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
+      String key = element.getDbname() + "/" + element.getTablename() +
+          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
+      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
+      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
+      if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
+        oldestEnqueueTime = element.getEnqueueTime();
+      }
+    }
+
+    // Get the current count for each state
+    Map<String, Long> counts = lastElements.values().stream()
+        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
+
+    // Update metrics
+    for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
+      String key = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
+      Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
+      if (count != null) {
+        Metrics.getOrCreateGauge(key).set(count.intValue());
+      } else {
+        Metrics.getOrCreateGauge(key).set(0);
+      }
+    }
+    if (oldestEnqueueTime == Long.MAX_VALUE) {
+      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
+    } else {
+      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
+          .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
+    }
   }
 }

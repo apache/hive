@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
@@ -79,11 +81,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-
-
-
-
-
+import org.apache.orc.impl.OrcTail;
 
 
 import com.google.common.primitives.Ints;
@@ -362,5 +360,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     for (LlapIoDebugDump child : debugDumpComponents) {
       child.debugDumpShort(sb);
     }
+  }
+
+  @Override
+  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag)
+      throws IOException {
+    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache);
   }
 }

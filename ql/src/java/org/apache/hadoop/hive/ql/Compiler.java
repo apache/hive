@@ -188,7 +188,6 @@ public class Compiler {
     // because at that point we need access to the objects.
     Hive.get().getMSC().flushCache();
 
-    driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -257,7 +256,7 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen()) {
+        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
       driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
     }

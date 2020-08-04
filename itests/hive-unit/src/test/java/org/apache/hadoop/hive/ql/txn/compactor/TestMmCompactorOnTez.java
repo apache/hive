@@ -45,7 +45,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 
 /**
- * Test functionality of MmMinorQueryCompactor,.
+ * Test functionality of MmMinorQueryCompactor.
  */
 public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
@@ -568,6 +568,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = dataProvider.getAllData(dbName, tableName);
     Collections.sort(actualData);
     Assert.assertEquals(expectedData, actualData);
+  }
+
+  @Test public void testVectorizationOff() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    testMmMinorCompactionAfterMajor();
   }
 
   /**

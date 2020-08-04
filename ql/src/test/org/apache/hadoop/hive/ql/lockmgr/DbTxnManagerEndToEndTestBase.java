@@ -18,11 +18,14 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
@@ -38,7 +41,8 @@ public abstract class DbTxnManagerEndToEndTestBase {
   protected static HiveConf conf = new HiveConf(Driver.class);
   protected HiveTxnManager txnMgr;
   protected Context ctx;
-  protected Driver driver, driver2;
+  protected Driver driver;
+  protected IDriver driver2;
   protected TxnStore txnHandler;
 
   public DbTxnManagerEndToEndTestBase() {
@@ -54,10 +58,14 @@ public abstract class DbTxnManagerEndToEndTestBase {
 
   @Before
   public void setUp() throws Exception {
+    // set up metastore client cache
+    if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
     SessionState.start(conf);
     ctx = new Context(conf);
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
-    driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
+    driver2 = DriverFactory.newDriver(conf);
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
     TxnDbUtil.cleanDb(conf);
     SessionState ss = SessionState.get();

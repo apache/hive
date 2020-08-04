@@ -43,11 +43,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +63,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -105,6 +113,79 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
                                       replicatedDbName + ".testFunctionTwo" });
+  }
+
+  @Test
+  public void testCreateFunctionOnHDFSIncrementalReplication() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1"})
+            .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
+            .verifyResults(new String[] { "MyName"});
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc2 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
+
+    WarehouseInstance.Tuple incrementalDump =
+            primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1",
+                    replicatedDbName + ".idFunc2" })
+            .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
+            .verifyResults(new String[] { "YourName"});
+  }
+
+  @Test
+  public void testCreateFunctionOnHDFSIncrementalReplicationLazyCopy() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
+    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClasuse);
+    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1"})
+            .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
+            .verifyResults(new String[] { "MyName"});
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc2 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
+
+    WarehouseInstance.Tuple incrementalDump =
+            primary.dump(primaryDbName, withClasuse);
+    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResults(new String[] { replicatedDbName + ".idFunc1",
+                    replicatedDbName + ".idFunc2" })
+            .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
+            .verifyResults(new String[] { "YourName"});
   }
 
   @Test
@@ -962,7 +1043,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName); // first successful incremental load.
 
     // Bootstrap Repl B -> C
-    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName);
+    WarehouseInstance.Tuple tupleReplica = replica.run("alter database " + replicatedDbName
+      + " set dbproperties ('" + TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
@@ -1501,8 +1583,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testRangerReplication() throws Throwable {
     List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'",
-        "'hive.repl.authorization.provider.service.endpoint'='http://localhost:6080/ranger'");
+        "'hive.in.test'='true'");
     primary.run("use " + primaryDbName)
         .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
@@ -1517,28 +1598,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] {"acid_table", "table1"})
         .run("select * from table1")
         .verifyResults(new String[] {"1", "2"});
-  }
-
-  /*
-  Can't test complete replication as mini ranger is not supported
-  Testing just the configs and no impact on existing replication
-   */
-  @Test
-  public void testFailureRangerReplication() throws Throwable {
-    List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'");
-    primary.run("use " + primaryDbName)
-        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
-            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
-        .run("create table table1 (i String)")
-        .run("insert into table1 values (1)")
-        .run("insert into table1 values (2)");
-    try {
-      primary.dump(primaryDbName, clause);
-    } catch (Exception e) {
-      assertEquals("Ranger endpoint is not valid. Please pass a valid config "
-          + "hive.repl.authorization.provider.service.endpoint", e.getMessage());
-    }
   }
 
   /*
@@ -1560,5 +1619,148 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     } catch (SemanticException e) {
       assertEquals("Authorizer sentry not supported for replication ", e.getMessage());
     }
+  }
+
+  //Testing just the configs and no impact on existing replication
+  @Test
+  public void testAtlasReplication() throws Throwable {
+    Map<String, String> confMap = defaultAtlasConfMap();
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, getAtlasClause(defaultAtlasConfMap()));
+    verifyAtlasMetadataPresent();
+
+    confMap.remove("hive.repl.atlas.replicatedto");
+    replica.load(replicatedDbName, primaryDbName, getAtlasClause(confMap))
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+  }
+
+  @Test
+  public void testAtlasMissingConfigs() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)");
+    Map<String, String> confMap = new HashMap<>();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
+    ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, replicatedDbName);
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, true);
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    primary.dump(primaryDbName, getAtlasClause(confMap));
+    verifyAtlasMetadataPresent();
+
+    confMap.clear();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
+    ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, false);
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    primary.load(replicatedDbName, primaryDbName, getAtlasClause(confMap));
+  }
+
+  private void ensureInvalidUrl(List<String> atlasClause, String endpoint, boolean dump) throws Throwable {
+    try {
+      if (dump) {
+        primary.dump(primaryDbName, atlasClause);
+      } else {
+        primary.load(replicatedDbName, primaryDbName, atlasClause);
+      }
+    } catch (MalformedURLException e) {
+      return;
+    }
+    Assert.fail("Atlas endpoint is invalid and but test didn't fail:" + endpoint);
+  }
+
+  private void verifyAtlasMetadataPresent() throws IOException {
+    Path dbReplDir = new Path(primary.repldDir,
+            Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = FileSystem.get(dbReplDir.toUri(), primary.getConf());
+    assertTrue(fs.exists(dbReplDir));
+    FileStatus[] dumpRoots = fs.listStatus(dbReplDir);
+    assert(dumpRoots.length == 1);
+    Path dumpRoot = dumpRoots[0].getPath();
+    assertTrue("Hive dump root doesn't exist", fs.exists(new Path(dumpRoot, ReplUtils.REPL_HIVE_BASE_DIR)));
+    Path atlasDumpRoot = new Path(dumpRoot, ReplUtils.REPL_ATLAS_BASE_DIR);
+    assertTrue("Atlas dump root doesn't exist", fs.exists(atlasDumpRoot));
+    assertTrue("Atlas export file doesn't exist",
+            fs.exists(new Path(atlasDumpRoot, ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME)));
+    assertTrue("Atlas dump metadata doesn't exist",
+            fs.exists(new Path(atlasDumpRoot, EximUtil.METADATA_NAME)));
+    BufferedReader br = null;
+    try {
+      br = new BufferedReader(new InputStreamReader(
+              fs.open(new Path(atlasDumpRoot, EximUtil.METADATA_NAME)), Charset.defaultCharset()));
+      String[] lineContents = br.readLine().split("\t", 5);
+      assertEquals(primary.hiveConf.get("fs.defaultFS"), lineContents[0]);
+      assertEquals(0, Long.parseLong(lineContents[1]));
+    } finally {
+      if (br != null) {
+        br.close();
+      }
+    }
+  }
+
+  private void ensureFailedReplOperation(List<String> clause, String conf, boolean dump) throws Throwable {
+    try {
+      if (dump) {
+        primary.dump(primaryDbName, clause);
+      } else {
+        primary.load(replicatedDbName, primaryDbName, clause);
+      }
+      Assert.fail(conf + " is mandatory config for Atlas metadata replication but it didn't fail.");
+    } catch (SemanticException e) {
+      assertEquals(e.getMessage(), (conf + " is mandatory config for Atlas metadata replication"));
+    }
+  }
+
+  private Map<String, String> defaultAtlasConfMap() {
+    Map<String, String> confMap = new HashMap<>();
+    confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
+    confMap.put(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, replicatedDbName);
+    confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
+    confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
+    return confMap;
+  }
+
+  private List<String> getAtlasClause(Map<String, String> confMap) {
+    List confList = new ArrayList();
+    for (Map.Entry<String, String> entry:confMap.entrySet()) {
+      confList.add(quote(entry.getKey()) + "=" + quote(entry.getValue()));
+    }
+    return confList;
+  }
+
+  private String quote(String str) {
+    return "'" + str + "'";
+  }
+
+  private void setupUDFJarOnHDFS(Path identityUdfLocalPath, Path identityUdfHdfsPath) throws IOException {
+    FileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
   }
 }

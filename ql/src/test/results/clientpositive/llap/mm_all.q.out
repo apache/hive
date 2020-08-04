@@ -100,37 +100,37 @@ STAGE PLANS:
                       outputColumnNames: key, key_mm
                       Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: compute_stats(key, 'hll')
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector(key, 'hll')
                         keys: key_mm (type: int)
                         minReductionHashAggr: 0.5
                         mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 3 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                        Statistics: Num rows: 3 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+                          Statistics: Num rows: 3 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: compute_stats(VALUE._col0)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4)
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 1332 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 3 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 3 Data size: 1332 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 3 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 3 Data size: 1332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -718,6 +718,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@partunion_mm
 POSTHOOK: Output: default@partunion_mm@key=0
 POSTHOOK: Output: default@partunion_mm@key=1
 POSTHOOK: Output: default@partunion_mm@key=10
@@ -870,6 +871,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@skew_dp_union_mm
 POSTHOOK: Output: default@skew_dp_union_mm@k3=0
 POSTHOOK: Output: default@skew_dp_union_mm@k3=10
 POSTHOOK: Output: default@skew_dp_union_mm@k3=100
@@ -1151,6 +1153,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1202,6 +1205,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1632,6 +1636,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Output: default@multi1_mm@p=455
@@ -1715,6 +1720,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Output: default@multi1_mm@p=455
@@ -1955,7 +1961,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	55                  
+	numFiles            	33                  
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                

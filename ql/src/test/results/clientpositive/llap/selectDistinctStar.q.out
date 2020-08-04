@@ -1372,15 +1372,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Create View
-      columns: key string, value string
       expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-      name: default.sdi
       original text: select distinct * from src order by key limit 2
+      columns: key string, value string
+      name: default.sdi
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
@@ -3861,15 +3861,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Create View
-      columns: key string, value string
       expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-      name: default.sdi
       original text: select distinct * from src order by key limit 2
+      columns: key string, value string
+      name: default.sdi
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW

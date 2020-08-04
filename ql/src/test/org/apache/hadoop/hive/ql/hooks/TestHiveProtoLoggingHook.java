@@ -84,6 +84,7 @@ public class TestHiveProtoLoggingHook {
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};
     queryPlan.setQueryId("test_queryId");
     queryPlan.setQueryStartTime(1234L);
+    queryPlan.setQueryString("SELECT * FROM t WHERE i > 10");
     queryPlan.setRootTasks(new ArrayList<>());
     queryPlan.setInputs(new HashSet<>());
     queryPlan.setOutputs(new HashSet<>());

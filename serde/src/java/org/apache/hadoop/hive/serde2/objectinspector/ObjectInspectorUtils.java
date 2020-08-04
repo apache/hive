@@ -485,11 +485,12 @@ public final class ObjectInspectorUtils {
     case UNION: {
       UnionObjectInspector uoi = (UnionObjectInspector)oi;
       List<ObjectInspector> objectInspectors = uoi.getObjectInspectors();
+      byte tag = uoi.getTag(o);
       Object object = copyToStandardObject(
               uoi.getField(o),
-              objectInspectors.get(uoi.getTag(o)),
+              objectInspectors.get(tag),
               objectInspectorOption);
-      result = object;
+      result = new StandardUnionObjectInspector.StandardUnion(tag, object);
       break;
     }
     default: {

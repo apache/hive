@@ -171,11 +171,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tab1
 POSTHOOK: Lineage: tab1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tab1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select reflect("java.lang.Thread", 'sleep', cast(4000 as bigint))
+PREHOOK: query: select reflect("java.lang.Thread", 'sleep', cast(10000 as bigint))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select reflect("java.lang.Thread", 'sleep', cast(4000 as bigint))
+POSTHOOK: query: select reflect("java.lang.Thread", 'sleep', cast(10000 as bigint))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####

@@ -153,9 +153,10 @@ public class LlapZookeeperRegistryImpl
             HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE));
     populateConfigValues(capacityValues.entrySet());
 
-    String uniqueId = registerServiceRecord(daemonZkRecord);
+    String uniqueId = UNIQUE_ID.toString();
     long znodeCreationTimeout = 120;
 
+    initializeWithoutRegisteringInternal();
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
       slotZnode = new SlotZnode(
@@ -171,6 +172,7 @@ public class LlapZookeeperRegistryImpl
       throw (e instanceof IOException) ? (IOException)e : new IOException(e);
     }
 
+    registerServiceRecord(daemonZkRecord, uniqueId);
     LOG.info("Registered node. Created a znode on ZooKeeper for LLAP instance: rpc: {}, " +
             "shuffle: {}, webui: {}, mgmt: {}, znodePath: {}", rpcEndpoint, getShuffleEndpoint(),
             getServicesEndpoint(), getMngEndpoint(), getRegistrationZnodePath());

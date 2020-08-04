@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.apache.hadoop.hive.common.NumberUtils.getFirstInt;
+import static org.apache.hadoop.hive.common.NumberUtils.getSecondInt;
+import static org.apache.hadoop.hive.common.NumberUtils.makeIntPair;
+
 import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1671,17 +1675,6 @@ public final class BuddyAllocator
     int freeListIx = 31 - Integer.numberOfLeadingZeros(size);
     if (size != (1 << freeListIx)) ++freeListIx; // not a power of two, add one more
     return Math.max(freeListIx - minAllocLog2, 0);
-  }
-
-  // Utility methods used to store pairs of ints as long.
-  private static long makeIntPair(int first, int second) {
-    return ((long)first) << 32 | second;
-  }
-  private static int getFirstInt(long result) {
-    return (int) (result >>> 32);
-  }
-  private static int getSecondInt(long result) {
-    return (int) (result & ((1L << 32) - 1));
   }
 
   // Debug/test related methods.

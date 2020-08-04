@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 /**
  * It handles cleanup of dropped partition/table/database in ACID related metastore tables
  */
-public class AcidEventListener extends MetaStoreEventListener {
+public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
   private TxnStore txnHandler;
   private Configuration conf;

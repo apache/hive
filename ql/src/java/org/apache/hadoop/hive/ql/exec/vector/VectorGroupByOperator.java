@@ -151,6 +151,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private float memoryThreshold;
 
   private boolean isLlap = false;
+
+  // tracks overall access count in map agg buffer any given time.
+  private long totalAccessCount;
+
   /**
    * Interface for processing mode: global, hash, unsorted streaming, or group batch
    */
@@ -180,21 +184,20 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       if (!groupingSetsPresent) {
         doProcessBatch(batch, false, null);
-        return;
-      }
+      } else {
+        // We drive the doProcessBatch logic with the same batch but different
+        // grouping set id and null variation.
+        // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
 
-      // We drive the doProcessBatch logic with the same batch but different
-      // grouping set id and null variation.
-      // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
+        final int size = groupingSets.length;
+        for (int i = 0; i < size; i++) {
 
-      final int size = groupingSets.length;
-      for (int i = 0; i < size; i++) {
+          // NOTE: We are overwriting the constant vector value...
+          groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
+          groupingSetsDummyVectorExpression.evaluate(batch);
 
-        // NOTE: We are overwriting the constant vector value...
-        groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
-        groupingSetsDummyVectorExpression.evaluate(batch);
-
-        doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+          doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+        }
       }
 
       if (this instanceof ProcessingModeHashAggregate) {
@@ -252,7 +255,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * This mode is very simple, there are no keys to consider, and only flushes one row at closing
    * The one row must flush even if no input was seen (NULLs)
    */
-  private class ProcessingModeGlobalAggregate extends ProcessingModeBase {
+  final class ProcessingModeGlobalAggregate extends ProcessingModeBase {
 
     /**
      * In global processing mode there is only one set of aggregation buffers
@@ -289,12 +292,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   /**
    * Hash Aggregate mode processing
    */
-  private class ProcessingModeHashAggregate extends ProcessingModeBase {
+   final class ProcessingModeHashAggregate extends ProcessingModeBase {
 
     /**
      * The global key-aggregation hash map.
      */
-    private Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
+    @VisibleForTesting
+    Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
 
     /**
      * Total per hashtable entry fixed memory (does not depend on key/agg values).
@@ -335,7 +339,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     /**
      * A soft reference used to detect memory pressure
      */
-    private SoftReference<Object> gcCanary = new SoftReference<Object>(new Object());
+    @VisibleForTesting
+    SoftReference<Object> gcCanary = new SoftReference<Object>(new Object());
 
     /**
      * Counts the number of time the gcCanary died and was resurrected
@@ -388,8 +393,17 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       sumBatchSize = 0;
 
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
+      if (groupingSets != null && groupingSets.length > 0) {
+        this.maxHtEntries = this.maxHtEntries / groupingSets.length;
+        LOG.info("New maxHtEntries: {}, groupingSets len: {}", maxHtEntries, groupingSets.length);
+      }
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
+    }
+
+    @VisibleForTesting
+    int getMaxHtEntries() {
+      return maxHtEntries;
     }
 
     @Override
@@ -503,6 +517,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           mapKeysAggregationBuffers.put(kw.copyKey(), aggregationBuffer);
           numEntriesHashTable++;
           numEntriesSinceCheck++;
+        } else {
+          // for access tracking
+          aggregationBuffer.incrementAccessCount();
+          totalAccessCount++;
         }
         aggregationBatchInfo.mapAggregationBufferSet(aggregationBuffer, i);
       }
@@ -541,6 +559,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       }
     }
 
+    int computeAvgAccess() {
+      if (numEntriesHashTable == 0) {
+        return 0;
+      }
+      int avgAccess = (int) (totalAccessCount / numEntriesHashTable);
+      LOG.debug("totalAccessCount:{}, numEntries:{}, avgAccess:{}",
+          totalAccessCount, numEntriesHashTable, avgAccess);
+      return avgAccess;
+    }
+
     /**
      * Flushes the entries in the hash table by emiting output (forward).
      * When parameter 'all' is true all the entries are flushed.
@@ -562,6 +590,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
             maxHashTblMemory/1024/1024,
             gcCanary.get() == null ? "dead" : "alive"));
       }
+      int avgAccess = computeAvgAccess();
 
       /* Iterate the global (keywrapper,aggregationbuffers) map and emit
        a row for each key */
@@ -569,10 +598,19 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           mapKeysAggregationBuffers.entrySet().iterator();
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
+        if (!all && avgAccess >= 1) {
+          if (pair.getValue().getAccessCount() > avgAccess) {
+            // resetting to give chance for other entries
+            totalAccessCount -= pair.getValue().getAccessCount();
+            pair.getValue().resetAccessCount();
+            continue;
+          }
+        }
 
         writeSingleRow((VectorHashKeyWrapperBase) pair.getKey(), pair.getValue());
 
         if (!all) {
+          totalAccessCount -= pair.getValue().getAccessCount();
           iter.remove();
           --numEntriesHashTable;
           if (++entriesFlushed >= entriesToFlush) {
@@ -583,6 +621,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       if (all) {
         mapKeysAggregationBuffers.clear();
+        totalAccessCount = 0;
         numEntriesHashTable = 0;
       }
 
@@ -675,7 +714,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * Streaming processing mode on ALREADY GROUPED data. Each input VectorizedRowBatch may
    * have a mix of different keys.  Intermediate values are flushed each time key changes.
    */
-  private class ProcessingModeStreaming extends ProcessingModeBase {
+  final class ProcessingModeStreaming extends ProcessingModeBase {
 
     /**
      * The aggregation buffers used in streaming mode
@@ -817,7 +856,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    *      writeGroupRow does this and finally increments outputBatch.size.
    *
    */
-  private class ProcessingModeReduceMergePartial extends ProcessingModeBase {
+  final class ProcessingModeReduceMergePartial extends ProcessingModeBase {
 
     private boolean first;
     private boolean isLastGroupBatch;
@@ -897,7 +936,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   /**
    * Current processing mode. Processing mode can change (eg. hash -> streaming).
    */
-  private transient IProcessingMode processingMode;
+  @VisibleForTesting
+  transient IProcessingMode processingMode;
 
   private static final long serialVersionUID = 1L;
 

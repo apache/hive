@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -143,6 +144,13 @@ public class ReplChangeManager {
       throws MetaException {
     if (instance == null) {
       instance = new ReplChangeManager(conf);
+    }
+    return instance;
+  }
+
+  public static synchronized ReplChangeManager getInstance() {
+    if (!inited) {
+      throw new IllegalStateException("Replication Change Manager is not initialized.");
     }
     return instance;
   }
@@ -293,7 +301,7 @@ public class ReplChangeManager {
         // xattr has limited capacity. We shall revisit and store all original
         // locations if orig-loc becomes important
         try {
-          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes(StandardCharsets.UTF_8));
         } catch (UnsupportedOperationException e) {
           LOG.warn("Error setting xattr for {}", path.toString());
         }

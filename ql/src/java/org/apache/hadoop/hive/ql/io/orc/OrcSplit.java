@@ -346,8 +346,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootPath, conf);
     writeId = tmd.syntheticWriteId;
     stmtId = tmd.statementId;
-    AcidOutputFormat.Options opt = AcidUtils.parseBaseOrDeltaBucketFilename(getPath(), conf);
-    bucketId = opt.getBucketId();
+    bucketId = AcidUtils.parseBucketId(getPath());
   }
 
   @Override

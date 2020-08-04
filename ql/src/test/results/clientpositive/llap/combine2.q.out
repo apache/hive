@@ -31,6 +31,7 @@ select * from (
    select key, '2010-04-21 09:45:00' value from src where key = 19) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine2_n0
 POSTHOOK: Output: default@combine2_n0@value=2010-04-21 09%3A45%3A00
 POSTHOOK: Output: default@combine2_n0@value=val_0
 POSTHOOK: Output: default@combine2_n0@value=val_2

@@ -334,6 +334,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (!isMmTable && !isDirectInsert) {
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = new Path(parent, taskWithExt);
+            if (conf.isCompactionTable()) {
+              // Helper tables used for compaction are external and non-acid. We need to keep
+              // track of the taskId to avoid overwrites in the case of multiple
+              // FileSinkOperators, and the file names need to reflect the correct bucketId
+              // because the files will eventually be placed in an acid table, and the
+              // OrcFileMergeOperator should not merge data belonging to different buckets.
+              // Therefore during compaction, data will be stored in the final directory like:
+              // ${hive_staging_dir}/final_dir/taskid/bucketId
+              // For example, ${hive_staging dir}/-ext-10002/000000_0/bucket_00000
+              finalPaths[filesIdx] = new Path(finalPaths[filesIdx],
+                  AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId));
+            }
           } else {
             finalPaths[filesIdx] =  new Path(buildTmpPath(), taskWithExt);
           }
@@ -801,12 +813,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected void createBucketForFileIdx(FSPaths fsp, int filesIdx)
       throws HiveException {
     try {
-      if (conf.isCompactionTable()) {
-        fsp.initializeBucketPaths(filesIdx, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId),
-            isNativeTable(), isSkewedStoredAsSubDirectories);
-      } else {
-        fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
-      }
+      fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
@@ -962,7 +969,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       } else {
         if (conf.isCompactionTable()) {
-          int bucketProperty = ((IntWritable)((Object[])row)[2]).get();
+          int bucketProperty = getBucketProperty(row);
           bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
         }
         createBucketFiles(fsp);
@@ -1405,8 +1412,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
-        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(), conf
-            .getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs);
+        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),
+            conf.getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs,
+            conf.getStaticSpec());
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1470,7 +1478,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleDirectInsertTableFinalPath(specPath, unionSuffix, hconf, success, dpLevels, lbLevels, mbc,
               conf.getTableWriteId(), conf.getStatementId(), reporter, conf.isMmTable(), conf.isMmCtas(), conf
-                  .getInsertOverwrite(), conf.isDirectInsert());
+                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec());
         }
       }
     } catch (IOException e) {
@@ -1682,6 +1690,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void configureJobConf(JobConf job) {
     if (conf.getInsertOverwrite()) {
       job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
+
+  /**
+   * Get the bucket property as an int from the row. This is necessary because
+   * VectorFileSinkOperator wraps row values in Writable objects.
+   * @param row as Object
+   * @return bucket property as int
+   */
+  private int getBucketProperty(Object row) {
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty instanceof Writable) {
+      return ((IntWritable) bucketProperty).get();
+    } else {
+      return (int) bucketProperty;
     }
   }
 }

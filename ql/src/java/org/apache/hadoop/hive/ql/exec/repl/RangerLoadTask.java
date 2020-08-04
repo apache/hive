@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
@@ -30,20 +31,22 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.NoOpRangerRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_SERVICE_NAME;
-
 /**
  * RangerLoadTask.
  *
@@ -80,13 +83,20 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       LOG.info("Importing Ranger Metadata");
       RangerExportPolicyList rangerExportPolicyList = null;
       List<RangerPolicy> rangerPolicies = null;
+      SecurityUtils.reloginExpiringKeytabUser();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
-      String rangerEndpoint = conf.getVar(REPL_AUTHORIZATION_PROVIDER_SERVICE_ENDPOINT);
-      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
-        throw new Exception("Ranger endpoint is not valid. "
-                + "Please pass a valid config hive.repl.authorization.provider.service.endpoint");
+      URL url = work.getRangerConfigResource();
+      if (url == null) {
+        throw new SemanticException("Ranger configuration is not valid "
+          + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+      }
+      conf.addResource(url);
+      String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
+      String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
+      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint, conf)) {
+        throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
       if (work.getCurrentDumpPath() != null) {
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());
@@ -96,6 +106,9 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
           work.getCurrentDumpPath().toString(), expectedPolicyCount);
         replLogger.startLog();
+        Map<String, Long> metricMap = new HashMap<>();
+        metricMap.put(ReplUtils.MetricName.POLICIES.name(), (long) expectedPolicyCount);
+        work.getMetricCollector().reportStageStart(getName(), metricMap);
         if (rangerExportPolicyList != null && !CollectionUtils.isEmpty(rangerExportPolicyList.getPolicies())) {
           rangerPolicies = rangerExportPolicyList.getPolicies();
         }
@@ -108,7 +121,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       List<RangerPolicy> rangerPoliciesWithDenyPolicy = rangerPolicies;
       if (conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)) {
         rangerPoliciesWithDenyPolicy = rangerRestClient.addDenyPolicies(rangerPolicies,
-          conf.getVar(REPL_RANGER_SERVICE_NAME), work.getSourceDbName(), work.getTargetDbName());
+          rangerHiveServiceName, work.getSourceDbName(), work.getTargetDbName());
       }
 
       List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPoliciesWithDenyPolicy,
@@ -121,16 +134,23 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         }
         rangerExportPolicyList.setPolicies(updatedRangerPolicies);
         rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
-                conf.getVar(REPL_RANGER_SERVICE_NAME));
+                rangerHiveServiceName, conf);
         LOG.info("Number of ranger policies imported {}", rangerExportPolicyList.getListSize());
         importCount = rangerExportPolicyList.getListSize();
+        work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), importCount);
         replLogger.endLog(importCount);
         LOG.info("Ranger policy import finished {} ", importCount);
       }
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
     } catch (Exception e) {
       LOG.error("Failed", e);
       setException(e);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics", ex);
+      }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }

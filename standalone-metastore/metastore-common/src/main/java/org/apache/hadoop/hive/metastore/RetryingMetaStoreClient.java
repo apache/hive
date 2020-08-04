@@ -29,6 +29,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
@@ -59,6 +61,8 @@ import com.google.common.annotations.VisibleForTesting;
 public class RetryingMetaStoreClient implements InvocationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryingMetaStoreClient.class.getName());
+  private static final Pattern IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN =
+      Pattern.compile("(?s).*(IO|JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*");
 
   private final IMetaStoreClient base;
   private final UserGroupInformation ugi;
@@ -90,7 +94,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = (msUri == null) || msUri.trim().isEmpty();
 
-    reloginExpiringKeytabUser();
+    SecurityUtils.reloginExpiringKeytabUser();
 
     this.base = JavaUtils.newInstance(msClientClass, constructorArgTypes, constructorArgs);
 
@@ -171,7 +175,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
     while (true) {
       try {
-        reloginExpiringKeytabUser();
+        SecurityUtils.reloginExpiringKeytabUser();
 
         if (allowReconnect) {
           if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
@@ -233,16 +237,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
           caughtException = (TException)t;
-        } else if ((t instanceof MetaException) && t.getMessage().matches(
-            "(?s).*(JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*") &&
-            !t.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException")) {
+        } else if ((t instanceof MetaException) && isRecoverableMetaException((MetaException) t)) {
           caughtException = (MetaException)t;
         } else {
           throw t;
         }
       } catch (MetaException e) {
-        if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*") &&
-            !e.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException")) {
+        if (isRecoverableMetaException(e)) {
           caughtException = e;
         } else {
           throw e;
@@ -259,6 +260,17 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;
+  }
+
+  private static boolean isRecoverableMetaException(MetaException e) {
+    String m = e.getMessage();
+    if (m == null) {
+      return false;
+    }
+    if (m.contains("java.sql.SQLIntegrityConstraintViolationException")) {
+      return false;
+    }
+    return IO_JDO_TRANSPORT_PROTOCOL_EXCEPTION_PATTERN.matcher(m).matches();
   }
 
   /**
@@ -312,30 +324,6 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       LOG.debug("Reconnection status for Method: " + method.getName() + " is " + shouldReconnect);
     }
     return shouldReconnect;
-  }
-
-  /**
-   * Relogin if login user is logged in using keytab
-   * Relogin is actually done by ugi code only if sufficient time has passed
-   * A no-op if kerberos security is not enabled
-   * @throws MetaException
-   */
-  private void reloginExpiringKeytabUser() throws MetaException {
-    if(!UserGroupInformation.isSecurityEnabled()){
-      return;
-    }
-    try {
-      UserGroupInformation ugi = UserGroupInformation.getLoginUser();
-      //checkTGT calls ugi.relogin only after checking if it is close to tgt expiry
-      //hadoop relogin is actually done only every x minutes (x=10 in hadoop 1.x)
-      if(ugi.isFromKeytab()){
-        ugi.checkTGTAndReloginFromKeytab();
-      }
-    } catch (IOException e) {
-      String msg = "Error doing relogin using keytab " + e.getMessage();
-      LOG.error(msg, e);
-      throw new MetaException(msg);
-    }
   }
 
 }

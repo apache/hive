@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>21</version>
+    <version>23</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
@@ -26,9 +26,6 @@
 
   <name>Hive</name>
   <url>https://hive.apache.org</url>
-  <prerequisites>
-    <maven>2.2.1</maven>
-  </prerequisites>
 
   <modules>
     <module>storage-api</module>
@@ -94,6 +91,7 @@
     <!-- Determines the log level of the console logger, hive.log is independent of this-->
     <test.console.log.level>INFO</test.console.log.level>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.local.warehouse.dir>${project.build.directory}/localfs/warehouse</test.local.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
@@ -102,12 +100,11 @@
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-
+    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
     <ant.version>1.9.1</ant.version>
@@ -115,17 +112,19 @@
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.10.0</arrow.version>
+    <atlas.client.version>2.0.0</atlas.client.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
-    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
+    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.19</commons-compress.version>
+    <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
@@ -168,7 +167,9 @@
     <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13</junit.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    <junit.vintage.version>5.6.2</junit.vintage.version>
     <kryo.version>4.0.2</kryo.version>
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
@@ -197,7 +198,7 @@
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
-    <scala.version>2.12.4</scala.version>
+    <scala.version>2.12.10</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -214,7 +215,8 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.4.0</json-path.version>
     <janino.version>3.0.11</janino.version>
-    <datasketches.version>1.0.0-incubating</datasketches.version>
+    <datasketches.version>1.1.0-incubating</datasketches.version>
+    <spotbugs.version>4.0.3</spotbugs.version>
   </properties>
 
   <repositories>
@@ -380,6 +382,16 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.vintage.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1147,16 +1159,9 @@
           <version>${maven.checkstyle.plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.datanucleus</groupId>
-          <artifactId>datanucleus-maven-plugin</artifactId>
-          <version>${datanucleus.maven.plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.datanucleus</groupId>
-              <artifactId>datanucleus-core</artifactId>
-              <version>${datanucleus-core.version}</version>
-            </dependency>
-          </dependencies>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
@@ -1402,6 +1407,7 @@
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables></test.src.tables>
@@ -1420,8 +1426,17 @@
       <plugin>
 	<groupId>org.apache.rat</groupId>
 	<artifactId>apache-rat-plugin</artifactId>
-	<configuration>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
 	  <excludes>
+	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
@@ -1432,6 +1447,10 @@
       <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
+	    <exclude>**/.factorypath</exclude>
+	    <exclude>**/.classpath</exclude>
+	    <exclude>**/.project</exclude>
+	    <exclude>**/.settings/**</exclude>
 	    <exclude>**/*.arcconfig</exclude>
 	    <exclude>**/package-info.java</exclude>
 	    <exclude>**/*.properties</exclude>
@@ -1440,6 +1459,7 @@
 	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
 	    <exclude>**/gen/**</exclude>
+	    <exclude>**/target/**</exclude>
 	    <exclude>**/scripts/**</exclude>
 	    <exclude>**/resources/**</exclude>
 	    <exclude>**/*.rc</exclude>
@@ -1579,18 +1599,27 @@
     </profile>
 
     <profile>
-    <id>findbugs</id>
+    <id>spotbugs</id>
       <build>
         <plugins>
+        <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.5</version>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
+            <dependencies>
+              <!-- Specify the version of spotbugs -->
+              <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs</artifactId>
+                <version>${spotbugs.version}</version>
+              </dependency>
+            </dependencies>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
@@ -1598,14 +1627,14 @@
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.5</version>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>

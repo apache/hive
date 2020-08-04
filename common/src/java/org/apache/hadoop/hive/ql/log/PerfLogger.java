@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +95,19 @@ public class PerfLogger {
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_DATABASE = "getDatabase";
+  public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
+  public static final String HIVE_GET_PARTITIONS = "getPartitions";
+  public static final String HIVE_GET_PARTITIONS_2 = "getPartitions2";
+  public static final String HIVE_GET_PARTITIONS_BY_EXPR = "getPartitionsByExpr";
+  public static final String HIVE_GET_TABLE_COLUMN_STATS = "getTableColumnStatistics";
+  public static final String HIVE_GET_AGGR_COL_STATS = "getAggrColStatsFor";
+  public static final String HIVE_GET_PK = "getPrimaryKeys";
+  public static final String HIVE_GET_FK = "getForeignKeys";
+  public static final String HIVE_GET_UNIQ_CONSTRAINT = "getUniqueConstraints";
+  public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
+
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
@@ -133,6 +147,7 @@ public class PerfLogger {
    * @param callerName the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
+  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
   public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
@@ -147,6 +162,7 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
+  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
   public long PerfLogEnd(String callerName, String method) {
     return PerfLogEnd(callerName, method, null);
   }
@@ -157,6 +173,7 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
+  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();

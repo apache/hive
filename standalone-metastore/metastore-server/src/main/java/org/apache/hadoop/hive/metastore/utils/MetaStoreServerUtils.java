@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -499,6 +500,19 @@ public class MetaStoreServerUtils {
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
+  }
+
+  /**
+   * Returns true if p is a prefix of s.
+   */
+  public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
+    if (p == s) {
+      return true;
+    }
+    if (p.size() > s.size()) {
+      return false;
+    }
+    return ListUtils.isEqualList(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
@@ -1348,6 +1362,17 @@ public class MetaStoreServerUtils {
     }
   }
 
+  public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
+                                                 String defaultPartName, List<Partition> results)
+      throws MetastoreException {
+    try {
+      msc.listPartitionsByExpr(table.getCatName(), table.getDbName(), table.getTableName(), filterExp,
+          defaultPartName, (short) -1, results);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
   public static boolean isPartitioned(Table table) {
     if (getPartCols(table) == null) {
       return false;
@@ -1449,12 +1474,16 @@ public class MetaStoreServerUtils {
           return result;
         }
 
-        String partitionName = parts[0];
+        // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
+        // it should be converted to lower case
+        String partitionName = parts[0].toLowerCase();
+        // Do not convert the partitionValue to lowercase
+        String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           if (result == null) {
-            result = currPath.getName();
+            result = partitionName + "=" + partitionValue;
           } else {
-            result = currPath.getName() + Path.SEPARATOR + result;
+            result = partitionName + "=" + partitionValue + Path.SEPARATOR + result;
           }
         }
       }

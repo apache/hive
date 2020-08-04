@@ -1,0 +1,65 @@
+PREHOOK: query: create table t (col0 int, col1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (col0 int, col1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t(col0, col1) values
+(1, 1),
+(1, 2), (1, 2), (1, 2),
+(1, 3), (1, 3),
+(2, 4),
+(2, 5),
+(3, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t(col0, col1) values
+(1, 1),
+(1, 2), (1, 2), (1, 2),
+(1, 3), (1, 3),
+(2, 4),
+(2, 5),
+(3, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.col0 SCRIPT []
+POSTHOOK: Lineage: t.col1 SCRIPT []
+PREHOOK: query: explain cbo
+select col0, count(distinct col1) from t
+group by col0
+having count(distinct col1) > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0, count(distinct col1) from t
+group by col0
+having count(distinct col1) > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveFilter(condition=[>($1, 1)])
+  HiveAggregate(group=[{0}], agg#0=[count($1)])
+    HiveProject(col0=[$0], col1=[$1])
+      HiveAggregate(group=[{0, 1}])
+        HiveTableScan(table=[[default, t]], table:alias=[t])
+
+PREHOOK: query: select col0, count(distinct col1) from t
+group by col0
+having count(distinct col1) > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select col0, count(distinct col1) from t
+group by col0
+having count(distinct col1) > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	3
+2	2

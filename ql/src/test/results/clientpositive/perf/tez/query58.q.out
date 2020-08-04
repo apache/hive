@@ -143,28 +143,28 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 1 <- Reducer 17 (BROADCAST_EDGE)
-Map 26 <- Reducer 18 (BROADCAST_EDGE)
-Map 27 <- Reducer 19 (BROADCAST_EDGE)
+Map 24 <- Reducer 18 (BROADCAST_EDGE)
+Map 25 <- Reducer 19 (BROADCAST_EDGE)
 Reducer 10 <- Reducer 16 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
 Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
-Reducer 12 <- Map 27 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+Reducer 12 <- Map 25 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
 Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
-Reducer 16 <- Map 15 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
+Reducer 16 <- Map 15 (SIMPLE_EDGE), Reducer 21 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 16 (CUSTOM_SIMPLE_EDGE)
 Reducer 18 <- Reducer 16 (CUSTOM_SIMPLE_EDGE)
 Reducer 19 <- Reducer 16 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-Reducer 21 <- Map 20 (CUSTOM_SIMPLE_EDGE)
-Reducer 22 <- Map 25 (CUSTOM_SIMPLE_EDGE), Reducer 21 (CUSTOM_SIMPLE_EDGE)
-Reducer 23 <- Map 25 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
-Reducer 24 <- Reducer 23 (SIMPLE_EDGE)
+Reducer 20 <- Map 15 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
+Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
+Reducer 22 <- Map 15 (CUSTOM_SIMPLE_EDGE), Reducer 23 (CUSTOM_SIMPLE_EDGE)
+Reducer 23 <- Map 15 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Reducer 16 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 11 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 14 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 9 <- Map 26 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+Reducer 9 <- Map 24 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -204,65 +204,63 @@ Stage-0
                                   SHUFFLE [RS_143]
                                     PartitionCols:_col0
                                     Merge Join Operator [MERGEJOIN_407] (rows=2 width=4)
-                                      Conds:RS_423._col1=RS_439._col0(Inner),Output:["_col0"]
+                                      Conds:RS_429._col1=RS_439._col0(Inner),Output:["_col0"]
                                     <-Map 15 [SIMPLE_EDGE] vectorized
-                                      SHUFFLE [RS_423]
+                                      PARTITION_ONLY_SHUFFLE [RS_429]
                                         PartitionCols:_col1
-                                        Select Operator [SEL_422] (rows=73049 width=98)
+                                        Select Operator [SEL_425] (rows=73049 width=98)
                                           Output:["_col0","_col1"]
                                           Filter Operator [FIL_421] (rows=73049 width=98)
                                             predicate:(d_date is not null and d_date_sk is not null)
                                             TableScan [TS_6] (rows=73049 width=98)
-                                              default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
-                                    <-Reducer 24 [SIMPLE_EDGE] vectorized
+                                              default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date","d_week_seq"]
+                                    <-Reducer 21 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_439]
                                         PartitionCols:_col0
                                         Group By Operator [GBY_438] (rows=2 width=94)
                                           Output:["_col0"],keys:KEY._col0
-                                        <-Reducer 23 [SIMPLE_EDGE]
+                                        <-Reducer 20 [SIMPLE_EDGE]
                                           SHUFFLE [RS_32]
                                             PartitionCols:_col0
                                             Group By Operator [GBY_31] (rows=2 width=94)
                                               Output:["_col0"],keys:_col2
                                               Merge Join Operator [MERGEJOIN_406] (rows=5 width=94)
-                                                Conds:RS_27._col1=RS_436._col1(Inner),Output:["_col2"]
-                                              <-Map 25 [SIMPLE_EDGE] vectorized
-                                                SHUFFLE [RS_436]
+                                                Conds:RS_27._col1=RS_430._col1(Inner),Output:["_col2"]
+                                              <-Map 15 [SIMPLE_EDGE] vectorized
+                                                PARTITION_ONLY_SHUFFLE [RS_430]
                                                   PartitionCols:_col1
-                                                  Select Operator [SEL_434] (rows=73049 width=98)
+                                                  Select Operator [SEL_426] (rows=73049 width=98)
                                                     Output:["_col0","_col1"]
-                                                    Filter Operator [FIL_432] (rows=73049 width=98)
+                                                    Filter Operator [FIL_422] (rows=73049 width=98)
                                                       predicate:(d_week_seq is not null and d_date is not null)
-                                                      TableScan [TS_21] (rows=73049 width=98)
-                                                        default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date","d_week_seq"]
+                                                       Please refer to the previous TableScan [TS_6]
                                               <-Reducer 22 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_27]
                                                   PartitionCols:_col1
                                                   Merge Join Operator [MERGEJOIN_405] (rows=1 width=4)
                                                     Conds:(Inner),Output:["_col1"]
-                                                  <-Map 25 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                    SHUFFLE [RS_437]
-                                                      Select Operator [SEL_435] (rows=1 width=4)
-                                                        Output:["_col0"]
-                                                        Filter Operator [FIL_433] (rows=1 width=98)
-                                                          predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-                                                           Please refer to the previous TableScan [TS_21]
-                                                  <-Reducer 21 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                  <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
                                                     PARTITION_ONLY_SHUFFLE [RS_431]
-                                                      Select Operator [SEL_430] (rows=1 width=8)
-                                                        Filter Operator [FIL_429] (rows=1 width=8)
+                                                      Select Operator [SEL_427] (rows=1 width=4)
+                                                        Output:["_col0"]
+                                                        Filter Operator [FIL_423] (rows=1 width=98)
+                                                          predicate:((d_date = '1998-02-19') and d_week_seq is not null)
+                                                           Please refer to the previous TableScan [TS_6]
+                                                  <-Reducer 23 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                    PARTITION_ONLY_SHUFFLE [RS_437]
+                                                      Select Operator [SEL_436] (rows=1 width=8)
+                                                        Filter Operator [FIL_435] (rows=1 width=8)
                                                           predicate:(sq_count_check(_col0) <= 1)
-                                                          Group By Operator [GBY_428] (rows=1 width=8)
+                                                          Group By Operator [GBY_434] (rows=1 width=8)
                                                             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                                          <-Map 20 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                            PARTITION_ONLY_SHUFFLE [RS_427]
-                                                              Group By Operator [GBY_426] (rows=1 width=8)
+                                                          <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                            PARTITION_ONLY_SHUFFLE [RS_433]
+                                                              Group By Operator [GBY_432] (rows=1 width=8)
                                                                 Output:["_col0"],aggregations:["count()"]
-                                                                Select Operator [SEL_425] (rows=1 width=94)
+                                                                Select Operator [SEL_428] (rows=1 width=94)
                                                                   Filter Operator [FIL_424] (rows=1 width=94)
                                                                     predicate:(d_date = '1998-02-19')
-                                                                    TableScan [TS_9] (rows=73049 width=94)
-                                                                      default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date"]
+                                                                     Please refer to the previous TableScan [TS_6]
                                 <-Reducer 12 [SIMPLE_EDGE]
                                   SHUFFLE [RS_142]
                                     PartitionCols:_col0
@@ -277,7 +275,7 @@ Stage-0
                                             predicate:(i_item_sk is not null and i_item_id is not null)
                                             TableScan [TS_3] (rows=462000 width=104)
                                               default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id"]
-                                    <-Map 27 [SIMPLE_EDGE] vectorized
+                                    <-Map 25 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_465]
                                         PartitionCols:_col1
                                         Select Operator [SEL_464] (rows=143966864 width=119)
@@ -331,7 +329,7 @@ Stage-0
                                             SHUFFLE [RS_448]
                                               PartitionCols:_col0
                                                Please refer to the previous Select Operator [SEL_446]
-                                          <-Map 26 [SIMPLE_EDGE] vectorized
+                                          <-Map 24 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_457]
                                               PartitionCols:_col1
                                               Select Operator [SEL_456] (rows=550076554 width=114)

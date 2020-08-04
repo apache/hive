@@ -164,6 +164,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -200,6 +204,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpCons
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunctionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveCardinalityPreservingJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
@@ -251,6 +256,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingLastValueRewrite;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
@@ -262,6 +268,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCProjectPushDow
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCSortPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
@@ -565,6 +572,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
 
             // 2. Regen OP plan from optimized AST
+            if (forViewCreation) {
+              // the reset would remove the translations
+              executeUnparseTranlations();
+              // save the resultSchema before rewriting it
+              originalResultSchema = resultSchema;
+            }
             if (cboCtx.type == PreCboCtx.Type.VIEW) {
               try {
                 viewSelect = handleCreateViewDDL(newAST);
@@ -1847,7 +1860,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calciteGenPlan),
-            getQB().isView() || getQB().isMaterializedView() ? false : HiveConf.getBoolVar(conf,
+            (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
         semanticException = e;
@@ -1970,17 +1983,31 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveExceptRewriteRule.INSTANCE);
 
       //1. Distinct aggregate rewrite
-
       if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
-          String countDistinctSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.CountDistinctRewrite(countDistinctSketchType);
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.CountDistinctRewrite(sketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED)) {
-          String percentileDiscSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.PercentileDiscRewrite(percentileDiscSketchType);
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.PercentileDiscRewrite(sketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED)) {
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.CumeDistRewriteRule(sketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_ENABLED)) {
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.NTileRewrite(sketchType);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
+        }
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_ENABLED)) {
+          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_SKETCH);
+          RelOptRule rule = new HiveRewriteToDataSketchesRules.RankRewriteRule(sketchType);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN, rule);
         }
       }
@@ -2006,9 +2033,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
       } else {
-        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC);
+        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
@@ -2046,7 +2073,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveUnionPullUpConstantsRule.INSTANCE);
       rules.add(HiveAggregatePullUpConstantsRule.INSTANCE);
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          rules.toArray(new RelOptRule[rules.size()]));
+          rules.toArray(new RelOptRule[0]));
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.
@@ -2228,10 +2255,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Optimize plan
         basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider, materializations);
       } else {
+        // Pre-processing to being able to trigger additional rewritings
+        basePlan = HiveMaterializedViewBoxing.boxPlan(basePlan);
+
         // If this is not a rebuild, we use Volcano planner as the decision
         // on whether to use MVs or not and which MVs to use should be cost-based
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+        RelMetadataQuery.THREAD_PROVIDERS.set(HiveMaterializationRelMetadataProvider.DEFAULT);
 
         // Add materializations to planner
         for (RelOptMaterialization materialization : materializations) {
@@ -2243,6 +2273,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
           planner.addRule(rule);
         }
+        // Unboxing rule
+        planner.addRule(HiveMaterializedViewBoxing.INSTANCE_UNBOXING);
         // Partition pruner rule
         planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
         planner.addRule(new HivePartitionPruneRule(conf));
@@ -2309,7 +2341,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
         // Make a cost-based decision factoring the configuration property
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+        RelMetadataQuery.THREAD_PROVIDERS.set(HiveMaterializationRelMetadataProvider.DEFAULT);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
         final double factorSelectivity = HiveConf.getFloatVar(
@@ -2341,10 +2373,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final HepProgramBuilder program = new HepProgramBuilder();
-      // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin
+      // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
+      // If FK-PK are declared, it tries to pull non-filtering column appending join nodes.
+      List<RelOptRule> rules = Lists.newArrayList();
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(HiveJoinSwapConstraintsRule.INSTANCE);
+      }
+      rules.add(HiveSemiJoinProjectTransposeRule.INSTANCE);
+      rules.add(HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN);
+      rules.add(HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
+      rules.add(HiveProjectMergeRule.INSTANCE);
+      if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ?
+            HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN :
+            HiveFilterProjectTransposeRule.DETERMINISTIC_ON_NON_FILTERING_JOIN);
+        rules.add(HiveFilterJoinRule.FILTER_ON_NON_FILTERING_JOIN);
+      }
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN, HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN,
-          HiveProjectMergeRule.INSTANCE);
+          rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
           new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
@@ -2384,6 +2430,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
+      double factor = conf.getFloatVar(ConfVars.HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR);
+      if (factor > 0.0) {
+        generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
+            new HiveCardinalityPreservingJoinRule(factor));
+      }
+
       // 1. Run other optimizations that do not need stats
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
@@ -2415,8 +2467,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (profilesCBO.contains(ExtendedCBOProfile.WINDOWING_POSTPROCESSING)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HiveWindowingFixRule.INSTANCE);
+        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+            HiveWindowingLastValueRewrite.INSTANCE);
       }
-
       // 6. Sort predicates in filter expressions
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
@@ -4820,7 +4873,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     expr, columnList, excludedColumns, inputRR, starRR, pos,
                     outputRR, qb.getAliases(), true);
           } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
-                  && !(srcRel instanceof HiveAggregate)) {
+                  && !(srcRel instanceof HiveAggregate ||
+              (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
             // Likely a malformed query eg, select hash(distinct c1) from t1;
             throw new CalciteSemanticException("Distinct without an aggregation.",
                     UnsupportedFeature.Distinct_without_an_aggreggation);
@@ -5638,7 +5692,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * and the field trimmer.
    */
   public static void warmup() {
+    JaninoRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveDefaultRelMetadataProvider.initializeMetadataProviderClass(HIVE_REL_NODE_CLASSES);
+    HiveTezModelRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
+    HiveMaterializationRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveRelFieldTrimmer.initializeFieldTrimmerClass(HIVE_REL_NODE_CLASSES);
   }
 

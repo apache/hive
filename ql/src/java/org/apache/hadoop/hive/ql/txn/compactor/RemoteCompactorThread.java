@@ -42,8 +42,8 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class RemoteCompactorThread extends CompactorThread {
   protected IMetaStoreClient msc;
 
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     this.msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
   }
 
@@ -51,7 +51,7 @@ public class RemoteCompactorThread extends CompactorThread {
     try {
       return msc.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
     } catch (TException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
+      LOG.error("Unable to find table " + ci.getFullTableName(), e);
       throw new MetaException(e.toString());
     }
   }
