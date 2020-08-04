@@ -89,7 +89,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

@@ -2275,7 +2275,7 @@ STAGE PLANS:
                           Statistics: Num rows: 309 Data size: 56856 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 4
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2294,7 +2294,7 @@ STAGE PLANS:
                       Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

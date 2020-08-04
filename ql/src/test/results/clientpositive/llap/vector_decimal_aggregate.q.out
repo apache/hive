@@ -519,7 +519,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6105 Data size: 4267312 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: decimal(11,5)), _col3 (type: decimal(11,5)), _col4 (type: decimal(21,5)), _col5 (type: bigint), _col6 (type: decimal(16,0)), _col7 (type: decimal(16,0)), _col8 (type: decimal(26,0)), _col9 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -724,7 +724,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6105 Data size: 4462672 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: decimal(11,5)), _col3 (type: decimal(11,5)), _col4 (type: decimal(21,5)), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: decimal(16,0)), _col9 (type: decimal(16,0)), _col10 (type: decimal(26,0)), _col11 (type: double), _col12 (type: double), _col13 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
