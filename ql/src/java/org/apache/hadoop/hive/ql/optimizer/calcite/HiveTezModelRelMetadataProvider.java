@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import java.util.List;
 
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,9 +36,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveDefaultTezModelRelMetadataProvider {
+public class HiveTezModelRelMetadataProvider {
 
-  private static final JaninoRelMetadataProvider DEFAULT_TEZ_COST_MODEL =
+  public static final JaninoRelMetadataProvider DEFAULT =
       JaninoRelMetadataProvider.of(
         ChainedRelMetadataProvider.of(
             ImmutableList.of(
@@ -56,27 +54,4 @@ public class HiveDefaultTezModelRelMetadataProvider {
                 HiveRelMdCollation.SOURCE,
                 HiveRelMdPredicates.SOURCE,
                 JaninoRelMetadataProvider.DEFAULT)));
-
-  private final JaninoRelMetadataProvider metadataProvider;
-
-
-  public HiveDefaultTezModelRelMetadataProvider() {
-    metadataProvider = DEFAULT_TEZ_COST_MODEL;
-  }
-
-  public JaninoRelMetadataProvider getMetadataProvider() {
-    return metadataProvider;
-  }
-
-  /**
-   * This method can be called at startup time to pre-register all the
-   * additional Hive classes (compared to Calcite core classes) that may
-   * be visited during the planning phase.
-   */
-  public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
-    // This will register the classes in the default Janino implementation
-    JaninoRelMetadataProvider.DEFAULT.register(nodeClasses);
-    // This will register the classes in the default Hive implementation
-    DEFAULT_TEZ_COST_MODEL.register(nodeClasses);
-  }
 }

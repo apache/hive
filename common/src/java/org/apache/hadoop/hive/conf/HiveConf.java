@@ -1705,7 +1705,7 @@ public class HiveConf extends Configuration {
         "Original plan cost multiplier for rewriting when query has tables joined multiple time on primary/unique key and " +
             "projected the majority of columns from these table. This optimization trims fields at root of tree and " +
             "then joins back affected tables at top of tree to get rest of columns. " +
-            "Set this to 0.0 to disable this optimization or increase it for more agressive optimization."),
+            "Set this to 0.0 to disable this optimization or increase it for more aggressive optimization."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
