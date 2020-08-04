@@ -6887,6 +6887,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean multiFileSpray = false;
     int numFiles = 1;
     int totalFiles = 1;
+    boolean isCompaction = false;
+    if (dest_tab != null && dest_tab.getParameters() != null) {
+      isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
+    }
 
     if (dest_tab.getNumBuckets() > 0 && !dest_tab.getBucketCols().isEmpty()) {
       enforceBucketing = true;
@@ -6956,8 +6960,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == DirectionUtils.ASCENDING_CODE ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-          maxReducers,
-              acidOp);
+          maxReducers, acidOp, isCompaction);
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -8833,9 +8836,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       acidOp = getAcidType(Utilities.getTableDesc(dest_tab).getOutputFileFormatClass(), dest,
           AcidUtils.isInsertOnlyTable(dest_tab));
     }
+    boolean isCompaction = false;
+    if (dest_tab != null && dest_tab.getParameters() != null) {
+      isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
+    }
     Operator result = genReduceSinkPlan(
         input, partCols, sortCols, order.toString(), nullOrder.toString(),
-        numReducers, acidOp, true);
+        numReducers, acidOp, true, isCompaction);
     if (result.getParentOperators().size() == 1 &&
         result.getParentOperators().get(0) instanceof ReduceSinkOperator) {
       ((ReduceSinkOperator) result.getParentOperators().get(0))
@@ -8846,16 +8853,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Operator genReduceSinkPlan(Operator<?> input,
                                      List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
-                                     String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp)
+                                     String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp, boolean isCompaction)
       throws SemanticException {
     return genReduceSinkPlan(input, partitionCols, sortCols, sortOrder, nullOrder, numReducers,
-        acidOp, false);
+        acidOp, false, isCompaction);
   }
 
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(Operator<?> input, List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
                                      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp,
-                                     boolean pullConstants) throws SemanticException {
+                                     boolean pullConstants, boolean isCompaction) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
@@ -8942,7 +8949,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(newSortCols, valueCols, outputColumns,
         false, -1, partitionCols, newSortOrder.toString(), newNullOrder.toString(), defaultNullOrder,
-        numReducers, acidOp);
+        numReducers, acidOp, isCompaction);
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input), rsRR);
 
@@ -14519,7 +14526,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        */
       buildPTFReduceSinkDetails(tabDef, partCols, orderCols, orderString, nullOrderString);
       input = genReduceSinkPlan(input, partCols, orderCols, orderString.toString(),
-          nullOrderString.toString(), -1, Operation.NOT_ACID);
+          nullOrderString.toString(), -1, Operation.NOT_ACID, false);
     }
 
     /*
@@ -14622,7 +14629,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return genReduceSinkPlan(input, partCols, orderCols, order.toString(), nullOrder.toString(),
-        -1, Operation.NOT_ACID);
+        -1, Operation.NOT_ACID, false);
   }
 
   public static List<WindowExpressionSpec> parseSelect(String selectExprStr)
