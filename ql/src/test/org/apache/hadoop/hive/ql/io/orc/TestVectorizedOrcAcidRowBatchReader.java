@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -553,7 +554,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcSplit split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     validateKeyInterval(split, new RecordIdentifier(1, 1, 1),
@@ -564,7 +565,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     validateKeyInterval(split, new RecordIdentifier(1, 1, 1),
@@ -576,7 +577,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset(),
         stripe.getLength() - 50,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     // The key interval for the 1st stripe
@@ -592,7 +593,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset(),
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     // The key interval for the last 2 stripes
@@ -605,7 +606,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() - 50,
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     // The key interval for the last stripe
@@ -616,7 +617,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripes.get(0).getOffset() + 50,
         reader.getContentLength() - 50,
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     // The key interval for the last 2 stripes
@@ -627,7 +628,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripes.get(0).getOffset(),
         reader.getContentLength(),
-        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, false, true, getDeltaMetaDataWithBucketFile(1),
         fileLength, fileLength, root, null);
 
     // The key interval for all 3 stripes
@@ -878,7 +879,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcSplit split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     validateKeyInterval(split, new RecordIdentifier(0, bucketProperty, 2),
@@ -889,7 +890,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     validateKeyInterval(split, new RecordIdentifier(0, bucketProperty, 3),
@@ -901,7 +902,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset(),
         stripe.getLength() - 50,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the 1st stripe
@@ -913,7 +914,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset(),
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last 2 stripes
@@ -926,7 +927,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() - 50,
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last stripe
@@ -937,7 +938,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripes.get(0).getOffset() + 50,
         reader.getContentLength() - 50,
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last 2 stripes
@@ -948,7 +949,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripes.get(0).getOffset(),
         reader.getContentLength(),
-        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
+        new String[] {"localhost"}, null, true, true, getDeltaMetaDataWithBucketFile(0),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for all 3 stripes
@@ -1158,5 +1159,11 @@ public class TestVectorizedOrcAcidRowBatchReader {
         deltaMetaData, stmtId);
     assertTrue(expected == result);
 
+  }
+
+  private List<AcidInputFormat.DeltaMetaData> getDeltaMetaDataWithBucketFile(int bucketId) {
+    AcidInputFormat.DeltaFileMetaData file = new AcidInputFormat.DeltaFileMetaData(0, 0, null, null, null, bucketId);
+    return Collections
+        .singletonList(new AcidInputFormat.DeltaMetaData(0, 0, new ArrayList<>(), 0, Collections.singletonList(file)));
   }
 }
