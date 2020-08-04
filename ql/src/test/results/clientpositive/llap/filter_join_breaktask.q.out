@@ -54,76 +54,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: f
-                  filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 25 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 0
-                        auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: ds=2008-04-08
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                  properties:
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.types int:string
-#### A masked pattern was here ####
-                    name default.filter_join_breaktask
-                    partition_columns ds
-                    partition_columns.types string
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types int:string
-#### A masked pattern was here ####
-                      name default.filter_join_breaktask
-                      partition_columns ds
-                      partition_columns.types string
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.filter_join_breaktask
-                  name: default.filter_join_breaktask
-            Truncated Path -> Alias:
-              /filter_join_breaktask/ds=2008-04-08 [f]
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: m
@@ -190,11 +124,11 @@ STAGE PLANS:
                   name: default.filter_join_breaktask
             Truncated Path -> Alias:
               /filter_join_breaktask/ds=2008-04-08 [m]
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: g
-                  filterExpr: (value <> '') (type: boolean)
+                  filterExpr: ((value <> '') or key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -212,6 +146,22 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
+                        auto parallelism: true
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
                         auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: no inputs
