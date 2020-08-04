@@ -266,13 +266,14 @@ public class SemiJoinReductionMerge extends Transform {
     List<ColumnInfo> columnInfos = new ArrayList<>();
     Map<String, ExprNodeDesc> selectColumnExprMap = new HashMap<>();
     for (SelectOperator sel : selectOperators) {
-      for (ExprNodeDesc col : sel.getConf().getColList()) {
-        String colName = HiveConf.getColumnInternalName(colDescs.size());
-        colNames.add(colName);
-        columnInfos.add(new ColumnInfo(colName, col.getTypeInfo(), "", false));
-        colDescs.add(col);
-        selectColumnExprMap.put(colName, col);
-      }
+      assert sel.getConf().getColList() != null;
+      assert sel.getConf().getColList().size() == 1;
+      ExprNodeDesc col = sel.getConf().getColList().get(0);
+      String colName = HiveConf.getColumnInternalName(colDescs.size());
+      colNames.add(colName);
+      columnInfos.add(new ColumnInfo(colName, col.getTypeInfo(), "", false));
+      colDescs.add(col);
+      selectColumnExprMap.put(colName, col);
     }
     ExprNodeDesc hashExp =
         new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFMurmurHash(), "hash", colDescs);
