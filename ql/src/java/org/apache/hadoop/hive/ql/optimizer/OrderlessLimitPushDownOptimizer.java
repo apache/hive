@@ -71,7 +71,7 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator reduceSink = findReduceSink(stack);
-      if (reduceSink != null && !reduceSink.getConf().hasOrderBy()) { // LIMIT + ORDER BY handled by TopNKey push down
+      if (reduceSink == null || !reduceSink.getConf().hasOrderBy()) { // LIMIT + ORDER BY handled by TopNKey push down
         pushDown((LimitOperator) nd);
       }
       return null;
@@ -116,6 +116,7 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
         LOG.debug("Combining two limits child={}, parent={}, newLimit={}", childLimit, parentLimit, min);
         parentConf.setLimit(min);
         parentLimit.removeChildAndAdoptItsChildren(childLimit);
+        pushDown(parentLimit);
       }
     }
 
