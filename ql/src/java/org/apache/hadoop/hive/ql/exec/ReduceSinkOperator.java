@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -453,6 +454,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
     if (LOG.isTraceEnabled()) {
       LOG.trace("Going to return hash code " + hashCode);
+    }
+    if (conf.isCompaction()) {
+      int bucket;
+      Object bucketProperty = ((Object[]) row)[2];
+      if (bucketProperty == null) {
+        return hashCode;
+      }
+      if (bucketProperty instanceof Writable) {
+        bucket = ((IntWritable) bucketProperty).get();
+      } else {
+        bucket = (int) bucketProperty;
+      }
+      return BucketCodec.determineVersion(bucket).decodeWriterId(bucket);
     }
     return hashCode;
   }

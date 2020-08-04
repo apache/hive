@@ -188,7 +188,7 @@ final class HiveOpConverterUtils {
           reduceKeys.size(), numReducers, acidOperation);
     } else {
       rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          partitionCols, order, nullOrder, numReducers, acidOperation);
+          partitionCols, order, nullOrder, numReducers, acidOperation, false);
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(

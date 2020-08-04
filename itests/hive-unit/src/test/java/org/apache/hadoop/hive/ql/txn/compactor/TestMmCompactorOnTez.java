@@ -50,6 +50,10 @@ import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeS
  */
 public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
+  public TestMmCompactorOnTez() {
+    mmCompaction = true;
+  }
+
   @Test public void testMmMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
     String dbName = "default";
     String tableName = "testMmMinorCompaction";
@@ -81,7 +85,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);
@@ -124,7 +128,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);
@@ -168,7 +172,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
+            .getBucketFileNamesForMMTables(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -240,7 +244,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
+            .getBucketFileNamesForMMTables(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -281,7 +285,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket file in delta dir
     List<String> expectedBucketFile = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFile,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -554,7 +558,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Insert test data into test table
     dataProvider.insertMmTestData(dbName, tableName);
     // Get all data before compaction is run
-    List<String> expectedData = dataProvider.getAllData(dbName, tableName);
+    List<String> expectedData = dataProvider.getAllData(dbName, tableName, false);
     Collections.sort(expectedData);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
@@ -566,7 +570,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Result directories does not match after " + compactionType.name()
             + " compaction", Collections.singletonList(resultDirName),
         CompactorTestUtil.getBaseOrDeltaNames(fs, pathFilter, table, null));
-    List<String> actualData = dataProvider.getAllData(dbName, tableName);
+    List<String> actualData = dataProvider.getAllData(dbName, tableName, false);
     Collections.sort(actualData);
     Assert.assertEquals(expectedData, actualData);
   }

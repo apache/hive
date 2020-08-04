@@ -95,6 +95,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    */
   private int numBuckets;
   private List<ExprNodeDesc> bucketCols;
+  private boolean isCompaction;
 
   private int topN = -1;
   private float topNMemoryUsage = -1;
@@ -443,6 +444,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setNumBuckets(int numBuckets) {
     this.numBuckets = numBuckets;
+  }
+
+  public boolean isCompaction() {
+    return isCompaction;
+  }
+
+  public void setIsCompaction(boolean isCompaction) {
+    this.isCompaction = isCompaction;
   }
 
   public List<ExprNodeDesc> getBucketCols() {
