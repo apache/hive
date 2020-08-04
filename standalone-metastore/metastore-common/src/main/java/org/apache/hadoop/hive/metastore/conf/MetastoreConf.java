@@ -1354,7 +1354,7 @@ public class MetastoreConf {
 
     COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
         "hive.metastore.colstats.retain.on.column.removal", true,
-        "Wether to retain column statistics during column removals in partitioned tables - disabling this "
+        "Whether to retain column statistics during column removals in partitioned tables - disabling this "
             + "purges all column statistics data "
             + "for all partition to retain working consistency"),
 
