@@ -680,7 +680,7 @@ explain FROM T1_n119 a FULL OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STRE
 
 explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k left outer join T1_n119 v on k.key+1=v.key;
 
-set hive.auto.convert.anti.join=true;
+set hive.auto.convert.anti.join=false;
 
 explain select *
 from src_cbo b
@@ -710,7 +710,7 @@ where not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 ;
 
-select * from cv1_n5_anti;
+explain select * from cv1_n5_anti;
 
 explain select *
 from (select *
@@ -721,5 +721,4 @@ from (select *
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
 ;
-
-set hive.auto.convert.anti.join=false;
+set hive.auto.convert.anti.join=true;

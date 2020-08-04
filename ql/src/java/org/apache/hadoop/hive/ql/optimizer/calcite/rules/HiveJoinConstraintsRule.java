@@ -189,7 +189,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     switch (joinType) {
     case SEMI:
     case INNER:
-    case ANTI:
+    //case ANTI: //TODO:https://issues.apache.org/jira/browse/HIVE-23920
       if (leftInputPotentialFK && rightInputPotentialFK) {
         // Bails out as it references columns from both sides (or no columns)
         // and there is nothing to transform

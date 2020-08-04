@@ -203,7 +203,7 @@ public class PredicateTransitivePropagate extends Transform {
           vector.add(right, left);
           break;
         case JoinDesc.LEFT_OUTER_JOIN:
-        case JoinDesc.ANTI_JOIN: //TODO : need to test
+        case JoinDesc.ANTI_JOIN:
           vector.add(left, right);
           break;
         case JoinDesc.RIGHT_OUTER_JOIN:

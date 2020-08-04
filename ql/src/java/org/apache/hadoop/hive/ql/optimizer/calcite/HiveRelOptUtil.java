@@ -749,6 +749,10 @@ public class HiveRelOptUtil extends RelOptUtil {
 
     // TODO : Need to handle Anti join.
     // https://issues.apache.org/jira/browse/HIVE-23906
+    if (joinType == JoinRelType.ANTI) {
+      return nonRewritable;
+    }
+
     if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
@@ -856,7 +860,8 @@ public class HiveRelOptUtil extends RelOptUtil {
             if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
                 ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
               if (foreignKeyColumnType.isNullable()) {
-                if (joinType == JoinRelType.INNER || join.isSemiJoin() || joinType == JoinRelType.ANTI) {
+                //TODO : Handle Anti Join. https://issues.apache.org/jira/browse/HIVE-23906
+                if (joinType == JoinRelType.INNER || join.isSemiJoin()) {
                   // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
                   RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
                   assert originalCondOp != null;

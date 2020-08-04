@@ -43,3 +43,25 @@ explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key jo
 explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;
 select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;
 
+-- single extra simple filter on right side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and b.value > 'val_1';
+
+-- single extra simple filter on left side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and a.key > 100;
+
+-- single extra non deterministic filter on right side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) > 100;
+
+-- single extra deterministic filter on left side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100;
+
+-- multiple extra deterministic filter on right side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) < 100 and rand(length(b.value)) > 100;
+
+-- multiple extra deterministic filter on left side.
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100 and rand(length(a.value)) > 100;
+
+-- filter with 'or' are not converted to anti join
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value is null;
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value = 'val_1';
+

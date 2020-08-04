@@ -27,11 +27,14 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,6 +72,7 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
     LOG.debug("Start Matching HiveAntiJoinRule");
 
     //TODO : Need to support this scenario.
+    //https://issues.apache.org/jira/browse/HIVE-23991
     if (join.getCondition().isAlwaysTrue()) {
       return;
     }
@@ -80,11 +84,8 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
 
     assert (filter != null);
 
-    // If null filter is not present from right side then we can not convert to anti join.
-    List<RexNode> aboveFilters = RelOptUtil.conjunctions(filter.getCondition());
-    Stream<RexNode> nullFilters = aboveFilters.stream().filter(filterNode -> filterNode.getKind() == SqlKind.IS_NULL);
-    boolean hasNullFilter = HiveCalciteUtil.hasAnyExpressionFromRightSide(join, nullFilters.collect(Collectors.toList()));
-    if (!hasNullFilter) {
+    List<RexNode> filterList = getResidualFilterNodes(filter, join);
+    if (filterList == null) {
       return;
     }
 
@@ -99,7 +100,61 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
     // Build anti join with same left, right child and condition as original left outer join.
     Join anti = HiveAntiJoin.getAntiJoin(join.getLeft().getCluster(), join.getLeft().getTraitSet(),
             join.getLeft(), join.getRight(), join.getCondition());
-    RelNode newProject = project.copy(project.getTraitSet(), anti, project.getProjects(), project.getRowType());
+    RelNode newProject;
+    if (filterList.isEmpty()) {
+      newProject = project.copy(project.getTraitSet(), anti, project.getProjects(), project.getRowType());
+    } else {
+      // Collate the filter condition using AND as the filter was decomposed based
+      // on AND condition (RelOptUtil.conjunctions).
+      RexNode condition = filterList.size() == 1 ? filterList.get(0) :
+              join.getCluster().getRexBuilder().makeCall(SqlStdOperatorTable.AND, filterList);
+      Filter newFilter = filter.copy(filter.getTraitSet(), anti, condition);
+      newProject = project.copy(project.getTraitSet(), newFilter, project.getProjects(), project.getRowType());
+    }
     call.transformTo(newProject);
+  }
+
+  /**
+   * Extracts the non-null filter conditions from given filter node.
+   *
+   * @param filter The filter condition to be checked.
+   * @param join Join node whose right side has to be searched.
+   * @return null : Anti join condition is not matched for filter.
+   *         Empty list : No residual filter conditions present.
+   *         Valid list containing the filter to be applied after join.
+   */
+  private List<RexNode> getResidualFilterNodes(Filter filter, Join join) {
+    // 1. If null filter is not present from right side then we can not convert to anti join.
+    // 2. If any non-null filter is present from right side, we can not convert it to anti join.
+    // 3. Keep other filters which needs to be executed after join.
+    // 4. The filter conditions are decomposed on AND conditions only.
+    //TODO If some conditions like (fld1 is null or fld2 is null) present, it will not be considered for conversion.
+    //https://issues.apache.org/jira/browse/HIVE-23992
+    List<RexNode> aboveFilters = RelOptUtil.conjunctions(filter.getCondition());
+    boolean hasNullFilterOnRightSide = false;
+    List<RexNode> filterList = new ArrayList<>();
+    for (RexNode filterNode : aboveFilters) {
+      if (filterNode.getKind() == SqlKind.IS_NULL) {
+        // Null filter from right side table can be removed and its a pre-condition for anti join conversion.
+        if (HiveCalciteUtil.hasAnyExpressionFromRightSide(join, Collections.singletonList(filterNode))) {
+          hasNullFilterOnRightSide = true;
+        } else {
+          filterList.add(filterNode);
+        }
+      } else {
+        if (HiveCalciteUtil.hasAnyExpressionFromRightSide(join, Collections.singletonList(filterNode))) {
+          // If some non null condition is present from right side, we can not convert the join to anti join as
+          // anti join does not project the fields from right side.
+          return null;
+        } else {
+          filterList.add(filterNode);
+        }
+      }
+    }
+
+    if (!hasNullFilterOnRightSide) {
+      return null;
+    }
+    return filterList;
   }
 }

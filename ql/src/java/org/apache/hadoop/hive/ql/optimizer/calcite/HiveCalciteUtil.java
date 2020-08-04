@@ -1233,8 +1233,14 @@ public class HiveCalciteUtil {
     }
   }
 
-  // Checks if any of the expression given as list expressions are from right side of the join.
-  // This is used during anti join conversion.
+  /**
+   * Checks if any of the expression given as list expressions are from right side of the join.
+   *  This is used during anti join conversion.
+   *
+   * @param joinRel Join node whose right side has to be searched.
+   * @param expressions The list of expression to search.
+   * @return true if any of the expressions is from right side of join.
+   */
   public static boolean hasAnyExpressionFromRightSide(RelNode joinRel, List<RexNode> expressions)  {
     List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
     int nTotalFields = joinFields.size();
