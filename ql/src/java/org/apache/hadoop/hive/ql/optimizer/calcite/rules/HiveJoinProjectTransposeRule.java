@@ -59,7 +59,7 @@ public final class HiveJoinProjectTransposeRule {
 
     private HiveJoinProjectBtwJoinTransposeRule(
         RelOptRuleOperand operand, String description, boolean leftJoin) {
-      super(operand, description, false, HiveRelFactories.HIVE_BUILDER);
+      super(operand, description, true, HiveRelFactories.HIVE_BUILDER);
 
       this.leftJoin = leftJoin;
     }

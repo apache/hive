@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
@@ -55,7 +56,16 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -547,17 +557,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
-      List<ExprNodeDesc> inputs) {
-    return new ExprNodeGenericFuncDesc(typeInfo, genericUDF, inputs);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected ExprNodeGenericFuncDesc createFuncCallExpr(GenericUDF genericUDF,
+  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi,
       String funcText, List<ExprNodeDesc> inputs) throws UDFArgumentException {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    if (genericUDF instanceof SettableUDF) {
+      ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
+    }
+
     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
   }
 
@@ -704,6 +710,63 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isAndFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isOrFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isInFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFIn;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isEqualFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqual
+        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isStateful(FunctionInfo fi) {
+    return FunctionRegistry.isStateful(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected ExprNodeDesc setTypeInfo(ExprNodeDesc expr, TypeInfo type) {
     expr.setTypeInfo(type);
     return expr;
@@ -713,7 +776,8 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<ExprNodeDesc> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
+    GenericUDF genericUDF = fi.getGenericUDF();
     if (genericUDF instanceof GenericUDFWhen && inputs.size() == 3 &&
         inputs.get(1) instanceof ExprNodeConstantDesc &&
         inputs.get(2) instanceof ExprNodeConstantDesc) {
@@ -813,5 +877,14 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
         return null;
     }
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
+    return FunctionRegistry.getFunctionInfo(funcName);
+  }
+
 
 }

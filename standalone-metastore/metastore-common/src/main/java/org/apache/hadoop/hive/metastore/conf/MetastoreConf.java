@@ -771,6 +771,16 @@ public class MetastoreConf {
                 "get_partitions_spec_by_filter, \n" +
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
+    MSC_CACHE_ENABLED("metastore.client.cache.enabled",
+            "hive.metastore.client.cache.enabled", true,
+            "This property enables a Caffeiene Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("metastore.client.cache.maxSize",
+            "hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+            "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
+                    "Only in effect when the cache is enabled"),
+    MSC_CACHE_RECORD_STATS("metastore.client.cache.recordStats",
+            "hive.metastore.client.cache.recordStats", false,
+            "This property enables recording metastore client cache stats in DEBUG logs"),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
             "If the property is not set, then logging will be initialized using metastore-log4j2.properties found on the classpath.\n" +

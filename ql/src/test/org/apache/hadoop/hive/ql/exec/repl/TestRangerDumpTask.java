@@ -71,7 +71,7 @@ public class TestRangerDumpTask {
   public void setup() throws Exception {
     task = new RangerDumpTask(mockClient, conf, work);
     Mockito.when(mockClient.removeMultiResourcePolicies(Mockito.anyList())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
@@ -92,7 +92,8 @@ public class TestRangerDumpTask {
   public void testSuccessValidAuthProviderEndpoint() throws Exception {
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
@@ -117,7 +118,8 @@ public class TestRangerDumpTask {
         + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
         + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
@@ -138,7 +140,8 @@ public class TestRangerDumpTask {
     Whitebox.setInternalState(ReplState.class, logger);
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
-    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+      Mockito.any()))
       .thenReturn(rangerPolicyList);
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");

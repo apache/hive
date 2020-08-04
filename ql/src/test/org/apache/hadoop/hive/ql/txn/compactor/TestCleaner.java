@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -30,6 +31,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -274,6 +276,60 @@ public class TestCleaner extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(0, rsp.getCompactsSize());
   }
+
+  @Test
+  public void processCompactionCandidatesInParallel() throws Exception {
+    Table t = newTable("default", "camipc", true);
+    List<Partition> partitions = new ArrayList<>();
+    Partition p = null;
+    for(int i = 0; i < 10; i++) {
+      p = newPartition(t, "today" + i);
+
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+      addDeltaFile(t, p, 21L, 24L, 4);
+      partitions.add(p);
+    }
+
+    burnThroughTransactions("default", "camipc", 25);
+    for(int i = 0; i < 10; i++) {
+      CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
+      rqst.setPartitionname("ds=today"+i);
+      txnHandler.compact(rqst);
+      CompactionInfo ci = txnHandler.findNextToCompact("fred");
+      ci.runAs = System.getProperty("user.name");
+      txnHandler.updateCompactorState(ci, openTxn());
+      txnHandler.markCompacted(ci);
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM, 3);
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(10, rsp.getCompactsSize());
+    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+
+    // Check that the files are removed
+    for (Partition pa : partitions) {
+      List<Path> paths = getDirectories(conf, t, pa);
+      Assert.assertEquals(2, paths.size());
+      boolean sawBase = false, sawDelta = false;
+      for (Path path : paths) {
+        if (path.getName().equals("base_20")) {
+          sawBase = true;
+        } else if (path.getName().equals(makeDeltaDirNameCompacted(21, 24))) {
+          sawDelta = true;
+        } else {
+          Assert.fail("Unexpected file " + path.getName());
+        }
+      }
+      Assert.assertTrue(sawBase);
+      Assert.assertTrue(sawDelta);
+    }
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;
