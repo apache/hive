@@ -122,7 +122,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     return srcTables;
   }
 
-  public static void addSrcTable(String table) {
+  private static void addSrcTable(String table) {
     getSrcTables().add(table);
     storeSrcTables();
   }
