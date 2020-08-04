@@ -280,8 +280,9 @@ public class SemiJoinReductionMerge extends Transform {
     String hashName = HiveConf.getColumnInternalName(colDescs.size() + 1);
     colNames.add(hashName);
     columnInfos.add(new ColumnInfo(hashName, hashExp.getTypeInfo(), "", false));
-
+    // The n-1 columns in selDescs are used as parameters to min/max aggregations
     List<ExprNodeDesc> selDescs = new ArrayList<>(colDescs);
+    // The nth column in selDescs is used as parameter to the bloom_filter aggregation
     selDescs.add(hashExp);
 
     SelectDesc select = new SelectDesc(selDescs, colNames);
