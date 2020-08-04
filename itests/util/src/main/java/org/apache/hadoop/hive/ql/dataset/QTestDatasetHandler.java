@@ -116,7 +116,8 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
   public static Set<String> getSrcTables() {
     if (srcTables == null) {
-      initSrcTables();
+      initSrcTablesFromSystemProperty();
+      storeSrcTables();
     }
     return srcTables;
   }
@@ -129,15 +130,6 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   private void removeSrcTable(String table) {
     srcTables.remove(table);
     storeSrcTables();
-  }
-
-  public static Set<String> initSrcTables() {
-    if (srcTables == null) {
-      initSrcTablesFromSystemProperty();
-      storeSrcTables();
-    }
-
-    return srcTables;
   }
 
   public static boolean isSourceTable(String name) {
