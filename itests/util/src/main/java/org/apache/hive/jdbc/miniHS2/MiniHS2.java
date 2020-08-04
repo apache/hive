@@ -358,13 +358,13 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
-    this(hiveConf, clusterType, false);
+    this(hiveConf, clusterType, false, false);
   }
 
-  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType, boolean usePortsFromConf)
+  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType, boolean usePortsFromConf, boolean isMetastoreRemote)
       throws Exception {
     this(hiveConf, clusterType, false, null, null,
-        false, true, usePortsFromConf, "KERBEROS", false, true,
+        isMetastoreRemote, true, usePortsFromConf, "KERBEROS", false, true,
         false, null, null, DEFAULT_DATANODE_COUNT);
   }
 
