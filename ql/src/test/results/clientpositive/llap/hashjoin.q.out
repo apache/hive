@@ -129,7 +129,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -147,7 +147,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: cvarchar (type: varchar(50)), cdouble (type: double)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -236,7 +236,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -254,7 +254,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: cint (type: int), cdouble (type: double)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -337,7 +337,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -355,7 +355,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: cdouble (type: double)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -431,7 +431,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -445,7 +445,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: cdouble (type: double)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -531,7 +531,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -549,7 +549,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: cint (type: int), cvarchar (type: varchar(50))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator

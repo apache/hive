@@ -53,7 +53,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.analyze_t1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-2
     Dependency Collection
@@ -177,7 +177,7 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_t1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-2
     Stats Work

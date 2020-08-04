@@ -158,7 +158,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: date)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -242,7 +242,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -307,7 +307,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string), _col2 (type: int)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -371,7 +371,7 @@ STAGE PLANS:
                         tag: 1
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -668,7 +668,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -778,7 +778,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

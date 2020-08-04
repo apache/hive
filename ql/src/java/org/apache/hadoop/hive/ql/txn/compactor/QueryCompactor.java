@@ -115,6 +115,18 @@ abstract class QueryCompactor {
       }
       for (String query : compactionQueries) {
         LOG.info("Running {} compaction via query: {}", compactionInfo.isMajorCompaction() ? "major" : "minor", query);
+        if (!compactionInfo.isMajorCompaction()) {
+          // There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
+          // was not correlated correctly with the bucket numbers. So we could end up with files containing rows from
+          // multiple buckets or rows from the same bucket could end up in different FileSinkOperator. This behaviour resulted
+          // corrupted files. To fix this, the FileSinkOperator has been extended to be able to handle rows from different buckets.
+          // But we also had to be sure that all rows from the same bucket would end up in the same FileSinkOperator. Therefore
+          // the ReduceSinkOperator has also been extended to distribute the rows by bucket numbers. To use this logic,
+          // these two optimisations have to be turned off for the MINOR compaction. The MAJOR compaction works differently
+          // and its query doesn't use reducers, so these optimisations should not be turned off for MAJOR compaction.
+          conf.set("hive.optimize.bucketingsorting", "false");
+          conf.set("hive.vectorized.execution.enabled", "false");
+        }
         DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds, compactorTxnId);
       }
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);

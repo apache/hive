@@ -525,7 +525,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4728 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col1 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col2 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col3 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col4 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col5 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

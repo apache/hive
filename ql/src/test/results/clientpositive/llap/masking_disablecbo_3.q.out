@@ -49,7 +49,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int), value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -76,7 +76,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -651,7 +651,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int), value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -678,7 +678,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1250,7 +1250,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1277,7 +1277,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1849,7 +1849,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1876,7 +1876,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2463,7 +2463,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int), value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2490,7 +2490,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2508,7 +2508,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -6727,7 +6727,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int), value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -6754,7 +6754,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -7326,7 +7326,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int), value (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -7353,7 +7353,7 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
                           Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
