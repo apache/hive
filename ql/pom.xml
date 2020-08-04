@@ -889,6 +889,10 @@
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
+                </relocation>
               </relocations>
             </configuration>
           </execution>
