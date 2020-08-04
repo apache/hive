@@ -114,10 +114,6 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
 
       RexBuilder rexBuilder = relBuilder.getRexBuilder();
       RelNode rootInput = root.getInput(0);
-      if (rootInput instanceof Aggregate) {
-        LOG.debug("Root input is Aggregate: not supported.");
-        return root;
-      }
 
       // Build the list of projected fields from root's input RowType
       List<RexInputRef> rootFieldList = new ArrayList<>(rootInput.getRowType().getFieldCount());
