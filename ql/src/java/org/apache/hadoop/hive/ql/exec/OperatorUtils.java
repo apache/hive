@@ -74,8 +74,9 @@ public class OperatorUtils {
   public static <T> T ancestor(Operator<?> op, Class<T> clazz, int... path) {
     Operator<?> target = op;
     for (int i = 0; i < path.length; i++) {
-      if (target.getParentOperators() == null || path[i] > target.getParentOperators().size())
+      if (target.getParentOperators() == null || path[i] > target.getParentOperators().size()) {
         return null;
+      }
       target = target.getParentOperators().get(path[i]);
     }
     return clazz.isInstance(target) ? clazz.cast(target) : null;

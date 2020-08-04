@@ -374,15 +374,18 @@ public class SemiJoinReductionMerge extends Transform {
     }
 
     @Override public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
         return true;
-      if (o == null || getClass() != o.getClass())
+      }
+      if (o == null || getClass() != o.getClass()) {
         return false;
+      }
 
       SJSourceTarget that = (SJSourceTarget) o;
 
-      if (!source.equals(that.source))
+      if (!source.equals(that.source)) {
         return false;
+      }
       return target.equals(that.target);
     }
 
