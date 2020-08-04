@@ -216,7 +216,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   }
 
   private Set<String> tablesToUnload() {
-    if (unloadImplicitTables) {
+    if (!unloadImplicitTables) {
       return Collections.emptySet();
     }
     Set<String> tables = new HashSet<>(getSrcTables());
