@@ -74,6 +74,30 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+/**
+ * A transformation that merges multiple single-column semi join reducers to one multi-column semi join reducer.
+ * <p>
+ * Semi join reducers are comprised from two parts:
+ * <ul>
+ *   <li>Filter creation from the source relation and broadcast: SOURCE - SEL - GB1 - RS1 - GB2 - RS2</li>
+ *   <li>Filter application on the target relation: TS - FIL[in_bloom(col)]</li>
+ * </ul>
+ * </p>
+ * <p>
+ * An example of the transformation on three single column semi join reducers is shown below. The plan is simplified for
+ * presentation purposes.
+ * <h3>BEFORE:</h3>
+ * <pre>
+ *        / SEL[fname] - GB1 - RS1 - GB2 - RS2  \
+ * SOURCE - SEL[lname] - GB1 - RS1 - GB2 - RS2  -> TS[Author] - FIL[in_bloom(fname) ^ in_bloom(lname) ^ in_bloom(age)]
+ *        \ SEL[age]   - GB1 - RS1 - GB2 - RS2  /
+ * </pre>
+ * <h3>AFTER:</h3>
+ * <pre>
+ * SOURCE - SEL[fname, lname, age] - GB1 - RS1 - GB2 - RS2 -> TS[Author] - FIL[in_bloom(hash(fname,lname,age)]
+ * </pre>
+ * </p>
+ */
 public class SemiJoinReductionMerge extends Transform {
 
   public ParseContext transform(ParseContext parseContext) throws SemanticException {
@@ -151,6 +175,18 @@ public class SemiJoinReductionMerge extends Transform {
     return parseContext;
   }
 
+  /**
+   * Creates the multi-column semi-join predicate that is applied on the target relation.
+   *
+   * Assuming that the target columns of the semi-join are fname, lname, and age, the generated predicates is:
+   * <pre>
+   *   fname BETWEEN ?min_fname AND ?max_fname and
+   *   lname BETWEEN ?min_lname AND ?max_lname and
+   *   age   BETWEEN ?min_age   AND ?max_age and
+   *   IN_BLOOM_FILTER(HASH(fname,lname,age),?bloom_filter)
+   * </pre>
+   * where the question mark (?) indicates dynamic values bound at runtime.
+   */
   private static ExprNodeGenericFuncDesc createSemiJoinPredicate(List<ReduceSinkOperator> sjBranches,
       RuntimeValuesInfo sjValueInfo, ParseContext context) {
     // Performance note: To speed-up evaluation 'BETWEEN' predicates should come before the 'IN_BLOOM_FILTER'
@@ -188,6 +224,9 @@ public class SemiJoinReductionMerge extends Transform {
     return and(sjPredicates);
   }
 
+  /**
+   * Creates the necessary information in order to execute the multi-column semi join and perform further optimizations.
+   */
   private static RuntimeValuesInfo createRuntimeValuesInfo(ReduceSinkOperator rs, List<ReduceSinkOperator> sjBranches,
       ParseContext parseContext) {
     List<ExprNodeDesc> valueCols = rs.getConf().getValueCols();
@@ -212,6 +251,14 @@ public class SemiJoinReductionMerge extends Transform {
     return info;
   }
 
+  /**
+   * Merges multiple select operators in a single one appending an additional column that is the hash of all the others.
+   *
+   * <pre>
+   * Input: SEL[fname], SEL[lname], SEL[age]
+   * Output: SEL[fname, lname, age, hash(fname, lname, age)]
+   * </pre>
+   */
   private static SelectOperator mergeSelectOps(Operator<?> parent, List<SelectOperator> selectOperators) {
     List<String> colNames = new ArrayList<>();
     List<ExprNodeDesc> colDescs = new ArrayList<>();
@@ -242,6 +289,9 @@ public class SemiJoinReductionMerge extends Transform {
     return selectOp;
   }
 
+  /**
+   * Creates a reduce sink operator that emits all columns of the parent as values.
+   */
   private static ReduceSinkOperator createReduceSink(Operator<?> parentOp, NullOrdering nullOrder)
       throws SemanticException {
     List<ExprNodeDesc> valueCols = new ArrayList<>();
@@ -261,6 +311,28 @@ public class SemiJoinReductionMerge extends Transform {
     return (ReduceSinkOperator) OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(parentSchema), parentOp);
   }
 
+  /**
+   * Creates a group by operator with min, max, and bloomFilter aggregations for every column of the parent.
+   * <p>
+   * The method generates two kind of group by operators for intermediate and final aggregations respectively.
+   * Intermediate aggregations require the parent operator to be a select operator while final aggregations assume that
+   * the parent is a reduce sink operator.
+   * </p>
+   * <p>
+   * Intermediate group by example.
+   * <pre>
+   * Input: SEL[fname, lname, age, hash(fname,lname,age)]
+   * Output: GBY[min(fname),max(fname),min(lname),max(lname),min(age),max(age),bloom(hash)]
+   * </pre>
+   * </p>
+   * <p>
+   * Final group by example.
+   * <pre>
+   * Input: RS[fname_min,fname_max,lname_min,lname_max,age_min,age_max, hash_bloom]
+   * Output: GBY[min(fname_min),max(fname_max),min(lname_min),max(lname_max),min(age_min),max(age_max),bloom(hash_bloom)]
+   * </pre>
+   * </p>
+   */
   private static GroupByOperator createGroupBy(SelectOperator selectOp, Operator<?> parentOp, GroupByDesc.Mode gbMode,
       HiveConf hiveConf) {
 
@@ -364,6 +436,11 @@ public class SemiJoinReductionMerge extends Transform {
     return bloom;
   }
 
+  /**
+   * An object that represents the source and target of a semi-join reducer.
+   *
+   * The objects are meant to be used as keys in maps so it is required to implement hashCode and equals methods.
+   */
   private static final class SJSourceTarget {
     private final Operator<?> source;
     private final TableScanOperator target;
