@@ -139,9 +139,7 @@ CREATE TABLE alltypes(
     stored as textfile ;
 
 insert into alltypes select c,v,d,dt,cboolean1,ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,ctimestamp1
-    from testParam join alltypesorc where ctinyint is not null order by cboolean2 limit 500;
-
-select * from alltypes;
+    from testParam join alltypesorc where ctinyint is not null;
 
 -- greater than
 explain prepare palltypesGreater from
