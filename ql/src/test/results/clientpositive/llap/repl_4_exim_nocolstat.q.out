@@ -41,12 +41,12 @@ PREHOOK: query: export table replsrc to 'ql/test/data/exports/repldst' for repli
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@replsrc@emp_country=us/emp_state=ca
 PREHOOK: Input: default@replsrc@emp_country=zx/emp_state=ka
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: export table replsrc to 'ql/test/data/exports/repldst' for replication('repldst')
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@replsrc@emp_country=us/emp_state=ca
 POSTHOOK: Input: default@replsrc@emp_country=zx/emp_state=ka
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: drop table replsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@replsrc
@@ -57,11 +57,11 @@ POSTHOOK: Input: default@replsrc
 POSTHOOK: Output: default@replsrc
 PREHOOK: query: import table repldst from 'ql/test/data/exports/repldst'
 PREHOOK: type: IMPORT
-PREHOOK: Input: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: Output: default@repldst
 POSTHOOK: query: import table repldst from 'ql/test/data/exports/repldst'
 POSTHOOK: type: IMPORT
-POSTHOOK: Input: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: Output: default@repldst
 POSTHOOK: Output: default@repldst@emp_country=us/emp_state=ca
 POSTHOOK: Output: default@repldst@emp_country=zx/emp_state=ka
@@ -87,7 +87,6 @@ POSTHOOK: query: show table extended like repldst
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:repldst
 #### A masked pattern was here ####
-location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { i32 emp_id}
@@ -117,7 +116,7 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT 
   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
-  'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
   'repl.last.id'='0', 
@@ -127,13 +126,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@repldst
 PREHOOK: Input: default@repldst@emp_country=us/emp_state=ca
 PREHOOK: Input: default@repldst@emp_country=zx/emp_state=ka
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from repldst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@repldst
 POSTHOOK: Input: default@repldst@emp_country=us/emp_state=ca
 POSTHOOK: Input: default@repldst@emp_country=zx/emp_state=ka
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	us	ca
 2	us	ca
 3	us	ca
