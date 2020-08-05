@@ -89,6 +89,9 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
 
     private void pushDown(LimitOperator limit) throws SemanticException {
       Operator<? extends OperatorDesc> parent = limit.getParentOperators().get(0);
+      if (parent.getNumChild() != 1) {
+        return;
+      }
       switch (parent.getType()) {
         case LIMIT:
           combineLimits(limit);
