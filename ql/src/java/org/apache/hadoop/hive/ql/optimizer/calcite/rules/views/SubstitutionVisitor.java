@@ -2413,6 +2413,10 @@ public class SubstitutionVisitor {
   public static class FilterOnProjectRule extends RelOptRule {
     private static final Predicate<Filter> PREDICATE =
         new Predicate<Filter>() {
+          public boolean test(Filter input) {
+            return input.getCondition() instanceof RexInputRef;
+          }
+
           public boolean apply(Filter input) {
             return input.getCondition() instanceof RexInputRef;
           }
