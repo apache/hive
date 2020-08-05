@@ -9228,7 +9228,7 @@ public class ObjectStore implements RawStore, Configurable {
     // Note: this will get stats without verifying ACID.
     if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
       LOG.debug("PartNames and/or ColNames are empty");
-      return null;
+      return Collections.emptyList();
     }
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
@@ -9242,7 +9242,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
       LOG.debug("PartNames and/or ColNames are empty");
-      return null;
+      Collections.emptyList();
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
