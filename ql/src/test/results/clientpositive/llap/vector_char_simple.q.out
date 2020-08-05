@@ -256,11 +256,11 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator

@@ -341,19 +341,19 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Limit
+                    Number of rows: 10
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                        projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 10
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                    Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [2]
                       Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 

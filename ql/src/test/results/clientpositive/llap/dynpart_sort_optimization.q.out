@@ -262,12 +262,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Limit
+                      Number of rows: 10
                       Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                      Limit
-                        Number of rows: 10
+                      Select Operator
+                        expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
@@ -840,12 +840,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Limit
+                      Number of rows: 10
                       Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                      Limit
-                        Number of rows: 10
+                      Select Operator
+                        expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
@@ -4572,12 +4572,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 10
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
                         Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -4821,12 +4821,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 10
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
                         Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 

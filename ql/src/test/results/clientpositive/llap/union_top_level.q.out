@@ -39,12 +39,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -63,12 +63,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -87,12 +87,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -450,12 +450,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -474,12 +474,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -498,12 +498,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -750,12 +750,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -774,12 +774,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -798,12 +798,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -1038,12 +1038,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -1062,12 +1062,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
@@ -1086,12 +1086,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 3
+                    Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: key (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 

@@ -21,11 +21,11 @@ STAGE PLANS:
           filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
           Filter Operator
             predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
-            Select Operator
-              expressions: concat(key, value) (type: string), array(key,value) (type: array<string>)
-              outputColumnNames: _col0, _col1
-              Limit
-                Number of rows: 10
+            Limit
+              Number of rows: 10
+              Select Operator
+                expressions: concat(key, value) (type: string), array(key,value) (type: array<string>)
+                outputColumnNames: _col0, _col1
                 ListSink
 
 PREHOOK: query: select concat(*),array(*) from src where key < 100 limit 10
@@ -211,11 +211,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             UDTF Operator
               function name: explode
-              Select Operator
-                expressions: col (type: string)
-                outputColumnNames: _col0
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Select Operator
+                  expressions: col (type: string)
+                  outputColumnNames: _col0
                   ListSink
 
 PREHOOK: query: select explode(*) as x from allcolref limit 10

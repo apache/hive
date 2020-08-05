@@ -132,12 +132,12 @@ STAGE PLANS:
                 TableScan
                   alias: union_table_test_n1
                   Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: column1 (type: string), column2 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: column1 (type: string), column2 (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string), '5' (type: string)
@@ -157,12 +157,12 @@ STAGE PLANS:
                 TableScan
                   alias: union_table_test_n0
                   Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: column1 (type: string), column2 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 4 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: column1 (type: string), column2 (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string), '5' (type: string)
@@ -345,10 +345,10 @@ STAGE PLANS:
                 TableScan
                   alias: tx1
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
