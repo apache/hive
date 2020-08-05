@@ -54,7 +54,7 @@ final class MajorQueryCompactor extends QueryCompactor {
     String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
-        conf, true, false, false);
+        conf, true, false, false, null);
 
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
