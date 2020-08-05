@@ -241,6 +241,14 @@ public class HdfsUtils {
     List<AclEntry> defaults = new ArrayList<AclEntry>(acls);
     Iterables.removeIf(defaults, new Predicate<AclEntry>() {
       @Override
+      public boolean test(AclEntry acl) {
+        if (! acl.getScope().equals(AclEntryScope.DEFAULT)) {
+          return true;
+        }
+        return false;
+      }
+
+      @Override
       public boolean apply(AclEntry acl) {
         if (! acl.getScope().equals(AclEntryScope.DEFAULT)) {
           return true;
