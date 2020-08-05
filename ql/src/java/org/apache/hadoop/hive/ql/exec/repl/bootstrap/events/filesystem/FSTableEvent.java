@@ -30,9 +30,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -40,7 +37,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.getHiveUpdater;
 
 public class FSTableEvent implements TableEvent {
   private final Path fromPathMetadata;
@@ -106,38 +101,6 @@ public class FSTableEvent implements TableEvent {
   public ImportTableDesc tableDesc(String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
-      boolean externalTableOnSource = TableType.EXTERNAL_TABLE.equals(table.getTableType());
-      // The table can be non acid in case of replication from 2.6 cluster.
-      if (!AcidUtils.isTransactionalTable(table)
-              && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES)
-              && (table.getTableType() == TableType.MANAGED_TABLE)) {
-        Hive hiveDb = Hive.get(hiveConf);
-        //TODO : dump metadata should be read to make sure that migration is required.
-        HiveStrictManagedMigration.TableMigrationOption migrationOption =
-            HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
-                table.getTableType(), null, hiveConf,
-                hiveDb.getMSC(), true);
-        HiveStrictManagedMigration.migrateTable(table.getTTable(), table.getTableType(),
-                migrationOption, false,
-                getHiveUpdater(hiveConf), hiveDb.getMSC(), hiveConf);
-        // If the conversion is from non transactional to transactional table
-        if (AcidUtils.isTransactionalTable(table)) {
-          replicationSpec().setMigratingToTxnTable();
-          // For migrated tables associate bootstrap writeId when replicating stats.
-          if (table.getTTable().isSetColStats()) {
-            table.getTTable().setWriteId(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID);
-          }
-        }
-        if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-          // since we have converted to an external table now after applying the migration rules the
-          // table location has to be set to null so that the location on the target is picked up
-          // based on default configuration
-          table.setDataLocation(null);
-          if(!externalTableOnSource) {
-            replicationSpec().setMigratingToExternalTable();
-          }
-        }
-      }
       ImportTableDesc tableDesc
               = new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
       if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
@@ -190,7 +153,7 @@ public class FSTableEvent implements TableEvent {
 
       StorageDescriptor sd = partition.getSd();
       String location = sd.getLocation();
-      if (!tblDesc.isExternal() || replicationSpec().isMigratingToExternalTable()) {
+      if (!tblDesc.isExternal()) {
         /**
          * this is required for file listing of all files in a partition for managed table as described in
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
@@ -207,8 +170,7 @@ public class FSTableEvent implements TableEvent {
         colStatsDesc.setDbName(tblDesc.getDatabaseName());
         columnStatistics = new ColumnStatistics(colStatsDesc, colStats.getStatsObj());
         columnStatistics.setEngine(colStats.getEngine());
-        writeId = replicationSpec().isMigratingToTxnTable() ?
-                ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID : partition.getWriteId();
+        writeId = partition.getWriteId();
       }
 
       AlterTableAddPartitionDesc.PartitionDesc partitionDesc = new AlterTableAddPartitionDesc.PartitionDesc(

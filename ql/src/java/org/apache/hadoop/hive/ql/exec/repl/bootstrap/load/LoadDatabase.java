@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -115,7 +116,7 @@ public class LoadDatabase {
     return allTables.isEmpty() && allFunctions.isEmpty();
   }
 
-  private Task<?> createDbTask(Database dbObj) {
+  private Task<?> createDbTask(Database dbObj) throws MetaException {
     // note that we do not set location - for repl load, we want that auto-created.
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, null, false,
         updateDbProps(dbObj, context.dumpDirectory));

@@ -36,19 +36,16 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
-import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
@@ -61,7 +58,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
 
 public class ReplUtils {
 
@@ -101,14 +97,6 @@ public class ReplUtils {
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
   public static final String REPL_TABLE_LIST_DIR_NAME = "_tables";
-
-  // Migrating to transactional tables in bootstrap load phase.
-  // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
-  public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
-
-  // we keep the statement id as 0 so that the base directory is created with 0 and is easy to find out during
-  // duplicate check. Note : Stmt id is not used for base directory now, but to avoid misuse later, its maintained.
-  public static final int REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID = 0;
 
   // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
   // seen in production or in case of tests other than the ones where it's required.
@@ -239,45 +227,10 @@ public class ReplUtils {
     return val;
   }
 
-  public static boolean isTableMigratingToTransactional(HiveConf conf,
-                                                 org.apache.hadoop.hive.metastore.api.Table tableObj)
-  throws TException, IOException {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
-            !AcidUtils.isTransactionalTable(tableObj) &&
-            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
-      HiveStrictManagedMigration.TableMigrationOption migrationOption =
-              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
-                      null, conf, null, true);
-      return migrationOption == MANAGED;
-    }
-    return false;
-  }
 
-  private static void addOpenTxnTaskForMigration(String actualDbName, String actualTblName,
-                                            HiveConf conf,
-                                         UpdatedMetaDataTracker updatedMetaDataTracker,
-                                         List<Task<?>> taskList,
-                                         Task<?> childTask) {
-    Task<?> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
-            ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
-    replTxnTask.addDependentTask(childTask);
-    updatedMetaDataTracker.setNeedCommitTxn(true);
-    taskList.add(replTxnTask);
-  }
-
-  public static List<Task<?>> addOpenTxnTaskForMigration(String actualDbName,
-                                                                  String actualTblName, HiveConf conf,
-                                                                  UpdatedMetaDataTracker updatedMetaDataTracker,
-                                                                  Task<?> childTask,
-                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
-          throws IOException, TException {
+  public static List<Task<?>> addChildTask(Task<?> childTask) {
     List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
-    if (isTableMigratingToTransactional(conf, tableObj) && updatedMetaDataTracker != null) {
-      addOpenTxnTaskForMigration(actualDbName, actualTblName, conf, updatedMetaDataTracker,
-              taskList, childTask);
-    }
     return taskList;
   }
 
@@ -288,19 +241,10 @@ public class ReplUtils {
                                                                               long writeId)
           throws IOException, TException {
     List<Task<?>> taskList = new ArrayList<>();
-    boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj);
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, isMigratingToTxn);
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats);
     work.setWriteId(writeId);
     Task<?> task = TaskFactory.get(work, conf);
     taskList.add(task);
-    // If the table is going to be migrated to a transactional table we will need to open
-    // and commit a transaction to associate a valid writeId with the statistics.
-    if (isMigratingToTxn) {
-      ReplUtils.addOpenTxnTaskForMigration(colStats.getStatsDesc().getDbName(),
-              colStats.getStatsDesc().getTableName(), conf, updatedMetadata, taskList,
-              task);
-    }
-
     return taskList;
 
   }
@@ -344,14 +288,6 @@ public class ReplUtils {
     }
     envContext.putToProperties(ReplConst.REPL_DATA_LOCATION_CHANGED, ReplConst.TRUE);
     return envContext;
-  }
-
-  public static Long getMigrationCurrentTblWriteId(HiveConf conf) {
-    String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-    if (writeIdString == null) {
-      return null;
-    }
-    return Long.parseLong(writeIdString);
   }
 
   // Only for testing, we do not include ACID tables in the dump (and replicate) if config says so.
