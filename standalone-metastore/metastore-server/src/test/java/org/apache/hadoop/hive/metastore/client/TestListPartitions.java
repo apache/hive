@@ -503,7 +503,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionSpecs(DB_NAME, null, -1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TException e) {
+    } catch (MetaException | TException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
