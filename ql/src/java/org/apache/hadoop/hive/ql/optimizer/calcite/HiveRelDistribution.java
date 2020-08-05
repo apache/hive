@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.plan.RelMultipleTrait;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -82,15 +84,16 @@ public class HiveRelDistribution implements RelDistribution {
       return this;
     }
     List<Integer> newKeys = new ArrayList<>(keys.size());
+
+    // Instead of using a HashMap for lookup newKeys.add(mapping.getTargetOpt(key)); should be called but not all the
+    // mapping supports that. See HIVE-23963. Replace this when this is fixed in calcite.
+    Map<Integer, Integer> tmp = new HashMap<>(mapping.getSourceCount());
+    for (IntPair aMapping : mapping) {
+      tmp.put(aMapping.source, aMapping.target);
+    }
+
     for (Integer key : keys) {
-      // Instead of this inner for loop newKeys.add(mapping.getTargetOpt(key)); should be called but not all the
-      // mapping supports that. See HIVE-23963. Replace this when this is fixed in calcite.
-      for (IntPair aMapping : mapping) {
-        if (aMapping.source == key) {
-          newKeys.add(aMapping.target);
-          break;
-        }
-      }
+      newKeys.add(tmp.get(key));
     }
     return new HiveRelDistribution(type, newKeys);
   }
