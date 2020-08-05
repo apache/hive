@@ -144,6 +144,12 @@ public class TestServiceDiscovery {
     }
 
     @Override
+    public boolean test(ConnParamInfo inputParam) {
+      return inputParam.host.equals(host) && inputParam.port == port &&
+              inputParam.path.startsWith(pathPrefix);
+    }
+
+    @Override
     public boolean apply(ConnParamInfo inputParam) {
       return inputParam.host.equals(host) && inputParam.port == port &&
         inputParam.path.startsWith(pathPrefix);

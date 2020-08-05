@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import com.google.common.collect.Iterators;
 import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.HttpClientConfig;
@@ -37,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -63,7 +63,8 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
   /**
    * Query results.
    */
-  protected Iterator<R> results = Iterators.emptyIterator();
+
+  protected Iterator<R> results = Collections.emptyIterator();
 
   @Override
   public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {

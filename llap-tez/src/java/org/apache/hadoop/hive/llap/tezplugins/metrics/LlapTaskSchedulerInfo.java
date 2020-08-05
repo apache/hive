@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
+import com.google.common.base.MoreObjects;
 import org.apache.hadoop.metrics2.MetricsInfo;
-
-import com.google.common.base.Objects;
 
 /**
  * Metrics information for llap task scheduler.
@@ -52,7 +51,7 @@ public enum LlapTaskSchedulerInfo implements MetricsInfo {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("name", name()).add("description", desc)
         .toString();
   }

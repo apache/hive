@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -532,7 +533,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         public Iterator<Mapping> iterator() {
           ImmutableBitSet fields = exprFields.get(predicate.toString());
           if (fields.cardinality() == 0) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
           }
           return new ExprsItr(fields);
         }
