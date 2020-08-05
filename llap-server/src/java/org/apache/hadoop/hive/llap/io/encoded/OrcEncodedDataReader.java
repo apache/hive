@@ -574,9 +574,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * @throws IOException
    */
   public static OrcTail getOrcTailForPath(Path path, Configuration jobConf, CacheTag tag,
-      Configuration daemonConf, MetadataCache metadataCache) throws IOException {
+      Configuration daemonConf, MetadataCache metadataCache, Object fileKey) throws IOException {
     Supplier<FileSystem> fsSupplier = getFsSupplier(path, jobConf);
-    Object fileKey = determineFileId(fsSupplier, path, daemonConf);
+    if (fileKey == null) {
+      fileKey = determineFileId(fsSupplier, path, daemonConf);
+    }
 
     if(fileKey == null || metadataCache == null) {
       throw new IllegalCacheConfigurationException("LLAP metadata cache not available for path " + path.toString());

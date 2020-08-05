@@ -25,6 +25,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -101,11 +104,43 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.rootDir = rootDir;
-    this.deltas.addAll(deltas);
+    this.deltas.addAll(filterDeltasByBucketId(deltas, AcidUtils.parseBucketId(path)));
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
     this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
     this.syntheticAcidProps = syntheticAcidProps;
+  }
+
+  /**
+   * For every split we only want to keep the delete deltas, that contains files for that bucket.
+   * If we filter out files, we might need to filter out statementIds from multistatement transactions.
+   * @param deltas
+   * @param bucketId
+   * @return
+   */
+  private List<AcidInputFormat.DeltaMetaData> filterDeltasByBucketId(List<AcidInputFormat.DeltaMetaData> deltas, int bucketId) {
+    List<AcidInputFormat.DeltaMetaData> results = new ArrayList<>();
+    for (AcidInputFormat.DeltaMetaData dmd : deltas) {
+      Map<Integer, AcidInputFormat.DeltaFileMetaData> bucketFilesbyStmtId =
+          dmd.getDeltaFiles().stream().filter(deltaFileMetaData -> deltaFileMetaData.getBucketId() == bucketId)
+              .collect(Collectors.toMap(AcidInputFormat.DeltaFileMetaData::getStmtId, Function.identity()));
+      if (bucketFilesbyStmtId.isEmpty()) {
+        continue;
+      }
+      // Keep only the relevant stmtIds
+      List<Integer> stmtIds = dmd.getStmtIds().stream()
+          .filter(stmtId -> bucketFilesbyStmtId.containsKey(stmtId))
+          .collect(Collectors.toList());
+      // For a small optimization clear the stmtIds from the files, if the delta is single statement delta
+      List<AcidInputFormat.DeltaFileMetaData> bucketFiles = bucketFilesbyStmtId.values().stream()
+          .map(file -> new AcidInputFormat.DeltaFileMetaData(file.getModTime(), file.getLength(), file.getAttemptId(),
+              file.getFileId(), stmtIds.size() > 1 ? file.getStmtId() : null, bucketId))
+          .collect(Collectors.toList());
+
+      results.add(new AcidInputFormat.DeltaMetaData(dmd.getMinWriteId(), dmd.getMaxWriteId(), stmtIds,
+          dmd.getVisibilityTxnId(), bucketFiles));
+    }
+    return results;
   }
 
   @Override

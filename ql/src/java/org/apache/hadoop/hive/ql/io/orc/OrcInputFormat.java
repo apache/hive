@@ -2406,7 +2406,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
       UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs) {
-    List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(parsedDeltas);
+    List<DeltaMetaData> deltas = AcidUtils.serializeDeleteDeltas(parsedDeltas);
     boolean[] covered = new boolean[context.numBuckets];
 
     // if we have a base to work from
