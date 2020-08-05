@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -73,6 +72,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
 
 /**
  * A transformation that merges multiple single-column semi join reducers to one multi-column semi join reducer.
@@ -158,11 +159,11 @@ public class SemiJoinReductionMerge extends Transform {
       for (Operator<?> op : sjTargetTable.getChildOperators()) {
         if (op instanceof FilterOperator) {
           FilterDesc filter = ((FilterOperator) op).getConf();
-          filter.setPredicate(and(Arrays.asList(filter.getPredicate(), sjPredicate)));
+          filter.setPredicate(and(filter.getPredicate(), sjPredicate));
         }
       }
       // Update tableScan with the new semi-join predicate
-      sjTargetTable.getConf().setFilterExpr(and(Arrays.asList(sjTargetTable.getConf().getFilterExpr(), sjPredicate)));
+      sjTargetTable.getConf().setFilterExpr(and(sjTargetTable.getConf().getFilterExpr(), sjPredicate));
 
       for (ReduceSinkOperator rs : sjBranches) {
         GenTezUtils.removeSemiJoinOperator(parseContext, rs, sjTargetTable);
@@ -406,10 +407,6 @@ public class SemiJoinReductionMerge extends Transform {
       params.add(new ExprNodeColumnDesc(new ColumnInfo(name, c.getType(), "", false)));
     }
     return params;
-  }
-
-  private static ExprNodeGenericFuncDesc and(List<ExprNodeDesc> args) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", args);
   }
 
   private static AggregationDesc minAggregation(GenericUDAFEvaluator.Mode mode, ExprNodeDesc col) {
