@@ -515,6 +515,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBuckets() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_1";
     String tempTableName = "tmp_txt_table_1";
@@ -537,6 +538,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBucketsInsertOverwrite() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_2";
     String tempTableName = "tmp_txt_table_2";
@@ -553,7 +555,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     expectedDeleteDeltas.add("delete_delta_0000005_0000005_0000");
 
     testMinorCompactionWithoutBucketsCommon(dbName, tableName, tempTableName, true, expectedDeltas,
-        expectedDeleteDeltas, "delta_0000001_0000008_v0000025", CompactionType.MINOR);
+        expectedDeleteDeltas, "delta_0000002_0000008_v0000025", CompactionType.MINOR);
   }
 
   @Test
@@ -581,6 +583,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       boolean insertOverWrite, List<String> expectedDeltas, List<String> expectedDeleteDeltas,
       String expectedCompactedDeltaDirName, CompactionType compactionType) throws Exception {
 
+    Assume.assumeTrue(runsOnTez);
     TestDataProvider dataProvider = new TestDataProvider();
     dataProvider.createTableWithoutBucketWithMultipleSplits(dbName, tableName, tempTableName, true, true,
         insertOverWrite);
@@ -665,6 +668,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorAndMajorCompactionWithoutBuckets() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_5";
     String tempTableName = "tmp_txt_table_5";
@@ -1316,7 +1320,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testMinorCompactionAfterMajor() throws Exception {
     Assume.assumeTrue(runsOnTez);
     String dbName = "default";
-    String tableName = "testMinorCompaction";
+    String tableName = "testMinorCompactionAfterMajor";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
     dataProvider.createFullAcidTable(tableName, false, false);
@@ -1357,8 +1361,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories do not match after major compaction",
-        Collections.singletonList("delta_0000001_0000010_v0000020"),
+        Collections.singletonList("delta_0000006_0000010_v0000020"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    Assert.assertEquals("Delete delta directories does not match after minor compaction",
+        Collections.singletonList("delete_delta_0000006_0000010_v0000020"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
@@ -1518,7 +1525,171 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMinorCompactionDb() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     testCompactionDb(CompactionType.MINOR, "delta_0000001_0000005_v0000011");
+  }
+
+  /**
+   * Minor compaction on a table with no deletes shouldn't result in any delete deltas.
+   */
+  @Test public void testJustInserts() throws Exception {
+    Assume.assumeTrue(runsOnTez);
+    String dbName = "default";
+    String tableName = "testJustInserts";
+    // Create test table
+    executeStatementOnDriver("CREATE TABLE " + tableName + " (id string, value string)"
+        + "CLUSTERED BY(id) INTO 10 BUCKETS "
+        + "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21'),('84', 'value84'),"
+        + "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22'),('34', 'value34'),"
+        + "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(1);
+
+    List<String> actualDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
+    Assert.assertEquals("Delta directories does not match after compaction",
+        Collections.singletonList("delta_0000001_0000003_v0000005"), actualDeltasAfterComp);
+    List<String> actualDeleteDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
+    Assert.assertEquals("Delete delta directories does not match after compaction",
+        Collections.emptyList(), actualDeleteDeltasAfterComp);
+  }
+
+  /**
+   * Minor compaction on a table with no insert deltas should result in just a delete delta.
+   */
+  @Test public void testJustDeletes() throws Exception {
+    Assume.assumeTrue(runsOnTez);
+    String dbName = "default";
+    String tableName = "testJustDeletes";
+    // Create test table
+    executeStatementOnDriver("CREATE TABLE " + tableName + " (id string, value string)"
+        + "CLUSTERED BY(id) INTO 10 BUCKETS "
+        + "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    executeStatementOnDriver("insert overwrite table " + tableName + " values ('1','one'),('2','two'),('3','three'),"
+        + "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),('11','eleven'),"
+        + "('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),('17','seventeen'),"
+        + "('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+    executeStatementOnDriver("delete from " + tableName + " where id in ('2', '4', '12', '15')", driver);
+    executeStatementOnDriver("delete from " + tableName + " where id in ('11', '10', '14', '5')", driver);
+
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(1);
+
+    // insert one more to verify a correct writeid (4)
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    List<String> actualDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
+    Assert.assertEquals("Delta directories does not match after compaction",
+        Collections.singletonList("delta_0000004_0000004_0000"), actualDeltasAfterComp);
+    List<String> actualDeleteDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
+    Assert.assertEquals("Delete delta directories does not match after compaction",
+        Collections.singletonList("delete_delta_0000002_0000003_v0000005"), actualDeleteDeltasAfterComp);
+  }
+
+  /**
+   * After running insert overwrite, followed by a minor compaction, major compaction was failing because minor
+   * compaction was resulting in deltas named delta_1_y.
+   */
+  @Test public void testIowMinorMajor() throws Exception {
+    Assume.assumeTrue(runsOnTez);
+    String dbName = "default";
+    String tableName = "testIowMinorMajor";
+    // Create test table
+    executeStatementOnDriver("CREATE TABLE " + tableName + " (id string, value string)"
+        + "CLUSTERED BY(id) INTO 2 BUCKETS "
+        + "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    executeStatementOnDriver("insert overwrite table " + tableName + " values ('1','one'),('2','two'),('3','three'),"
+        + "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),('11','eleven'),"
+        + "('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),('17','seventeen'),"
+        + "('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+    executeStatementOnDriver("delete from " + tableName + " where id in ('2', '4', '12', '15')", driver);
+    executeStatementOnDriver("delete from " + tableName + " where id in ('11', '10', '14', '5')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21'),('84', 'value84'),('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22'),('34', 'value34'),('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    // Verify deltas
+    Assert.assertEquals("Delta directories does not match",
+        Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    // Verify delete delta
+    Assert.assertEquals("Delete directories does not match",
+        Arrays.asList("delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
+    // Get all data before compaction is run
+    TestDataProvider dataProvider = new TestDataProvider();
+    List<String> expectedData = dataProvider.getAllData(tableName);
+
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(1);
+    // Verify deltas
+    Assert.assertEquals("Delta directories does not match",
+        Collections.singletonList("delta_0000002_0000006_v0000009"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    // Verify delete delta
+    Assert.assertEquals("Delete directories does not match",
+        Collections.singletonList("delete_delta_0000002_0000006_v0000009"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // 2 compactions should be in the response queue with succeeded state
+    verifySuccessfulCompaction(2);
+    // Should contain only one base directory now
+    String expectedBase = "base_0000006_v0000023";
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList(expectedBase),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Check base dir contents
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000", "bucket_00001");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil.getBucketFileNames(fs, table, null, expectedBase));
+    // Check bucket file contents
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 1);
+    // Verify all contents
+    actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+
+    // Clean up
+    dataProvider.dropTable(tableName);
   }
 
   /**
@@ -1557,6 +1728,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testVectorizationOff() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     testMinorCompactionAfterMajor();
   }

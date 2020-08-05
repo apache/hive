@@ -177,16 +177,17 @@ abstract class QueryCompactor {
      * @param writingBase if true, we are creating a base directory, otherwise a delta
      * @param createDeleteDelta if true, the delta dir we are creating is a delete delta
      * @param bucket0 whether to specify 0 as the bucketid
+     * @param directory AcidUtils.Directory - only required for minor compaction result (delta) dirs
      *
      * @return Path of new base/delta/delete delta directory
      */
     static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
-        boolean writingBase, boolean createDeleteDelta, boolean bucket0) {
-      long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+        boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidUtils.Directory directory) {
+      long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
       long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
       AcidOutputFormat.Options options =
-          new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minOpenWriteId)
+          new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)
               .writingBase(writingBase).writingDeleteDelta(createDeleteDelta);
       if (bucket0) {
@@ -194,6 +195,26 @@ abstract class QueryCompactor {
       }
       Path location = new Path(sd.getLocation());
       return AcidUtils.baseOrDeltaSubdirPath(location, options);
+    }
+
+    /**
+     * Get the min writeId for the new result directory. This only matters if the result directory will be a delta
+     * directory i.e. minor compaction.
+     * AcidUtils.Directory sorts delta directory names in alphabetical order: First it lists the delete deltas
+     * (delete_delta_x_y) then deltas (delta_x_y), both sorted by x, which is the min write id we're looking for.
+     * Get the the minimum value of x.
+     * @param directory holds information about the deltas we are compacting
+     * @return the smallest min write id found in deltas and delete deltas
+     */
+    private static long getMinWriteID(AcidUtils.Directory directory) {
+      long minWriteID = Long.MAX_VALUE;
+      for (AcidUtils.ParsedDelta delta : directory.getCurrentDirectories()) {
+        minWriteID = Math.min(delta.getMinWriteId(), minWriteID);
+        if (!delta.isDeleteDelta()) {
+          break;
+        }
+      }
+      return minWriteID;
     }
 
     /**
