@@ -1541,11 +1541,6 @@ public final class FunctionRegistry {
     return null;
   }
 
-  public static TableFunctionResolver getWindowingTableFunction()
-      throws SemanticException {
-    return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
-  }
-
   public static boolean isNoopFunction(String fnName) {
     fnName = fnName.toLowerCase();
     return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
