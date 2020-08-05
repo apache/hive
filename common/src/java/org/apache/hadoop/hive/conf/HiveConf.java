@@ -4331,6 +4331,12 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at max certain size to be effective"),
     TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 1.0,
             "Bloom filter should be a multiple of this factor with nDV"),
+    TEZ_BLOOM_FILTER_MERGE_THREADS("hive.tez.bloom.filter.merge.threads", 1,
+        "How many threads are used for merging bloom filters in addition to task's main thread?\n"
+            + "-1: sanity check, it will fail if execution hits bloom filter merge codepath\n"
+            + " 0: feature is disabled, use only task's main thread for bloom filter merging\n"
+            + " 1: recommended value: there is only 1 merger thread (additionally to the task's main thread),"
+            + "according perf tests, this can lead to serious improvement \n"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,

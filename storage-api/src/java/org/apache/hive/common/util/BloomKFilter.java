@@ -18,6 +18,7 @@
 
 package org.apache.hive.common.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
+import org.apache.hadoop.io.IOUtils;
 
 /**
  * BloomKFilter is variation of {@link BloomFilter}. Unlike BloomFilter, BloomKFilter will spread
@@ -36,7 +39,7 @@ import java.util.Arrays;
  *
  * This implementation has much lesser L1 data cache misses than {@link BloomFilter}.
  */
-@SuppressWarnings({ "WeakerAccess", "unused" }) public class BloomKFilter {
+public class BloomKFilter {
   public static final float DEFAULT_FPP = 0.05f;
   private static final int DEFAULT_BLOCK_SIZE = 8;
   private static final int DEFAULT_BLOCK_SIZE_BITS = (int) (Math.log(DEFAULT_BLOCK_SIZE) / Math.log(2));
@@ -335,6 +338,13 @@ import java.util.Arrays;
   // NumHashFunctions (1 byte) + bitset array length (4 bytes)
   public static final int START_OF_SERIALIZED_LONGS = 5;
 
+  public static void mergeBloomFilterBytes(
+    byte[] bf1Bytes, int bf1Start, int bf1Length,
+    byte[] bf2Bytes, int bf2Start, int bf2Length) {
+    mergeBloomFilterBytes(bf1Bytes, bf1Start, bf1Length, bf2Bytes, bf2Start, bf2Length,
+        START_OF_SERIALIZED_LONGS, bf1Length);
+  }
+
   /**
    * Merges BloomKFilter bf2 into bf1.
    * Assumes 2 BloomKFilters with the same size/hash functions are serialized to byte arrays
@@ -348,7 +358,8 @@ import java.util.Arrays;
    */
   public static void mergeBloomFilterBytes(
     byte[] bf1Bytes, int bf1Start, int bf1Length,
-    byte[] bf2Bytes, int bf2Start, int bf2Length) {
+    byte[] bf2Bytes, int bf2Start, int bf2Length, int mergeStart, int mergeEnd) {
+
     if (bf1Length != bf2Length) {
       throw new IllegalArgumentException("bf1Length " + bf1Length + " does not match bf2Length " + bf2Length);
     }
@@ -362,8 +373,22 @@ import java.util.Arrays;
 
     // Just bitwise-OR the bits together - size/# functions should be the same,
     // rest of the data is serialized long values for the bitset which are supposed to be bitwise-ORed.
-    for (int idx = START_OF_SERIALIZED_LONGS; idx < bf1Length; ++idx) {
+    for (int idx = mergeStart; idx < mergeEnd; ++idx) {
       bf1Bytes[bf1Start + idx] |= bf2Bytes[bf2Start + idx];
+    }
+  }
+
+  public static byte[] getInitialBytes(long expectedEntries) {
+    ByteArrayOutputStream bytesOut = null;
+    try {
+      bytesOut = new ByteArrayOutputStream();
+      BloomKFilter bf = new BloomKFilter(expectedEntries);
+      BloomKFilter.serialize(bytesOut, bf);
+      return bytesOut.toByteArray();
+    } catch (Exception err) {
+      throw new IllegalArgumentException("Error creating aggregation buffer", err);
+    } finally {
+      IOUtils.closeStream(bytesOut);
     }
   }
 
@@ -371,7 +396,7 @@ import java.util.Arrays;
    * Bare metal bit set implementation. For performance reasons, this implementation does not check
    * for index bounds nor expand the bit set size if the specified index is greater than the size.
    */
-  @SuppressWarnings("unused") public static class BitSet {
+  public static class BitSet {
     private final long[] data;
 
     public BitSet(long bits) {
