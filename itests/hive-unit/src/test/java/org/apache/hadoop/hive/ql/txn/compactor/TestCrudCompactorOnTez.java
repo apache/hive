@@ -503,6 +503,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBuckets() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_1";
     String tempTableName = "tmp_txt_table_1";
@@ -525,6 +526,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBucketsInsertOverwrite() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_2";
     String tempTableName = "tmp_txt_table_2";
@@ -541,7 +543,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     expectedDeleteDeltas.add("delete_delta_0000005_0000005_0000");
 
     testMinorCompactionWithoutBucketsCommon(dbName, tableName, tempTableName, true, expectedDeltas,
-        expectedDeleteDeltas, "delta_0000001_0000008_v0000025", CompactionType.MINOR);
+        expectedDeleteDeltas, "delta_0000002_0000008_v0000025", CompactionType.MINOR);
   }
 
   @Test
@@ -569,6 +571,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       boolean insertOverWrite, List<String> expectedDeltas, List<String> expectedDeleteDeltas,
       String expectedCompactedDeltaDirName, CompactionType compactionType) throws Exception {
 
+    Assume.assumeTrue(runsOnTez);
     TestDataProvider dataProvider = new TestDataProvider();
     dataProvider.createTableWithoutBucketWithMultipleSplits(dbName, tableName, tempTableName, true, true,
         insertOverWrite);
@@ -653,6 +656,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorAndMajorCompactionWithoutBuckets() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_5";
     String tempTableName = "tmp_txt_table_5";
@@ -1508,6 +1512,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMinorCompactionDb() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     testCompactionDb(CompactionType.MINOR, "delta_0000001_0000005_v0000011");
   }
 
@@ -1515,6 +1520,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * Minor compaction on a table with no deletes shouldn't result in any delete deltas.
    */
   @Test public void testJustInserts() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testJustInserts";
     // Create test table
@@ -1552,6 +1558,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * Minor compaction on a table with no insert deltas should result in just a delete delta.
    */
   @Test public void testJustDeletes() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testJustDeletes";
     // Create test table
@@ -1594,6 +1601,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * compaction was resulting in deltas named delta_1_y.
    */
   @Test public void testIowMinorMajor() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testIowMinorMajor";
     // Create test table
@@ -1707,6 +1715,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testVectorizationOff() throws Exception {
+    Assume.assumeTrue(runsOnTez);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     testMinorCompactionAfterMajor();
   }
