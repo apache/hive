@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
@@ -373,6 +374,12 @@ public class ASTBuilder {
     }
 
     return (ASTNode) ParseDriver.adaptor.create(type, String.valueOf(val));
+  }
+
+  public static ASTNode dynamicParam(RexDynamicParam param) {
+    ASTNode node = (ASTNode)ParseDriver.adaptor.create(HiveParser.TOK_PARAMETER,
+        Integer.toString(param.getIndex()));
+    return node;
   }
 
   ASTNode curr;

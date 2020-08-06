@@ -196,6 +196,15 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected RexNode createDynamicParamExpr(int index) {
+    return rexBuilder.makeDynamicParam(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL), index);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected RexNode createBooleanConstantExpr(String value) {
     Boolean b = value != null ? Boolean.valueOf(value) : null;
     return rexBuilder.makeLiteral(b,
