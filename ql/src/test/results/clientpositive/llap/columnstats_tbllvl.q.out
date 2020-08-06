@@ -83,7 +83,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -163,7 +163,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
                         auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -306,7 +306,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: float), _col14 (type: float), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: struct<count:bigint,sum:double,input:int>), _col19 (type: bigint), _col20 (type: binary), _col21 (type: int), _col22 (type: struct<count:bigint,sum:double,input:int>), _col23 (type: bigint), _col24 (type: binary), _col25 (type: int), _col26 (type: struct<count:bigint,sum:double,input:int>), _col27 (type: bigint), _col28 (type: binary), _col29 (type: int), _col30 (type: struct<count:bigint,sum:double,input:int>), _col31 (type: bigint), _col32 (type: binary), _col33 (type: int), _col34 (type: int), _col35 (type: bigint), _col36 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -467,7 +467,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: int), _col17 (type: struct<count:bigint,sum:double,input:int>), _col18 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -634,7 +634,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -714,7 +714,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
                         auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -857,7 +857,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: float), _col14 (type: float), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: struct<count:bigint,sum:double,input:int>), _col19 (type: bigint), _col20 (type: binary), _col21 (type: int), _col22 (type: struct<count:bigint,sum:double,input:int>), _col23 (type: bigint), _col24 (type: binary), _col25 (type: int), _col26 (type: struct<count:bigint,sum:double,input:int>), _col27 (type: bigint), _col28 (type: binary), _col29 (type: int), _col30 (type: struct<count:bigint,sum:double,input:int>), _col31 (type: bigint), _col32 (type: binary), _col33 (type: int), _col34 (type: int), _col35 (type: bigint), _col36 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

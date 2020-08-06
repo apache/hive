@@ -511,8 +511,8 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPLCMDIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPLCMRETIAN("hive.repl.cm.retain","24h",
-        new TimeValidator(TimeUnit.HOURS),
+    REPLCMRETIAN("hive.repl.cm.retain","7d",
+        new TimeValidator(TimeUnit.DAYS),
         "Time to retain removed files in cmrootdir."),
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
@@ -571,7 +571,7 @@ public class HiveConf extends Configuration {
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
             + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
-    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", false,
+    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", true,
         "Indicates if repl dump should include information about external tables. It should be \n"
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
@@ -4825,6 +4825,8 @@ public class HiveConf extends Configuration {
     LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT(
         "hive.llap.task.communicator.listener.thread-count", 30,
         "The number of task communicator listener threads."),
+    LLAP_MAX_CONCURRENT_REQUESTS_PER_NODE("hive.llap.max.concurrent.requests.per.daemon", 12,
+        "Maximum number of concurrent requests to one daemon from Tez AM"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

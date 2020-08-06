@@ -597,7 +597,7 @@ public class MetastoreConf {
             + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
             +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
+        "hive.metastore.event.db.listener.timetolive", 7, TimeUnit.DAYS,
         "time after which events will be removed from the database listener queue"),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,
@@ -1361,6 +1361,12 @@ public class MetastoreConf {
             + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
+
+    COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
+        "hive.metastore.colstats.retain.on.column.removal", true,
+        "Whether to retain column statistics during column removals in partitioned tables - disabling this "
+            + "purges all column statistics data "
+            + "for all partition to retain working consistency"),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),

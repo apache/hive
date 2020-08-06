@@ -94,7 +94,7 @@ STAGE PLANS:
                         partitionColumns: 2:string
                     Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -256,7 +256,7 @@ STAGE PLANS:
                           partitionColumns: 2:string
                       Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -480,7 +480,7 @@ STAGE PLANS:
                             partitionColumns: 0:tinyint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

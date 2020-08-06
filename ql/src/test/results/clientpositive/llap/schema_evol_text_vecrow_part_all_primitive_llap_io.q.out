@@ -183,7 +183,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -362,7 +362,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -504,7 +504,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -655,7 +655,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -760,7 +760,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -858,7 +858,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -955,7 +955,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -1045,7 +1045,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -1164,7 +1164,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
