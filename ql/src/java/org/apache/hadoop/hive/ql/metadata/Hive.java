@@ -198,6 +198,7 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -1684,8 +1685,8 @@ public class Hive {
         } else {
           materializedViewTable = ((RelOptHiveTable) viewScan.getTable()).getHiveTableMD();
         }
-        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
-            defaultTimeWindow, tablesUsed, false);
+        final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
+            materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
         if (outdated == null) {
           continue;
         }
@@ -1704,11 +1705,11 @@ public class Hive {
           // that is outdated, but it only happens for more than one materialized view
           // if rewriting with outdated materialized views is enabled (currently
           // disabled by default).
-          materialization = augmentMaterializationWithTimeInformation(
+          materialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
               materialization, validTxnsList, new ValidTxnWriteIdList(
                   creationMetadata.getValidTxnList()));
         }
-        result.add(materialization);
+        result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(materialization));
       }
       return result;
     } catch (Exception e) {
@@ -1743,8 +1744,8 @@ public class Hive {
           HiveMaterializedViewsRegistry.get().dropMaterializedView(cachedMaterializedViewTable);
           result = false;
         } else {
-          final Boolean outdated = isOutdatedMaterializedView(cachedMaterializedViewTable,
-              currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
+          final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
+              cachedMaterializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
           if (outdated == null) {
             result = false;
             continue;
@@ -1806,7 +1807,7 @@ public class Hive {
       return Collections.emptyList();
     }
     // Return final result
-    return getValidMaterializedViews(materializedViewTables, tablesUsed, false, txnMgr);
+    return getValidMaterializedViews(materializedViewTables, tablesUsed, false, true, txnMgr);
   }
 
   /**
@@ -1820,17 +1821,18 @@ public class Hive {
   public RelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     List<RelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
-        ImmutableList.of(getTable(dbName, materializedViewName)), tablesUsed, true, txnMgr);
+        ImmutableList.of(getTable(dbName, materializedViewName)), tablesUsed, true, false, txnMgr);
     if (validMaterializedViews.isEmpty()) {
       return null;
     }
-    assert validMaterializedViews.size() == 1;
+    Preconditions.checkState(validMaterializedViews.size() == 1,
+        "Returned more than a materialized view for rebuild");
     return validMaterializedViews.get(0);
   }
 
   private List<RelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
-      List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr)
-      throws HiveException {
+      List<String> tablesUsed, boolean forceMVContentsUpToDate, boolean expandGroupingSets,
+      HiveTxnManager txnMgr) throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
     final boolean tryIncrementalRewriting =
@@ -1844,8 +1846,8 @@ public class Hive {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
       for (Table materializedViewTable : materializedViewTables) {
-        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
-            defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
+        final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
+            materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
         if (outdated == null) {
           continue;
         }
@@ -1879,24 +1881,21 @@ public class Hive {
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
                 materializedViewTable.getDbName(), materializedViewTable.getTableName());
         if (materialization != null) {
-          RelNode viewScan = materialization.tableRel;
-          RelOptHiveTable cachedMaterializedViewTable;
-          if (viewScan instanceof Project) {
-            // There is a Project on top (due to nullability)
-            cachedMaterializedViewTable = (RelOptHiveTable) viewScan.getInput(0).getTable();
-          } else {
-            cachedMaterializedViewTable = (RelOptHiveTable) viewScan.getTable();
-          }
-          if (cachedMaterializedViewTable.getHiveTableMD().equals(materializedViewTable)) {
+          Table cachedMaterializedViewTable = HiveMaterializedViewUtils.extractTable(materialization);
+          if (cachedMaterializedViewTable.equals(materializedViewTable)) {
             // It is in the cache and up to date
             if (outdated) {
               // We will rewrite it to include the filters on transaction list
               // so we can produce partial rewritings
-              materialization = augmentMaterializationWithTimeInformation(
+              materialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
                   materialization, validTxnsList, new ValidTxnWriteIdList(
                       creationMetadata.getValidTxnList()));
             }
-            result.add(materialization);
+            if (expandGroupingSets) {
+              result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(materialization));
+            } else {
+              result.add(materialization);
+            }
             continue;
           }
         }
@@ -1914,11 +1913,15 @@ public class Hive {
           if (outdated) {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings
-            materialization = augmentMaterializationWithTimeInformation(
+            materialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
                 materialization, validTxnsList, new ValidTxnWriteIdList(
                     creationMetadata.getValidTxnList()));
           }
-          result.add(materialization);
+          if (expandGroupingSets) {
+            result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(materialization));
+          } else {
+            result.add(materialization);
+          }
         }
       }
       return result;
@@ -1927,126 +1930,12 @@ public class Hive {
     }
   }
 
-  /**
-   * Utility method that returns whether a materialized view is outdated (true), not outdated
-   * (false), or it cannot be determined (null). The latest case may happen e.g. when the
-   * materialized view definition uses external tables.
-   */
-  public static Boolean isOutdatedMaterializedView(Table materializedViewTable, final ValidTxnWriteIdList currentTxnWriteIds,
-      long defaultTimeWindow, List<String> tablesUsed, boolean forceMVContentsUpToDate) {
-    // Check if materialization defined its own invalidation time window
-    String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
-    long timeWindow = org.apache.commons.lang3.StringUtils.isEmpty(timeWindowString) ? defaultTimeWindow :
-        HiveConf.toTime(timeWindowString,
-            HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
-            TimeUnit.MILLISECONDS);
-    CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
-    boolean outdated = false;
-    if (timeWindow < 0L) {
-      // We only consider the materialized view to be outdated if forceOutdated = true, i.e.,
-      // if it is a rebuild. Otherwise, it passed the test and we use it as it is.
-      outdated = forceMVContentsUpToDate;
-    } else {
-      // Check whether the materialized view is invalidated
-      if (forceMVContentsUpToDate || timeWindow == 0L || creationMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
-        if (currentTxnWriteIds == null) {
-          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-              " ignored for rewriting as we could not obtain current txn ids");
-          return null;
-        }
-        if (creationMetadata.getValidTxnList() == null ||
-            creationMetadata.getValidTxnList().isEmpty()) {
-          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-              " ignored for rewriting as we could not obtain materialization txn ids");
-          return null;
-        }
-        boolean ignore = false;
-        ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-            creationMetadata.getValidTxnList());
-        for (String qName : tablesUsed) {
-          // Note. If the materialized view does not contain a table that is contained in the query,
-          // we do not need to check whether that specific table is outdated or not. If a rewriting
-          // is produced in those cases, it is because that additional table is joined with the
-          // existing tables with an append-columns only join, i.e., PK-FK + not null.
-          if (!creationMetadata.getTablesUsed().contains(qName)) {
-            continue;
-          }
-          ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
-          if (tableCurrentWriteIds == null) {
-            // Uses non-transactional table, cannot be considered
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as it is outdated and cannot be considered for " +
-                " rewriting because it uses non-transactional table " + qName);
-            ignore = true;
-            break;
-          }
-          ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
-          if (tableWriteIds == null) {
-            // This should not happen, but we ignore for safety
-            LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as details about txn ids for table " + qName +
-                " could not be found in " + mvTxnWriteIds);
-            ignore = true;
-            break;
-          }
-          if (!outdated && !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " contents are outdated");
-            outdated = true;
-          }
-        }
-        if (ignore) {
-          return null;
-        }
-      }
-    }
-    return outdated;
-  }
-
-  /**
-   * Method to enrich the materialization query contained in the input with
-   * its invalidation.
-   */
-  private static RelOptMaterialization augmentMaterializationWithTimeInformation(
-      RelOptMaterialization materialization, String validTxnsList,
-      ValidTxnWriteIdList materializationTxnList) throws LockException {
-    // Extract tables used by the query which will in turn be used to generate
-    // the corresponding txn write ids
-    List<String> tablesUsed = new ArrayList<>();
-    new RelVisitor() {
-      @Override
-      public void visit(RelNode node, int ordinal, RelNode parent) {
-        if (node instanceof TableScan) {
-          TableScan ts = (TableScan) node;
-          tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
-        }
-        super.visit(node, ordinal, parent);
-      }
-    }.go(materialization.queryRel);
-    ValidTxnWriteIdList currentTxnList =
-        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
-    // Augment
-    final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
-    final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
-        .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
-    final HepPlanner augmentMaterializationPlanner = new HepPlanner(
-        augmentMaterializationProgram.build());
-    augmentMaterializationPlanner.setRoot(materialization.queryRel);
-    final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
-    return new RelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName);
-  }
-
   public List<Table> getAllMaterializedViewObjectsForRewriting() throws HiveException {
     try {
-      return Lists.transform(getMSC().getAllMaterializedViewObjectsForRewriting(),
-          new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
-            @Override
-            public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
-              return new Table(table);
-            }
-          }
-      );
+      return getMSC().getAllMaterializedViewObjectsForRewriting()
+          .stream()
+          .map(Table::new)
+          .collect(Collectors.toList());
     } catch (Exception e) {
       throw new HiveException(e);
     }

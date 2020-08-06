@@ -84,7 +84,6 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
@@ -270,6 +269,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
@@ -2184,46 +2184,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
-        materializations = Lists.transform(materializations,
-            new Function<RelOptMaterialization, RelOptMaterialization>() {
-              @Override
-              public RelOptMaterialization apply(RelOptMaterialization materialization) {
-                final RelNode viewScan = materialization.tableRel;
-                final RelNode newViewScan;
-                if (viewScan instanceof Project) {
-                  // There is a Project on top (due to nullability)
-                  final Project pq = (Project) viewScan;
-                  newViewScan = HiveProject.create(optCluster, copyNodeScan(pq.getInput()),
-                      pq.getChildExps(), pq.getRowType(), Collections.emptyList());
-                } else {
-                  newViewScan = copyNodeScan(viewScan);
-                }
-                return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-                    materialization.qualifiedTableName);
-              }
-
-              private RelNode copyNodeScan(RelNode scan) {
-                final RelNode newScan;
-                if (scan instanceof DruidQuery) {
-                  final DruidQuery dq = (DruidQuery) scan;
-                  // Ideally we should use HiveRelNode convention. However, since Volcano planner
-                  // throws in that case because DruidQuery does not implement the interface,
-                  // we set it as Bindable. Currently, we do not use convention in Hive, hence that
-                  // should be fine.
-                  // TODO: If we want to make use of convention (e.g., while directly generating operator
-                  // tree instead of AST), this should be changed.
-                  newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
-                      scan.getTable(), dq.getDruidTable(), ImmutableList.of(dq.getTableScan()),
-                      DruidSqlOperatorConverter.getDefaultMap());
-                } else {
-                  newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-                      (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
-                      null, false, false);
-                }
-                return newScan;
-              }
-            }
-        );
+        materializations = materializations.stream().map(materialization -> {
+          final RelNode viewScan = materialization.tableRel;
+          final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
+              optCluster, viewScan);
+          return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+              materialization.qualifiedTableName);
+        }).collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }
