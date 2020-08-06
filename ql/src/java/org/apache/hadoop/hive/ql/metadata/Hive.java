@@ -476,6 +476,12 @@ public class Hive {
     return get(true);
   }
 
+  public static Hive get(IMetaStoreClient msc) throws HiveException, MetaException {
+    Hive hive = get(true);
+    hive.setMSC(msc);
+    return hive;
+  }
+
   public static Hive get(boolean doRegisterAllFns) throws HiveException {
     return getInternal(null, false, false, doRegisterAllFns);
   }
@@ -1477,9 +1483,12 @@ public class Hive {
    * @return
    * @throws LockException
    */
-  private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
+  public ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
     ValidWriteIdList validWriteIdList = null;
+    LOG.info(" SessionState.get() : " + SessionState.get());
+    LOG.info(" SessionState.get().getTxnMgr() : " + SessionState.get().getTxnMgr());
     long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+    LOG.info(" SessionState.get().getTxnMgr().getCurrentTxnId() : " + SessionState.get().getTxnMgr().getCurrentTxnId());
     if (txnId > 0) {
       validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
     }
@@ -3258,9 +3267,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public org.apache.hadoop.hive.metastore.api.Partition getPartition(String dbName, String tableName,
+  public org.apache.hadoop.hive.metastore.api.Partition getPartition(Table t, String dbName, String tableName,
       List<String> params) throws HiveException {
-    Table t = getTable(dbName, tableName);
     try {
       GetPartitionRequest req = new GetPartitionRequest();
       req.setDbName(dbName);
@@ -4022,12 +4030,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
               new ArrayList<>();
       ValidWriteIdList validWriteIdList = null;
-      if (AcidUtils.isTransactionalTable(tbl)) {
-        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-      }
 
       PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
-              validWriteIdList != null ? validWriteIdList.toString() : null);
+              null);
+
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(tbl.getTTable().getId());
+      }
 
       boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
       partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
@@ -5290,6 +5301,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       syncMetaStoreClient = new SynchronizedMetaStoreClient(getMSC(true, false));
     }
     return syncMetaStoreClient;
+  }
+
+    /**
+   * @return the metastore client for the current thread
+   * @throws MetaException
+   */
+  @LimitedPrivate(value = {"Hive"})
+  @Unstable
+  public synchronized void setMSC(IMetaStoreClient client) throws MetaException {
+    metaStoreClient = client;
   }
 
   /**
