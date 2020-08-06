@@ -388,7 +388,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = InvalidObjectException.class)
   public void testCreateTableInvalidTableName() throws Exception {
     Table table = testTables[0];
-    table.setTableName("test_table;");
+    table.setTableName("test§table;");
 
     client.createTable(table);
   }
@@ -943,7 +943,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void testAlterTableInvalidTableNameInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();
-    newTable.setTableName("test_table;");
+    newTable.setTableName("test§table;");
     client.alter_table(originalTable.getDbName(), originalTable.getTableName(), newTable);
   }
 

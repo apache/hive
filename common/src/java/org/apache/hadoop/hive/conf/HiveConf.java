@@ -4072,10 +4072,16 @@ public class HiveConf extends Configuration {
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
 
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
-        new StringSet("none", "column"),
-        "Whether to use quoted identifier. 'none' or 'column' can be used. \n" +
-        "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
-        "  column: implies column names can contain any character."
+        new StringSet("none", "column", "standard"),
+        "Whether to use quoted identifier. 'none', 'column', and 'standard' can be used. \n" +
+        "  none: Quotation of identifiers and special characters in identifiers are not allowed but regular " +
+        "expressions in backticks are supported for column names.\n" +
+        "  column: Use the backtick character to quote identifiers having special characters. `col1` " +
+        "Use single quotes to quote string literals. 'value' " +
+        "Double quotes are also accepted but not recommended." +
+        "  standard: SQL standard way to quote identifiers. " +
+        "Use double quotes to quote identifiers having special characters \"col1\" " +
+        "and single quotes for string literals. 'value'"
     ),
     /**
      * @deprecated Use MetastoreConf.SUPPORT_SPECIAL_CHARACTERS_IN_TABLE_NAMES
@@ -4084,19 +4090,19 @@ public class HiveConf extends Configuration {
     HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
         + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
-        + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
-        + "The default value is true."),
+        + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
+        + " quoted table names.\nThe default value is true."),
     // This config is temporary and will be deprecated later
     CREATE_TABLE_AS_EXTERNAL("hive.create.as.external.legacy", false,
         "When this flag set to true. it will ignore hive.create.as.acid and hive.create.as.insert.only,"
-        + "create external purge table by default."),
+            + "create external purge table by default."),
     /**
      * Expose MetastoreConf.CREATE_TABLES_AS_ACID in HiveConf
      * so user can set hive.create.as.acid in session level
      */
     CREATE_TABLES_AS_ACID("hive.create.as.acid", false,
         "Whether the eligible tables should be created as full ACID by default. Does \n" +
-        "not apply to external tables, the ones using storage handlers, etc."),
+            "not apply to external tables, the ones using storage handlers, etc."),
     HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
         "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
         "not apply to external tables, the ones using storage handlers, etc."),

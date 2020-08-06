@@ -6,6 +6,9 @@ set hive.strict.checks.cartesian.product=false;
 
 -- SORT_QUERY_RESULTS
 
+create database `db~!@#$%^&*(),<>`;
+use `db~!@#$%^&*(),<>`;
+
 create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table `//cbo_t2`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table `cbo_/t3////`(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
@@ -49,7 +52,7 @@ FIELDS TERMINATED BY '|';
 
 LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE `line/item`;
 
-create table `src/_/cbo` as select * from src;
+create table `src/_/cbo` as select * from default.src;
 
 analyze table `c/b/o_t1` partition (dt) compute statistics;
 
@@ -109,11 +112,11 @@ set hive.auto.convert.join=false;
 
 -- 21. Test groupby is empty and there is no other cols in aggr
 
-select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
+select unionsrc.key FROM (select 'tst1' as key, count(1) as value from default.src) unionsrc;
 
 
 
-select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from default.src) unionsrc;
 
 
 
@@ -1061,15 +1064,15 @@ select * from (select max(c_int) over (partition by key order by value Rows UNBO
 
 select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from `c/b/o_t1`) `c/b/o_t1`;
 
-select *, rank() over(partition by key order by value) as rr from src1;
+select *, rank() over(partition by key order by value) as rr from default.src1;
 
-select *, rank() over(partition by key order by value) from src1;
+select *, rank() over(partition by key order by value) from default.src1;
 
-insert into table `src/_/cbo` select * from src;
+insert into table `src/_/cbo` select * from default.src;
 
 select * from `src/_/cbo` limit 1;
 
-insert overwrite table `src/_/cbo` select * from src;
+insert overwrite table `src/_/cbo` select * from default.src;
 
 select * from `src/_/cbo` limit 1;
 
@@ -1079,3 +1082,5 @@ insert into `t//` values(1);
 insert into `t//` values(null);
 analyze table `t//` compute statistics;
 explain select * from `t//`;
+
+drop database `db~!@#$%^&*(),<>` cascade;

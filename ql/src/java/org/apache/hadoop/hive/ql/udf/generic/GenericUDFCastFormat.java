@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.HiveParser_IdentifiersParser;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -75,11 +75,11 @@ public class GenericUDFCastFormat extends GenericUDF implements Serializable {
 
   @VisibleForTesting
   static final Map<Integer, String> OUTPUT_TYPES = ImmutableMap.<Integer, String>builder()
-      .put(HiveParser_IdentifiersParser.TOK_STRING, serdeConstants.STRING_TYPE_NAME)
-      .put(HiveParser_IdentifiersParser.TOK_VARCHAR, serdeConstants.VARCHAR_TYPE_NAME)
-      .put(HiveParser_IdentifiersParser.TOK_CHAR, serdeConstants.CHAR_TYPE_NAME)
-      .put(HiveParser_IdentifiersParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME)
-      .put(HiveParser_IdentifiersParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME).build();
+      .put(HiveParser.TOK_STRING, serdeConstants.STRING_TYPE_NAME)
+      .put(HiveParser.TOK_VARCHAR, serdeConstants.VARCHAR_TYPE_NAME)
+      .put(HiveParser.TOK_CHAR, serdeConstants.CHAR_TYPE_NAME)
+      .put(HiveParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME)
+      .put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME).build();
 
   private transient HiveSqlDateTimeFormatter formatter;
   private transient PrimitiveObjectInspector outputOI;

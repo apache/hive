@@ -1406,7 +1406,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(db.getName(), null)) {
+      if (!MetaStoreUtils.validateName(db.getName(), conf)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
 
