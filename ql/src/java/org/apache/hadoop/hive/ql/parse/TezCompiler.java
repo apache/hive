@@ -1907,8 +1907,11 @@ public class TezCompiler extends TaskCompiler {
         TableScanOperator ts = sjInfo.getTsOp();
         RuntimeValuesInfo rti = procCtx.parseContext.getRsToRuntimeValuesInfoMap().get(rs);
         List<ExprNodeDesc> targetColumns = rti.getTargetColumns();
-        // In multi column semijoin branches the last column of the SEL operator is hash(c1, c2, ..., cn)
-        // so we shouldn't consider it.
+        // In semijoin branches the SEL operator has the following forms:
+        // SEL[c1] - single column semijoin reduction
+        // SEL[c1, c2,..., ck, hash(c1, c2,...,ck)] - multi column semijoin reduction
+        // The source columns in the above cases are c1, c2,...,ck.
+        // We need to exclude the hash(...) expression, if it is present.
         List<ExprNodeDesc> sourceColumns = sel.getConf().getColList().subList(0, targetColumns.size());
 
         if (LOG.isDebugEnabled()) {
