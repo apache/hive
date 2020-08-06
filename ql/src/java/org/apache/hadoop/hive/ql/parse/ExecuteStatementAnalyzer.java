@@ -194,11 +194,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
 
     List<ExprNodeDesc> exprList = new ArrayList<>();
     for(ExprNodeDesc child: expr.getChildren()) {
-      //if(child instanceof ExprDynamicParamDesc) {
-      //  child = getConstant((ExprDynamicParamDesc)child, typeInfo, paramMap);
-      //} else {
-        child = replaceDynamicParamsWithConstant(child, typeInfo, paramMap);
-      //}
+      child = replaceDynamicParamsWithConstant(child, typeInfo, paramMap);
       exprList.add(child);
     }
     expr.getChildren().clear();
@@ -267,7 +263,7 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
       bindDynamicParams(parameterMap);
 
       // reset prepare flag
-      this.isPrepareQuery = false;
+      this.prepareQuery = false;
 
       // reset config
       this.conf.syncFromConf(cachedPlan.getQueryState().getConf());

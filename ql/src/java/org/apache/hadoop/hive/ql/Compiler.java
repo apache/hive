@@ -340,7 +340,7 @@ public class Compiler {
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
     // this is required so that later driver can skip executing prepare queries
-    if (sem.getIsPrepareQuery()) {
+    if (sem.isPrepareQuery()) {
       plan.setPrepareQuery(true);
     }
     return plan;

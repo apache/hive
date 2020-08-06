@@ -65,7 +65,7 @@ public class PrepareStatementAnalyzer extends CalcitePlanner {
 
     // need to mark this as prepared query so that compiler later can skip running it
     // and skip initializing tasks etc.
-    this.isPrepareQuery = true;
+    this.prepareQuery = true;
 
     //save the plan, skip saving for explain
     if (this.ctx.getExplainConfig() == null) {
