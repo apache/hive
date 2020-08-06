@@ -12,6 +12,11 @@ explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1
 explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1';
 
+create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```(` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string);
+describe ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```;
+show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```;
+select ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` from ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```;
+
 -- case insensitive
 explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1';
