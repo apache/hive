@@ -1745,24 +1745,32 @@ public class TezCompiler extends TaskCompiler {
     return selKeyCardinality / (double) keyDomainCardinality;
   }
 
-  private static double getBloomFilterBenefit(
-      SelectOperator sel, List<ExprNodeDesc> selExpr,
-      Statistics filStats, List<ExprNodeDesc> tsExpr) {
+  /**
+   * Computes the benefit of applying the bloom filter.
+   * <p>
+   * The benefit is defined as the number of tuples that are filtered/removed from the bloom.
+   * </p>
+   */
+  private static double getBloomFilterBenefit(SelectOperator sel, List<ExprNodeDesc> selExpr, Statistics filStats,
+      List<ExprNodeDesc> tsExpr) {
     if (sel.getStatistics() == null || filStats == null) {
       LOG.debug("No stats available to compute BloomFilter benefit");
       return -1;
     }
-    double selectivity = 0.0;
+    // Find the semijoin column with the smallest number of matches and keep its selectivity
+    double selectivity = 1.0;
     for (int i = 0; i < tsExpr.size(); i++) {
-      selectivity = Math.max(selectivity, getBloomFilterSelectivity(sel, selExpr.get(i), filStats, tsExpr.get(i)));
+      selectivity = Math.min(selectivity, getBloomFilterSelectivity(sel, selExpr.get(i), filStats, tsExpr.get(i)));
     }
-    // Increase the max selectivity by 5% for each additional column in the semi-join.
-    // Consider the case of a semi-join with 2 columns SJ(author.name,author.age) and a semi-join with 1 column
-    // SJ(author.name). Intuitively even if the max selectivity of both is 0.8 the semi-join with multiple columns
-    // is most likely more selective.
-    selectivity += selectivity * (tsExpr.size() - 1) * 0.05;
-    // Selectivity cannot be greater than 1.0
-    selectivity = Math.min(1.0, selectivity);
+    // Decrease the min selectivity by 5% for each additional column in the semijoin.
+    // Consider the following semijoins:
+    //  SJ1(author.name, author.age);
+    //  SJ2(author.name).
+    // Intuitively even if the min selectivity of both is 0.8 the semijoin with two columns (SJ1)
+    // will match less tuples than the semijoin with one column (SJ2).
+    selectivity -= selectivity * (tsExpr.size() - 1) * 0.05;
+    // Selectivity cannot be less than 0.0
+    selectivity = Math.max(0.0, selectivity);
     // Benefit (rows filtered from ts): (1 - selectivity) * # ts rows
     return filStats.getNumRows() * (1 - selectivity);
   }
