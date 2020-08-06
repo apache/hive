@@ -438,6 +438,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       hive_metastoreConstants.TABLE_BUCKETING_VERSION
   };
 
+  private int subQueryExpressionAliasCounter = 0;
+
   static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -607,7 +609,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
+  void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
       throws SemanticException {
 
     assert (ast.getToken() != null);
@@ -671,7 +673,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           function.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
         function = (ASTNode)function.getChild(0);
       }
-      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns, null);
+      doPhase1GetAllAggregations(function, qb, aggregationTrees, wdwFns, null);
     }
 
     // window based aggregations are handled differently
@@ -697,6 +699,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return aggregationTrees;
+  }
+
+  private void doPhase1WhereClause(ASTNode expressionTree, QB qb) throws SemanticException {
+    int exprTokenType = expressionTree.getToken().getType();
+    if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
+      qb.addSubqExprAlias(expressionTree, this);
+      return;
+    }
+
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      doPhase1WhereClause((ASTNode) expressionTree.getChild(i), qb);
+    }
   }
 
   /**
@@ -905,13 +919,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          the aggregation subtree.
    * @throws SemanticException
    */
-  private void doPhase1GetAllAggregations(ASTNode expressionTree,
+  private void doPhase1GetAllAggregations(ASTNode expressionTree, QB qb,
                                           Map<String, ASTNode> aggregations, List<ASTNode> wdwFns,
                                           ASTNode wndParent) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
     if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
       //since now we have scalar subqueries we can get subquery expression in having
       // we don't want to include aggregate from within subquery
+      qb.addSubqExprAlias(expressionTree, this);
       return;
     }
 
@@ -928,7 +943,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // there are aggregation functions within
         wdwFns.add(expressionTree);
         for(Node child : expressionTree.getChildren()) {
-          doPhase1GetAllAggregations((ASTNode) child, aggregations, wdwFns, expressionTree);
+          doPhase1GetAllAggregations((ASTNode) child, qb, aggregations, wdwFns, expressionTree);
         }
         return;
       } else if (lastChild.getType() == HiveParser.TOK_WITHIN_GROUP) {
@@ -959,7 +974,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
-      doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
+      doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i), qb,
           aggregations, wdwFns, wndParent);
     }
   }
@@ -1635,6 +1650,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty()) {
           queryProperties.setFilterWithSubQuery(true);
         }
+        doPhase1WhereClause(ast, qb);
         break;
 
       case HiveParser.TOK_INSERT_INTO:
@@ -2043,7 +2059,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int threshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);
       for (CTEClause cte : Sets.newHashSet(aliasToCTEs.values())) {
         if (threshold >= 0 && cte.reference >= threshold) {
-          cte.materialize = true;
+          cte.materialize = !HiveConf.getBoolVar(conf, ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY)
+              || cte.qbExpr.getQB().getParseInfo().isFullyAggregate();
         }
       }
     } catch (HiveException e) {
@@ -2094,6 +2111,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     for (String alias : qb.getSubqAliases()) {
       gatherCTEReferences(qb.getSubqForAlias(alias), current);
+    }
+    for (String alias : qb.getSubqExprAliases()) {
+      gatherCTEReferences(qb.getSubqExprForAlias(alias), current);
     }
   }
 
