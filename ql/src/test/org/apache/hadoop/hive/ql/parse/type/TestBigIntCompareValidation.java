@@ -70,7 +70,7 @@ public class TestBigIntCompareValidation {
     try {
       TypeCheckCtx ctx = new TypeCheckCtx(null);
       processor.validateUDF(null, false, ctx, functionInfo,
-          Lists.newArrayList(constant, nodeDesc), functionInfo.getGenericUDF());
+          Lists.newArrayList(constant, nodeDesc));
       Assert.fail("Should throw exception as comparing a bigint and a " + nodeDesc.getTypeString());
     } catch (Exception e) {
       Assert.assertEquals(errorMsg, e.getMessage());

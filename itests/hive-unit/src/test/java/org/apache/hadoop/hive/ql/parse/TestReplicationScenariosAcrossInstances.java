@@ -1000,7 +1000,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "clustered by(key) into 2 buckets stored as orc")
             .run("create table table4 (i int, j int)")
             .run("insert into table4 values (1,2)")
-            .dump(primaryDbName, Collections.emptyList());
+            .dump(primaryDbName, Collections.singletonList("'hive.repl.include.external.tables'='false'"));
 
     String hiveDumpDir = incremental.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     Path path = new Path(hiveDumpDir);
@@ -1009,7 +1009,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     int numEvents = fileStatus.length - 3; //for _metadata, _finished_dump and _events_dump
 
     replica.load(replicatedDbName, primaryDbName,
-        Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
+        Arrays.asList("'hive.repl.approx.max.load.tasks'='1','hive.repl.include.external.tables'='false'"))
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"table1", "table2", "table3", "table4", "table5" })

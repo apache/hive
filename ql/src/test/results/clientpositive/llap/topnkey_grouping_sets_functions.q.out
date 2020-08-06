@@ -90,7 +90,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 568 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col3 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -218,7 +218,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col3 (type: int)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -346,7 +346,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col3 (type: int)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

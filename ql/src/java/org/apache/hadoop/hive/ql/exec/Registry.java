@@ -293,9 +293,10 @@ public class Registry {
     if (registerToSession) {
       String qualifiedName = FunctionUtils.qualifyFunctionName(
           functionName, SessionState.get().getCurrentDatabase().toLowerCase());
-      if (registerToSessionRegistry(qualifiedName, function) != null) {
+      FunctionInfo newFunction = registerToSessionRegistry(qualifiedName, function);
+      if (newFunction != null) {
         addFunction(functionName, function);
-        return function;
+        return newFunction;
       }
     } else {
         addFunction(functionName, function);

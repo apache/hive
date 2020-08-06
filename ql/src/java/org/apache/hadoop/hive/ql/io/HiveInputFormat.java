@@ -316,7 +316,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return inputFormat;
   }
 
-  private static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
+  public static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
     String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Checking " + ifName + " against " + formatList);

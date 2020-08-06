@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -112,7 +111,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
+public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
 
   SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
@@ -1203,20 +1202,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
-  public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result,
-      String validWriteIdList) throws TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(), req.getTblName());
     if (table == null) {
-      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr,
-          defaultPartitionName, maxParts, result, validWriteIdList);
+      return super.listPartitionsSpecByExpr(req, result);
     }
     assert result != null;
 
     result.addAll(
         MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table,
-            getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
-                generateJDOFilter(table, expr, defaultPartitionName)), maxParts)));
+            getPartitionsForMaxParts(req.getTblName(), getPartitionedTempTable(table).listPartitionsByFilter(
+                generateJDOFilter(table, req.getExpr(), req.getDefaultPartitionName())), req.getMaxParts())));
     return result.isEmpty();
   }
 

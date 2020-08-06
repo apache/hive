@@ -29,6 +29,7 @@ import java.util.Map;
 /**
  * Tests statistics replication for ACID tables.
  */
+@org.junit.Ignore("HIVE-23982")
 public class TestStatsReplicationScenariosMigrationNoAutogather extends TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();
