@@ -2061,7 +2061,7 @@ public class TezCompiler extends TaskCompiler {
               // Lookup nDVs on TS side.
               RuntimeValuesInfo rti = procCtx.parseContext
                       .getRsToRuntimeValuesInfoMap().get(rs);
-              // TODO Adapt for multi column semi-joins.
+              // TODO Handle multi column semi-joins as part of HIVE-23934
               ExprNodeDesc tsExpr = rti.getTargetColumns().get(0);
               FilterOperator fil = (FilterOperator) (ts.getChildOperators().get(0));
               Statistics filStats = fil.getStatistics();
