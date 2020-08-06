@@ -41,11 +41,12 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignature> {
+public class ImpalaFunctionSignature {
 
   private enum SqlTypeOrdering {
     CHAR,
@@ -103,7 +104,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
 
     for (String fnName : CAST_CHECK_BUILTINS_INSTANCE.keySet()) {
       List<ImpalaFunctionSignature> ifsList = CAST_CHECK_BUILTINS_INSTANCE.get(fnName);
-      Collections.sort(ifsList);
+      Collections.sort(ifsList, new SignatureComparator());
     }
   }
 
@@ -158,7 +159,7 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
     return hasVarArgs;
   }
 
-  /** 
+  /**
    * Checks that the function to resolve matches the signature in the file exactly, with
    * no conversions. If the return type is present, that will be matched too. If it is not
    * present (set to null), the return type will be ignored when trying to match.
@@ -242,38 +243,6 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
   @Override
   public String toString() {
     return retType + " " + func + "(" + StringUtils.join(argTypes, ", ") + ")";
-  }
-
-  @Override
-  public int compareTo(ImpalaFunctionSignature other) {
-    if (this.retType == null) {
-      return -1;
-    }
-
-    if (other.retType == null) {
-      return 1;
-    }
-
-    if (this.argTypes.size() == 0) {
-      if (other.argTypes.size() == 0) {
-        return 0;
-      }
-      return -1;
-    }
-
-    if (other.argTypes.size() == 0) {
-      return 1;
-    }
-
-    // Check that the types match.
-    // The pattern of the ordinal string for the type needs to be normalized.
-    // It is possible the type can show up like "DECIMAL(32,8)", and we only
-    // want the DECIMAL part.
-    String thisOrdinalString = this.argTypes.get(0).toString().split("\\(")[0];
-    String otherOrdinalString = other.argTypes.get(0).toString().split("\\(")[0];
-    int thisOrdinal = SqlTypeOrdering.valueOf(thisOrdinalString).ordinal();
-    int otherOrdinal = SqlTypeOrdering.valueOf(otherOrdinalString).ordinal();
-    return Integer.compare(thisOrdinal, otherOrdinal);
   }
 
   private static boolean verifyCaseParams(RelDataType typeToMatch, List<RelDataType> inputs) {
@@ -478,5 +447,38 @@ public class ImpalaFunctionSignature implements Comparable<ImpalaFunctionSignatu
         new ImpalaFunctionSignature("cast", Lists.newArrayList(castFrom), castTo);
     ScalarFunctionDetails details = ScalarFunctionDetails.SCALAR_BUILTINS_MAP.get(castSig);
     return details != null && details.castUp;
+  }
+
+  // Comparator for ImpalaFunctionSignature.  This comparator is only used to determine
+  // the order of usage when the function name matches for casting purposes.  The order
+  // is needed for instances when we could cast to both a SMALLINT and INT, but we would
+  // prefer to use the SMALLINT function, so we put the SMALLINT function before the INT
+  // function.
+  public static class SignatureComparator implements Comparator<ImpalaFunctionSignature> {
+    @Override
+    public int compare(ImpalaFunctionSignature o1, ImpalaFunctionSignature o2) {
+      Preconditions.checkState(o1.func.equals(o2.func));
+
+      // In the cases where the prototypes have different argument sizes, the
+      // ordering doesn't really matter, because the function with the wrong
+      // number of parameters will ultimately be rejected anyway.
+      if (o1.argTypes.size() != o2.argTypes.size()) {
+        return o2.argTypes.size() - o1.argTypes.size();
+      }
+
+      if (o1.argTypes.size() == 0) {
+        return 0;
+      }
+
+      // Check that the types match.
+      // The pattern of the ordinal string for the type needs to be normalized.
+      // It is possible the type can show up like "DECIMAL(32,8)", and we only
+      // want the DECIMAL part.
+      String thisOrdinalString = o1.argTypes.get(0).toString().split("\\(")[0];
+      String otherOrdinalString = o2.argTypes.get(0).toString().split("\\(")[0];
+      int thisOrdinal = SqlTypeOrdering.valueOf(thisOrdinalString).ordinal();
+      int otherOrdinal = SqlTypeOrdering.valueOf(otherOrdinalString).ordinal();
+      return Integer.compare(thisOrdinal, otherOrdinal);
+    }
   }
 }
