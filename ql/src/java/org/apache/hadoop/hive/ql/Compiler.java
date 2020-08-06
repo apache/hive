@@ -106,6 +106,7 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+      initializeFetchTask(plan);
       authorize(sem);
       explainOutput(sem, plan);
     } catch (CommandProcessorException cpe) {
@@ -338,12 +339,22 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
+    // this is required so that later driver can skip executing prepare queries
+    if (sem.isPrepareQuery()) {
+      plan.setPrepareQuery(true);
+    }
+    return plan;
+  }
+
+  protected void initializeFetchTask(QueryPlan plan) {
+    // for PREPARE statement we should avoid initializing operators
+    if (plan.isPrepareQuery()) {
+      return;
+    }
     // initialize FetchTask right here
     if (plan.getFetchTask() != null) {
       plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
     }
-
-    return plan;
   }
 
   /**

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -223,6 +224,15 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   protected ExprNodeConstantDesc createNullConstantExpr() {
     return new ExprNodeConstantDesc(TypeInfoFactory.
         getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected ExprDynamicParamDesc createDynamicParamExpr(int index) {
+    return new ExprDynamicParamDesc(TypeInfoFactory.
+        getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), index,null);
   }
 
   /**

@@ -182,7 +182,7 @@ public class TypeCheckProcFactory<T> {
 
     SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
     astNodeToProcessor.put(HiveParser.TOK_NULL, getNullExprProcessor());
-
+    astNodeToProcessor.put(HiveParser.TOK_PARAMETER, getDynamicParameterProcessor());
     astNodeToProcessor.put(HiveParser.Number, getNumExprProcessor());
     astNodeToProcessor.put(HiveParser.IntegralLiteral, getNumExprProcessor());
     astNodeToProcessor.put(HiveParser.NumberLiteral, getNumExprProcessor());
@@ -273,12 +273,41 @@ public class TypeCheckProcFactory<T> {
   }
 
   /**
+   * Processor for processing Dynamic expression.
+   */
+  public class DynamicParameterProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ASTNode node = (ASTNode)nd;
+      String indexStr = ((ASTNode)(node)).getText();
+      int index = Integer.parseInt(indexStr);
+      return exprFactory.createDynamicParamExpr(index);
+    }
+
+  }
+
+
+  /**
    * Factory method to get NullExprProcessor.
    *
    * @return NullExprProcessor.
    */
   protected NullExprProcessor getNullExprProcessor() {
     return new NullExprProcessor();
+  }
+
+  /**
+   * Factory method to get {@link DynamicParameterProcessor}.
+   */
+  protected DynamicParameterProcessor getDynamicParameterProcessor() {
+    return new DynamicParameterProcessor();
   }
 
   /**

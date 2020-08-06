@@ -114,6 +114,11 @@ public abstract class ExprFactory<T> {
   protected abstract T createNullConstantExpr();
 
   /**
+   * Creates a dynamic parameter expression with void type.
+   */
+  protected abstract T createDynamicParamExpr(int index);
+
+  /**
    * Creates a boolean constant expression from input value.
    */
   protected abstract T createBooleanConstantExpr(String value);
