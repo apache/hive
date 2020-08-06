@@ -930,10 +930,7 @@ public class TezCompiler extends TaskCompiler {
       Set<ReduceSinkOperator> workRSOps = new HashSet<>();
       Set<TerminalOperator<?>> workTerminalOps = new HashSet<>();
       // Get the SEL Op in the semijoin-branch, SEL->GBY1->RS1->GBY2->RS2
-      Operator<?> selOp = rs.getParentOperators().get(0)
-              .getParentOperators().get(0)
-              .getParentOperators().get(0)
-              .getParentOperators().get(0);
+      SelectOperator selOp = OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0);
       OperatorUtils.findWorkOperatorsAndSemiJoinEdges(selOp,
               pCtx.getRsToSemiJoinBranchInfo(), workRSOps, workTerminalOps);
 
@@ -1891,17 +1888,7 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
         // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
-        // Get to the SelectOperator ancestor
-        SelectOperator sel = null;
-        for (Operator<?> currOp = rs; currOp.getParentOperators().size() > 0; currOp = currOp.getParentOperators().get(0)) {
-          if (currOp instanceof SelectOperator) {
-            sel = (SelectOperator) currOp;
-            break;
-          }
-        }
-        if (sel == null) {
-          throw new SemanticException("Unexpected error - could not find SEL ancestor from semijoin branch of " + rs);
-        }
+        SelectOperator sel = OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0);
 
         // Check the ndv/rows from the SEL vs the destination tablescan the semijoin opt is going to.
         TableScanOperator ts = sjInfo.getTsOp();
@@ -2052,11 +2039,7 @@ public class TezCompiler extends TaskCompiler {
                 ((AppMasterEventOperator) op).getConf() instanceof DynamicPruningEventDesc) {
           // DPP. Now look up nDVs on both sides to see the selectivity.
           // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
-          SelectOperator selOp = (SelectOperator)
-                  (rs.getParentOperators().get(0)
-                          .getParentOperators().get(0)
-                          .getParentOperators().get(0)
-                          .getParentOperators().get(0));
+          SelectOperator selOp = OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0);
 
           try {
             // Get nDVs on Semijoin edge side
