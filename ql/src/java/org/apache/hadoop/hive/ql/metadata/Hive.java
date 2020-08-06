@@ -1483,12 +1483,9 @@ public class Hive {
    * @return
    * @throws LockException
    */
-  public ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
+  private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
     ValidWriteIdList validWriteIdList = null;
-    LOG.info(" SessionState.get() : " + SessionState.get());
-    LOG.info(" SessionState.get().getTxnMgr() : " + SessionState.get().getTxnMgr());
     long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
-    LOG.info(" SessionState.get().getTxnMgr().getCurrentTxnId() : " + SessionState.get().getTxnMgr().getCurrentTxnId());
     if (txnId > 0) {
       validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
     }
@@ -5303,13 +5300,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return syncMetaStoreClient;
   }
 
-    /**
-   * @return the metastore client for the current thread
+  /**
+   * Sets the metastore client for the current thread
    * @throws MetaException
    */
-  @LimitedPrivate(value = {"Hive"})
+  @LimitedPrivate(value = { "Hive" })
   @Unstable
-  public synchronized void setMSC(IMetaStoreClient client) throws MetaException {
+  public synchronized void setMSC(IMetaStoreClient client)
+      throws MetaException {
     metaStoreClient = client;
   }
 
