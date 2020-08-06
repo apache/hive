@@ -70,7 +70,6 @@ public class UDFArgumentException extends SemanticException {
     this.argTypeInfos = argTypeInfos;
     this.methods = methods;
   }
-  //HIVE-23896 remove unnecessary parameter
   private static String getMessage(String message, List<Method> methods) {
     StringBuilder sb = new StringBuilder();
     sb.append(message);
