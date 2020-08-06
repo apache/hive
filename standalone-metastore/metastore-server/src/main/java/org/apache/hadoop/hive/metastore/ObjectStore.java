@@ -9242,7 +9242,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
       LOG.debug("PartNames and/or ColNames are empty");
-      Collections.emptyList();
+      return Collections.emptyList();
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
