@@ -73,6 +73,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
 
 /**
@@ -115,9 +116,8 @@ public class SemiJoinReductionMerge extends Transform {
       TableScanOperator ts = smjEntry.getValue().getTsOp();
       // Semijoin optimization branch should look like <Parent>-SEL-GB1-RS1-GB2-RS2
       SelectOperator selOp = OperatorUtils.ancestor(smjEntry.getKey(), SelectOperator.class, 0, 0, 0, 0);
-      assert selOp != null;
-      assert selOp.getParentOperators().size() == 1;
       Operator<?> source = selOp.getParentOperators().get(0);
+      checkState(selOp.getParentOperators().size() == 1, "Semijoin branches should not have multiple parents");
       SJSourceTarget sjKey = new SJSourceTarget(source, ts);
       List<ReduceSinkOperator> ops = sameTableSJ.computeIfAbsent(sjKey, tableScanOperator -> new ArrayList<>());
       ops.add(smjEntry.getKey());
@@ -196,7 +196,7 @@ public class SemiJoinReductionMerge extends Transform {
     List<ExprNodeDesc> hashArgs = new ArrayList<>();
     for (ReduceSinkOperator rs : sjBranches) {
       RuntimeValuesInfo info = context.getRsToRuntimeValuesInfoMap().get(rs);
-      assert info.getTargetColumns().size() == 1;
+      checkState(info.getTargetColumns().size() == 1, "Cannot handle multi-column semijoin branches.");
       final ExprNodeDesc targetColumn = info.getTargetColumns().get(0);
       TypeInfo typeInfo = targetColumn.getTypeInfo();
       DynamicValue minDynamic = new DynamicValue(dynamicIds.poll(), typeInfo);
@@ -245,7 +245,7 @@ public class SemiJoinReductionMerge extends Transform {
     List<ExprNodeDesc> targetTableExpressions = new ArrayList<>();
     for (ReduceSinkOperator sjBranch : sjBranches) {
       RuntimeValuesInfo sjInfo = parseContext.getRsToRuntimeValuesInfoMap().get(sjBranch);
-      assert sjInfo.getTargetColumns().size() == 1;
+      checkState(sjInfo.getTargetColumns().size() == 1, "Cannot handle multi-column semijoin branches.");
       targetTableExpressions.add(sjInfo.getTargetColumns().get(0));
     }
     info.setTargetColumns(targetTableExpressions);
@@ -266,8 +266,7 @@ public class SemiJoinReductionMerge extends Transform {
     List<ColumnInfo> columnInfos = new ArrayList<>();
     Map<String, ExprNodeDesc> selectColumnExprMap = new HashMap<>();
     for (SelectOperator sel : selectOperators) {
-      assert sel.getConf().getColList() != null;
-      assert sel.getConf().getColList().size() == 1;
+      checkState(sel.getConf().getColList().size() == 1);
       ExprNodeDesc col = sel.getConf().getColList().get(0);
       String colName = HiveConf.getColumnInternalName(colDescs.size());
       colNames.add(colName);
