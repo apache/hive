@@ -49,7 +49,7 @@ import java.util.*;
  * This class is only used in test.
  */
 class TestTxnManager extends DummyTxnManager {
-  final static Character SEMICOLON = ':';
+  final static Character COLON = ':';
   final static Character DOLLAR = '$';
 
 
@@ -62,10 +62,10 @@ class TestTxnManager extends DummyTxnManager {
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
                                               String validTxnList) throws LockException {
     // Format : <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>
-    return new ValidTxnWriteIdList(getCurrentTxnId() + DOLLAR.toString() + "db.table" + SEMICOLON +
-        getCurrentTxnId() + SEMICOLON +
-        getCurrentTxnId() + SEMICOLON +
-        getCurrentTxnId() + SEMICOLON);
+    return new ValidTxnWriteIdList(getCurrentTxnId() + DOLLAR.toString() + "db.table" + COLON +
+        getCurrentTxnId() + COLON +
+        getCurrentTxnId() + COLON +
+        getCurrentTxnId() + COLON);
   }
 }
 

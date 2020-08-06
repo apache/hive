@@ -476,6 +476,7 @@ public class Hive {
     return get(true);
   }
 
+  @VisibleForTesting
   public static Hive get(IMetaStoreClient msc) throws HiveException, MetaException {
     Hive hive = get(true);
     hive.setMSC(msc);
@@ -5304,8 +5305,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * Sets the metastore client for the current thread
    * @throws MetaException
    */
-  @LimitedPrivate(value = { "Hive" })
-  @Unstable
+  @VisibleForTesting
   public synchronized void setMSC(IMetaStoreClient client)
       throws MetaException {
     metaStoreClient = client;
