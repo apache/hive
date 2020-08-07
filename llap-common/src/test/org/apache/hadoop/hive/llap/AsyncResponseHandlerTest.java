@@ -194,7 +194,7 @@ public class AsyncResponseHandlerTest {
   }
 
   private void assertTrueEventually(AssertTask assertTask) throws InterruptedException {
-    assertTrueEventually(assertTask, 10000);
+    assertTrueEventually(assertTask, 100000);
   }
 
   private void assertTrueEventually(AssertTask assertTask, int timeoutMillis) throws InterruptedException {
@@ -207,9 +207,7 @@ public class AsyncResponseHandlerTest {
         return;
       } catch (AssertionError e) {
         assertionError = e;
-        long millisUntilTimeout = endTime - System.currentTimeMillis();
-        sleep(millisUntilTimeout < 50 ? millisUntilTimeout : 50 );
-        continue;
+        sleep(50);
       }
     }
     throw assertionError;
