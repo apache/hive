@@ -185,17 +185,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> preCompactionRsBucket0 = testDataProvider.getBucketData(tblName, "536870912");
     List<String> preCompactionRsBucket1 = testDataProvider.getBucketData(tblName, "536936448");
     List<String> preCompactionRsBucket2 = testDataProvider.getBucketData(tblName, "537001984");
-    if (runsOnTez) { // Check bucket contents
-      Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0, preCompactionRsBucket0);
-      Assert.assertEquals("pre-compaction bucket 1", expectedRsBucket1, preCompactionRsBucket1);
-      Assert.assertEquals("pre-compaction bucket 2", expectedRsBucket2, preCompactionRsBucket2);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = preCompactionRsBucket0;
-      expectedRsBucket1 = preCompactionRsBucket1;
-      expectedRsBucket2 = preCompactionRsBucket2;
-    }
+    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0, preCompactionRsBucket0);
+    Assert.assertEquals("pre-compaction bucket 1", expectedRsBucket1, preCompactionRsBucket1);
+    Assert.assertEquals("pre-compaction bucket 2", expectedRsBucket2, preCompactionRsBucket2);
 
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
@@ -269,14 +261,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t6\t2\ttoday",
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":2}\t6\t3\ttoday",
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":3}\t6\t4\ttoday"));
-    if (runsOnTez) { // Check bucket contents
-      Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
-          testDataProvider.getBucketData(tblName, "536870912"));
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = testDataProvider.getBucketData(tblName, "536870912");
-    }
+    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
+        testDataProvider.getBucketData(tblName, "536870912"));
 
     // Run major compaction and cleaner for all 3 partitions
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true,
@@ -361,15 +347,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         "{\"writeid\":4,\"bucketid\":536936448,\"rowid\":2}\t6\t3\ttoday",
         "{\"writeid\":4,\"bucketid\":536936448,\"rowid\":3}\t6\t4\ttoday");
     List<String> rsBucket1 = dataProvider.getBucketData(tableName, "536936448");
-    if (runsOnTez) {
-      Assert.assertEquals(expectedRsBucket0, rsBucket0);
-      Assert.assertEquals(expectedRsBucket1, rsBucket1);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = rsBucket0;
-      expectedRsBucket1 = rsBucket1;
-    }
+    Assert.assertEquals(expectedRsBucket0, rsBucket0);
+    Assert.assertEquals(expectedRsBucket1, rsBucket1);
 
     // Run a compaction
     CompactorTestUtil
@@ -1413,17 +1392,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> rsBucket0PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  "
         + tblName + " where ROW__ID.bucketid = 536870912 and ds='today' order by a,b", driver);
     // Bucket 1, partition 'today'
-    List<String> rsBucket1PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  "
-        + tblName + " where ROW__ID.bucketid = 536936448 and ds='today' order by a,b", driver);
-    if (runsOnTez) {
-      Assert.assertEquals("pre-compaction read", expectedRsBucket0PtnToday, rsBucket0PtnToday);
-      Assert.assertEquals("pre-compaction read", expectedRsBucket1PtnToday, rsBucket1PtnToday);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0PtnToday = rsBucket0PtnToday;
-      expectedRsBucket1PtnToday = rsBucket1PtnToday;
-    }
+    List<String> rsBucket1PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+        + " where ROW__ID.bucketid = 536936448 and ds='today' order by a,b", driver);
+    Assert.assertEquals("pre-compaction read", expectedRsBucket0PtnToday, rsBucket0PtnToday);
+    Assert.assertEquals("pre-compaction read", expectedRsBucket1PtnToday, rsBucket1PtnToday);
 
     //  Run major compaction and cleaner
     CompactorTestUtil
