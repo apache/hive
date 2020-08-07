@@ -175,9 +175,6 @@ public class SemiJoinReductionMerge extends Transform {
         GenTezUtils.removeSemiJoinOperator(parseContext, rs, sjTargetTable);
         GenTezUtils.removeBranch(rs);
       }
-
-      // TODO How to associate multi-cols with gb ?
-      // parseContext.getColExprToGBMap().put(key, gb);
     }
     return parseContext;
   }
