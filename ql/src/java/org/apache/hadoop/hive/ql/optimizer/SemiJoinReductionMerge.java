@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -72,6 +73,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
@@ -103,25 +105,13 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
 public class SemiJoinReductionMerge extends Transform {
 
   public ParseContext transform(ParseContext parseContext) throws SemanticException {
-    Map<ReduceSinkOperator, SemiJoinBranchInfo> map = parseContext.getRsToSemiJoinBranchInfo();
-    if (map.isEmpty()) {
+    Map<ReduceSinkOperator, SemiJoinBranchInfo> allSemijoins = parseContext.getRsToSemiJoinBranchInfo();
+    if (allSemijoins.isEmpty()) {
       return parseContext;
     }
     HiveConf hiveConf = parseContext.getConf();
 
-    // Predictable iteration helps to avoid small changes in the plans
-    LinkedHashMap<SJSourceTarget, List<ReduceSinkOperator>> sameTableSJ = new LinkedHashMap<>();
-    for (Map.Entry<ReduceSinkOperator, SemiJoinBranchInfo> smjEntry : map.entrySet()) {
-      TableScanOperator ts = smjEntry.getValue().getTsOp();
-      // Semijoin optimization branch should look like <Parent>-SEL-GB1-RS1-GB2-RS2
-      SelectOperator selOp = OperatorUtils.ancestor(smjEntry.getKey(), SelectOperator.class, 0, 0, 0, 0);
-      Operator<?> source = selOp.getParentOperators().get(0);
-      checkState(selOp.getParentOperators().size() == 1, "Semijoin branches should not have multiple parents");
-      SJSourceTarget sjKey = new SJSourceTarget(source, ts);
-      List<ReduceSinkOperator> ops = sameTableSJ.computeIfAbsent(sjKey, tableScanOperator -> new ArrayList<>());
-      ops.add(smjEntry.getKey());
-    }
-    for (Map.Entry<SJSourceTarget, List<ReduceSinkOperator>> sjMergeCandidate : sameTableSJ.entrySet()) {
+    for (Entry<SJSourceTarget, List<ReduceSinkOperator>> sjMergeCandidate : createMergeCandidates(allSemijoins)) {
       final List<ReduceSinkOperator> sjBranches = sjMergeCandidate.getValue();
       if (sjBranches.size() < 2) {
         continue;
@@ -171,6 +161,26 @@ public class SemiJoinReductionMerge extends Transform {
       }
     }
     return parseContext;
+  }
+
+  /**
+   * Groups single column semijoin reducer branches together if they have the same source and target relation.
+   */
+  private static Collection<Map.Entry<SJSourceTarget, List<ReduceSinkOperator>>> createMergeCandidates(
+      Map<ReduceSinkOperator, SemiJoinBranchInfo> semijoins) {
+    // Predictable iteration helps to avoid small changes in the plans
+    LinkedHashMap<SJSourceTarget, List<ReduceSinkOperator>> sjGroups = new LinkedHashMap<>();
+    for (Map.Entry<ReduceSinkOperator, SemiJoinBranchInfo> smjEntry : semijoins.entrySet()) {
+      TableScanOperator ts = smjEntry.getValue().getTsOp();
+      // Semijoin optimization branch should look like <Parent>-SEL-GB1-RS1-GB2-RS2
+      SelectOperator selOp = OperatorUtils.ancestor(smjEntry.getKey(), SelectOperator.class, 0, 0, 0, 0);
+      Operator<?> source = selOp.getParentOperators().get(0);
+      checkState(selOp.getParentOperators().size() == 1, "Semijoin branches should not have multiple parents");
+      SJSourceTarget sjKey = new SJSourceTarget(source, ts);
+      List<ReduceSinkOperator> ops = sjGroups.computeIfAbsent(sjKey, tableScanOperator -> new ArrayList<>());
+      ops.add(smjEntry.getKey());
+    }
+    return sjGroups.entrySet();
   }
 
   /**
