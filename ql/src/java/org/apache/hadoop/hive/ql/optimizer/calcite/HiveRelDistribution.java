@@ -85,8 +85,11 @@ public class HiveRelDistribution implements RelDistribution {
     }
     List<Integer> newKeys = new ArrayList<>(keys.size());
 
-    // Instead of using a HashMap for lookup newKeys.add(mapping.getTargetOpt(key)); should be called but not all the
-    // mapping supports that. See HIVE-23963. Replace this when this is fixed in calcite.
+    if (Bug.CALCITE_4166_FIXED) {
+      throw new AssertionError("Remove logic in HiveRelDistribution when [CALCITE-4166] "
+          + "has been fixed and use newKeys.add(mapping.getTargetOpt(key)); instead.");
+    }
+
     Map<Integer, Integer> tmp = new HashMap<>(mapping.getSourceCount());
     for (IntPair aMapping : mapping) {
       tmp.put(aMapping.source, aMapping.target);
