@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -49,7 +51,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
@@ -134,14 +136,18 @@ public class SemiJoinReductionMerge extends Transform {
       for (ReduceSinkOperator rs : sjBranches) {
         selOps.add(OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0));
       }
+
+      long sjEntriesHint = extractBloomEntriesHint(sjBranches);
+
       SelectOperator selectOp = mergeSelectOps(sjMergeCandidate.getKey().source, selOps);
 
-      GroupByOperator gbPartialOp = createGroupBy(selectOp, selectOp, GroupByDesc.Mode.HASH, hiveConf);
+      GroupByOperator gbPartialOp = createGroupBy(selectOp, selectOp, GroupByDesc.Mode.HASH, sjEntriesHint, hiveConf);
 
       ReduceSinkOperator rsPartialOp = createReduceSink(gbPartialOp, NullOrdering.defaultNullOrder(hiveConf));
       rsPartialOp.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.QUICKSTART));
 
-      GroupByOperator gbCompleteOp = createGroupBy(selectOp, rsPartialOp, GroupByDesc.Mode.FINAL, hiveConf);
+      GroupByOperator gbCompleteOp =
+          createGroupBy(selectOp, rsPartialOp, GroupByDesc.Mode.FINAL, sjEntriesHint, hiveConf);
 
       ReduceSinkOperator rsCompleteOp = createReduceSink(gbCompleteOp, NullOrdering.defaultNullOrder(hiveConf));
 
@@ -174,6 +180,27 @@ public class SemiJoinReductionMerge extends Transform {
       // parseContext.getColExprToGBMap().put(key, gb);
     }
     return parseContext;
+  }
+
+  /**
+   * Extracts a hint about the number of expected entries in the composite bloom filter from the hints in the specified
+   * (single column) semijoin branches.
+   * <p>
+   * If none of the individual semijoin branches has hints then the method returns -1, otherwise it returns the max.
+   * </p>
+   */
+  private static long extractBloomEntriesHint(List<ReduceSinkOperator> sjBranches) {
+    long bloomEntries = -1;
+    for (ReduceSinkOperator rs : sjBranches) {
+      GroupByOperator gbOp = OperatorUtils.ancestor(rs, GroupByOperator.class, 0, 0, 0);
+      List<GenericUDAFBloomFilterEvaluator> blooms =
+          FunctionUtils.extractEvaluators(gbOp.getConf().getAggregators(), GenericUDAFBloomFilterEvaluator.class);
+      Preconditions.checkState(blooms.size() == 1);
+      if (blooms.get(0).hasHintEntries()) {
+        bloomEntries = Math.max(bloomEntries, blooms.get(0).getExpectedEntries());
+      }
+    }
+    return bloomEntries;
   }
 
   /**
@@ -336,7 +363,7 @@ public class SemiJoinReductionMerge extends Transform {
    * </p>
    */
   private static GroupByOperator createGroupBy(SelectOperator selectOp, Operator<?> parentOp, GroupByDesc.Mode gbMode,
-      HiveConf hiveConf) {
+      long bloomEntriesHint, HiveConf hiveConf) {
 
     final List<ExprNodeDesc> params;
     final GenericUDAFEvaluator.Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, false);
@@ -357,7 +384,7 @@ public class SemiJoinReductionMerge extends Transform {
       gbAggs.add(minAggregation(udafMode, paramsCopy.poll()));
       gbAggs.add(maxAggregation(udafMode, paramsCopy.poll()));
     }
-    gbAggs.add(bloomFilterAggregation(udafMode, paramsCopy.poll(), selectOp, hiveConf));
+    gbAggs.add(bloomFilterAggregation(udafMode, paramsCopy.poll(), selectOp, bloomEntriesHint, hiveConf));
     assert paramsCopy.size() == 0;
 
     List<String> gbOutputNames = new ArrayList<>(gbAggs.size());
@@ -419,14 +446,13 @@ public class SemiJoinReductionMerge extends Transform {
   }
 
   private static AggregationDesc bloomFilterAggregation(GenericUDAFEvaluator.Mode mode, ExprNodeDesc col,
-      SelectOperator source, HiveConf conf) {
-    GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator bloomFilterEval =
-        new GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator();
+      SelectOperator source, long numEntriesHint, HiveConf conf) {
+    GenericUDAFBloomFilterEvaluator bloomFilterEval = new GenericUDAFBloomFilterEvaluator();
     bloomFilterEval.setSourceOperator(source);
     bloomFilterEval.setMaxEntries(conf.getLongVar(HiveConf.ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES));
     bloomFilterEval.setMinEntries(conf.getLongVar(HiveConf.ConfVars.TEZ_MIN_BLOOM_FILTER_ENTRIES));
     bloomFilterEval.setFactor(conf.getFloatVar(HiveConf.ConfVars.TEZ_BLOOM_FILTER_FACTOR));
-    // TODO Setup hints
+    bloomFilterEval.setHintEntries(numEntriesHint);
     List<ExprNodeDesc> p = Collections.singletonList(col);
     AggregationDesc bloom = new AggregationDesc("bloom_filter", bloomFilterEval, p, false, mode);
     // TODO Why do we need to set it explicitly?
