@@ -456,7 +456,7 @@ public class SemiJoinReductionMerge extends Transform {
     bloomFilterEval.setHintEntries(numEntriesHint);
     List<ExprNodeDesc> p = Collections.singletonList(col);
     AggregationDesc bloom = new AggregationDesc("bloom_filter", bloomFilterEval, p, false, mode);
-    // TODO Why do we need to set it explicitly?
+    // It is necessary to set the bloom filter evaluator otherwise there are runtime failures see HIVE-24018
     bloom.setGenericUDAFWritableEvaluator(bloomFilterEval);
     return bloom;
   }
