@@ -529,7 +529,6 @@ POSTHOOK: Lineage: lineorder_n4.lo_suppkey SIMPLE [(lineorder_ext_n4)lineorder_e
 POSTHOOK: Lineage: lineorder_n4.lo_supplycost SIMPLE [(lineorder_ext_n4)lineorder_ext_n4.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
 POSTHOOK: Lineage: lineorder_n4.lo_tax SIMPLE [(lineorder_ext_n4)lineorder_ext_n4.FieldSchema(name:lo_tax, type:double, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n4`
-PARTITIONED ON (GROUPING__ID)
 AS
 SELECT
   p_brand1,
@@ -569,9 +568,7 @@ PREHOOK: Input: default@ssb_part_n4
 PREHOOK: Input: default@supplier_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ssb_mv_n4
-PREHOOK: Output: default@ssb_mv_n4
 POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n4`
-PARTITIONED ON (GROUPING__ID)
 AS
 SELECT
   p_brand1,
@@ -611,19 +608,6 @@ POSTHOOK: Input: default@ssb_part_n4
 POSTHOOK: Input: default@supplier_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ssb_mv_n4
-POSTHOOK: Output: default@ssb_mv_n4
-POSTHOOK: Output: default@ssb_mv_n4@grouping__id=255
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255)._c9 EXPRESSION [(lineorder_n4)lineorder_n4.FieldSchema(name:lo_revenue, type:double, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).d_year SIMPLE [(dates_n4)dates_n4.FieldSchema(name:d_year, type:int, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).d_yearmonth SIMPLE [(dates_n4)dates_n4.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).d_yearmonthnum SIMPLE [(dates_n4)dates_n4.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).discounted_price EXPRESSION [(lineorder_n4)lineorder_n4.FieldSchema(name:lo_extendedprice, type:double, comment:null), (lineorder_n4)lineorder_n4.FieldSchema(name:lo_discount, type:double, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).net_revenue EXPRESSION [(lineorder_n4)lineorder_n4.FieldSchema(name:lo_revenue, type:double, comment:null), (lineorder_n4)lineorder_n4.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).p_brand1 SIMPLE [(ssb_part_n4)ssb_part_n4.FieldSchema(name:p_brand1, type:string, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).p_category SIMPLE [(ssb_part_n4)ssb_part_n4.FieldSchema(name:p_category, type:string, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).s_city SIMPLE [(supplier_n4)supplier_n4.FieldSchema(name:s_city, type:string, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).s_nation SIMPLE [(supplier_n4)supplier_n4.FieldSchema(name:s_nation, type:string, comment:null), ]
-POSTHOOK: Lineage: ssb_mv_n4 PARTITION(grouping__id=255).s_region SIMPLE [(supplier_n4)supplier_n4.FieldSchema(name:s_region, type:string, comment:null), ]
 PREHOOK: query: explain cbo
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
@@ -672,8 +656,8 @@ CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
   HiveProject($f2=[$2], p_brand1=[$0], d_year=[$1])
     HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
-      HiveProject(p_brand1=[CAST($0):INTEGER], d_year=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], _c9=[$8])
-        HiveFilter(condition=[AND(=(CAST($11):BIGINT NOT NULL, 0), =($6, _UTF-16LE'MFGR#12'), =($3, _UTF-16LE'AMERICA'))])
+      HiveProject(p_brand1=[CAST($0):INTEGER], d_year=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], grouping__id=[CAST(0E-1:DOUBLE):DOUBLE])
+        HiveFilter(condition=[AND(=(CAST($8):BIGINT NOT NULL, 0), =($6, _UTF-16LE'MFGR#12'), =($3, _UTF-16LE'AMERICA'))])
           HiveTableScan(table=[[default, ssb_mv_n4]], table:alias=[default.ssb_mv_n4])
 
 PREHOOK: query: explain cbo
@@ -724,8 +708,8 @@ CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
   HiveProject($f2=[$2], p_brand1=[$0], d_year=[$1])
     HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
-      HiveProject(p_brand1=[CAST($0):INTEGER], d_year=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], _c9=[$8])
-        HiveFilter(condition=[AND(=(CAST($11):BIGINT NOT NULL, 0), BETWEEN(false, CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($3, _UTF-16LE'ASIA'))])
+      HiveProject(p_brand1=[CAST($0):INTEGER], d_year=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], grouping__id=[CAST(0E-1:DOUBLE):DOUBLE])
+        HiveFilter(condition=[AND(=(CAST($8):BIGINT NOT NULL, 0), BETWEEN(false, CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($3, _UTF-16LE'ASIA'))])
           HiveTableScan(table=[[default, ssb_mv_n4]], table:alias=[default.ssb_mv_n4])
 
 PREHOOK: query: explain cbo
@@ -777,8 +761,8 @@ HiveProject(lo_revenue=[$0], d_year=[$1], p_brand1=[CAST(_UTF-16LE'MFGR#2239':VA
   HiveSortLimit(sort0=[$1], dir0=[ASC])
     HiveProject($f1=[$1], p_brand1=[$0])
       HiveAggregate(group=[{0}], agg#0=[sum($1)])
-        HiveProject(p_brand1=[CAST($0):INTEGER], _c9=[$8])
-          HiveFilter(condition=[AND(=(CAST($11):BIGINT NOT NULL, 0), =(CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2239'), =($3, _UTF-16LE'EUROPE'))])
+        HiveProject(p_brand1=[CAST($0):INTEGER], grouping__id=[CAST(0E-1:DOUBLE):DOUBLE])
+          HiveFilter(condition=[AND(=(CAST($8):BIGINT NOT NULL, 0), =(CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2239'), =($3, _UTF-16LE'EUROPE'))])
             HiveTableScan(table=[[default, ssb_mv_n4]], table:alias=[default.ssb_mv_n4])
 
 PREHOOK: query: DROP MATERIALIZED VIEW `ssb_mv_n4`

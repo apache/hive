@@ -204,7 +204,6 @@ SELECT * FROM `lineorder_ext_n4`;
 
 
 CREATE MATERIALIZED VIEW `ssb_mv_n4`
-PARTITIONED ON (GROUPING__ID)
 AS
 SELECT
   p_brand1,

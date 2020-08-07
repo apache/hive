@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -222,27 +223,28 @@ public class HiveMaterializedViewUtils {
       // Not a grouping sets materialized view, return original materialization
       return Collections.singletonList(materialization);
     }
-    int groupingIdIndex = -1;
+    int aggregateGroupingIdIndex = -1;
     for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
       if (aggregate.getAggCallList().get(i).getAggregation() == HiveGroupingID.INSTANCE) {
-        groupingIdIndex = aggregate.getGroupCount() + i;
+        aggregateGroupingIdIndex = aggregate.getGroupCount() + i;
         break;
       }
     }
-    assert groupingIdIndex != -1;
+    Preconditions.checkState(aggregateGroupingIdIndex != -1);
+    int projectGroupingIdIndex = -1;
     if (project != null) {
-      boolean found = false;
-      for (RexNode expr : project.getChildExps()) {
+      for (int i = 0; i < project.getChildExps().size(); i++) {
+        RexNode expr = project.getChildExps().get(i);
         if (expr instanceof RexInputRef) {
           RexInputRef ref = (RexInputRef) expr;
-          if (ref.getIndex() == groupingIdIndex) {
+          if (ref.getIndex() == aggregateGroupingIdIndex) {
             // Grouping id is present
-            found = true;
+            projectGroupingIdIndex = i;
             break;
           }
         }
       }
-      if (!found) {
+      if (projectGroupingIdIndex == -1) {
         // Grouping id is not present, return original materialization
         return Collections.singletonList(materialization);
       }
@@ -252,7 +254,7 @@ public class HiveMaterializedViewUtils {
     final RelBuilder builder = HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null);
     final RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<AggregateCall> aggregateCalls = new ArrayList<>(aggregate.getAggCallList());
-    aggregateCalls.remove(groupingIdIndex - aggregate.getGroupCount());
+    aggregateCalls.remove(aggregateGroupingIdIndex - aggregate.getGroupCount());
     for (ImmutableBitSet targetGroupSet : aggregate.getGroupSets()) {
       // Compute the grouping id value
       long groupingIdValue = convert(targetGroupSet, aggregate.getGroupSet());
@@ -300,7 +302,8 @@ public class HiveMaterializedViewUtils {
       // Second we modify the MV scan
       builder.push(materialization.tableRel);
       RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-          rexBuilder.makeInputRef(materialization.tableRel, groupingIdIndex),
+          rexBuilder.makeInputRef(materialization.tableRel,
+              project != null ? projectGroupingIdIndex : aggregateGroupingIdIndex),
           rexBuilder.makeBigintLiteral(new BigDecimal(groupingIdValue)));
       builder.filter(condition);
       final RelNode newTableRel = builder.build();
