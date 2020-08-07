@@ -134,9 +134,9 @@ public class MapRecordProcessor extends RecordProcessor {
     if (!isInCompaction) {
       mapWork = cache.retrieve(key, () -> Utilities.getMapWork(jconf));
     } else {
-      // During query-based compaction, we don't want to retrieve old MapWork from the cache, we want a new mapper 
+      // During query-based compaction, we don't want to retrieve old MapWork from the cache, we want a new mapper
       // and new UDF validate_acid_sort_order instance for each bucket, otherwise validate_acid_sort_order will fail.
-      Utilities.getMapWork(jconf);
+      mapWork = Utilities.getMapWork(jconf);
     }
     // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
