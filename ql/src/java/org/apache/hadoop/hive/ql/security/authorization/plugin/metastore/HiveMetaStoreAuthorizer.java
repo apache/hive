@@ -96,9 +96,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     LOG.debug("==> HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
 
     try {
-      HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
-      if (!skipAuthorization()) {
-        HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
+      HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
+
+      if (!skipAuthorization(authzContext)) {
+        HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
         checkPrivileges(authzContext, hiveAuthorizer);
       }
     } catch (Exception e) {
@@ -516,11 +517,13 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     LOG.debug("<== HiveMetaStoreAuthorizer.checkPrivileges(): authzContext=" + authzContext + ", authorizer=" + authorizer);
   }
 
-  private boolean skipAuthorization() {
+  private boolean skipAuthorization(HiveMetaStoreAuthzInfo authzContext) {
     LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
 
+    if(authzContext == null){
+      return false;
+    }
     boolean ret = false;
-
     UserGroupInformation ugi = null;
     try {
       ugi = getUGI();
