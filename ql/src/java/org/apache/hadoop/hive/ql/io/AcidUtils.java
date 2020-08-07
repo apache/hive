@@ -209,7 +209,7 @@ public class AcidUtils {
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
-  
+
   public static final PathFilter acidHiddenFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path p) {
@@ -225,7 +225,7 @@ public class AcidUtils {
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
-  
+
   public static final PathFilter acidTempDirFilter = new PathFilter() {
     @Override
     public boolean accept(Path dirPath) {
@@ -241,7 +241,7 @@ public class AcidUtils {
       }
     }
   };
-  
+
   public static final String VISIBILITY_PREFIX = "_v";
   public static final Pattern VISIBILITY_PATTERN = Pattern.compile(VISIBILITY_PREFIX + "\\d+");
 
@@ -611,7 +611,7 @@ public class AcidUtils {
     public List<Path> getAbortedDirectories() {
       return abortedDirectories;
     }
-    
+
     @Override
     public String toString() {
       return "Aborted Directories: " + abortedDirectories + "; isBaseInRawFormat: " + isBaseInRawFormat + "; original: "
@@ -1469,7 +1469,7 @@ public class AcidUtils {
         (fullName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELTA_PREFIX)) ||
         (fullName.startsWith(DELETE_DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX));
   }
-  
+
   /**
    * DFS dir listing. 
    * Captures a dir and the corresponding list of files it contains,
@@ -1513,7 +1513,7 @@ public class AcidUtils {
 
     boolean contains(Path path);
   }
-  
+
   public static class HdfsDirSnapshotImpl implements HdfsDirSnapshot {
     private Path dirPath;
     private FileStatus metadataFStatus = null;
@@ -1529,11 +1529,11 @@ public class AcidUtils {
       this.dirPath = path;
       this.files = files;
     }
-    
+
     public HdfsDirSnapshotImpl(Path path) {
       this.dirPath = path;
     }
-    
+
     @Override
     public Path getPath() {
       return dirPath;
@@ -1543,7 +1543,7 @@ public class AcidUtils {
     public List<FileStatus> getFiles() {
       return files;
     }
-    
+
     @Override
     public void addFile(FileStatus file) {
       files.add(file);
@@ -1558,7 +1558,7 @@ public class AcidUtils {
     public Boolean isRawFormat() {
       return isRawFormat;
     }
-    
+
     @Override
     public void setIsRawFormat(boolean isRawFormat) {
        this.isRawFormat = isRawFormat;
@@ -1581,7 +1581,7 @@ public class AcidUtils {
 
     @Override
     public void setIsBase(boolean isBase) {
-      this.isBase = isBase;  
+      this.isBase = isBase;
     }
 
     @Override
@@ -1591,14 +1591,14 @@ public class AcidUtils {
 
     @Override
     public void setIsCompactedBase(boolean isCompactedBase) {
-      this.isCompactedBase = isCompactedBase;     
+      this.isCompactedBase = isCompactedBase;
     }
 
     @Override
     public void addOrcAcidFormatFile(FileStatus fStatus) {
       this.orcAcidFormatFStatus = fStatus;
     }
-    
+
     @Override
     public FileStatus getOrcAcidFormatFile() {
       return orcAcidFormatFStatus;
@@ -1638,7 +1638,7 @@ public class AcidUtils {
       return sb.toString();
     }
   }
-  
+
   /**
    * We can only use a 'base' if it doesn't have an open txn (from specific reader's point of view)
    * A 'base' with open txn in its range doesn't have 'enough history' info to produce a correct
@@ -1674,7 +1674,7 @@ public class AcidUtils {
     }
     return isValidBase;
   }
-  
+
   /**
    * Returns {@code true} if {@code parsedBase} was created by compaction.
    * As of Hive 4.0 we can tell if a directory is a result of compaction based on the
@@ -2488,7 +2488,7 @@ public class AcidUtils {
      * This is only meaningful for full CRUD tables - Insert-only tables have all their data
      * in raw format by definition.
      * @param baseOrDeltaDir base or delta file.
-     * @param dirSnapshot 
+     * @param dirSnapshot
      */
     public static boolean isRawFormat(Path baseOrDeltaDir, FileSystem fs, HdfsDirSnapshot dirSnapshot) throws IOException {
       //todo: this could be optimized - for full CRUD table only base_x and delta_x_x could have
@@ -2527,7 +2527,7 @@ public class AcidUtils {
       }
       return isRawFormatFile(dataFile, fs);
     }
-    
+
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
       try {
         Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
@@ -2958,16 +2958,16 @@ public class AcidUtils {
           assert t != null;
           if (AcidUtils.isTransactionalTable(t)) {
             if (sharedWrite) {
-              if (!isMerge) {
-                compBuilder.setSharedWrite();
-              } else {
+              if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
                 compBuilder.setExclWrite();
+              } else {
+                compBuilder.setSharedWrite();
               }
             } else {
-              if (!isMerge) {
-                compBuilder.setSharedRead();
-              } else {
+              if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
                 compBuilder.setExclusive();
+              } else {
+                compBuilder.setSharedRead();
               }
             }
           } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
