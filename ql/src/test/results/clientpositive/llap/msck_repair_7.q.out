@@ -26,6 +26,10 @@ PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
+POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -96,6 +100,16 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_7
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_8
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_8
 PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n7_1
@@ -138,6 +152,12 @@ PREHOOK: Output: default@repairtable_n7_7
 POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_7
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n7_7
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_8
 PREHOOK: query: show partitions repairtable_n7_1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n7_1
@@ -180,6 +200,12 @@ PREHOOK: Input: default@repairtable_n7_7
 POSTHOOK: query: show partitions repairtable_n7_7
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n7_7
+PREHOOK: query: show partitions repairtable_n7_8
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_8
+POSTHOOK: query: show partitions repairtable_n7_8
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_8
 PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n7_1
@@ -236,6 +262,14 @@ POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n7_7
 Partitions not in metastore:	repairtable_n7_7:p1=1.001
 #### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_8
+Partitions not in metastore:	repairtable_n7_8:p1=01
+#### A masked pattern was here ####
 PREHOOK: query: show partitions repairtable_n7_1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n7_1
@@ -285,6 +319,13 @@ POSTHOOK: query: show partitions repairtable_n7_7
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n7_7
 p1=1.001
+PREHOOK: query: show partitions repairtable_n7_8
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_8
+POSTHOOK: query: show partitions repairtable_n7_8
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_8
+p1=01
 PREHOOK: query: DROP TABLE repairtable_n7_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_1
@@ -341,3 +382,11 @@ POSTHOOK: query: DROP TABLE repairtable_n7_7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_7
 POSTHOOK: Output: default@repairtable_n7_7
+PREHOOK: query: DROP TABLE repairtable_n7_8
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_8
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: DROP TABLE repairtable_n7_8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_8
+POSTHOOK: Output: default@repairtable_n7_8

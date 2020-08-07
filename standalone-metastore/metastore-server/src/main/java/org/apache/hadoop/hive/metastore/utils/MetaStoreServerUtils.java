@@ -1521,7 +1521,7 @@ public class MetaStoreServerUtils {
   public static Map<String, String> getPartitionColtoTypeMap(List<FieldSchema> partitionCols) {
     Map<String, String> typeMap = new HashMap<>();
 
-    if (!(partitionCols == null || partitionCols.isEmpty())) {
+    if (partitionCols != null) {
       for (FieldSchema fSchema : partitionCols) {
         typeMap.put(fSchema.getName(), fSchema.getType());
       }
