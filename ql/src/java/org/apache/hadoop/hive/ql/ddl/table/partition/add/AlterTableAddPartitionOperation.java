@@ -175,7 +175,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     for (Partition partition : partitions){
       partitionNames.add(getPartitionName(table, partition));
       try {
-        Partition p = context.getDb().getPartition(table, desc.getDbName(), desc.getTableName(), partition.getValues());
+        Partition p = context.getDb().getPartition(desc.getDbName(), desc.getTableName(), partition.getValues());
         if (desc.getReplicationSpec().allowReplacementInto(p.getParameters())){
           ReplicationSpec.copyLastReplId(p.getParameters(), partition.getParameters());
           partitionsToAlter.add(partition);
