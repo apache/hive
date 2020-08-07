@@ -66,14 +66,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
@@ -111,9 +109,8 @@ public class SemiJoinReductionMerge extends Transform {
     }
     HiveConf hiveConf = parseContext.getConf();
 
-    // Order does not really matter but it is necessary to keep plans stable
-    SortedMap<SJSourceTarget, List<ReduceSinkOperator>> sameTableSJ =
-        new TreeMap<>(Comparator.comparing(SJSourceTarget::toString));
+    // Predictable iteration helps to avoid small changes in the plans
+    LinkedHashMap<SJSourceTarget, List<ReduceSinkOperator>> sameTableSJ = new LinkedHashMap<>();
     for (Map.Entry<ReduceSinkOperator, SemiJoinBranchInfo> smjEntry : map.entrySet()) {
       TableScanOperator ts = smjEntry.getValue().getTsOp();
       // Semijoin optimization branch should look like <Parent>-SEL-GB1-RS1-GB2-RS2
@@ -129,9 +126,6 @@ public class SemiJoinReductionMerge extends Transform {
       if (sjBranches.size() < 2) {
         continue;
       }
-      // Order does not really matter but it is necessary to keep plans stable
-      sjBranches.sort(Comparator.comparing(Operator::getIdentifier));
-
       List<SelectOperator> selOps = new ArrayList<>(sjBranches.size());
       for (ReduceSinkOperator rs : sjBranches) {
         selOps.add(OperatorUtils.ancestor(rs, SelectOperator.class, 0, 0, 0, 0));
@@ -493,8 +487,5 @@ public class SemiJoinReductionMerge extends Transform {
       return result;
     }
 
-    @Override public String toString() {
-      return "SJSourceTarget{" + "source=" + source + ", target=" + target + '}';
-    }
   }
 }
