@@ -5695,8 +5695,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
-        ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+        if(ret !=  null && !ret.isEmpty()) {
+          List<Table> tableInfo = new ArrayList<>();
+          tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+          tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);
+          List<String> result = new ArrayList<>(); // Cannot do ret.clear() because of query cannot be modified error in tests.
+          for (Table tbl : tableInfo) {
+            result.add(tbl.getTableName());
+          }
+          return result;
+        }
       } catch (MetaException e) {
         ex = e;
         throw e;
