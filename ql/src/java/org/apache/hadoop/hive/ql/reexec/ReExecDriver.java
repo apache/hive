@@ -58,10 +58,6 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class ReExecDriver implements IDriver {
 
-  // Every plugin should check for execution limit in shouldReexecute
-  // But just in case, we don't want an infinite loop
-  private final static int MAX_EXECUTION = 10;
-
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
 
     @Override
@@ -154,6 +150,8 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
+    int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
+
 
     while (true) {
       executionIndex++;
@@ -174,9 +172,9 @@ public class ReExecDriver implements IDriver {
       afterExecute(oldPlanMapper, cpr != null);
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
-      shouldReExecute |= cpr == null && shouldReExecute(cpe);
+      shouldReExecute |= cpr == null && shouldReExecute();
 
-      if (executionIndex >= MAX_EXECUTION || !shouldReExecute) {
+      if (executionIndex >= maxExecutuions || !shouldReExecute) {
         if (cpr != null) {
           return cpr;
         } else {
@@ -218,10 +216,10 @@ public class ReExecDriver implements IDriver {
     return ret;
   }
 
-  private boolean shouldReExecute(CommandProcessorException ex) {
+  private boolean shouldReExecute() {
     boolean ret = false;
     for (IReExecutionPlugin p : plugins) {
-      boolean shouldReExecute = p.shouldReExecute(executionIndex, ex);
+      boolean shouldReExecute = p.shouldReExecute(executionIndex);
       LOG.debug("{}.shouldReExecute = {}", p, shouldReExecute);
       ret |= shouldReExecute;
     }
