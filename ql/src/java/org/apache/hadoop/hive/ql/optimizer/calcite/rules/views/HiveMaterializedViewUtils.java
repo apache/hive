@@ -292,7 +292,7 @@ public class HiveMaterializedViewUtils {
             .project(exprs, ImmutableList.of(), true)
             .build();
         List<RexNode> newNodes =
-            RelOptUtil.pushPastProject(exprs, bottomProject);
+            RelOptUtil.pushPastProject(project.getChildExps(), bottomProject);
         builder.push(bottomProject.getInput())
             .project(newNodes);
       } else {
