@@ -600,6 +600,23 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("table name", inDbTableName.toLowerCase(), dbObj.getObjectName());
   }
 
+  @Test
+  public void showTablesInDB() throws Exception{
+    final String tableName1 = "table1";
+    driver.run("create table " + dbName+"."+tableName1 + "(eid int, yoj int)");
+    final String tableName2 = "table2";
+    driver.run("create table " + dbName+"."+tableName2 + "(eid int, ecode int)");
+    reset(mockedAuthorizer);
+
+    int status = driver.compile("show tables in "+dbName, true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    assertTrue(dbObj.getOwnerName() != null);
+  }
+
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
     assertEquals("number of inputs", 1, inputs.size());
 

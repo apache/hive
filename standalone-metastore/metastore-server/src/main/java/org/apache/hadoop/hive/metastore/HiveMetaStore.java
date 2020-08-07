@@ -5695,8 +5695,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
-        ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+        if(ret !=  null && !ret.isEmpty()) {
+          List<Table> tableInfo = new ArrayList<>();
+          tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+          tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);// tableInfo object has the owner information of the table which is being passed to FilterUtils.
+          ret = new ArrayList<>();
+          for (Table tbl : tableInfo) {
+            ret.add(tbl.getTableName());
+          }
+        }
       } catch (MetaException e) {
         ex = e;
         throw e;
