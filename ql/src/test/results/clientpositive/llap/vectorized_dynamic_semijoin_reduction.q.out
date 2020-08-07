@@ -1088,10 +1088,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS[48]_col0) AND DynamicValue(RS[48]_col1) and key_int BETWEEN DynamicValue(RS[48]_col2) AND DynamicValue(RS[48]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[48]_col4))) (type: boolean)
+                  filterExpr: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_int BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[43]_col4))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS[48]_col0) AND DynamicValue(RS[48]_col1) and key_int BETWEEN DynamicValue(RS[48]_col2) AND DynamicValue(RS[48]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[48]_col4))) (type: boolean)
+                    predicate: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_int BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[43]_col4))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key_str (type: string), key_int (type: int)
