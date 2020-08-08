@@ -147,6 +147,22 @@ where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value
 group by key, value
 having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
 
+set hive.auto.convert.anti.join=false;
+
+select key, value, count(*)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
+
+explain
+select key, value, count(*)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
 select key, value, count(*)
 from src_null_n4 b
 where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)

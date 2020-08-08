@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.PKFKJoinInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -118,6 +119,15 @@ public class HiveRelMdRowCount extends RelMdRowCount {
   }
 
   public Double getRowCount(HiveSemiJoin rel, RelMetadataQuery mq) {
+    return getRowCountInt(rel, mq);
+  }
+
+  public Double getRowCount(HiveAntiJoin rel, RelMetadataQuery mq) {
+    return getRowCountInt(rel, mq);
+  }
+
+  private Double getRowCountInt(Join rel, RelMetadataQuery mq) {
+    assert rel.getJoinType() == JoinRelType.SEMI || rel.getJoinType() == JoinRelType.ANTI;
     PKFKRelationInfo pkfk = analyzeJoinForPKFK(rel, mq);
     if (pkfk != null) {
       double selectivity = pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor;
@@ -125,9 +135,20 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(rel), pkfk);
       }
-      return pkfk.fkInfo.rowCount * selectivity;
+      if (rel.getJoinType() == JoinRelType.ANTI) {
+        return pkfk.fkInfo.rowCount * (1 - selectivity);
+      } else {
+        return pkfk.fkInfo.rowCount * selectivity;
+      }
     }
-    return super.getRowCount(rel, mq);
+
+    //TODO : Need to handle anti join in calcite
+    // https://issues.apache.org/jira/browse/HIVE-23933
+    if (rel.getJoinType() == JoinRelType.ANTI) {
+      return mq.getRowCount(rel.getLeft()) - super.getRowCount(rel, mq);
+    } else {
+      return super.getRowCount(rel, mq);
+    }
   }
 
   @Override
@@ -248,7 +269,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     // @todo: remove this. 8/28/14 hb
     // for now adding because RelOptUtil.classifyFilters has an assertion about
     // column counts that is not true for semiJoins.
-    if (joinRel.isSemiJoin()) {
+    if (joinRel.isSemiJoin() || joinRel.getJoinType() == JoinRelType.ANTI) {
       return null;
     }
 
@@ -355,7 +376,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
    */
   public static Pair<PKFKRelationInfo, RexNode> constraintsBasedAnalyzeJoinForPKFK(Join join, RelMetadataQuery mq) {
 
-    if (join.isSemiJoin()) {
+    if (join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI) {
       // TODO: Support semijoin
       return null;
     }
@@ -390,9 +411,9 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       return null;
     }
 
-    boolean leftIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.RIGHT)
+    boolean leftIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI || join.getJoinType() == JoinRelType.RIGHT)
         && leftInputResult.isPkFkJoin;
-    boolean rightIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.LEFT)
+    boolean rightIsKey = (join.getJoinType() == JoinRelType.INNER || join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI || join.getJoinType() == JoinRelType.LEFT)
         && rightInputResult.isPkFkJoin;
     if (!leftIsKey && !rightIsKey) {
       // Nothing to do here, bail out
