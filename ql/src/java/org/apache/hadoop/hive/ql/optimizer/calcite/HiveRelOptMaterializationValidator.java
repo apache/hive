@@ -119,7 +119,6 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(HiveAggregate aggregate) {
-    // Is there anything to check here?
     return super.visit(aggregate);
   }
 
