@@ -153,6 +153,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   transient boolean hasLeftSemiJoin = false;
 
+  transient boolean hasLeftAntiSemiJoin = false;
+
   protected transient int countAfterReport;
   protected transient int heartbeatInterval;
   protected static final int NOTSKIPBIGTABLE = -1;
@@ -365,6 +367,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     for( int i = 0; i < condn.length; i++ ) {
       if(condn[i].getType() == JoinDesc.LEFT_SEMI_JOIN) {
         hasLeftSemiJoin = true;
+      } else if(condn[i].getType() == JoinDesc.ANTI_JOIN) {
+        hasLeftAntiSemiJoin = true;
       }
     }
 
@@ -509,11 +513,17 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     }
   }
 
-  // fill forwardCache with skipvector
-  // returns whether a record was forwarded
-  private boolean createForwardJoinObject(boolean[] skip) throws HiveException {
-    Arrays.fill(forwardCache, null);
+  private void createForwardJoinObjectForAntiJoin(boolean[] skip) throws HiveException {
+    boolean forward = fillForwardCache(skip);
+    if (forward) {
+      internalForward(forwardCache, outputObjInspector);
+      countAfterReport = 0;
+    }
+  }
 
+  // fill forwardCache with skipvector
+  private boolean fillForwardCache(boolean[] skip) {
+    Arrays.fill(forwardCache, null);
     boolean forward = false;
     for (int i = 0; i < numAliases; i++) {
       if (!skip[i]) {
@@ -523,11 +533,19 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         forward = true;
       }
     }
+    return forward;
+  }
+
+  // returns whether a record was forwarded
+  private boolean createForwardJoinObject(boolean[] skip, boolean antiJoin) throws HiveException {
+    boolean forward = fillForwardCache(skip);
     if (forward) {
       if (needsPostEvaluation) {
         forward = !JoinUtil.isFiltered(forwardCache, residualJoinFilters, residualJoinFiltersOIs);
       }
-      if (forward) {
+
+      // For anti join, check all right side and if nothing is matched then only forward.
+      if (forward && !antiJoin) {
         // If it is not an outer join, or the post-condition filters
         // are empty or the row passed them
         internalForward(forwardCache, outputObjInspector);
@@ -620,10 +638,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     boolean rightFirst = true;
     AbstractRowContainer.RowIterator<List<Object>> iter = aliasRes.rowIter();
     int pos = 0;
+
     for (List<Object> rightObj = iter.first(); !done && rightObj != null;
          rightObj = loopAgain ? rightObj : iter.next(), rightFirst = loopAgain = false, pos++) {
+      // Keep a copy of the skip vector and update the bit for current alias only in the loop.
       System.arraycopy(prevSkip, 0, skip, 0, prevSkip.length);
-
       boolean rightNull = rightObj == dummyObj[aliasNum];
       if (hasFilter(order[aliasNum])) {
         filterTags[aliasNum] = getFilterTag(rightObj);
@@ -636,6 +655,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         if (innerJoin(skip, left, right)) {
           // if left-semi-join found a match and we do not have any additional predicates,
           // skipping the rest of the rows in the rhs table of the semijoin
+          done = !needsPostEvaluation;
+        }
+      } else if (type == JoinDesc.ANTI_JOIN) {
+        if (innerJoin(skip, left, right)) {
+          // if inner join found a match then the condition is not matched for anti join, so we can skip rest of the
+          // record. But if there is some post evaluation we have to handle that.
           done = !needsPostEvaluation;
         }
       } else if (type == JoinDesc.LEFT_OUTER_JOIN ||
@@ -668,7 +693,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
           needToProduceLeftRow = true;
           if (needsPostEvaluation) {
             // This is only executed for outer joins with residual filters
-            boolean forward = createForwardJoinObject(skipVectors[numAliases - 1]);
+            boolean forward = createForwardJoinObject(skipVectors[numAliases - 1],
+                                                    type == JoinDesc.ANTI_JOIN);
             producedRow |= forward;
             done = (type == JoinDesc.LEFT_SEMI_JOIN) && forward;
             if (!rightNull &&
@@ -687,12 +713,23 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
               }
             }
           } else {
-            createForwardJoinObject(skipVectors[numAliases - 1]);
+            createForwardJoinObject(skipVectors[numAliases - 1], type == JoinDesc.ANTI_JOIN);
           }
         }
       } else {
         // recursively call the join the other rhs tables
         genObject(aliasNum + 1, allLeftFirst && rightFirst, allLeftNull && rightNull);
+      }
+    }
+
+    // For anti join, we should proceed to emit records if the right side is empty or not matching.
+    if (type == JoinDesc.ANTI_JOIN && !producedRow) {
+      System.arraycopy(prevSkip, 0, skip, 0, prevSkip.length);
+      skip[right] = true;
+      if (aliasNum == numAliases - 1) {
+        createForwardJoinObjectForAntiJoin(skipVectors[numAliases - 1]);
+      } else {
+        genObject(aliasNum + 1, allLeftFirst, allLeftNull);
       }
     }
 
@@ -935,9 +972,17 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
         AbstractRowContainer<List<Object>> alw = storage[alias];
+        boolean isRightOfAntiJoin = (i != 0 && condn[i-1].getType() == JoinDesc.ANTI_JOIN);
 
         if (noOuterJoin) {
           if (!alw.hasRows()) {
+            if (!isRightOfAntiJoin) {
+              // For anti join the right side can be empty.
+              return;
+            }
+          } else if (isRightOfAntiJoin && !needsPostEvaluation)  {
+            // For anti join the right side should be empty. For needsPostEvaluation case we will
+            // wait till evaluation is done. For other cases we can directly return from here.
             return;
           } else if (!alw.isSingleRow()) {
             mayHasMoreThanOne = true;
@@ -968,7 +1013,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
       if (!needsPostEvaluation && !hasEmpty && !mayHasMoreThanOne) {
         genAllOneUniqueJoinObject();
-      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin) {
+      } else if (!needsPostEvaluation && !hasEmpty && !hasLeftSemiJoin && !hasLeftAntiSemiJoin) {
         genUniqueJoinObject(0, 0);
       } else {
         genJoinObject();

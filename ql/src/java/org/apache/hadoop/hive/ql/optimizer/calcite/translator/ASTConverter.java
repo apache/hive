@@ -409,7 +409,7 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
-      boolean semiJoin = join.isSemiJoin();
+      boolean semiJoin = join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI;
       if (join.getRight() instanceof Join && !semiJoin) {
           // should not be done for semijoin since it will change the semantics
         // Invert join inputs; this is done because otherwise the SemanticAnalyzer

@@ -175,6 +175,9 @@ public class ASTBuilder {
     case FULL:
       b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN, "TOK_FULLOUTERJOIN");
       break;
+    case ANTI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTANTISEMIJOIN, "TOK_LEFTANTISEMIJOIN");
+      break;
     }
 
     b.add(left).add(right).add(cond);
