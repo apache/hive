@@ -1478,6 +1478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (node.getToken().getType() == HiveParser.TOK_CROSSJOIN)
         || isOuterJoinToken(node)
         || (node.getToken().getType() == HiveParser.TOK_LEFTSEMIJOIN)
+        || (node.getToken().getType() == HiveParser.TOK_LEFTANTISEMIJOIN)
         || (node.getToken().getType() == HiveParser.TOK_UNIQUEJOIN);
   }
 
@@ -9776,6 +9777,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinTree.setNoSemiJoin(false);
       condn[0] = new JoinCond(0, 1, JoinType.LEFTSEMI);
       break;
+    case ANTI:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.ANTI);
+      break;
     default:
       condn[0] = new JoinCond(0, 1, JoinType.INNER);
       joinTree.setNoOuterJoin(true);
@@ -9877,6 +9882,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_LEFTSEMIJOIN:
       joinTree.setNoSemiJoin(false);
       condn[0] = new JoinCond(0, 1, JoinType.LEFTSEMI);
+      break;
+    case HiveParser.TOK_LEFTANTISEMIJOIN:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.ANTI);
       break;
     default:
       condn[0] = new JoinCond(0, 1, JoinType.INNER);
@@ -10091,7 +10100,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) {
+        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN &&
+                hint.getChild(0).getType() != HintParser.TOK_LEFTANTISEMIJOIN) {
           continue;
         }
         if (result == null) {

@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -1619,6 +1620,12 @@ public class StatsUtils {
       colName = enfd.getFieldName();
       colType = enfd.getTypeString();
       countDistincts = numRows;
+    } else if (end instanceof ExprDynamicParamDesc) {
+      //skip collecting stats for parameters
+      // ideally we should estimate and create colstats object, because otherwise it could lead to
+      // planning as if stats are missing. But since colstats require column name and type it is not
+      // possible to create colstats object
+      return null;
     } else {
       throw new IllegalArgumentException("not supported expr type " + end.getClass());
     }

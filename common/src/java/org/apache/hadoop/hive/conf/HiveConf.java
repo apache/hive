@@ -2249,7 +2249,8 @@ public class HiveConf extends Configuration {
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size. \n" +
         "If this parameter is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the\n" +
         "specified size, the join is directly converted to a mapjoin (there is no conditional task)."),
-
+    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", true,
+        "Whether Hive enables the optimization about converting join with null filter to anti join"),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
@@ -2893,7 +2894,10 @@ public class HiveConf extends Configuration {
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
         "are not hidden by the INSERT OVERWRITE."),
-    TXN_WRITE_X_LOCK("hive.txn.write.xlock", true,
+    TXN_MERGE_INSERT_X_LOCK("hive.txn.xlock.mergeinsert", false,
+        "Ensures MERGE INSERT operations acquire EXCLUSIVE / EXCL_WRITE lock for transactional tables.\n" +
+        "If enabled, prevents duplicates when MERGE statements are executed in parallel transactions."),
+    TXN_WRITE_X_LOCK("hive.txn.xlock.write", true,
         "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
         "shared writes and write-write conflict resolution at the commit step." +
         "- If true - exclusive writes are used:\n" +
@@ -6674,5 +6678,14 @@ public class HiveConf extends Configuration {
       }
     }
     return ret;
+  }
+
+  // sync all configs from given conf
+  public void syncFromConf(HiveConf conf) {
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
+    while (iter.hasNext()) {
+      Map.Entry<String, String> e = iter.next();
+      set(e.getKey(), e.getValue());
+    }
   }
 }

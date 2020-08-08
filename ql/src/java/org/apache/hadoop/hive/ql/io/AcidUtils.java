@@ -3013,16 +3013,16 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           if (sharedWrite) {
-            if (!isMerge) {
-              compBuilder.setSharedWrite();
-            } else {
+            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
               compBuilder.setExclWrite();
+            } else {
+              compBuilder.setSharedWrite();
             }
           } else {
-            if (!isMerge) {
-              compBuilder.setSharedRead();
-            } else {
+            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
               compBuilder.setExclusive();
+            } else {
+              compBuilder.setSharedRead();
             }
           }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {

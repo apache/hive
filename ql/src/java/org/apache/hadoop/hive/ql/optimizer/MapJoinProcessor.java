@@ -752,7 +752,8 @@ public class MapJoinProcessor extends Transform {
       seenPostitions.add(condn.getRight());
 
       if (joinType == JoinDesc.LEFT_OUTER_JOIN
-          || joinType == JoinDesc.LEFT_SEMI_JOIN) {
+          || joinType == JoinDesc.LEFT_SEMI_JOIN
+          || joinType == JoinDesc.ANTI_JOIN) {
         seenOuterJoin = true;
         if(bigTableCandidates.size() == 0) {
           bigTableCandidates.add(condn.getLeft());
