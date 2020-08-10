@@ -3837,7 +3837,7 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
-Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3970,7 +3970,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
