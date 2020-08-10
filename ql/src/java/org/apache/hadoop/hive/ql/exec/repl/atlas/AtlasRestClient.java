@@ -22,6 +22,7 @@ import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasImportRequest;
 import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.atlas.model.impexp.AtlasServer;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import java.io.InputStream;
 
@@ -30,14 +31,14 @@ import java.io.InputStream;
  */
 public interface AtlasRestClient {
 
-  InputStream exportData(AtlasExportRequest request) throws Exception;
+  InputStream exportData(AtlasExportRequest request) throws SemanticException;
 
   AtlasImportResult importData(AtlasImportRequest request, AtlasReplInfo atlasReplInfo) throws Exception;
 
-  AtlasServer getServer(String endpoint) throws SemanticException;
+  AtlasServer getServer(String endpoint, HiveConf conf) throws SemanticException;
 
   String getEntityGuid(final String entityType, final String attributeName, final String qualifiedName)
           throws SemanticException;
 
-  boolean getStatus() throws SemanticException;
+  boolean getStatus(HiveConf conf) throws SemanticException;
 }
