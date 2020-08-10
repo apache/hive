@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -479,6 +480,61 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
             0,
             TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
     verifyDirAndResult(0, true);
+  }
+
+  /**
+   * Impala truncates insert-only tables by writing a base directory (like insert overwrite) containing an empty file
+   * named "_empty". Generally in Hive files beginning with an underscore are hidden, so here we make sure that Hive
+   * reads these bases correctly.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testImpalaTruncatedMmTable() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    Path tblLocation = new Path(TEST_WAREHOUSE_DIR + "/" +
+        (TableExtended.MMTBL).toString().toLowerCase());
+
+    // 1. Insert two rows to an MM table
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. Simulate Impala truncating the table: write a base dir (base_0000003) containing an empty file.
+    // Hive will name the empty file "000000_0"
+    runStatementOnDriver("insert overwrite  table " + TableExtended.MMTBL + " select * from "
+        + TableExtended.MMTBL + " where 1=2");
+    status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 1 base dir in the location
+    Assert.assertEquals(3, status.length);
+    int baseCount = 0;
+    int deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        baseCount++;
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertEquals(1, baseCount);
+
+    // rename empty file to "_empty"
+    Path basePath = new Path(tblLocation, "base_0000003");
+    Assert.assertTrue("Rename failed",
+        fs.rename(new Path(basePath, "000000_0"), new Path(basePath, "_empty")));
+
+    // 3. Verify query result. Selecting from a truncated table should return nothing.
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(Collections.emptyList(), rs);
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {
