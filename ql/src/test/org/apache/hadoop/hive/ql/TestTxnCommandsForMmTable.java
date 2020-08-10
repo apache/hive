@@ -514,23 +514,11 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
     // There should be 2 delta dirs, plus 1 base dir in the location
     Assert.assertEquals(3, status.length);
-    int baseCount = 0;
-    int deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        baseCount++;
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertEquals(1, baseCount);
+    verifyDirAndResult(2, true);
 
     // rename empty file to "_empty"
     Path basePath = new Path(tblLocation, "base_0000003");
-    Assert.assertTrue("Rename failed",
-        fs.rename(new Path(basePath, "000000_0"), new Path(basePath, "_empty")));
+    fs.rename(new Path(basePath, "000000_0"), new Path(basePath, "_empty"));
 
     // 3. Verify query result. Selecting from a truncated table should return nothing.
     List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
