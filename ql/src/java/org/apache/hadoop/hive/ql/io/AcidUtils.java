@@ -220,10 +220,6 @@ public class AcidUtils {
       if (name.startsWith(OrcAcidVersion.ACID_FORMAT)) {
         return true;
       }
-      // Don't filter out empty files
-      if (name.startsWith("_empty")) {
-        return true;
-      }
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
