@@ -3303,7 +3303,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       smallTableIndicesSize = smallTableIndices.length;
     } else {
       smallTableIndices = null;
-      LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices IMPALA_WROTE_EMPTY_FILE");
+      LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices EMPTY");
       smallTableIndicesSize = 0;
     }
 
