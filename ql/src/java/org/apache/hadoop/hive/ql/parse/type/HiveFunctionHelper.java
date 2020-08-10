@@ -605,6 +605,20 @@ public class HiveFunctionHelper implements FunctionHelper {
   /**
    * {@inheritDoc}
    */
+  public SqlKind getDefaultStandardDeviation() {
+    return SqlKind.STDDEV_POP;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public SqlKind getDefaultVariance() {
+    return SqlKind.VAR_POP;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public RexNode foldExpression(RexNode expr) {
     HiveRexExecutorImpl executor = new HiveRexExecutorImpl();

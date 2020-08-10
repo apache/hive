@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class PlanModifierForASTConv {
       }
     }
 
-    convertOpTree(newTopNode, (RelNode) null);
+    convertOpTree(newTopNode, null);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
     }
@@ -412,7 +413,9 @@ public class PlanModifierForASTConv {
     RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
     RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
     // Create the dummy aggregation.
-    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", false,
+    FunctionHelper functionHelper =
+        rel.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn(functionHelper, "count", false,
         ImmutableList.of(intType), longType);
     // TODO: Using 0 might be wrong; might need to walk down to find the
     // proper index of a dummy.

@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -580,7 +581,7 @@ public class SqlFunctionConverter {
     return calciteOp;
   }
 
-  public static SqlAggFunction getCalciteAggFn(String hiveUdfName, boolean isDistinct,
+  public static SqlAggFunction getCalciteAggFn(FunctionHelper functionHelper, String hiveUdfName, boolean isDistinct,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
@@ -622,6 +623,14 @@ public class SqlFunctionConverter {
         break;
       case "std":
       case "stddev":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            functionHelper.getDefaultStandardDeviation() == SqlKind.STDDEV_POP ?
+                "stddev_pop" : "stddev_samp",
+            functionHelper.getDefaultStandardDeviation(),
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
       case "stddev_pop":
         calciteAggFn = new HiveSqlVarianceAggFunction(
             "stddev_pop",
@@ -639,6 +648,14 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeChecker);
         break;
       case "variance":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            functionHelper.getDefaultVariance() == SqlKind.VAR_POP ?
+                "var_pop" : "var_samp",
+            functionHelper.getDefaultVariance(),
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
       case "var_pop":
         calciteAggFn = new HiveSqlVarianceAggFunction(
             "var_pop",

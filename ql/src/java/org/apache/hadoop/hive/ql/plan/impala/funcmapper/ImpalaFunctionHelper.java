@@ -233,6 +233,20 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public SqlKind getDefaultStandardDeviation() {
+    return SqlKind.STDDEV_SAMP;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public SqlKind getDefaultVariance() {
+    return SqlKind.VAR_SAMP;
+  }
+
+  /**
    * Returns true if the name corresponds to a scalar function
    * in Impala.
    */

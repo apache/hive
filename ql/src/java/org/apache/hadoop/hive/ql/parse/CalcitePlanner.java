@@ -1653,10 +1653,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
-  ASTNode getOptimizedAST(RelNode optimizedOptiqPlan) throws SemanticException {
-    ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
-    return optiqOptimizedAST;
+  ASTNode getOptimizedAST(RelNode optimizedPlan) throws SemanticException {
+    ASTNode optimizedAST = ASTConverter.convert(optimizedPlan, resultSchema,
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+    return optimizedAST;
   }
 
   /**
@@ -3793,7 +3793,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Get Aggregation FN from Calcite given name, ret type and input arg
       // type
-      final SqlAggFunction aggregation = SqlFunctionConverter.getCalciteAggFn(agg.getAggregateName(), agg.isDistinct(),
+      final SqlAggFunction aggregation = SqlFunctionConverter.getCalciteAggFn(
+          functionHelper, agg.getAggregateName(), agg.isDistinct(),
           aggArgRelDTBldr.build(), aggFnRetType);
 
       return new AggregateCall(aggregation, agg.isDistinct(), argList, aggFnRetType, null);
@@ -4544,7 +4545,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ImmutableList<RelDataType> calciteAggFnArgsType = calciteAggFnArgsTypeBldr.build();
 
         // 5. Get Calcite Agg Fn
-        final SqlAggFunction calciteAggFn = SqlFunctionConverter.getCalciteAggFn(
+        final SqlAggFunction calciteAggFn = SqlFunctionConverter.getCalciteAggFn(functionHelper,
             hiveAggInfo.getAggregateName(), hiveAggInfo.isDistinct(), calciteAggFnArgsType, calciteAggFnRetType);
 
         // 6. Translate Window spec

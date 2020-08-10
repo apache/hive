@@ -108,6 +108,17 @@ public interface FunctionHelper {
   Set<SqlKind> getAggReduceSupported();
 
   /**
+   * Returns the default standard deviation function (population or sample)
+   * for this engine.
+   */
+  SqlKind getDefaultStandardDeviation();
+
+  /**
+   * Returns the default variance function (population or sample) for this engine.
+   */
+  SqlKind getDefaultVariance();
+
+  /**
    * Folds expression according to function semantics.
    */
   default RexNode foldExpression(RexNode expr) {

@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
@@ -961,11 +962,13 @@ public class HiveCalciteUtil {
 
   public static AggregateCall createSingleArgAggCall(String funcName, RelOptCluster cluster,
       PrimitiveTypeInfo typeInfo, Integer pos, RelDataType aggFnRetType) {
-    ImmutableList.Builder<RelDataType> aggArgRelDTBldr = new ImmutableList.Builder<RelDataType>();
+    ImmutableList.Builder<RelDataType> aggArgRelDTBldr = new ImmutableList.Builder<>();
     aggArgRelDTBldr.add(TypeConverter.convert(typeInfo, cluster.getTypeFactory()));
-    SqlAggFunction aggFunction = SqlFunctionConverter.getCalciteAggFn(funcName, false,
-        aggArgRelDTBldr.build(), aggFnRetType);
-    List<Integer> argList = new ArrayList<Integer>();
+    final FunctionHelper functionHelper =
+        cluster.getPlanner().getContext().unwrap(FunctionHelper.class);
+    SqlAggFunction aggFunction = SqlFunctionConverter.getCalciteAggFn(functionHelper,
+        funcName, false, aggArgRelDTBldr.build(), aggFnRetType);
+    List<Integer> argList = new ArrayList<>();
     argList.add(pos);
     return AggregateCall.create(aggFunction, false, argList, -1, aggFnRetType, null);
   }
