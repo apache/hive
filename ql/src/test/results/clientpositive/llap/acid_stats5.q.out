@@ -165,7 +165,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -231,7 +231,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -396,7 +396,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -644,7 +644,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -809,7 +809,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
