@@ -514,19 +514,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
     // There should be 2 delta dirs, plus 1 base dir in the location
     Assert.assertEquals(3, status.length);
-    int baseCount = 0;
-    int deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        baseCount++;
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertEquals(1, baseCount);
-
+    verifyDir(2, true);
     // rename empty file to "_empty"
     Path basePath = new Path(tblLocation, "base_0000003");
     Assert.assertTrue("Rename failed",
@@ -535,12 +523,31 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     // 3. Verify query result. Selecting from a truncated table should return nothing.
     List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
     Assert.assertEquals(Collections.emptyList(), rs);
+
+    // 4. Perform a major compaction.
+    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+
+    // 5. Run Cleaner. It should remove the 2 delta dirs.
+    runCleaner(hiveConf);
+    verifyDir(0, true);
+    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(Collections.emptyList(), rs);
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {
     verifyDirAndResult(expectedDeltas, false);
   }
   private void verifyDirAndResult(int expectedDeltas, boolean expectBaseDir) throws Exception {
+    verifyDir(expectedDeltas, expectBaseDir);
+
+    // Verify query result
+    int [][] resultData = new int[][] {{1,2}, {3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  private void verifyDir(int expectedDeltas, boolean expectBaseDir) throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     // Verify the content of subdirs
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
@@ -564,10 +571,5 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     } else {
       Assert.assertEquals("0 base directories expected", 0, sawBaseTimes);
     }
-
-    // Verify query result
-    int [][] resultData = new int[][] {{1,2}, {3,4}};
-    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
   }
 }

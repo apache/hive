@@ -208,6 +208,7 @@ public class AcidUtils {
     }
   };
 
+  public static final String IMPALA_WROTE_EMPTY_FILE = "_empty";
   public static final PathFilter acidHiddenFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path p) {
@@ -220,8 +221,8 @@ public class AcidUtils {
       if (name.startsWith(OrcAcidVersion.ACID_FORMAT)) {
         return true;
       }
-      // Don't filter out empty files
-      if (name.startsWith("_empty")) {
+      // Don't filter out empty files written by Impala
+      if (name.startsWith(IMPALA_WROTE_EMPTY_FILE)) {
         return true;
       }
       return !name.startsWith("_") && !name.startsWith(".");
