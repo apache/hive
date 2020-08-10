@@ -393,6 +393,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       entry.getValue().clear();
     }
     updaters.clear();
+    addedPartitions.clear();
     if (LOG.isDebugEnabled()) {
       logStats("Stats after close:");
     }
@@ -581,16 +582,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           destLocation = new Path(table.getSd().getLocation());
         } else {
           PartitionInfo partitionInfo = conn.createPartitionIfNotExists(partitionValues);
-          // collect the newly added partitions. connection.commitTransaction() will report the dynamically added
-          // partitions to TxnHandler
-          if (!partitionInfo.isExists()) {
-            addedPartitions.add(partitionInfo.getName());
-          } else {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Partition {} already exists for table {}",
-                  partitionInfo.getName(), fullyQualifiedTableName);
-            }
-          }
+          // collect the newly added/updated partitions. connection.commitTransaction() will report the dynamically
+          // added partitions to TxnHandler
+          addedPartitions.add(partitionInfo.getName());
           destLocation = new Path(partitionInfo.getPartitionLocation());
         }
         partitionPaths.put(key, destLocation);
