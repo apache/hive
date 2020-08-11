@@ -544,7 +544,8 @@ public final class ConstantPropagateProcFactory {
       ColumnInfo ci = resolveColumn(rs, c);
       if (ci != null) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Filter " + udf + " is identified as a value assignment, propagate it.");
+          LOG.debug("Filter {} is identified as a value assignment, propagate it.",
+              udf.getDisplayString(new String[]{lOperand.getExprString(), rOperand.getExprString()}));
         }
         if (!v.getTypeInfo().equals(ci.getType())) {
           v = typeCast(v, ci.getType(), true);
@@ -557,7 +558,8 @@ public final class ConstantPropagateProcFactory {
       ExprNodeDesc operand = newExprs.get(0);
       if (operand instanceof ExprNodeColumnDesc) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Filter " + udf + " is identified as a value assignment, propagate it.");
+          LOG.debug("Filter {} is identified as a value assignment, propagate it.",
+              udf.getDisplayString(new String[]{operand.getExprString()}));
         }
         ExprNodeColumnDesc c = (ExprNodeColumnDesc) operand;
         ColumnInfo ci = resolveColumn(rs, c);
@@ -979,8 +981,8 @@ public final class ConstantPropagateProcFactory {
             ObjectInspectorUtils.copyToStandardJavaObject(o, coi));
       } else if (!PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
         if (LOG.isErrorEnabled()) {
-          LOG.error("Unable to evaluate " + udf
-              + ". Return value unrecoginizable.");
+          LOG.error("Unable to evaluate {}({}). Return value unrecoginizable.",
+              udf.getClass().getName(), exprs);
         }
         return null;
       } else {
@@ -993,8 +995,8 @@ public final class ConstantPropagateProcFactory {
       }
       return new ExprNodeConstantDesc(o).setFoldedFromVal(constStr);
     } catch (HiveException e) {
-      LOG.error("Evaluation function " + udf.getClass()
-          + " failed in Constant Propagation Optimizer.");
+      LOG.error("Evaluation function {}({}) failed in Constant Propagation Optimizer.",
+          udf.getClass().getName(), exprs);
       throw new RuntimeException(e);
     }
   }
@@ -1458,7 +1460,9 @@ public final class ConstantPropagateProcFactory {
           ndRecursive = ndRecursive.getChildren().get(0);
         }
         if (ndRecursive.getChildren().get(0) instanceof ReduceSinkOperator) {
-          LOG.debug("Skip JOIN-FIL(*)-RS structure.");
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Skip JOIN-FIL(*)-RS structure.");
+          }
           return null;
         }
       }
