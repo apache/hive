@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -94,6 +95,8 @@ public class MapRecordProcessor extends RecordProcessor {
   List<MapWork> mergeWorkList;
   List<String> cacheKeys, dynamicValueCacheKeys;
   ObjectCache cache, dynamicValueCache;
+  // is this part of the query-based compaction process
+  private final boolean isInCompaction;
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
@@ -107,6 +110,8 @@ public class MapRecordProcessor extends RecordProcessor {
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
     dynamicValueCacheKeys = new ArrayList<String>();
+    isInCompaction = CompactorUtil.COMPACTOR.equalsIgnoreCase(
+        HiveConf.getVar(jconf, HiveConf.ConfVars.SPLIT_GROUPING_MODE));
   }
 
   private void setLlapOfFragmentId(final ProcessorContext context) {
@@ -131,12 +136,18 @@ public class MapRecordProcessor extends RecordProcessor {
 
 
     // create map and fetch operators
-    mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
+    if (!isInCompaction) {
+      mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
         @Override
         public Object call() {
           return Utilities.getMapWork(jconf);
         }
       });
+    } else {
+      // During query-based compaction, we don't want to retrieve old MapWork from the cache, we want a new mapper
+      // and new UDF validate_acid_sort_order instance for each bucket, otherwise validate_acid_sort_order will fail.
+      mapWork = Utilities.getMapWork(jconf);
+    }
     // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
 
