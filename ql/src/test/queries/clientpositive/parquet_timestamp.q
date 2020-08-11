@@ -1,8 +1,10 @@
-create table legacy_table (date_test timestamp)
+--! qt:timezone:Asia/Singapore
+
+create table legacy_table_parq1 (date_test timestamp)
 stored as parquet;
 
-load data local inpath '../../data/files/parquet_timestamp.parq' into table legacy_table;
+load data local inpath '../../data/files/tbl_parq1/' into table legacy_table_parq1;
 
-select * from legacy_table;
+select * from legacy_table_parq1;
 
-drop table legacy_table;
+drop table legacy_table_parq1;

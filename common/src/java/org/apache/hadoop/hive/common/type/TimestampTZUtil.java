@@ -149,6 +149,16 @@ public class TimestampTZUtil {
     }
   }
 
+  private static final ThreadLocal<DateFormat> LEGACY_DATE_FORMATTER = new ThreadLocal<>();
+
+  private static DateFormat getLegacyDateFormatter() {
+    //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
+    if (LEGACY_DATE_FORMATTER.get() == null) {
+      LEGACY_DATE_FORMATTER.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    }
+    return LEGACY_DATE_FORMATTER.get();
+  }
+
   public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
     return convertTimestampToZone(ts, fromZone, toZone, false);
   }
@@ -163,7 +173,7 @@ public class TimestampTZUtil {
       boolean legacyConversion) {
     if (legacyConversion) {
       try {
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateFormat formatter = getLegacyDateFormatter();
         formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
         java.util.Date date = formatter.parse(ts.toString());
         // Set the formatter to use a different timezone

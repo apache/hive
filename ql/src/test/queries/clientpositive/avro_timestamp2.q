@@ -1,0 +1,10 @@
+--! qt:timezone:Asia/Singapore
+
+create table legacy_table_avro1 (date_test timestamp)
+stored as avro;
+
+load data local inpath '../../data/files/tbl_avro1/' into table legacy_table_avro1;
+
+select * from legacy_table_avro1;
+
+drop table legacy_table_avro1;
