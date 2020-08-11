@@ -152,7 +152,6 @@ public class TimestampTZUtil {
   private static final ThreadLocal<DateFormat> LEGACY_DATE_FORMATTER = new ThreadLocal<>();
 
   private static DateFormat getLegacyDateFormatter() {
-    //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
     if (LEGACY_DATE_FORMATTER.get() == null) {
       LEGACY_DATE_FORMATTER.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
