@@ -104,7 +104,10 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
       case HiveParser.TOK_DROP_SCHEDULED_QUERY:
         return new ScheduledQueryAnalyzer(queryState);
-
+      case HiveParser.TOK_EXECUTE:
+        return new ExecuteStatementAnalyzer(queryState);
+      case HiveParser.TOK_PREPARE:
+        return new PrepareStatementAnalyzer(queryState);
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:
       case HiveParser.TOK_ROLLBACK:

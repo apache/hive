@@ -25,7 +25,7 @@ backtrack=false;
 k=3;
 }
 
-import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser;
+import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser;
 
 tokens {
 TOK_INSERT;
@@ -40,6 +40,8 @@ TOK_PARTVAL;
 TOK_DIR;
 TOK_TABREF;
 TOK_SUBQUERY;
+TOK_PREPARE;
+TOK_EXECUTE_PARAM_LIST;
 TOK_INSERT_INTO;
 TOK_DESTINATION;
 TOK_ALLCOLREF;
@@ -302,6 +304,7 @@ TOK_USERSCRIPTCOLSCHEMA;
 TOK_RECORDREADER;
 TOK_RECORDWRITER;
 TOK_LEFTSEMIJOIN;
+TOK_LEFTANTISEMIJOIN;
 TOK_LATERAL_VIEW;
 TOK_LATERAL_VIEW_OUTER;
 TOK_TABALIAS;
@@ -464,6 +467,8 @@ TOK_EXECUTED_AS;
 TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
+TOK_PARAMETER;
+TOK_PARAMETER_IDX;
 }
 
 
@@ -890,6 +895,8 @@ execStatement
     | updateStatement
     | sqlTransactionStatement
     | mergeStatement
+    | prepareStatement
+    | executeStatement
     ;
 
 loadStatement

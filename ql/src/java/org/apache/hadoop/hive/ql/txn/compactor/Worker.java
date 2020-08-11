@@ -520,7 +520,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         if (runJobAsSelf(ci.runAs)) {
           mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
         } else {
-          UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
+          UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
           final Partition fp = p;
           final CompactionInfo fci = ci;

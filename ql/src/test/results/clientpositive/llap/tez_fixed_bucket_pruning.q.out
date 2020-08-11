@@ -424,7 +424,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 POSTHOOK: Output: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -625,7 +625,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -842,7 +842,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
@@ -884,7 +884,7 @@ POSTHOOK: Input: default@l3_monthly_dw_dimplan
 7147200	195775	27114
 7147200	234349	27114
 7147200	350519	27114
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -1085,7 +1085,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1302,7 +1302,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
@@ -1427,7 +1427,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col2 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1570,7 +1570,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

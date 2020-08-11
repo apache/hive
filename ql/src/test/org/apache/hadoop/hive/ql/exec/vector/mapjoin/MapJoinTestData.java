@@ -281,6 +281,7 @@ public class MapJoinTestData {
     switch (testDesc.vectorMapJoinVariation) {
     case INNER_BIG_ONLY:
     case LEFT_SEMI:
+    case LEFT_ANTI:
       testData.generateRandomSmallTableCounts(testDesc, random);
       break;
     case INNER:

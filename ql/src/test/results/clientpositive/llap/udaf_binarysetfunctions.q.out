@@ -407,7 +407,7 @@ STAGE PLANS:
                         Statistics: Num rows: 7 Data size: 11396 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: double), _col5 (type: double), _col6 (type: bigint), _col7 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col8 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col9 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col10 (type: bigint), _col11 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col12 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col13 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col14 (type: struct<count:bigint,sum:double,variance:double>), _col15 (type: struct<count:bigint,sum:double,variance:double>), _col16 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col17 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>), _col18 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

@@ -1375,27 +1375,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
   }
 
-  @Override
-  public boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
-      throws TException {
-    return listPartitionsSpecByExpr(getDefaultCatalog(conf), dbName, tblName, expr, defaultPartName,
-        maxParts, result, validWriteIdList);
-  }
 
   @Override
-  public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
     assert result != null;
-    PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName, ByteBuffer.wrap(expr));
-    if (defaultPartitionName != null) {
-      req.setDefaultPartitionName(defaultPartitionName);
-    }
-    if (maxParts >= 0) {
-      req.setMaxParts(maxParts);
-    }
-    req.setValidWriteIdList(validWriteIdList);
     PartitionsSpecByExprResult r;
     try {
       r = client.get_partitions_spec_by_expr(req);

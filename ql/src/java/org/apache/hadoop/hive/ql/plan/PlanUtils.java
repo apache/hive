@@ -711,7 +711,7 @@ public final class PlanUtils {
       List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
       List<ExprNodeDesc> partitionCols, String order, String nullOrder, NullOrdering defaultNullOrder,
-      int numReducers, AcidUtils.Operation writeType) {
+      int numReducers, AcidUtils.Operation writeType, boolean isCompaction) {
     ReduceSinkDesc reduceSinkDesc = getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
             new ArrayList<List<Integer>>(),
             includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
@@ -723,6 +723,7 @@ public final class PlanUtils {
       reduceSinkDesc.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
       reduceSinkDesc.setNumReducers(1);
     }
+    reduceSinkDesc.setIsCompaction(isCompaction);
     return reduceSinkDesc;
   }
 

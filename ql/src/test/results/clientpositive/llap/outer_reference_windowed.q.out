@@ -197,7 +197,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(25,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -318,7 +318,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: decimal(25,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -451,7 +451,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(15,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -472,7 +472,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(15,2))
                         Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -633,7 +633,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(15,2))
                         Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -655,7 +655,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(15,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -816,7 +816,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(15,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -838,7 +838,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(15,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

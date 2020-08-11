@@ -85,7 +85,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                     value expressions: origin_city_name (type: string), arr_delay (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -218,7 +218,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                     value expressions: origin_city_name (type: string), arr_delay (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -349,7 +349,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col5 (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

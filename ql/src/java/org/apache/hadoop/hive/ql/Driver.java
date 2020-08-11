@@ -433,6 +433,12 @@ public class Driver implements IDriver {
 
     driverState.lock();
     try {
+      if (driverContext != null && driverContext.getPlan() != null
+          && driverContext.getPlan().isPrepareQuery()
+          && !driverContext.getPlan().isExplain()) {
+        LOG.info("Skip running tasks for prepare plan");
+        return;
+      }
       if (alreadyCompiled) {
         if (driverState.isCompiled()) {
           driverState.executing();

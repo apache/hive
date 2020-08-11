@@ -487,6 +487,13 @@ public class HiveConf extends Configuration {
    * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
+    MSC_CACHE_ENABLED("hive.metastore.client.cache.enabled", true,
+            "This property enables a Caffeiene Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+            "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
+                    "Only in effect when the cache is enabled"),
+    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.recordStats", false,
+            "This property enables recording metastore client cache stats in DEBUG logs"),
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
@@ -504,8 +511,8 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPLCMDIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPLCMRETIAN("hive.repl.cm.retain","24h",
-        new TimeValidator(TimeUnit.HOURS),
+    REPLCMRETIAN("hive.repl.cm.retain","7d",
+        new TimeValidator(TimeUnit.DAYS),
         "Time to retain removed files in cmrootdir."),
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
@@ -564,7 +571,7 @@ public class HiveConf extends Configuration {
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
             + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
-    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", false,
+    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", true,
         "Indicates if repl dump should include information about external tables. It should be \n"
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
@@ -2242,7 +2249,8 @@ public class HiveConf extends Configuration {
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size. \n" +
         "If this parameter is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the\n" +
         "specified size, the join is directly converted to a mapjoin (there is no conditional task)."),
-
+    HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", true,
+        "Whether Hive enables the optimization about converting join with null filter to anti join"),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
@@ -2886,7 +2894,10 @@ public class HiveConf extends Configuration {
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
         "are not hidden by the INSERT OVERWRITE."),
-    TXN_WRITE_X_LOCK("hive.txn.write.xlock", true,
+    TXN_MERGE_INSERT_X_LOCK("hive.txn.xlock.mergeinsert", false,
+        "Ensures MERGE INSERT operations acquire EXCLUSIVE / EXCL_WRITE lock for transactional tables.\n" +
+        "If enabled, prevents duplicates when MERGE statements are executed in parallel transactions."),
+    TXN_WRITE_X_LOCK("hive.txn.xlock.write", true,
         "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
         "shared writes and write-write conflict resolution at the commit step." +
         "- If true - exclusive writes are used:\n" +
@@ -4327,6 +4338,11 @@ public class HiveConf extends Configuration {
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
             "Only perform semijoin optimization if the estimated benefit at or above this fraction of the target table"),
+    TEZ_DYNAMIC_SEMIJOIN_REDUCTION_MULTICOLUMN(
+        "hive.tez.dynamic.semijoin.reduction.multicolumn",
+        true,
+        "Whether to consider multicolumn semijoin reducers or not.\n"
+            + "This should always be set to true. Since it is a new feature, it has been made configurable."),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN("hive.tez.dynamic.semijoin.reduction.for.mapjoin", false,
             "Use a semi-join branch for map-joins. This may not make it faster, but is helpful in certain join patterns."),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_DPP_FACTOR("hive.tez.dynamic.semijoin.reduction.for.dpp.factor",
@@ -4818,6 +4834,8 @@ public class HiveConf extends Configuration {
     LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT(
         "hive.llap.task.communicator.listener.thread-count", 30,
         "The number of task communicator listener threads."),
+    LLAP_MAX_CONCURRENT_REQUESTS_PER_NODE("hive.llap.max.concurrent.requests.per.daemon", 12,
+        "Maximum number of concurrent requests to one daemon from Tez AM"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
@@ -6660,5 +6678,14 @@ public class HiveConf extends Configuration {
       }
     }
     return ret;
+  }
+
+  // sync all configs from given conf
+  public void syncFromConf(HiveConf conf) {
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
+    while (iter.hasNext()) {
+      Map.Entry<String, String> e = iter.next();
+      set(e.getKey(), e.getValue());
+    }
   }
 }

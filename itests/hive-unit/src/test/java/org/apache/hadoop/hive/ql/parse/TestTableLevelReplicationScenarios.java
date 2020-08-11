@@ -415,6 +415,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
         LOG.info("Got exception: {}", ex.getMessage());
         Assert.assertTrue(ex instanceof SemanticException);
         Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
+        Assert.assertEquals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getErrorCode(),
+          ErrorMsg.getErrorMsg(ex.getMessage()).getErrorCode());
         failed = true;
       }
       Assert.assertTrue(failed);

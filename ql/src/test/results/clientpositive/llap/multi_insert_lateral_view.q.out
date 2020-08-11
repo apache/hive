@@ -219,7 +219,7 @@ STAGE PLANS:
                                   Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
                                   value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -507,7 +507,7 @@ STAGE PLANS:
                               Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -817,7 +817,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1270,7 +1270,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 5 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1755,7 +1755,7 @@ STAGE PLANS:
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

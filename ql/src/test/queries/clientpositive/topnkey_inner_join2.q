@@ -45,12 +45,12 @@ explain select name, city
    from customer join address
    on customer.address_id = address.id
    and name in ('Joe', 'Robert','Heisenberg')
-  order by customer.id
+  order by customer.address_id
   limit 3;
 
 select name, city
    from customer join address
    on customer.address_id = address.id
    and name in ('Joe', 'Robert','Heisenberg')
-  order by customer.id
+  order by customer.address_id
   limit 3;
