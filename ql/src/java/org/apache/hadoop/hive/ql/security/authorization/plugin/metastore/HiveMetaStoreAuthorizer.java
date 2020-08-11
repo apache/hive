@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
@@ -380,19 +381,25 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         case CREATE_TABLE:
           authzEvent = new CreateTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("CREATE_VIEW", getCurrentUser(authzEvent)));
+            //we allow view to be created, but mark it as having not been authorized
+            PreCreateTableEvent pcte = (PreCreateTableEvent)preEventContext;
+            Map<String, String> params = pcte.getTable().getParameters();
+            params.put("Authorized", "false");
           }
           break;
         case ALTER_TABLE:
           authzEvent = new AlterTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("ALTER_VIEW", getCurrentUser(authzEvent)));
+            //we allow view to be altered, but mark it as having not been authorized
+            PreAlterTableEvent pcte = (PreAlterTableEvent)preEventContext;
+            Map<String, String> params = pcte.getNewTable().getParameters();
+            params.put("Authorized", "false");
           }
           break;
         case DROP_TABLE:
           authzEvent = new DropTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("DROP_VIEW", getCurrentUser(authzEvent)));
+            //TODO: do we need to check Authorized flag?
           }
           break;
         case ADD_PARTITION:
