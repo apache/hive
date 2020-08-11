@@ -355,12 +355,14 @@ class AvroDeserializer {
       } else {
         skipUTCConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
       }
+      boolean legacyConversion = false;
       ZoneId convertToTimeZone;
       if (writerTimezone != null) {
         convertToTimeZone = writerTimezone;
       } else if (skipUTCConversion) {
         convertToTimeZone = ZoneOffset.UTC;
       } else {
+        legacyConversion = true;
         convertToTimeZone = TimeZone.getDefault().toZoneId();
       }
       final boolean skipProlepticConversion;
@@ -375,7 +377,7 @@ class AvroDeserializer {
         }
       }
       Timestamp timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone);
+          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone, legacyConversion);
       if (!skipProlepticConversion) {
         timestamp = Timestamp.ofEpochMilli(
             CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));

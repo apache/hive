@@ -111,9 +111,11 @@ public class NanoTimeUtils {
    * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
    */
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
+    boolean legacyConversion = false;
     if (skipConversion) {
       timeZoneId = ZoneOffset.UTC;
     } else if (timeZoneId == null) {
+      legacyConversion = true;
       timeZoneId = TimeZone.getDefault().toZoneId();
     }
 
@@ -146,7 +148,7 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId, legacyConversion);
     return ts;
   }
 }
