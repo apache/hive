@@ -25,6 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 public class CompactorUtil {
+  public static final String COMPACTOR = "compactor";
+
   public interface ThrowingRunnable<E extends Exception> {
     void run() throws E;
 
