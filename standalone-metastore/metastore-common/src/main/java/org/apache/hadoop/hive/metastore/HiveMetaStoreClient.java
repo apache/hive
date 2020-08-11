@@ -1056,7 +1056,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
 
-      return client.get_aggr_stats_for(req);
+      return getAggrStatsFromLocalCache(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1064,6 +1064,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             diff, "HMS client");
       }
     }
+  }
+
+  protected AggrStats getAggrStatsFromLocalCache(PartitionsStatsRequest req) throws TException {
+    return client.get_aggr_stats_for(req);
   }
 
   @Override
@@ -2255,7 +2259,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (processorIdentifier != null)
         req.setProcessorIdentifier(processorIdentifier);
 
-      Table t = client.get_table_req(req).getTable();
+      Table t = getTableFromLocalCache(req);
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
@@ -2271,6 +2275,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Table getTable(String catName, String dbName, String tableName,
       String validWriteIdList) throws TException {
     return getTable(catName, dbName, tableName, validWriteIdList, false, null);
+  }
+
+  protected Table getTableFromLocalCache(GetTableRequest req) throws TException{
+    return client.get_table_req(req).getTable();
   }
 
   @Override
@@ -2296,7 +2304,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (processorIdentifier != null)
         req.setProcessorIdentifier(processorIdentifier);
 
-      Table t = client.get_table_req(req).getTable();
+      Table t = getTableFromLocalCache(req);
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
@@ -4000,7 +4008,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
 
-      return client.get_aggr_stats_for(req);
+      return getAggrStatsFromLocalCache(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {

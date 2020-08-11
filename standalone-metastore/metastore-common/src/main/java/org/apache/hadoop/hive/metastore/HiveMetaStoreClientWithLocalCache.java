@@ -20,10 +20,14 @@ package org.apache.hadoop.hive.metastore;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -87,7 +91,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
    */
   public enum KeyType {
     PARTITIONS_BY_EXPR(PartitionsByExprRequest.class, PartitionsByExprResult.class),
-    PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class);
+    PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class),
+    GET_TABLE(GetTableRequest.class, Table.class),
+    AGGR_COL_STATS(PartitionsStatsRequest.class, AggrStats.class);
 
     private final Class<?> keyClass;
     private final Class<?> valueClass;
@@ -185,6 +191,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       case PARTITIONS_SPEC_BY_EXPR:
         result = super.getPartitionsSpecByExprResult((PartitionsByExprRequest)cacheKey.obj);
         break;
+      case GET_TABLE:
+        result = super.getTableFromLocalCache((GetTableRequest)cacheKey.obj);
+        break;
+      case AGGR_COL_STATS:
+        result = super.getAggrStatsFromLocalCache((PartitionsStatsRequest)cacheKey.obj);
+        break;
       default:
         break;
     }
@@ -197,7 +209,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsByExprResult r;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabledAndInitialized() && isRequestCachable(req, KeyType.PARTITIONS_BY_EXPR)) {
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.PARTITIONS_BY_EXPR)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       try {
         r = (PartitionsByExprResult) mscLocalCache.get(cacheKey, this::load); // get either the result or an Exception
@@ -227,7 +239,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsSpecByExprResult r;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabledAndInitialized() && isRequestCachable(req, KeyType.PARTITIONS_SPEC_BY_EXPR)) {
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.PARTITIONS_SPEC_BY_EXPR)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       try {
         r = (PartitionsSpecByExprResult) mscLocalCache.get(cacheKey, this::load); // get either the result or an Exception
@@ -252,18 +264,86 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return r;
   }
 
+  @Override
+  protected Table getTableFromLocalCache(GetTableRequest req) throws TException{
+    Table t;
+
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.GET_TABLE)) {
+      CacheKey cacheKey = new CacheKey(KeyType.GET_TABLE, req);
+      try {
+        t = (Table) mscLocalCache.get(cacheKey, this::load);
+
+        if (LOG.isDebugEnabled() && RECORD_STATS) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+      } catch (UncheckedCacheException e) {
+        if (e.getCause() instanceof MetaException) {
+          throw (MetaException) e.getCause();
+        } else if (e.getCause() instanceof TException) {
+          throw (TException) e.getCause();
+        } else {
+          throw new TException(e.getCause());
+        }
+      }
+    } else {
+      t =  super.getTableFromLocalCache(req);
+    }
+
+    return t;
+  }
+
+  @Override
+  protected AggrStats getAggrStatsFromLocalCache(PartitionsStatsRequest req) throws TException {
+    AggrStats r;
+
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.AGGR_COL_STATS)) {
+      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
+      try {
+        r = (AggrStats) mscLocalCache.get(cacheKey, this::load);
+
+        if (LOG.isDebugEnabled() && RECORD_STATS) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+      } catch (UncheckedCacheException e) {
+        if (e.getCause() instanceof MetaException) {
+          throw (MetaException) e.getCause();
+        } else if (e.getCause() instanceof TException) {
+          throw (TException) e.getCause();
+        } else {
+          throw new TException(e.getCause());
+        }
+      }
+    } else {
+      r = super.getAggrStatsFromLocalCache(req);
+    }
+
+    return r;
+  }
+
   /**
    * This method determines if the request should be cached.
    * @param request Request object
    * @return boolean
    */
-  private boolean isRequestCachable(Object request, KeyType keyType) {
+  private boolean isRequestCacheable(Object request, KeyType keyType) {
     switch (keyType) {
       //cache only requests for transactional tables, with a valid table id
       case PARTITIONS_BY_EXPR:
       case PARTITIONS_SPEC_BY_EXPR:
         PartitionsByExprRequest req = (PartitionsByExprRequest) request;
         return req.getValidWriteIdList() != null && req.getId() != -1;
+      case GET_TABLE:
+        GetTableRequest gtr = (GetTableRequest) request;
+        return gtr.getValidWriteIdList() != null;
+      case AGGR_COL_STATS:
+        PartitionsStatsRequest psr = (PartitionsStatsRequest) request;
+        Table tbl = null;
+        try {
+          tbl = getTable(psr.getDbName(), psr.getTblName());
+        } catch (TException e) {
+          return false;
+        }
+        return tbl != null && tbl.getId() != -1 && psr.getValidWriteIdList() != null;
         // Requests of other types can have different conditions and should be added here.
       default:
         return false;
