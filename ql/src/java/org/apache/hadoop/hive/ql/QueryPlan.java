@@ -122,6 +122,8 @@ public class QueryPlan implements Serializable {
   private final DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
 
+  private Boolean prepareQuery;
+
   public QueryPlan() {
     this(null);
   }
@@ -133,6 +135,7 @@ public class QueryPlan implements Serializable {
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
+    this.prepareQuery = false;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -165,6 +168,7 @@ public class QueryPlan implements Serializable {
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
     this.cboInfo = sem.getCboInfo();
+    this.prepareQuery = false;
   }
 
   /**
@@ -195,6 +199,14 @@ public class QueryPlan implements Serializable {
 
   public String getQueryId() {
     return queryId;
+  }
+
+  public void setPrepareQuery(boolean prepareQuery) {
+    this.prepareQuery = prepareQuery;
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   public static String makeQueryId() {
@@ -871,4 +883,6 @@ public class QueryPlan implements Serializable {
   public String getCboInfo() {
     return cboInfo;
   }
+
+
 }

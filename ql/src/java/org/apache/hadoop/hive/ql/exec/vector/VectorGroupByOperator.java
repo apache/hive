@@ -22,12 +22,14 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperGeneral;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -107,7 +110,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   // transient.
   //---------------------------------------------------------------------------
 
-  private transient VectorAggregateExpression[] aggregators;
+  @VisibleForTesting
+  transient VectorAggregateExpression[] aggregators;
   /**
    * The aggregation buffers to use for the current batch.
    */
@@ -159,10 +163,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * Interface for processing mode: global, hash, unsorted streaming, or group batch
    */
   private static interface IProcessingMode {
-    public void initialize(Configuration hconf) throws HiveException;
-    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException;
-    public void processBatch(VectorizedRowBatch batch) throws HiveException;
-    public void close(boolean aborted) throws HiveException;
+    void initialize(Configuration hconf) throws HiveException;
+    void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException;
+    void processBatch(VectorizedRowBatch batch) throws HiveException;
+    void close(boolean aborted) throws HiveException;
   }
 
   /**
@@ -294,11 +298,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    */
    final class ProcessingModeHashAggregate extends ProcessingModeBase {
 
+    private Queue<KeyWrapper> reusableKeyWrapperBuffer;
+
     /**
      * The global key-aggregation hash map.
      */
     @VisibleForTesting
     Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
+
+    private Queue<VectorAggregationBufferRow> reusableAggregationBufferRows =
+        new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
 
     /**
      * Total per hashtable entry fixed memory (does not depend on key/agg values).
@@ -399,6 +408,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       }
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
+
+      if (keyWrappersBatch.getVectorHashKeyWrappers()[0] instanceof VectorHashKeyWrapperGeneral) {
+        reusableKeyWrapperBuffer = new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
+      }
     }
 
     @VisibleForTesting
@@ -465,7 +478,26 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     }
 
     @Override
+    protected VectorAggregationBufferRow allocateAggregationBuffer() throws HiveException {
+      VectorAggregationBufferRow bufferSet;
+      if (reusableAggregationBufferRows.size() > 0) {
+        bufferSet = reusableAggregationBufferRows.remove();
+        bufferSet.setVersionAndIndex(0, 0);
+        for (int i = 0; i < aggregators.length; i++) {
+          aggregators[i].reset(bufferSet.getAggregationBuffer(i));
+        }
+        return bufferSet;
+      } else {
+        return super.allocateAggregationBuffer();
+      }
+    }
+
+    @Override
     public void close(boolean aborted) throws HiveException {
+      reusableAggregationBufferRows.clear();
+      if (reusableKeyWrapperBuffer != null) {
+        reusableKeyWrapperBuffer.clear();
+      }
       if (!aborted) {
         flush(true);
       }
@@ -514,7 +546,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           // is very important to clone the keywrapper, the one we have from our
           // keyWrappersBatch is going to be reset/reused on next batch.
           aggregationBuffer = allocateAggregationBuffer();
-          mapKeysAggregationBuffers.put(kw.copyKey(), aggregationBuffer);
+          KeyWrapper copyKeyWrapper = cloneKeyWrapper(kw);
+          mapKeysAggregationBuffers.put(copyKeyWrapper, aggregationBuffer);
           numEntriesHashTable++;
           numEntriesSinceCheck++;
         } else {
@@ -523,6 +556,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           totalAccessCount++;
         }
         aggregationBatchInfo.mapAggregationBufferSet(aggregationBuffer, i);
+      }
+    }
+
+    private KeyWrapper cloneKeyWrapper(VectorHashKeyWrapperBase from) {
+      if (reusableKeyWrapperBuffer != null && reusableKeyWrapperBuffer.size() > 0) {
+        KeyWrapper keyWrapper = reusableKeyWrapperBuffer.poll();
+        from.copyKey(keyWrapper);
+        return keyWrapper;
+      } else {
+        return from.copyKey();
       }
     }
 
@@ -598,17 +641,26 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           mapKeysAggregationBuffers.entrySet().iterator();
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
+        KeyWrapper keyWrapper = pair.getKey();
+        VectorAggregationBufferRow bufferRow = pair.getValue();
         if (!all && avgAccess >= 1) {
-          // Retain entries when access pattern is > than average access
-          if (pair.getValue().getAccessCount() > avgAccess) {
+          if (bufferRow.getAccessCount() > avgAccess) {
+            // resetting to give chance for other entries
+            totalAccessCount -= bufferRow.getAccessCount();
+            bufferRow.resetAccessCount();
             continue;
           }
         }
 
-        writeSingleRow((VectorHashKeyWrapperBase) pair.getKey(), pair.getValue());
+        writeSingleRow((VectorHashKeyWrapperBase) keyWrapper, bufferRow);
 
         if (!all) {
-          totalAccessCount -= pair.getValue().getAccessCount();
+          totalAccessCount -= bufferRow.getAccessCount();
+          reusableAggregationBufferRows.add(bufferRow);
+          bufferRow.resetAccessCount();
+          if (reusableKeyWrapperBuffer != null) {
+            reusableKeyWrapperBuffer.add(pair.getKey());
+          }
           iter.remove();
           --numEntriesHashTable;
           if (++entriesFlushed >= entriesToFlush) {

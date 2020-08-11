@@ -39,16 +39,22 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.SocketFactory;
 
+import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 // TODO: LlapNodeId is just a host+port pair; we could make this class more generic.
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
+import org.apache.hadoop.ipc.AsyncCallLimitExceededException;
+import org.apache.hadoop.ipc.Client;
+import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.util.concurrent.AsyncGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,11 +106,15 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       // Tracks completed requests pre node
       private final LinkedList<LlapNodeId> completedNodes = new LinkedList<>();
 
+      private final AsyncResponseHandler asyncResponseHandler;
+
       public RequestManager(int numThreads, int maxPerNode) {
         ExecutorService localExecutor = Executors.newFixedThreadPool(numThreads,
             new ThreadFactoryBuilder().setNameFormat("TaskCommunicator #%2d").build());
         maxConcurrentRequestsPerNode = maxPerNode;
         executor = MoreExecutors.listeningDecorator(localExecutor);
+        asyncResponseHandler = new AsyncResponseHandler(this);
+        asyncResponseHandler.start();
       }
 
       @VisibleForTesting
@@ -163,6 +173,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
 
       public void shutdown() {
         if (!isShutdown.getAndSet(true)) {
+          asyncResponseHandler.shutdownNow();
           executor.shutdownNow();
           notifyRunLoop();
         }
@@ -172,8 +183,14 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       <T extends Message , U extends Message> void submitToExecutor(
           CallableRequest<T, U> request, LlapNodeId nodeId) {
         ListenableFuture<U> future = executor.submit(request);
-        Futures.addCallback(future, new ResponseCallback<U>(
-            request.getCallback(), nodeId, this));
+        if (request instanceof AsyncCallableRequest) {
+          Futures.addCallback(future, new AsyncResponseCallback(
+                  request.getCallback(), nodeId, this,
+                  (AsyncCallableRequest) request, asyncResponseHandler), MoreExecutors.directExecutor());
+        } else {
+          Futures.addCallback(future, new ResponseCallback<U>(
+                  request.getCallback(), nodeId, this), MoreExecutors.directExecutor());
+        }
       }
 
       @VisibleForTesting
@@ -334,6 +351,41 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       }
     }
 
+  private static final class AsyncResponseCallback<TYPE extends Message>
+          implements FutureCallback<TYPE> {
+
+    private final AsyncPbRpcProxy.ExecuteRequestCallback<TYPE> callback;
+    private final LlapNodeId nodeId;
+    private final AsyncPbRpcProxy.RequestManager requestManager;
+    private final AsyncPbRpcProxy.AsyncCallableRequest request;
+    private final AsyncResponseHandler asyncResponseHandler;
+
+    public AsyncResponseCallback(AsyncPbRpcProxy.ExecuteRequestCallback<TYPE> callback, LlapNodeId nodeId,
+                                 AsyncPbRpcProxy.RequestManager requestManager,
+                                 AsyncPbRpcProxy.AsyncCallableRequest request,
+                                 AsyncResponseHandler asyncResponseHandler) {
+      this.callback = callback;
+      this.nodeId = nodeId;
+      this.requestManager = requestManager;
+      this.request = request;
+      this.asyncResponseHandler = asyncResponseHandler;
+    }
+
+    @Override
+    public void onSuccess(TYPE result) {
+      asyncResponseHandler.addToAsyncResponseFutureQueue(request);
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+      try {
+        callback.indicateError(t);
+      } finally {
+        requestManager.requestFinished(nodeId);
+      }
+    }
+  }
+
   @VisibleForTesting
   protected static abstract class CallableRequest<REQUEST extends Message, RESPONSE extends Message>
         implements Callable<RESPONSE> {
@@ -351,7 +403,79 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       return callback;
     }
 
+    /**
+     * Override this method to make a synchronous request and wait for response.
+     * @return
+     * @throws Exception
+     */
     public abstract RESPONSE call() throws Exception;
+  }
+
+  /**
+   * Asynchronous request to a node. The request must override {@link #callInternal()}
+   * @param <REQUEST>
+   * @param <RESPONSE>
+   */
+  protected static abstract class AsyncCallableRequest<REQUEST extends Message, RESPONSE extends Message>
+          extends NodeCallableRequest<REQUEST, RESPONSE> {
+
+    private final long TIMEOUT = 60000;
+    private final long BACKOFF_START = 10;
+    private final int FAST_RETRIES = 5;
+    private AsyncGet<Message, Exception> responseFuture;
+
+    protected AsyncCallableRequest(LlapNodeId nodeId, REQUEST request,
+                                   ExecuteRequestCallback<RESPONSE> callback) {
+      super(nodeId, request, callback);
+    }
+
+    @Override
+    public RESPONSE call() throws Exception {
+      boolean asyncMode = Client.isAsynchronousMode();
+      long deadline = System.currentTimeMillis() + TIMEOUT;
+      int numRetries = 0;
+      long nextBackoffMs = BACKOFF_START;
+      try {
+        Client.setAsynchronousMode(true);
+        boolean sent = false;
+        while (!sent) {
+          try {
+            callInternal();
+            sent = true;
+          } catch (Exception ex) {
+            if (ex instanceof ServiceException && ex.getCause() != null
+                    && ex.getCause() instanceof AsyncCallLimitExceededException) {
+              numRetries++;
+              if (numRetries >= FAST_RETRIES) {
+                Thread.sleep(nextBackoffMs);
+                if (System.currentTimeMillis() > deadline) {
+                  throw new HiveException("Async request timed out in  " + TIMEOUT + " ms.", ex.getCause());
+                }
+                numRetries = 0;
+                nextBackoffMs = nextBackoffMs * 2;
+              }
+              if (LOG.isTraceEnabled()) {
+                LOG.trace("Async call limit exceeded.", ex.getCause());
+              }
+            } else {
+              throw ex;
+            }
+          }
+        }
+        responseFuture = ProtobufRpcEngine.getAsyncReturnMessage();
+        return null;
+      } finally {
+        Client.setAsynchronousMode(asyncMode);
+      }
+    }
+
+    public void callInternal() throws Exception {
+      // override if async response
+    }
+
+    public AsyncGet<Message, Exception> getResponseFuture() {
+      return responseFuture;
+    }
   }
 
 

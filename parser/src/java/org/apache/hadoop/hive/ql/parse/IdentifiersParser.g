@@ -35,6 +35,9 @@ k=3;
       RecognitionException e) {
     gParent.errors.add(new ParseError(gParent, e, tokenNames));
   }
+
+  int parameterIdx = 0;
+  public int getParameterIdx() { return ++parameterIdx;}
 }
 
 @rulecatch {
@@ -345,7 +348,26 @@ constant
     | charSetStringLiteral
     | booleanValue
     | KW_NULL -> TOK_NULL
+    | prepareStmtParam
     ;
+
+prepareStmtParam
+  : p=parameterIdx
+  ->
+  {
+    adaptor.create(TOK_PARAMETER, Integer.toString($p.idx))
+  }
+  ;
+
+parameterIdx returns [int idx]
+  : QUESTION
+  { $idx = getParameterIdx(); }
+  ->
+  {
+  adaptor.create(TOK_PARAMETER_IDX, Integer.toString($idx) )
+  }
+  ;
+
 
 stringLiteralSequence
     :

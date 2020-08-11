@@ -9226,6 +9226,10 @@ public class ObjectStore implements RawStore, Configurable {
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     // Note: this will get stats without verifying ACID.
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.debug("PartNames and/or ColNames are empty");
+      return Collections.emptyList();
+    }
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
   }
@@ -9236,8 +9240,9 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
       throws MetaException, NoSuchObjectException {
-    if (partNames == null || partNames.isEmpty()) {
-      return null;
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.debug("PartNames and/or ColNames are empty");
+      return Collections.emptyList();
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
@@ -9481,6 +9486,79 @@ public class ObjectStore implements RawStore, Configurable {
         "tableName", "dbName", "partition.partitionName", "catName");
     queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
     queryWithParams.getLeft().closeAll();
+  }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList) {
+
+    String catName = tn.getCat();
+    String dbName = tn.getDb();
+    String tableName = tn.getTable();
+
+    Query query = null;
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
+    catName = normalizeIdentifier(catName);
+    if (tableName == null) {
+      throw new RuntimeException("Table name is null.");
+    }
+    boolean ret = false;
+    try {
+      openTransaction();
+      MTable mTable = getMTable(catName, dbName, tableName);
+
+      query = pm.newQuery(MPartitionColumnStatistics.class);
+
+      String filter = "dbName == t2 && tableName == t3 && catName == t4";
+      String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4";
+
+      query.setFilter(filter);
+      query.declareParameters(parameters);
+
+      Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
+          normalizeIdentifier(catName));
+
+      new GetHelper<Integer>(catName, dbName, tableName, true, true) {
+        private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
+        @Override
+        protected String describeResult() {
+          return "Partition count";
+        }
+
+        @Override
+        protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
+          return true;
+        }
+
+        @Override
+        protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
+          directSql.deleteColumnStatsState(getTable().getId());
+          return 0;
+        }
+
+        @Override
+        protected Integer getJdoResult(GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
+          try {
+            List<Partition> parts = getPartitions(catName, dbName, tableName, -1);
+            for (Partition part : parts) {
+              Partition newPart = new Partition(part);
+              StatsSetupConst.clearColumnStatsState(newPart.getParameters());
+              alterPartition(catName, dbName, tableName, part.getValues(), newPart, writeIdList);
+            }
+            return parts.size();
+          } catch (InvalidObjectException e) {
+            LOG.error("error updating parts", e);
+            return -1;
+          }
+        }
+      }.run(true);
+
+      ret = commitTransaction();
+    } catch (Exception e) {
+      LOG.error("Couldn't clear stats for table", e);
+    } finally {
+      rollbackAndCleanup(ret, query);
+    }
   }
 
   @Override

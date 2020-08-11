@@ -1,0 +1,388 @@
+PREHOOK: query: drop table if exists customer
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists customer
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists customer_address
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists customer_address
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table customer(id bigint, address_id bigint, name char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer
+POSTHOOK: query: create table customer(id bigint, address_id bigint, name char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer
+PREHOOK: query: create table address(id bigint, city varchar(60))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@address
+POSTHOOK: query: create table address(id bigint, city varchar(60))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@address
+PREHOOK: query: alter table address add constraint pk_ca1 primary key (id) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table address add constraint pk_ca1 primary key (id) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table customer add constraint fk_ca1 foreign key (address_id) references address (id) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table customer add constraint fk_ca1 foreign key (address_id) references address (id) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: insert into address values
+  (1, 'London'),
+  (2, 'Washington'),
+  (3, 'New York'),
+  (4, 'Hopewell')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@address
+POSTHOOK: query: insert into address values
+  (1, 'London'),
+  (2, 'Washington'),
+  (3, 'New York'),
+  (4, 'Hopewell')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@address
+POSTHOOK: Lineage: address.city SCRIPT []
+POSTHOOK: Lineage: address.id SCRIPT []
+PREHOOK: query: insert into customer values
+  (1, 1, 'Jon'),
+  (2, 2, 'Peter'),
+  (3, 3, 'Smith'),
+  (4, 4, 'Joe'),
+  (5, 4, 'Robert'),
+  (6, 4, 'Heisenberg')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@customer
+POSTHOOK: query: insert into customer values
+  (1, 1, 'Jon'),
+  (2, 2, 'Peter'),
+  (3, 3, 'Smith'),
+  (4, 4, 'Joe'),
+  (5, 4, 'Robert'),
+  (6, 4, 'Heisenberg')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@customer
+POSTHOOK: Lineage: customer.address_id SCRIPT []
+POSTHOOK: Lineage: customer.id SCRIPT []
+POSTHOOK: Lineage: customer.name SCRIPT []
+PREHOOK: query: select 'negative: filter on the PK side'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'negative: filter on the PK side'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+negative: filter on the PK side
+PREHOOK: query: explain select name, city
+  from customer join address
+  on customer.address_id = address.id
+  and city = 'Hopewell'
+ order by customer.id
+ limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@address
+PREHOOK: Input: default@customer
+#### A masked pattern was here ####
+POSTHOOK: query: explain select name, city
+  from customer join address
+  on customer.address_id = address.id
+  and city = 'Hopewell'
+ order by customer.id
+ limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@address
+POSTHOOK: Input: default@customer
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: customer
+                  filterExpr: address_id is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: address_id is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint), address_id (type: bigint), name (type: char(20))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 6 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: bigint)
+                        Statistics: Num rows: 6 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col2 (type: char(20))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: address
+                  filterExpr: (city = 'Hopewell') (type: boolean)
+                  Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (city = 'Hopewell') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 2 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: +
+                  keys: _col0 (type: bigint)
+                  null sort order: z
+                  Statistics: Num rows: 2 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 3
+                  Select Operator
+                    expressions: _col2 (type: char(20)), _col0 (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: char(20))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: char(20)), 'Hopewell' (type: varchar(60))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select name, city
+  from customer join address
+  on customer.address_id = address.id
+  and city = 'Hopewell'
+ order by customer.id
+ limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@address
+PREHOOK: Input: default@customer
+#### A masked pattern was here ####
+POSTHOOK: query: select name, city
+  from customer join address
+  on customer.address_id = address.id
+  and city = 'Hopewell'
+ order by customer.id
+ limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@address
+POSTHOOK: Input: default@customer
+#### A masked pattern was here ####
+Joe                 	Hopewell
+Robert              	Hopewell
+Heisenberg          	Hopewell
+PREHOOK: query: select 'positive: filter on the FK side'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'positive: filter on the FK side'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+positive: filter on the FK side
+PREHOOK: query: explain select name, city
+   from customer join address
+   on customer.address_id = address.id
+   and name in ('Joe', 'Robert','Heisenberg')
+  order by customer.address_id
+  limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@address
+PREHOOK: Input: default@customer
+#### A masked pattern was here ####
+POSTHOOK: query: explain select name, city
+   from customer join address
+   on customer.address_id = address.id
+   and name in ('Joe', 'Robert','Heisenberg')
+  order by customer.address_id
+  limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@address
+POSTHOOK: Input: default@customer
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: customer
+                  filterExpr: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
+                    Top N Key Operator
+                      sort order: +
+                      keys: address_id (type: bigint)
+                      null sort order: z
+                      Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 3
+                      Select Operator
+                        expressions: address_id (type: bigint), name (type: char(20))
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: bigint)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: bigint)
+                          Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: char(20))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: address
+                  Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: bigint), city (type: varchar(60))
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: varchar(60))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: char(20)), _col3 (type: varchar(60)), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col2 (type: bigint)
+                    null sort order: z
+                    sort order: +
+                    Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: char(20)), _col1 (type: varchar(60))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: char(20)), VALUE._col1 (type: varchar(60))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select name, city
+   from customer join address
+   on customer.address_id = address.id
+   and name in ('Joe', 'Robert','Heisenberg')
+  order by customer.address_id
+  limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@address
+PREHOOK: Input: default@customer
+#### A masked pattern was here ####
+POSTHOOK: query: select name, city
+   from customer join address
+   on customer.address_id = address.id
+   and name in ('Joe', 'Robert','Heisenberg')
+  order by customer.address_id
+  limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@address
+POSTHOOK: Input: default@customer
+#### A masked pattern was here ####
+Joe                 	Hopewell
+Robert              	Hopewell
+Heisenberg          	Hopewell

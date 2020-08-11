@@ -33,8 +33,10 @@ public class RuntimeValuesInfo implements Serializable {
   private TableDesc tableDesc;
   private List<String> dynamicValueIDs;
   private List<ExprNodeDesc> colExprs;
-  // Column expression of the table being filtered by the semijoin optimization.
-  private ExprNodeDesc tsColExpr;
+  /**
+   * Column expressions of the (target) table being filtered by the semi-join.
+   */
+  private List<ExprNodeDesc> targetColumns;
 
   // get-set methods
   public TableDesc getTableDesc() {
@@ -61,12 +63,12 @@ public class RuntimeValuesInfo implements Serializable {
     this.colExprs = colExprs;
   }
 
-  public ExprNodeDesc getTsColExpr() {
-    return tsColExpr;
+  public List<ExprNodeDesc> getTargetColumns() {
+    return targetColumns;
   }
 
-  public void setTsColExpr(ExprNodeDesc tsColExpr) {
-    this.tsColExpr = tsColExpr;
+  public void setTargetColumns(List<ExprNodeDesc> targetColumns) {
+    this.targetColumns = targetColumns;
   }
 }
 

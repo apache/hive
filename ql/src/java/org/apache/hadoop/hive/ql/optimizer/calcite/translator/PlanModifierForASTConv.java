@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -287,12 +288,13 @@ public class PlanModifierForASTConv {
       // But we only need the additional project if the left child
       // is another join too; if it is not, ASTConverter will swap
       // the join inputs, leaving the join operator on the left.
-      // we also do it if parent is HiveSemiJoin since ASTConverter won't
-      // swap inputs then
+      // we also do it if parent is HiveSemiJoin or HiveAntiJoin since
+      // ASTConverter won't swap inputs then.
       // This will help triggering multijoin recognition methods that
       // are embedded in SemanticAnalyzer.
       if (((Join) parent).getRight() == joinNode &&
-            (((Join) parent).getLeft() instanceof Join || parent instanceof HiveSemiJoin) ) {
+            (((Join) parent).getLeft() instanceof Join || parent instanceof HiveSemiJoin
+                  || parent instanceof HiveAntiJoin) ) {
         validParent = false;
       }
     } else if (parent instanceof SetOp) {

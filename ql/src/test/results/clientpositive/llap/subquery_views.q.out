@@ -109,13 +109,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Map 1 (SIMPLE_EDGE)
-        Reducer 12 <- Map 11 (SIMPLE_EDGE)
+        Reducer 11 <- Map 1 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
         Reducer 5 <- Map 1 (SIMPLE_EDGE)
         Reducer 6 <- Map 1 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 12 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 11 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 9 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -124,7 +124,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((key < '11') or ((key < '11') and (value > 'val_11')) or ((key < '11') and (value > 'val_11'))) (type: boolean)
+                  filterExpr: ((key < '11') or ((key < '11') and (value > 'val_11')) or ((key < '11') and (value > 'val_11')) or (key < '11')) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -203,16 +203,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 27 Data size: 5238 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 11 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  filterExpr: (key < '11') (type: boolean)
-                  properties:
-                    insideView TRUE
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < '11') (type: boolean)
                     Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
@@ -229,7 +219,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 83 Data size: 7221 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -246,7 +236,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 27 Data size: 5238 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint), _col3 (type: bigint)
-        Reducer 12 
+        Reducer 11 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator

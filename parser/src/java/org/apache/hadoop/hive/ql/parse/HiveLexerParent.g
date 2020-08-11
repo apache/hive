@@ -78,6 +78,7 @@ KW_SORT: 'SORT';
 KW_UNION: 'UNION';
 KW_EXCEPT: 'EXCEPT';
 KW_LOAD: 'LOAD';
+KW_PREPARE: 'PREPARE';
 KW_EXPORT: 'EXPORT';
 KW_IMPORT: 'IMPORT';
 KW_REPLICATION: 'REPLICATION';
@@ -371,6 +372,7 @@ KW_AST: 'AST';
 KW_COST: 'COST';
 KW_JOINCOST: 'JOINCOST';
 KW_WITHIN: 'WITHIN';
+KW_PKFK_JOIN: 'PKFK_JOIN';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.gson.Gson;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
@@ -72,14 +73,14 @@ public class TestRangerLoadTask {
       .thenCallRealMethod();
     Mockito.when(mockClient.addDenyPolicies(Mockito.anyList(), Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
     int status = task.execute();
-    Assert.assertEquals(40000, status);
+    Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test
@@ -188,9 +189,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));
@@ -252,9 +254,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));

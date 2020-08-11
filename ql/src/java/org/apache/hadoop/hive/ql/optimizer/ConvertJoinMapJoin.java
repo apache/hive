@@ -954,6 +954,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       switch (joinCondDesc.getType()) {
         case JoinDesc.INNER_JOIN:
         case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.ANTI_JOIN:
         case JoinDesc.UNIQUE_JOIN:
           hasOuter = false;
           break;

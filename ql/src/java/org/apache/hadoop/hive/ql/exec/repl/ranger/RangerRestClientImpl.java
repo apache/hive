@@ -37,6 +37,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.client.utils.URIBuilder;
@@ -65,6 +68,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 
 /**
  * RangerRestClientImpl to connect to Ranger and export policies.
@@ -77,27 +81,21 @@ public class RangerRestClientImpl implements RangerRestClient {
 
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
                                                      String dbName,
-                                                     String rangerHiveServiceName)throws SemanticException {
+                                                     String rangerHiveServiceName,
+                                                     HiveConf hiveConf)throws SemanticException {
     LOG.info("Ranger endpoint for cluster " + sourceRangerEndpoint);
     if (StringUtils.isEmpty(rangerHiveServiceName)) {
-      throw new SemanticException("Ranger Service Name cannot be empty");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service Name " +
+        "cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
     }
-    Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
-      @Override
-      public RangerExportPolicyList execute() throws Exception {
-        if (UserGroupInformation.isSecurityEnabled()) {
-          SecurityUtils.reloginExpiringKeytabUser();
-          return UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<RangerExportPolicyList>) () ->
-            exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName, dbName));
-        } else {
-          return exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName, dbName);
-        }
-      }
-    };
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(Exception.class).build();
     try {
-      return retriable.runWithDelay();
+      return retryable.executeCallable(() -> exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName,
+        dbName));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -175,7 +173,8 @@ public class RangerRestClientImpl implements RangerRestClient {
   @Override
   public RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
                                                      String baseUrl,
-                                                     String rangerHiveServiceName)
+                                                     String rangerHiveServiceName,
+                                                     HiveConf hiveConf)
       throws Exception {
     String sourceClusterServiceName = null;
     String serviceMapJsonFileName = "hive_servicemap.json";
@@ -200,25 +199,12 @@ public class RangerRestClientImpl implements RangerRestClient {
     String jsonRangerExportPolicyList = gson.toJson(rangerExportPolicyList);
     String finalUrl = getRangerImportUrl(baseUrl, dbName);
     LOG.debug("URL to import policies on target Ranger: {}", finalUrl);
-    Retry<RangerExportPolicyList> retriable = new Retry<RangerExportPolicyList>(Exception.class) {
-      @Override
-      public RangerExportPolicyList execute() throws Exception {
-        if (UserGroupInformation.isSecurityEnabled()) {
-          SecurityUtils.reloginExpiringKeytabUser();
-          return UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<RangerExportPolicyList>) () ->
-            importRangerPoliciesPlain(jsonRangerExportPolicyList, rangerPoliciesJsonFileName,
-            serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
-        } else {
-          return importRangerPoliciesPlain(jsonRangerExportPolicyList, rangerPoliciesJsonFileName,
-            serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList);
-        }
-      }
-    };
-    try {
-      return retriable.runWithDelay();
-    } catch (Exception e) {
-      throw new SemanticException(e);
-    }
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(Exception.class).build();
+    return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
+      rangerPoliciesJsonFileName,
+      serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
   }
 
   private RangerExportPolicyList importRangerPoliciesPlain(String jsonRangerExportPolicyList,
@@ -368,20 +354,17 @@ public class RangerRestClientImpl implements RangerRestClient {
 
   @Override
   public Path saveRangerPoliciesToFile(RangerExportPolicyList rangerExportPolicyList, Path stagingDirPath,
-                                       String fileName, HiveConf conf) throws Exception {
+                                       String fileName, HiveConf conf) throws SemanticException {
     Gson gson = new GsonBuilder().create();
     String jsonRangerExportPolicyList = gson.toJson(rangerExportPolicyList);
-    Retry<Path> retriable = new Retry<Path>(IOException.class) {
-      @Override
-      public Path execute() throws IOException {
-        return writeExportedRangerPoliciesToJsonFile(jsonRangerExportPolicyList, fileName,
-            stagingDirPath, conf);
-      }
-    };
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
     try {
-      return retriable.run();
+      return retryable.executeCallable(() -> writeExportedRangerPoliciesToJsonFile(jsonRangerExportPolicyList, fileName,
+        stagingDirPath, conf));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -405,22 +388,14 @@ public class RangerRestClientImpl implements RangerRestClient {
   }
 
   @Override
-  public boolean checkConnection(String url) throws SemanticException {
-    Retry<Boolean> retriable = new Retry<Boolean>(Exception.class) {
-      @Override
-      public Boolean execute() throws Exception {
-        if (UserGroupInformation.isSecurityEnabled()) {
-          SecurityUtils.reloginExpiringKeytabUser();
-          return UserGroupInformation.getLoginUser().doAs((PrivilegedAction<Boolean>) () -> checkConnectionPlain(url));
-        } else {
-          return checkConnectionPlain(url);
-        }
-      }
-    };
+  public boolean checkConnection(String url, HiveConf hiveConf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(Exception.class).build();
     try {
-      return retriable.runWithDelay();
+      return retryable.executeCallable(() -> checkConnectionPlain(url));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -436,7 +411,8 @@ public class RangerRestClientImpl implements RangerRestClient {
   public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
                                             String sourceDb, String targetDb) throws SemanticException {
     if (StringUtils.isEmpty(rangerServiceName)) {
-      throw new SemanticException("Ranger Service Name cannot be empty");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service " +
+        "Name cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
     }
     RangerPolicy denyRangerPolicy = new RangerPolicy();
     denyRangerPolicy.setService(rangerServiceName);

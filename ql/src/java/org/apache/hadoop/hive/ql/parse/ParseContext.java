@@ -128,7 +128,15 @@ public class ParseContext {
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
           new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
-  private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo = new HashMap<>();
+  /**
+   * Mapping holding information about semijoins.
+   *
+   * In various places we need to iterate over the entries of the map so having a predictable iterator is important for
+   * keeping the plans stable. It is possible to use an alternative implementation that does not provide specific
+   * iteration guarantees but this might introduce small changes in the plans (e.g., different operator ids) from one
+   * execution to the other.
+   */
+  private LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo = new LinkedHashMap<>();
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap = new HashMap<>();
 
   private Map<String, List<SemiJoinHint>> semiJoinHints;
@@ -670,11 +678,11 @@ public class ParseContext {
     return rsToRuntimeValuesInfo;
   }
 
-  public void setRsToSemiJoinBranchInfo(Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
+  public void setRsToSemiJoinBranchInfo(LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
     this.rsToSemiJoinBranchInfo = rsToSemiJoinBranchInfo;
   }
 
-  public Map<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
+  public LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
     return rsToSemiJoinBranchInfo;
   }
 

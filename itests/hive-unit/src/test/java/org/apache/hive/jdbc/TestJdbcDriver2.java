@@ -3120,13 +3120,6 @@ public class TestJdbcDriver2 {
       assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
     }
 
-    try {
-      // invalid load path
-      stmt.execute("repl load default into default1");
-    } catch(SQLException e){
-      assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
-    }
-
     stmt.close();
   }
 

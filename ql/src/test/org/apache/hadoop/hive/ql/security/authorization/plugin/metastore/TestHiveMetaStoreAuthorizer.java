@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -281,6 +282,52 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
     } catch (Exception e) {
       // no Exceptions for superuser as hive is allowed CREATE CATALOG operation
+    }
+  }
+
+  @Test
+  public void testNShowDatabaseAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.get_all_databases();
+    } catch (Exception e) {
+      // no Exceptions for show database as authorized user.
+    }
+  }
+
+  @Test
+  public void testOShowDatabaseUnauthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      hmsHandler.get_all_databases();
+    } catch (Exception e) {
+      String err = e.getMessage();
+      if (StringUtils.isNotEmpty(err)) {
+        assert(true);
+      }
+    }
+  }
+
+  @Test
+  public void testPShowTablesAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.get_all_tables("default");
+    } catch (Exception e) {
+      // no Exceptions for show tables as authorized user.
+    }
+  }
+
+  @Test
+  public void testQShowTablesUnauthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      hmsHandler.get_all_tables("default");
+    } catch (Exception e) {
+      String err = e.getMessage();
+      if (StringUtils.isNotEmpty(err)) {
+        assert(true);
+      }
     }
   }
 }

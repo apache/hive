@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
@@ -48,6 +49,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Atlas Metadata Replication Load Task.
@@ -113,26 +115,30 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
 
   private String getStoredFsUri(Path atlasDumpDir) throws SemanticException {
     Path metadataPath = new Path(atlasDumpDir, EximUtil.METADATA_NAME);
-    BufferedReader br = null;
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
     try {
-      FileSystem fs = metadataPath.getFileSystem(conf);
-      br = new BufferedReader(new InputStreamReader(fs.open(metadataPath), Charset.defaultCharset()));
-      String line = br.readLine();
-      if (line == null) {
-        throw new SemanticException("Could not read stored src FS Uri from atlas metadata file");
-      }
-      String[] lineContents = line.split("\t", 5);
-      return lineContents[0];
-    } catch (Exception ex) {
-      throw new SemanticException(ex);
-    } finally {
-      if (br != null) {
+      return retryable.executeCallable(() -> {
+        BufferedReader br = null;
         try {
-          br.close();
-        } catch (IOException e) {
-          throw new SemanticException(e);
+          FileSystem fs = metadataPath.getFileSystem(conf);
+          br = new BufferedReader(new InputStreamReader(fs.open(metadataPath), Charset.defaultCharset()));
+          String line = br.readLine();
+          if (line == null) {
+            throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Could not read stored " +
+              "src FS Uri from atlas metadata file", ReplUtils.REPL_ATLAS_SERVICE));
+          }
+          String[] lineContents = line.split("\t", 5);
+          return lineContents[0];
+        } finally {
+          if (br != null) {
+            br.close();
+          }
         }
-      }
+      });
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 

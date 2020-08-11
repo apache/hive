@@ -23,6 +23,8 @@ import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasException;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -44,6 +46,7 @@ public class AtlasRestClientBuilder {
   private UserGroupInformation userGroupInformation;
   protected String incomingUrl;
   protected String[] baseUrls;
+  private HiveConf hiveConf;
 
   public AtlasRestClientBuilder(String urls) {
     this.incomingUrl = urls;
@@ -63,13 +66,14 @@ public class AtlasRestClientBuilder {
 
   private AtlasRestClient create() throws SemanticException {
     if (baseUrls == null || baseUrls.length == 0) {
-      throw new SemanticException("baseUrls is not set.");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("baseUrls is not set.",
+        ReplUtils.REPL_ATLAS_SERVICE));
     }
     setUGInfo();
     initializeAtlasApplicationProperties();
     AtlasClientV2 clientV2 = new AtlasClientV2(this.userGroupInformation,
             this.userGroupInformation.getShortUserName(), baseUrls);
-    return new AtlasRestClientImpl(clientV2);
+    return new AtlasRestClientImpl(clientV2, hiveConf);
   }
 
   private AtlasRestClientBuilder setUGInfo() throws SemanticException {
@@ -91,7 +95,8 @@ public class AtlasRestClientBuilder {
       props.setProperty(ATLAS_PROPERTY_AUTH_KERBEROS, "true");
       ApplicationProperties.set(ConfigurationConverter.getConfiguration(props));
     } catch (AtlasException e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format(e.getMessage(),
+        ReplUtils.REPL_ATLAS_SERVICE), e);
     }
   }
 }

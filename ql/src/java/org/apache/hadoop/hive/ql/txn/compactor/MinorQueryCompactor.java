@@ -53,16 +53,16 @@ final class MinorQueryCompactor extends QueryCompactor {
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-    conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, "compactor");
+    conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
 
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
-        writeIds, conf, false, false, false);
+        writeIds, conf, false, false, false, dir);
     Path resultDeleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
-        writeIds, conf, false, true, false);
+        writeIds, conf, false, true, false, dir);
 
     List<String> createQueries = getCreateQueries(table, tmpTableName, dir, writeIds,
         resultDeltaDir, resultDeleteDeltaDir);
