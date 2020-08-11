@@ -12275,41 +12275,48 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
-        return;
       }
     }
 
-    // 6. Generate table access stats if required
-    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
-      TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
-      setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
+    // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
+    // it means that in step 2, the ColumnAccessInfo was already created
+    if (createVwDesc == null || getColumnAccessInfo() == null) {
+      // 6. Generate table access stats if required
+      if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
+        TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
+        setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
+      }
+
+      // 7. Perform Logical optimization
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
+      }
+      Optimizer optm = new Optimizer();
+      optm.setPctx(pCtx);
+      optm.initialize(conf);
+      pCtx = optm.optimize();
+      if (pCtx.getColumnAccessInfo() != null) {
+        // set ColumnAccessInfo for view column authorization
+        setColumnAccessInfo(pCtx.getColumnAccessInfo());
+      }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
+      }
+
+      // 8. Generate column access stats if required - wait until column pruning
+      // takes place during optimization
+      boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
+              && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
+      if (isColumnInfoNeedForAuth
+              || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
+        ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
+        // view column access info is carried by this.getColumnAccessInfo().
+        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+      }
     }
 
-    // 7. Perform Logical optimization
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
-    }
-    Optimizer optm = new Optimizer();
-    optm.setPctx(pCtx);
-    optm.initialize(conf);
-    pCtx = optm.optimize();
-    if (pCtx.getColumnAccessInfo() != null) {
-      // set ColumnAccessInfo for view column authorization
-      setColumnAccessInfo(pCtx.getColumnAccessInfo());
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
-    }
-
-    // 8. Generate column access stats if required - wait until column pruning
-    // takes place during optimization
-    boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
-        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
-    if (isColumnInfoNeedForAuth
-        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
-      ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
-      // view column access info is carried by this.getColumnAccessInfo().
-      setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    if (createVwDesc != null) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
