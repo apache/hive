@@ -61,8 +61,7 @@ public class TephraHBaseConnection extends VanillaHBaseConnection {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       LOG.debug("Using an in memory client transaction system for testing");
       TransactionManager txnMgr = new TransactionManager(conf);
-      txnMgr.startAsync();
-      txnMgr.awaitRunning();
+      txnMgr.startAndWait();
       txnClient = new InMemoryTxSystemClient(txnMgr);
     } else {
       // TODO should enable use of ZKDiscoveryService if users want it

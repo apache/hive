@@ -123,7 +123,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
     currentCallable = new HeartbeatCallable(completionListener, task, umbilical, pollInterval, sendCounterInterval,
         maxEventsToGet, requestCounter, containerIdStr, initialEvent, fragmentRequestId);
     ListenableFuture<Boolean> future = heartbeatExecutor.submit(currentCallable);
-    Futures.addCallback(future, new HeartbeatCallback(errorReporter), heartbeatExecutor);
+    Futures.addCallback(future, new HeartbeatCallback(errorReporter));
   }
 
   /**

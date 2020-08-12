@@ -153,7 +153,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
-    Stopwatch sw = Stopwatch.createStarted();
+    Stopwatch sw = new Stopwatch().start();
     boolean skipped = false;
     boolean failed = false;
     try {

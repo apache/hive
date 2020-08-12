@@ -80,15 +80,6 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
     } else {
       return Lists.newArrayList(Iterables.filter(privilegeObjects,new Predicate<HivePrivilegeObject>() {
         @Override
-        public boolean test(@Nullable HivePrivilegeObject hivePrivilegeObject) {
-          // Return true to retain an item, and false to filter it out.
-          if (hivePrivilegeObject == null){
-            return true;
-          }
-          return !bypassObjectTypes.contains(hivePrivilegeObject.getType());
-        }
-
-        @Override
         public boolean apply(@Nullable HivePrivilegeObject hivePrivilegeObject) {
           // Return true to retain an item, and false to filter it out.
           if (hivePrivilegeObject == null){

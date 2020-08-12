@@ -134,11 +134,6 @@ public class SessionManager extends CompositeService {
       public Integer getValue() {
         Iterable<HiveSession> filtered = Iterables.filter(getSessions(), new Predicate<HiveSession>() {
           @Override
-          public boolean test(HiveSession hiveSession) {
-            return hiveSession.getNoOperationTime() == 0L;
-          }
-
-          @Override
           public boolean apply(HiveSession hiveSession) {
             return hiveSession.getNoOperationTime() == 0L;
           }

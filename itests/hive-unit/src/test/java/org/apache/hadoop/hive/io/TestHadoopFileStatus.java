@@ -80,14 +80,6 @@ public class TestHadoopFileStatus {
     Assert.assertTrue(sourceStatus.getAclEntries().size() == 3);
     Iterables.removeIf(sourceStatus.getAclEntries(), new Predicate<AclEntry>() {
       @Override
-      public boolean test(AclEntry input) {
-        if (input.getName() == null) {
-          return true;
-        }
-        return false;
-      }
-
-      @Override
       public boolean apply(AclEntry input) {
         if (input.getName() == null) {
           return true;

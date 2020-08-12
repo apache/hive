@@ -295,11 +295,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
           }
         }, new Predicate<Throwable>() {
           @Override
-          public boolean test(@Nullable Throwable input) {
-            return input instanceof IOException;
-          }
-
-          @Override
           public boolean apply(@Nullable Throwable input) {
             return input instanceof IOException;
           }
@@ -346,18 +341,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       int numRetries = 0;
       while (numRetries++ < maxTries && !setOfUrls.isEmpty()) {
         setOfUrls = ImmutableSet.copyOf(Sets.filter(setOfUrls, new Predicate<URL>() {
-          @Override
-          public boolean test(URL input) {
-            try {
-              String result = DruidStorageHandlerUtils.getURL(httpClient, input);
-              LOG.debug(String.format("Checking segment [%s] response is [%s]", input, result));
-              return Strings.isNullOrEmpty(result);
-            } catch (IOException e) {
-              LOG.error(String.format("Error while checking URL [%s]", input), e);
-              return true;
-            }
-          }
-
           @Override
           public boolean apply(URL input) {
             try {

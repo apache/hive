@@ -101,10 +101,6 @@ public class MetricsCollection {
   public Metrics getTaskMetrics(final int jobId, final int stageId, final long taskId) {
     Predicate<TaskInfo> filter = new Predicate<TaskInfo>() {
       @Override
-      public boolean test(TaskInfo input) {
-        return jobId == input.jobId && stageId == input.stageId && taskId == input.taskId;
-      }
-      @Override
       public boolean apply(TaskInfo input) {
         return jobId == input.jobId && stageId == input.stageId && taskId == input.taskId;
       }
@@ -262,10 +258,6 @@ public class MetricsCollection {
       return jobId == input.jobId;
     }
 
-    @Override
-    public boolean test(TaskInfo input) {
-      return jobId == input.jobId;
-    }
   }
 
   private static class StageFilter implements Predicate<TaskInfo> {
@@ -283,10 +275,6 @@ public class MetricsCollection {
       return jobId == input.jobId && stageId == input.stageId;
     }
 
-    @Override
-    public boolean test(TaskInfo input) {
-      return jobId == input.jobId && stageId == input.stageId;
-    }
   }
 
 }

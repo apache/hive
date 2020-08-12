@@ -250,16 +250,8 @@ public class ReplicationSpec {
   public Predicate<Partition> allowEventReplacementInto() {
     return new Predicate<Partition>() {
       @Override
-      public boolean test(@Nullable Partition partition) {
-        if (partition == null) {
-            return false;
-        }
-        return (allowEventReplacementInto(partition));
-      }
-
-      @Override
       public boolean apply(@Nullable Partition partition) {
-        if (partition == null) {
+        if (partition == null){
           return false;
         }
         return (allowEventReplacementInto(partition));

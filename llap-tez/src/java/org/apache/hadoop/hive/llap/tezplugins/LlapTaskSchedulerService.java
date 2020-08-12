@@ -317,15 +317,15 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }, 10000L, TimeUnit.MILLISECONDS);
 
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
-      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG), nodeEnabledExecutor);
+      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
 
       delayedTaskSchedulerFuture =
           delayedTaskSchedulerExecutor.submit(delayedTaskSchedulerCallable);
       Futures.addCallback(delayedTaskSchedulerFuture,
-          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG), delayedTaskSchedulerExecutor);
+          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG));
 
       schedulerFuture = schedulerExecutor.submit(schedulerCallable);
-      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG), schedulerExecutor);
+      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
 
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());

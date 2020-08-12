@@ -176,7 +176,7 @@ public class AMReporter extends AbstractService {
           Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
         }
       }
-    }, queueLookupExecutor);
+    });
     // TODO: why is this needed? we could just save the host and port?
     nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
     LOG.info("AMReporter running with DaemonId: {}, NodeId: {}", daemonId, nodeId);
@@ -271,7 +271,7 @@ public class AMReporter extends AbstractService {
         LOG.warn("Failed to send taskKilled for {}. The attempt will likely time out.",
             taskAttemptId);
       }
-    }, executor);
+    });
   }
 
   public void queryComplete(QueryIdentifier queryIdentifier) {
@@ -337,7 +337,7 @@ public class AMReporter extends AbstractService {
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
                   queryFailedHandler.queryFailed(currentQueryIdentifier);
                 }
-              }, executor);
+              });
             }
           }
         } catch (InterruptedException e) {
