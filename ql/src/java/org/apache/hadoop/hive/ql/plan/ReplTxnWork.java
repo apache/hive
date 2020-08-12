@@ -50,8 +50,7 @@ public class ReplTxnWork implements Serializable {
    * Different kind of events supported for replaying.
    */
   public enum OperationType {
-    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID, REPL_WRITEID_STATE,
-    REPL_MIGRATION_OPEN_TXN, REPL_MIGRATION_COMMIT_TXN
+    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID, REPL_WRITEID_STATE
   }
 
   OperationType operation;
@@ -91,17 +90,6 @@ public class ReplTxnWork implements Serializable {
     this.partNames = partNames;
     this.validWriteIdList = validWriteIdList;
     this.operation = type;
-  }
-
-  public ReplTxnWork(String dbName, String tableName, OperationType type) {
-    this(null, dbName, tableName, null, type, null, null);
-    assert type == OperationType.REPL_MIGRATION_OPEN_TXN;
-  }
-
-  public ReplTxnWork(ReplLastIdInfo replLastIdInfo, OperationType type) {
-    this(null, null, null, null, type, null, null);
-    assert type == OperationType.REPL_MIGRATION_COMMIT_TXN;
-    this.replLastIdInfo = replLastIdInfo;
   }
 
   public void addWriteEventInfo(WriteEventInfo writeEventInfo) {
