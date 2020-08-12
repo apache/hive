@@ -1056,7 +1056,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
 
-      return client.get_aggr_stats_for(req);
+      return getAggrStatsFor(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1064,6 +1064,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             diff, "HMS client");
       }
     }
+  }
+
+  protected AggrStats getAggrStatsFor(PartitionsStatsRequest req) throws TException {
+    return client.get_aggr_stats_for(req);
   }
 
   @Override
@@ -2272,6 +2276,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String validWriteIdList) throws TException {
     return getTable(catName, dbName, tableName, validWriteIdList, false, null);
   }
+
 
   @Override
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
@@ -4000,7 +4005,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
 
-      return client.get_aggr_stats_for(req);
+      return getAggrStatsFor(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -4413,7 +4418,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @param fullTableName
    * @return
    */
-  private String getValidWriteIdList(String fullTableName) {
+  protected String getValidWriteIdList(String fullTableName) {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;
     }
