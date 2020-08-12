@@ -1056,7 +1056,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
 
-      return getAggrStatsFromLocalCache(req);
+      return getAggrStatsFor(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1066,7 +1066,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
   }
 
-  protected AggrStats getAggrStatsFromLocalCache(PartitionsStatsRequest req) throws TException {
+  protected AggrStats getAggrStatsFor(PartitionsStatsRequest req) throws TException {
     return client.get_aggr_stats_for(req);
   }
 
@@ -2259,7 +2259,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (processorIdentifier != null)
         req.setProcessorIdentifier(processorIdentifier);
 
-      Table t = getTableFromLocalCache(req);
+      Table t = client.get_table_req(req).getTable();
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
@@ -2277,9 +2277,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getTable(catName, dbName, tableName, validWriteIdList, false, null);
   }
 
-  protected Table getTableFromLocalCache(GetTableRequest req) throws TException{
-    return client.get_table_req(req).getTable();
-  }
 
   @Override
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
@@ -2304,7 +2301,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (processorIdentifier != null)
         req.setProcessorIdentifier(processorIdentifier);
 
-      Table t = getTableFromLocalCache(req);
+      Table t = client.get_table_req(req).getTable();
 
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
@@ -4008,7 +4005,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
 
-      return getAggrStatsFromLocalCache(req);
+      return getAggrStatsFor(req);
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -4421,7 +4418,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @param fullTableName
    * @return
    */
-  private String getValidWriteIdList(String fullTableName) {
+  protected String getValidWriteIdList(String fullTableName) {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;
     }
