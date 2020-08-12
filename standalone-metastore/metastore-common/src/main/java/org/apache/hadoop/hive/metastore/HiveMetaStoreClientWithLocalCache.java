@@ -20,10 +20,15 @@ package org.apache.hadoop.hive.metastore;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -87,7 +92,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
    */
   public enum KeyType {
     PARTITIONS_BY_EXPR(PartitionsByExprRequest.class, PartitionsByExprResult.class),
-    PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class);
+    PARTITIONS_SPEC_BY_EXPR(PartitionsByExprRequest.class, PartitionsSpecByExprResult.class),
+    AGGR_COL_STATS(PartitionsStatsRequest.class, AggrStats.class);
 
     private final Class<?> keyClass;
     private final Class<?> valueClass;
@@ -126,6 +132,37 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     @Override
     public int hashCode() {
       return Objects.hash(IDENTIFIER, obj);
+    }
+  }
+
+  public static class PartitionsStatsCustomRequest {
+    PartitionsStatsRequest request;
+    String validWriteIdList;
+    long tableId;
+
+    public PartitionsStatsCustomRequest(PartitionsStatsRequest req, String validWriteIdList, long tableId) {
+      this.request = req;
+      this.validWriteIdList = validWriteIdList;
+      this.tableId = tableId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      PartitionsStatsCustomRequest that = (PartitionsStatsCustomRequest) o;
+      return tableId == that.tableId &&
+          Objects.equals(request, that.request) &&
+          Objects.equals(validWriteIdList, that.validWriteIdList);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(request, validWriteIdList, tableId);
     }
   }
 
@@ -185,6 +222,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       case PARTITIONS_SPEC_BY_EXPR:
         result = super.getPartitionsSpecByExprResult((PartitionsByExprRequest)cacheKey.obj);
         break;
+      case AGGR_COL_STATS:
+        PartitionsStatsCustomRequest customRequest = (PartitionsStatsCustomRequest) cacheKey.obj;
+        result = super.getAggrStatsFor(customRequest.request);
+        break;
       default:
         break;
     }
@@ -197,7 +238,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsByExprResult r;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabledAndInitialized() && isRequestCachable(req, KeyType.PARTITIONS_BY_EXPR)) {
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.PARTITIONS_BY_EXPR)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
       try {
         r = (PartitionsByExprResult) mscLocalCache.get(cacheKey, this::load); // get either the result or an Exception
@@ -227,7 +268,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     PartitionsSpecByExprResult r;
 
     // table should be transactional to get responses from the cache
-    if (isCacheEnabledAndInitialized() && isRequestCachable(req, KeyType.PARTITIONS_SPEC_BY_EXPR)) {
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(req, KeyType.PARTITIONS_SPEC_BY_EXPR)) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
       try {
         r = (PartitionsSpecByExprResult) mscLocalCache.get(cacheKey, this::load); // get either the result or an Exception
@@ -252,18 +293,54 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return r;
   }
 
+
+  @Override
+  protected AggrStats getAggrStatsFor(PartitionsStatsRequest req) throws TException {
+    AggrStats r;
+
+    Table tbl = getTable(req.getDbName(), req.getTblName());
+    PartitionsStatsCustomRequest customRequest = new PartitionsStatsCustomRequest(req,
+        getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())), tbl.getId());
+
+    if (isCacheEnabledAndInitialized() && isRequestCacheable(customRequest, KeyType.AGGR_COL_STATS)) {
+      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, customRequest);
+      try {
+        r = (AggrStats) mscLocalCache.get(cacheKey, this::load);
+
+        if (LOG.isDebugEnabled() && RECORD_STATS) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+      } catch (UncheckedCacheException e) {
+        if (e.getCause() instanceof MetaException) {
+          throw (MetaException) e.getCause();
+        } else if (e.getCause() instanceof TException) {
+          throw (TException) e.getCause();
+        } else {
+          throw new TException(e.getCause());
+        }
+      }
+    } else {
+      r = super.getAggrStatsFor(req);
+    }
+
+    return r;
+  }
+
   /**
    * This method determines if the request should be cached.
    * @param request Request object
    * @return boolean
    */
-  private boolean isRequestCachable(Object request, KeyType keyType) {
+  private boolean isRequestCacheable(Object request, KeyType keyType) {
     switch (keyType) {
       //cache only requests for transactional tables, with a valid table id
       case PARTITIONS_BY_EXPR:
       case PARTITIONS_SPEC_BY_EXPR:
         PartitionsByExprRequest req = (PartitionsByExprRequest) request;
         return req.getValidWriteIdList() != null && req.getId() != -1;
+      case AGGR_COL_STATS:
+        PartitionsStatsCustomRequest customRequest = (PartitionsStatsCustomRequest) request;
+        return customRequest.tableId != -1 && customRequest.validWriteIdList != null;
         // Requests of other types can have different conditions and should be added here.
       default:
         return false;
