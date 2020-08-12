@@ -18,13 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,16 +67,16 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
 
       if (currTask instanceof MapRedTask) {
         MapRedTask mr = (MapRedTask) currTask;
-        ops.addAll(mr.getWork().getAllOperators());
+        ops.addAll((List<Operator<? extends OperatorDesc>>) mr.getWork().getAllOperators());
       } else if (currTask instanceof TezTask) {
         TezWork work = ((TezTask) currTask).getWork();
         for (BaseWork w : work.getAllWork()) {
-          ops.addAll(w.getAllOperators());
+          ops.addAll((Set<Operator<? extends OperatorDesc>>) w.getAllOperators());
         }
       } else if (currTask instanceof SparkTask) {
         SparkWork sparkWork = (SparkWork) currTask.getWork();
         for (BaseWork w : sparkWork.getAllWork()) {
-          ops.addAll(w.getAllOperators());
+          ops.addAll((Set<Operator<? extends OperatorDesc>>) w.getAllOperators());
         }
       }
 

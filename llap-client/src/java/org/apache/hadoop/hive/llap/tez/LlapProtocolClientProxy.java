@@ -131,7 +131,7 @@ public class LlapProtocolClientProxy extends AbstractService {
       public void onFailure(Throwable t) {
         LOG.warn("RequestManager shutdown with error", t);
       }
-    });
+    }, requestManagerExecutor);
   }
 
   @Override
@@ -263,7 +263,7 @@ public class LlapProtocolClientProxy extends AbstractService {
     void submitToExecutor(CallableRequest request, LlapNodeId nodeId) {
       ListenableFuture<SourceStateUpdatedResponseProto> future =
           executor.submit(request);
-      Futures.addCallback(future, new ResponseCallback(request.getCallback(), nodeId, this));
+      Futures.addCallback(future, new ResponseCallback(request.getCallback(), nodeId, this), executor);
     }
 
     @VisibleForTesting
