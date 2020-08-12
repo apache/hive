@@ -40,7 +40,7 @@ public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrides, false);
+    internalBeforeClassSetup(overrides);
   }
 
 }
