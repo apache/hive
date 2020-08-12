@@ -135,7 +135,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     }
   }
 
-  class PartitionsStatsCustomRequest {
+  public static class PartitionsStatsCustomRequest {
     PartitionsStatsRequest request;
     String validWriteIdList;
     long tableId;
