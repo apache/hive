@@ -26,6 +26,36 @@ POSTHOOK: Input: default@legacy_table_avro1
 #### A masked pattern was here ####
 2020-04-08 13:17:05.215
 1900-01-01 00:00:00
+PREHOOK: query: select * from legacy_table_avro1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_avro1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1900-01-01 00:00:00
+PREHOOK: query: select * from legacy_table_avro1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_avro1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1900-01-01 00:00:00
+PREHOOK: query: select * from legacy_table_avro1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_avro1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_avro1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1900-01-01 00:00:00
 PREHOOK: query: drop table legacy_table_avro1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@legacy_table_avro1

@@ -95,7 +95,7 @@ public class NanoTimeUtils {
   }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null);
+    return getTimestamp(nt, skipConversion, null, true);
   }
 
   /**
@@ -110,12 +110,13 @@ public class NanoTimeUtils {
    * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
    * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
    */
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
+  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId,
+      boolean legacyConversionEnabled) {
     boolean legacyConversion = false;
     if (skipConversion) {
       timeZoneId = ZoneOffset.UTC;
     } else if (timeZoneId == null) {
-      legacyConversion = true;
+      legacyConversion = legacyConversionEnabled;
       timeZoneId = TimeZone.getDefault().toZoneId();
     }
 
