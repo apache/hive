@@ -103,6 +103,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
       }};
 
     acidEnableConf.putAll(overrides);

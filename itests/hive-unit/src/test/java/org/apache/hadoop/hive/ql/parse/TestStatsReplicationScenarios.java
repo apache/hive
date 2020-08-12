@@ -97,6 +97,7 @@ public class TestStatsReplicationScenarios {
     Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+        put(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
       }};
     Map<String, String> replicatedOverrides = new HashMap<>();
 
