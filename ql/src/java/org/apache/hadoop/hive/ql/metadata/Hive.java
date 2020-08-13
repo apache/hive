@@ -126,7 +126,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -254,6 +253,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.apache.thrift.TApplicationException;
@@ -6004,7 +6004,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+    IMetaStoreClient metastoreClient = createMetaStoreClientFactory(conf)
+        .createMetaStoreClient(conf, hookLoader, allowEmbedded, metaCallTimeMap);
     IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
     IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
     IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
@@ -6019,6 +6020,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
           metaCallTimeMap,
           SynchronizedMetaStoreClient.class.getName()
       );
+  }
+
+  private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
+          MetaException {
+    String metaStoreClientFactoryClassName = conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
+
+    try {
+      Class<? extends HiveMetaStoreClientFactory> factoryClass =
+              conf.getClassByName(metaStoreClientFactoryClassName)
+                      .asSubclass(HiveMetaStoreClientFactory.class);
+      return ReflectionUtils.newInstance(factoryClass, conf);
+    } catch (Exception e) {
+      String errorMessage = String.format(
+              "Unable to instantiate a metastore client factory %s due to: %s",
+              metaStoreClientFactoryClassName, e);
+      LOG.error(errorMessage, e);
+      throw new MetaException(errorMessage);
     }
   }
 
