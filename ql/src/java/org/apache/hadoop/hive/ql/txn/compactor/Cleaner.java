@@ -78,6 +78,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
+    LOG.info("Starting Cleaner thread");
     do {
       TxnStore.MutexAPI.LockHandle handle = null;
       long startedAt = -1;
@@ -87,6 +88,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
         startedAt = System.currentTimeMillis();
         long minOpenTxnId = txnHandler.findMinOpenTxnId();
+        LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
         for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
           clean(compactionInfo, minOpenTxnId);
         }
@@ -106,6 +108,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       } else {
         try {
           Thread.sleep(cleanerCheckInterval - elapsedTime);
+          LOG.debug("Cleaner thread finished one loop.");
         } catch (InterruptedException ie) {
           // What can I do about it?
         }
@@ -183,6 +186,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       //Creating 'reader' list since we are interested in the set of 'obsolete' files
       ValidReaderWriteIdList validWriteIdList =
           TxnUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
+      }
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, validWriteIdList, ci);
