@@ -73,7 +73,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 125500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double), _col2 (type: bigint), _col5 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

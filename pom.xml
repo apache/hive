@@ -112,7 +112,6 @@
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.10.0</arrow.version>
-    <atlas.client.version>2.0.0</atlas.client.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <calcite.version>1.21.0</calcite.version>
@@ -178,7 +177,7 @@
     <log4j2.version>2.12.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.9</orc.version>
+    <orc.version>1.5.10</orc.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>

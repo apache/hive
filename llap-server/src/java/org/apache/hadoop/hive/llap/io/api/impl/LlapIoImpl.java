@@ -363,8 +363,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag)
+  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
       throws IOException {
-    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache);
+    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
   }
 }

@@ -342,6 +342,9 @@ public class TaskExecutorService extends AbstractService
       SignableVertexSpec fs = c.getVertexSpec();
       value.append(isFirst ? " (" : ", ").append(c.getQueryId())
         .append("/").append(fs.getVertexName()).append(c.isGuaranteed() ? ", guaranteed" : "");
+      if (fs.getDagName() != null) {
+        value.append(", dagName ").append(fs.getDagName());
+      }
       isFirst = false;
     }
     value.append(isFirst ? " (" : ", ");

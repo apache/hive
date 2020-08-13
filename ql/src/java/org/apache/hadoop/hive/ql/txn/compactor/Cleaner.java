@@ -51,9 +51,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
@@ -66,53 +69,62 @@ public class Cleaner extends MetaStoreCompactorThread {
   private long cleanerCheckInterval = 0;
 
   private ReplChangeManager replChangeManager;
+  private ExecutorService cleanerExecutor;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
+    cleanerCheckInterval = conf.getTimeVar(
+            HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
+    cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
+            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
   }
 
   @Override
   public void run() {
-    if (cleanerCheckInterval == 0) {
-      cleanerCheckInterval = conf.getTimeVar(
-          HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    do {
-      TxnStore.MutexAPI.LockHandle handle = null;
-      long startedAt = -1;
-      // Make sure nothing escapes this run method and kills the metastore at large,
-      // so wrap it in a big catch Throwable statement.
-      try {
-        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-        startedAt = System.currentTimeMillis();
-        long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-        for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-          clean(compactionInfo, minOpenTxnId);
-        }
-      } catch (Throwable t) {
-        LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-            StringUtils.stringifyException(t));
-      }
-      finally {
-        if (handle != null) {
-          handle.releaseLocks();
-        }
-      }
-      // Now, go back to bed until it's time to do this again
-      long elapsedTime = System.currentTimeMillis() - startedAt;
-      if (elapsedTime >= cleanerCheckInterval || stop.get())  {
-        continue;
-      } else {
+    LOG.info("Starting Cleaner thread");
+    try {
+      do {
+        TxnStore.MutexAPI.LockHandle handle = null;
+        long startedAt = -1;
+        // Make sure nothing escapes this run method and kills the metastore at large,
+        // so wrap it in a big catch Throwable statement.
         try {
-          Thread.sleep(cleanerCheckInterval - elapsedTime);
-        } catch (InterruptedException ie) {
-          // What can I do about it?
+          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+          startedAt = System.currentTimeMillis();
+          long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+          LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
+          List<CompletableFuture> cleanerList = new ArrayList<>();
+          for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+            cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
+                    clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
+          }
+          CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
+        } catch (Throwable t) {
+          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
+                  StringUtils.stringifyException(t));
+        } finally {
+          if (handle != null) {
+            handle.releaseLocks();
+          }
         }
+        // Now, go back to bed until it's time to do this again
+        long elapsedTime = System.currentTimeMillis() - startedAt;
+        if (elapsedTime < cleanerCheckInterval && !stop.get()) {
+          Thread.sleep(cleanerCheckInterval - elapsedTime);
+        }
+        LOG.debug("Cleaner thread finished one loop.");
+      } while (!stop.get());
+    } catch (InterruptedException ie) {
+      LOG.error("Compactor cleaner thread interrupted, exiting " +
+        StringUtils.stringifyException(ie));
+    } finally {
+      if (cleanerExecutor != null) {
+        this.cleanerExecutor.shutdownNow();
       }
-    } while (!stop.get());
+    }
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
@@ -185,6 +197,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       //Creating 'reader' list since we are interested in the set of 'obsolete' files
       ValidReaderWriteIdList validWriteIdList =
           TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
+      }
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, validWriteIdList, ci);

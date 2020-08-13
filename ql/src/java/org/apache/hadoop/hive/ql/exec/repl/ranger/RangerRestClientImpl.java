@@ -37,6 +37,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -83,7 +85,8 @@ public class RangerRestClientImpl implements RangerRestClient {
                                                      HiveConf hiveConf)throws SemanticException {
     LOG.info("Ranger endpoint for cluster " + sourceRangerEndpoint);
     if (StringUtils.isEmpty(rangerHiveServiceName)) {
-      throw new SemanticException("Ranger Service Name cannot be empty");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service Name " +
+        "cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
     }
     Retryable retryable = Retryable.builder()
       .withHiveConf(hiveConf)
@@ -92,7 +95,7 @@ public class RangerRestClientImpl implements RangerRestClient {
       return retryable.executeCallable(() -> exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName,
         dbName));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -361,7 +364,7 @@ public class RangerRestClientImpl implements RangerRestClient {
       return retryable.executeCallable(() -> writeExportedRangerPoliciesToJsonFile(jsonRangerExportPolicyList, fileName,
         stagingDirPath, conf));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -392,7 +395,7 @@ public class RangerRestClientImpl implements RangerRestClient {
     try {
       return retryable.executeCallable(() -> checkConnectionPlain(url));
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
@@ -408,7 +411,8 @@ public class RangerRestClientImpl implements RangerRestClient {
   public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
                                             String sourceDb, String targetDb) throws SemanticException {
     if (StringUtils.isEmpty(rangerServiceName)) {
-      throw new SemanticException("Ranger Service Name cannot be empty");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service " +
+        "Name cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
     }
     RangerPolicy denyRangerPolicy = new RangerPolicy();
     denyRangerPolicy.setService(rangerServiceName);

@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -136,12 +137,20 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("replication failed", e);
       setException(e);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try {
-        work.getMetricCollector().reportEnd(Status.FAILED);
+        if (errorCode > 40000) {
+          Path nonRecoverableMarker = new Path(new Path(work.dumpDirectory).getParent(),
+            ReplAck.NON_RECOVERABLE_MARKER.toString());
+          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+        } else {
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+        }
       } catch (SemanticException ex) {
         LOG.error("Failed to collect Metrics ", ex);
       }
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return errorCode;
     }
   }
 
@@ -161,8 +170,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       childTasks.add(rangerLoadTask);
     } else {
-      throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
-              + " not supported for replication ");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer " +
+        conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for replication ", ReplUtils.REPL_RANGER_SERVICE));
     }
   }
 

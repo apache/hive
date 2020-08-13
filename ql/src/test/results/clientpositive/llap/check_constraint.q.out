@@ -1387,7 +1387,7 @@ STAGE PLANS:
                           Statistics: Num rows: 250 Data size: 82000 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1476,7 +1476,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(5,2)), _col2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1591,7 +1591,7 @@ STAGE PLANS:
                         Statistics: Num rows: 166 Data size: 30212 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1613,7 +1613,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 99500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(5,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1795,7 +1795,7 @@ STAGE PLANS:
                           Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: decimal(5,2))
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1980,7 +1980,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2_n0
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -3574,7 +3574,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

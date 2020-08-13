@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -427,13 +429,13 @@ public class VectorizedOrcAcidRowBatchReader
   private OrcRawRecordMerger.KeyInterval findMinMaxKeys(
       OrcSplit orcSplit, Configuration conf,
       Reader.Options deleteEventReaderOptions) throws IOException {
-    final boolean noDeleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit).length == 0;
+    final boolean noDeleteDeltas = orcSplit.getDeltas().size() == 0;
     if(!HiveConf.getBoolVar(conf, ConfVars.FILTER_DELETE_EVENTS) || noDeleteDeltas) {
       LOG.debug("findMinMaxKeys() " + ConfVars.FILTER_DELETE_EVENTS + "=false");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
 
-    OrcTail orcTail = getOrcTail(orcSplit.getPath(), conf, cacheTag).orcTail;
+    OrcTail orcTail = getOrcTail(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey()).orcTail;
 
     if(orcSplit.isOriginal()) {
       /**
@@ -680,14 +682,17 @@ public class VectorizedOrcAcidRowBatchReader
    * @param path The Orc file path we want to get the OrcTail for
    * @param conf The Configuration to access LLAP
    * @param cacheTag The cacheTag needed to get OrcTail from LLAP IO cache
+   * @param fileKey fileId of the Orc file (either the Long fileId of HDFS or the SyntheticFileId).
+   *                Optional, if it is not provided, it will be generated, see:
+   *                {@link org.apache.hadoop.hive.ql.io.HdfsUtils.getFileId()}
    * @return ReaderData object where the orcTail is not null. Reader can be null, but if we had to create
    * one we return that as well for further reuse.
    */
-  private static ReaderData getOrcTail(Path path, Configuration conf, CacheTag cacheTag) throws IOException {
+  private static ReaderData getOrcTail(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
     ReaderData readerData = new ReaderData();
     if (!skipLlapCache && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon()) {
       try {
-        readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag);
+        readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
       } catch (IllegalCacheConfigurationException icce) {
         LOG.warn("Cache is not usable. Please fix the configuration", icce);
         skipLlapCache = true;
@@ -1574,20 +1579,23 @@ public class VectorizedOrcAcidRowBatchReader
       this.orcSplit = orcSplit;
 
       try {
-        final Path[] deleteDeltaDirs = getDeleteDeltaDirsFromSplit(orcSplit);
-        if (deleteDeltaDirs.length > 0) {
+        if (orcSplit.getDeltas().size() > 0) {
           AcidOutputFormat.Options orcSplitMinMaxWriteIds =
               AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf);
           int totalDeleteEventCount = 0;
-          for (Path deleteDeltaDir : deleteDeltaDirs) {
-            if (!isQualifiedDeleteDeltaForSplit(orcSplitMinMaxWriteIds, deleteDeltaDir)) {
-              continue;
-            }
-            Path[] deleteDeltaFiles = OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket,
-                new OrcRawRecordMerger.Options().isCompacting(false), null);
-            for (Path deleteDeltaFile : deleteDeltaFiles) {
-              try {
-                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag);
+          for (AcidInputFormat.DeltaMetaData deltaMetaData : orcSplit.getDeltas()) {
+            // We got one path for each statement in a multiStmt transaction
+            for (Pair<Path, Integer> deleteDeltaDir : deltaMetaData.getPaths(orcSplit.getRootDir())) {
+              Integer stmtId = deleteDeltaDir.getRight();
+              if (!isQualifiedDeleteDeltaForSplit(orcSplitMinMaxWriteIds, deltaMetaData, stmtId)) {
+                LOG.debug("Skipping delete delta dir {}", deleteDeltaDir);
+                continue;
+              }
+              Path deleteDeltaPath = deleteDeltaDir.getLeft();
+              for (AcidInputFormat.DeltaFileMetaData fileMetaData : deltaMetaData.getDeltaFilesForStmtId(stmtId)) {
+                Path deleteDeltaFile = fileMetaData.getPath(deleteDeltaPath, bucket);
+                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag,
+                    fileMetaData.getFileId(deleteDeltaPath, bucket, conf));
                 OrcTail orcTail = readerData.orcTail;
                 if (orcTail.getFooter().getNumberOfRows() <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
@@ -1599,20 +1607,18 @@ public class VectorizedOrcAcidRowBatchReader
                 }
                 // Reader can be reused if it was created before for getting orcTail: mostly for non-LLAP cache cases.
                 // For LLAP cases we need to create it here.
-                Reader deleteDeltaReader = readerData.reader != null ? readerData.reader :
-                    OrcFile.createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
+                Reader deleteDeltaReader = readerData.reader != null ? readerData.reader : OrcFile
+                    .createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
                 totalDeleteEventCount += deleteDeltaReader.getNumberOfRows();
-                DeleteReaderValue deleteReaderValue = new DeleteReaderValue(deleteDeltaReader,
-                    deleteDeltaFile, readerOptions, bucket, validWriteIdList, isBucketedTable, conf,
-                    keyInterval, orcSplit);
+                DeleteReaderValue deleteReaderValue =
+                    new DeleteReaderValue(deleteDeltaReader, deleteDeltaFile, readerOptions, bucket, validWriteIdList,
+                        isBucketedTable, conf, keyInterval, orcSplit);
                 DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
                 if (deleteReaderValue.next(deleteRecordKey)) {
                   sortMerger.put(deleteRecordKey, deleteReaderValue);
                 } else {
                   deleteReaderValue.close();
                 }
-              } catch (FileNotFoundException fnf) {
-                // We may not have deletes for the bucket being taken into consideration for this split processing.
               }
             }
           }
@@ -1629,7 +1635,7 @@ public class VectorizedOrcAcidRowBatchReader
 
     private static OrcRawRecordMerger.KeyInterval findDeleteMinMaxKeys(OrcTail orcTail, Path path) {
       boolean columnStatsPresent = orcTail.getFooter().getRowIndexStride() > 0;
-      if(!columnStatsPresent) {
+      if (!columnStatsPresent) {
         LOG.debug("findMinMaxKeys() No ORC column stats");
         return new OrcRawRecordMerger.KeyInterval(null, null);
       }
@@ -1641,28 +1647,26 @@ public class VectorizedOrcAcidRowBatchReader
      * Check if the delete delta folder needs to be scanned for a given split's min/max write ids.
      *
      * @param orcSplitMinMaxWriteIds
-     * @param deleteDeltaDir
+     * @param deleteDelta
+     * @param stmtId statementId of the deleteDelta if present
      * @return true when  delete delta dir has to be scanned.
      */
     @VisibleForTesting
     protected static boolean isQualifiedDeleteDeltaForSplit(AcidOutputFormat.Options orcSplitMinMaxWriteIds,
-        Path deleteDeltaDir)
-    {
-      AcidUtils.ParsedDelta deleteDelta = AcidUtils.parsedDelta(deleteDeltaDir, false);
+        AcidInputFormat.DeltaMetaData deleteDelta, Integer stmtId) {
       // We allow equal writeIds so we are prepared for multi statement transactions.
       // In this case we have to check the stmt id.
       if (orcSplitMinMaxWriteIds.getMinimumWriteId() == deleteDelta.getMaxWriteId()) {
         int orcSplitStmtId = orcSplitMinMaxWriteIds.getStatementId();
-        int deltaStmtId = deleteDelta.getStatementId();
         // StatementId -1 and 0 is also used as the default one if it is not provided.
         // Not brave enough to fix generally, so just fix here.
         if (orcSplitStmtId == -1) {
           orcSplitStmtId = 0;
         }
-        if (deltaStmtId == -1) {
-          deltaStmtId = 0;
+        if (stmtId == null || stmtId == -1) {
+          stmtId = 0;
         }
-        return orcSplitStmtId < deltaStmtId;
+        return orcSplitStmtId < stmtId;
       }
       // For delta_0000012_0000014_0000, no need to read delete delta folders < 12.
       return orcSplitMinMaxWriteIds.getMinimumWriteId() < deleteDelta.getMaxWriteId();

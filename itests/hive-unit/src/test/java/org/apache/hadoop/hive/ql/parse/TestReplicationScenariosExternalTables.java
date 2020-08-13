@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArg
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
@@ -47,6 +48,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Base64;
+
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -77,6 +81,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
+    overrides.put(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
 
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
@@ -1123,8 +1128,24 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
             + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+    try {
+      primary.run("use " + primaryDbName)
+        .dump(primaryDbName, withClause);
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    //delete non recoverable marker
+    Path dumpPath = new Path(primary.hiveConf.get(HiveConf.ConfVars.REPLDIR.varname),
+      Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
+        .getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    Path nonRecoverableMarker = new Path(fs.listStatus(dumpPath)[0].getPath(), ReplAck.NON_RECOVERABLE_MARKER
+      .toString());
+    fs.delete(nonRecoverableMarker, true);
+
     tuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, withClause);
+      .dump(primaryDbName, withClause);
 
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'=''");
@@ -1138,6 +1159,18 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
             + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+
+    try {
+      replica.load(replicatedDbName, primaryDbName, withClause);
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+
+    //delete non recoverable marker
+    nonRecoverableMarker = new Path(tuple.dumpLocation, ReplAck.NON_RECOVERABLE_MARKER
+      .toString());
+    fs.delete(nonRecoverableMarker, true);
 
     replica.load(replicatedDbName, primaryDbName, withClause);
 

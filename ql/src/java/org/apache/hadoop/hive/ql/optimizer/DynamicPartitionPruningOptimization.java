@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -847,7 +848,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     runtimeValuesInfo.setTableDesc(rsFinalTableDesc);
     runtimeValuesInfo.setDynamicValueIDs(dynamicValueIDs);
     runtimeValuesInfo.setColExprs(rsValueCols);
-    runtimeValuesInfo.setTsColExpr(colExpr);
+    runtimeValuesInfo.setTargetColumns(Collections.singletonList(colExpr));
     parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
     parseContext.getColExprToGBMap().put(key, gb);
   }

@@ -55,7 +55,7 @@ STAGE PLANS:
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

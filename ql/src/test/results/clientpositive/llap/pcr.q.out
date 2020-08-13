@@ -102,7 +102,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -298,7 +298,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -566,7 +566,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -762,7 +762,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -962,7 +962,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1209,7 +1209,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1462,7 +1462,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1641,7 +1641,7 @@ STAGE PLANS:
                       tag: -1
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1862,7 +1862,7 @@ STAGE PLANS:
                       tag: -1
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2144,7 +2144,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2334,7 +2334,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2403,7 +2403,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2616,7 +2616,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2685,7 +2685,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2906,7 +2906,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3211,7 +3211,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3577,7 +3577,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
                           auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3927,7 +3927,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
                             auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4184,7 +4184,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4332,7 +4332,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4521,7 +4521,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

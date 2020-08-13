@@ -70,6 +70,16 @@ public class TestListPartitions extends MetaStoreClientTest {
   protected static final String USER_NAME = "user0";
   protected static final String GROUP = "group0";
 
+  public static class ReturnTable {
+    public Table table;
+    public List<List<String>> testValues;
+
+    public ReturnTable(Table table, List<List<String>> testValues) {
+      this.table = table;
+      this.testValues = testValues;
+    }
+  }
+
   public TestListPartitions(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
   }
@@ -156,18 +166,20 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.add_partition(partitionBuilder.build(metaStore.getConf()));
   }
 
-  private void createTable3PartCols1PartGeneric(IMetaStoreClient client, boolean authOn)
+  private Table createTable3PartCols1PartGeneric(IMetaStoreClient client, boolean authOn)
           throws TException {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm",
             "dd"), authOn);
     addPartition(client, t, Lists.newArrayList("1997", "05", "16"));
+
+    return t;
   }
 
-  protected void createTable3PartCols1Part(IMetaStoreClient client) throws TException {
-    createTable3PartCols1PartGeneric(client, false);
+  protected Table createTable3PartCols1Part(IMetaStoreClient client) throws TException {
+    return createTable3PartCols1PartGeneric(client, false);
   }
 
-  private List<List<String>> createTable4PartColsPartsGeneric(IMetaStoreClient client,
+  private ReturnTable createTable4PartColsPartsGeneric(IMetaStoreClient client,
                                                                      boolean authOn) throws
           Exception {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"),
@@ -182,15 +194,15 @@ public class TestListPartitions extends MetaStoreClientTest {
       addPartition(client, t, vals);
     }
 
-    return testValues;
+    return new ReturnTable(t, testValues);
   }
 
-  protected List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
+  protected ReturnTable createTable4PartColsParts(IMetaStoreClient client) throws
           Exception {
     return createTable4PartColsPartsGeneric(client, false);
   }
 
-  protected List<List<String>> createTable4PartColsPartsAuthOn(IMetaStoreClient client) throws
+  protected ReturnTable createTable4PartColsPartsAuthOn(IMetaStoreClient client) throws
           Exception {
     return createTable4PartColsPartsGeneric(client, true);
   }
@@ -261,7 +273,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionsAll() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
     assertPartitionsHaveCorrectValues(partitions, testValues);
 
@@ -279,7 +291,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testGetPartitionsRequest() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     PartitionsRequest req = new PartitionsRequest();
     req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
     req.setDbName(DB_NAME);
@@ -365,7 +377,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionsByValues() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
 
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME,
             Lists.newArrayList("2017"), (short)-1);
@@ -444,7 +456,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionSpecs() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
 
     PartitionSpecProxy partSpecProxy = client.listPartitionSpecs(DB_NAME, TABLE_NAME, -1);
     assertPartitionsSpecProxy(partSpecProxy, testValues);
@@ -516,7 +528,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionsWithAuth() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     List<String> groups = Lists.newArrayList(GROUP);
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short)-1,
             USER_NAME, groups);
@@ -553,7 +565,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsWithAuthNoPrivilegesSet() throws Exception {
-    List<List<String>> partValues = createTable4PartColsParts(client);
+    List<List<String>> partValues = createTable4PartColsParts(client).testValues;
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short)-1,
             "", Lists.newArrayList());
 
@@ -624,7 +636,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsWithAuthRequestByValues() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     List<String> groups = Lists.newArrayList(GROUP);
 
     GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
@@ -671,7 +683,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionsWithAuthByValues() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     List<String> groups = Lists.newArrayList(GROUP);
 
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
@@ -714,7 +726,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsWithAuthByValuesHighMaxParts() throws Exception {
-    List<List<String>> partValues = createTable4PartColsParts(client);
+    List<List<String>> partValues = createTable4PartColsParts(client).testValues;
     //This doesn't throw MetaException when setting to high max part count
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
             .newArrayList("2017"), (short)101, "", Lists.newArrayList());
@@ -730,7 +742,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsWithAuthByValuesNoPrivilegesSet() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     String user = "user0";
     List<String> groups = Lists.newArrayList("group0");
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
@@ -801,7 +813,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsWithAuthByValuesNullUser() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
             .newArrayList("2017", "11", "27"), (short)-1, null, Lists.newArrayList());
     assertPartitionsHaveCorrectValues(partitions, partValues.subList(3, 4));
@@ -809,7 +821,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsWithAuthByValuesNullGroup() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client);
+    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
     List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
             .newArrayList("2017", "11", "27"), (short)-1, "", null);
     assertPartitionsHaveCorrectValues(partitions, partValues.subList(3, 4));
@@ -824,7 +836,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsByFilter() throws Exception {
-    List<List<String>> partValues = createTable4PartColsParts(client);
+    List<List<String>> partValues = createTable4PartColsParts(client).testValues;
     List<Partition> partitions = client.listPartitionsByFilter(DB_NAME, TABLE_NAME,
             "yyyy=\"2017\" OR " + "mm=\"02\"", (short)-1);
     assertEquals(3, partitions.size());
@@ -1002,7 +1014,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionsSpecsByFilter() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     PartitionSpecProxy partSpecProxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME,
             "yyyy=\"2017\" OR " + "mm=\"02\"", -1);
 
@@ -1082,14 +1094,14 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionSpecsByFilterNullFilter() throws Exception {
-    List<List<String>> values = createTable4PartColsParts(client);
+    List<List<String>> values = createTable4PartColsParts(client).testValues;
     PartitionSpecProxy pproxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME, null, -1);
     assertPartitionsSpecProxy(pproxy, values);
   }
 
   @Test
   public void testListPartitionSpecsByFilterEmptyFilter() throws Exception {
-    List<List<String>> values = createTable4PartColsParts(client);
+    List<List<String>> values = createTable4PartColsParts(client).testValues;
     PartitionSpecProxy pproxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME, "", -1);
     assertPartitionsSpecProxy(pproxy, values);
   }
@@ -1180,7 +1192,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionNames() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME, (short)-1);
     assertCorrectPartitionNames(partitionNames, testValues, Lists.newArrayList("yyyy", "mm",
             "dd"));
@@ -1253,7 +1265,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionNamesByValues() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
             Lists.newArrayList("2017"), (short)-1);
     assertCorrectPartitionNames(partitionNames, testValues.subList(2, 4),
@@ -1287,7 +1299,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionNamesRequestByValues() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
     req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
     req.setDbName(DB_NAME);
@@ -1327,7 +1339,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionNamesByValuesMaxPartCountUnlimited() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     //TODO: due to value 101 this probably should throw an exception
     List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
             Lists.newArrayList("2017"), (short) 101);
@@ -1337,7 +1349,7 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionNamesByValuesLowPartCount() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
         Lists.newArrayList("2017"), (short) 1);
     assertTrue(partitionNames.size() == 1);
@@ -1422,7 +1434,7 @@ public class TestListPartitions extends MetaStoreClientTest {
    */
   @Test
   public void testListPartitionValues() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
     List<FieldSchema> partitionSchema = Lists.newArrayList(
             new FieldSchema("yyyy", "string", ""),
             new FieldSchema("mm", "string", ""));
@@ -1437,7 +1449,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test
   public void testListPartitionValuesEmptySchema() throws Exception {
     try {
-      List<List<String>> testValues = createTable4PartColsParts(client);
+      List<List<String>> testValues = createTable4PartColsParts(client).testValues;
       List<FieldSchema> partitionSchema = Lists.newArrayList();
 
       PartitionValuesRequest request = new PartitionValuesRequest(DB_NAME, TABLE_NAME,

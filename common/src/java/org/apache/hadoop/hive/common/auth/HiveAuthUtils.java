@@ -19,13 +19,16 @@ package org.apache.hadoop.hive.common.auth;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
@@ -57,7 +60,8 @@ public class HiveAuthUtils {
     String trustStorePath, String trustStorePassWord) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
       new TSSLTransportFactory.TSSLTransportParameters();
-    params.setTrustStore(trustStorePath, trustStorePassWord);
+    params.setTrustStore(trustStorePath, trustStorePassWord,
+        TrustManagerFactory.getDefaultAlgorithm(), KeyStore.getDefaultType());
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
@@ -92,7 +96,8 @@ public class HiveAuthUtils {
       UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
         new TSSLTransportFactory.TSSLTransportParameters();
-    params.setKeyStore(keyStorePath, keyStorePassWord);
+    params.setKeyStore(keyStorePath, keyStorePassWord,
+        KeyManagerFactory.getDefaultAlgorithm(), KeyStore.getDefaultType());
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
       // Wildcard bind

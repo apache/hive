@@ -25,10 +25,10 @@ set hive.optimize.topnkey=true;
 set hive.optimize.limittranspose=false;
 
 select 'positive: order by columns are coming from child table';
-explain select * from orders join customer on customer.id = orders.customer_id order by orders.amount limit 3;
+explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id limit 3;
 explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, orders.amount limit 3;
 explain select * from customer join orders on orders.customer_id = customer.id order by orders.amount, orders.customer_id limit 3;
-select * from orders join customer on customer.id = orders.customer_id order by orders.amount limit 3;
+select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id limit 3;
 select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, orders.amount limit 3;
 select * from customer join orders on orders.customer_id = customer.id order by orders.amount, orders.customer_id limit 3;
 
@@ -43,10 +43,10 @@ explain select * from orders join customer on customer.id = orders.customer_id o
 select * from orders join customer on customer.id = orders.customer_id order by customer.name, orders.amount limit 3;
 
 select 'mixed/positive: 1st n order by columns are coming from child table';
-explain select * from orders join customer on customer.id = orders.customer_id order by orders.amount, customer.name limit 3;
-select * from orders join customer on customer.id = orders.customer_id order by orders.amount, customer.name limit 3;
+explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, customer.name limit 3;
+select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, customer.name limit 3;
 
-select 'positive: nulls first';
+select 'negative: nulls first';
 explain select * from customer join orders on orders.customer_id = customer.id order by customer_id nulls first limit 1;
 select * from customer join orders on orders.customer_id = customer.id order by customer_id nulls first limit 1;
 

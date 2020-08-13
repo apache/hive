@@ -103,6 +103,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
       }};
 
     acidEnableConf.putAll(overrides);
@@ -1957,6 +1958,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       replica.dump(replicatedDbName);
     } catch (Exception e) {
       Assert.assertEquals("Cannot dump database as it is a Target of replication.", e.getMessage());
+      Assert.assertEquals(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
     replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='')");
 
