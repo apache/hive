@@ -115,6 +115,41 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function alter_database($dbname, \metastore\Database $db);
     /**
+     * @param \metastore\DataConnector $connector
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_dataconnector(\metastore\DataConnector $connector);
+    /**
+     * @param \metastore\GetDataConnectorRequest $request
+     * @return \metastore\DataConnector
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_dataconnector_req(\metastore\GetDataConnectorRequest $request);
+    /**
+     * @param string $name
+     * @param bool $ifNotExists
+     * @param bool $checkReferences
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function drop_dataconnector($name, $ifNotExists, $checkReferences);
+    /**
+     * @return string[]
+     * @throws \metastore\MetaException
+     */
+    public function get_dataconnectors();
+    /**
+     * @param string $name
+     * @param \metastore\DataConnector $connector
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function alter_dataconnector($name, \metastore\DataConnector $connector);
+    /**
      * @param string $name
      * @return \metastore\Type
      * @throws \metastore\MetaException

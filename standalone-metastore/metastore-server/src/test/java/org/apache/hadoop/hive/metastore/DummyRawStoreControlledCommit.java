@@ -48,9 +48,11 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.ISchema;
@@ -75,7 +77,6 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
-import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -104,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -231,6 +233,34 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<String> getAllDatabases(String catName) throws MetaException {
     return objectStore.getAllDatabases(catName);
+  }
+
+  @Override
+  public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    objectStore.createDataConnector(connector);
+  }
+
+  @Override
+  public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {
+    return objectStore.getDataConnector(dcName);
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcName)
+      throws NoSuchObjectException, MetaException {
+    return objectStore.dropDataConnector(dcName);
+  }
+
+  @Override
+  public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException {
+
+    return objectStore.alterDataConnector(dcName, connector);
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+    return objectStore.getAllDataConnectorNames();
   }
 
   @Override

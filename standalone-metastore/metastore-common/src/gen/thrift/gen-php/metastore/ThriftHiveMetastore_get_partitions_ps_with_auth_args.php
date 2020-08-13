@@ -146,13 +146,13 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->part_vals = array();
-                        $_size1497 = 0;
-                        $_etype1500 = 0;
-                        $xfer += $input->readListBegin($_etype1500, $_size1497);
-                        for ($_i1501 = 0; $_i1501 < $_size1497; ++$_i1501) {
-                            $elem1502 = null;
-                            $xfer += $input->readString($elem1502);
-                            $this->part_vals []= $elem1502;
+                        $_size1522 = 0;
+                        $_etype1525 = 0;
+                        $xfer += $input->readListBegin($_etype1525, $_size1522);
+                        for ($_i1526 = 0; $_i1526 < $_size1522; ++$_i1526) {
+                            $elem1527 = null;
+                            $xfer += $input->readString($elem1527);
+                            $this->part_vals []= $elem1527;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -176,13 +176,13 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->group_names = array();
-                        $_size1503 = 0;
-                        $_etype1506 = 0;
-                        $xfer += $input->readListBegin($_etype1506, $_size1503);
-                        for ($_i1507 = 0; $_i1507 < $_size1503; ++$_i1507) {
-                            $elem1508 = null;
-                            $xfer += $input->readString($elem1508);
-                            $this->group_names []= $elem1508;
+                        $_size1528 = 0;
+                        $_etype1531 = 0;
+                        $xfer += $input->readListBegin($_etype1531, $_size1528);
+                        for ($_i1532 = 0; $_i1532 < $_size1528; ++$_i1532) {
+                            $elem1533 = null;
+                            $xfer += $input->readString($elem1533);
+                            $this->group_names []= $elem1533;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -219,8 +219,8 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args
             }
             $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->part_vals));
-            foreach ($this->part_vals as $iter1509) {
-                $xfer += $output->writeString($iter1509);
+            foreach ($this->part_vals as $iter1534) {
+                $xfer += $output->writeString($iter1534);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -241,8 +241,8 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args
             }
             $xfer += $output->writeFieldBegin('group_names', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->group_names));
-            foreach ($this->group_names as $iter1510) {
-                $xfer += $output->writeString($iter1510);
+            foreach ($this->group_names as $iter1535) {
+                $xfer += $output->writeString($iter1535);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
