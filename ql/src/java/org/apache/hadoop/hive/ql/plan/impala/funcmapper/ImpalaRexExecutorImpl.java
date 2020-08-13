@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
@@ -94,6 +95,8 @@ public class ImpalaRexExecutorImpl extends RexExecutorImpl {
       return builder.makeLiteral(colVal.int_val, returnType, true);
     } else if (colVal.isSetLong_val()) {
       return builder.makeLiteral(colVal.long_val, returnType, true);
+    } else if (colVal.isSetDouble_val()) {
+      return builder.makeLiteral(colVal.double_val, returnType, true);
     } else if (colVal.isSetString_val()) {
       if (returnType.getSqlTypeName() == SqlTypeName.TIMESTAMP) {
         return builder.makeTimestampLiteral(new TimestampString(colVal.string_val),
@@ -125,6 +128,10 @@ public class ImpalaRexExecutorImpl extends RexExecutorImpl {
         throw new HiveException(e);
       }
     }
+    Preconditions.checkState(!colVal.isSetTimestamp_val(),
+        "Simplified into timestamp constant but this should not happen");
+    Preconditions.checkState(!colVal.isSetDecimal_val(),
+        "Simplified into decimal constant but this should not happen");
     return builder.makeNullLiteral(returnType);
   }
 
