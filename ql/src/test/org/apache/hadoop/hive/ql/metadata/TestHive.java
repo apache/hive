@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -796,6 +799,42 @@ public class TestHive {
         newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj != newHiveObj);
+  }
+
+  @Test
+  public void testLoadingHiveMetaStoreClientFactory() throws Throwable {
+    String factoryClassName = SessionHiveMetaStoreClientFactory.class.getName();
+    HiveConf conf = new HiveConf();
+    conf.setVar(ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
+    // Make sure we instantiate the embedded version
+    // so the implementation chosen is SessionHiveMetaStoreClient, not a retryable version of it.
+    conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    IMetaStoreClient tmp = hive.getMSC();
+    assertNotNull("getMSC() failed.", tmp);
+    assertThat("Invalid default client implementation created.", tmp,
+        instanceOf(SessionHiveMetaStoreClient.class));
+  }
+
+  @Test
+  public void testLoadingInvalidHiveMetaStoreClientFactory() throws Throwable {
+    // Intentionally invalid class
+    String factoryClassName = String.class.getName();
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    try {
+      hive.getMSC();
+      fail("getMSC() was expected to throw MetaException.");
+    } catch (Exception e) {
+      assertTrue("getMSC() failed, which IS expected.", true);
+    }
   }
 
   // shamelessly copied from Path in hadoop-2

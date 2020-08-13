@@ -215,6 +215,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
@@ -5129,11 +5130,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
-    } else {
-      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-          SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+    return createMetaStoreClientFactory(conf)
+        .createMetaStoreClient(conf, hookLoader, allowEmbedded, metaCallTimeMap);
+  }
+
+  private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
+          MetaException {
+    String metaStoreClientFactoryClassName = conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
+
+    try {
+      Class<? extends HiveMetaStoreClientFactory> factoryClass =
+              conf.getClassByName(metaStoreClientFactoryClassName)
+                      .asSubclass(HiveMetaStoreClientFactory.class);
+      return ReflectionUtils.newInstance(factoryClass, conf);
+    } catch (Exception e) {
+      String errorMessage = String.format(
+              "Unable to instantiate a metastore client factory %s due to: %s",
+              metaStoreClientFactoryClassName, e);
+      LOG.error(errorMessage, e);
+      throw new MetaException(errorMessage);
     }
   }
 
