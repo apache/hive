@@ -31,7 +31,6 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -65,6 +64,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ImpalaAggregateRel extends ImpalaPlanRel {
 
@@ -260,13 +260,10 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
         generateGroupingId = true;
         continue;
       }
-      List<Integer> indexes = aggCall.getArgList();
-      // index size should be 1, but could be 0 in the case of count(*)
-      Preconditions.checkState(indexes.size() <= 1);
-      List<Expr> operands = Lists.newArrayList();
-      if (indexes.size() == 1) {
-        operands.add(input.getExpr(indexes.get(0)));
-      }
+      List<Expr> operands = aggCall.getArgList()
+          .stream()
+          .map(input::getExpr)
+          .collect(Collectors.toList());
       Function fn = getFunction(aggCall);
 
       Type impalaRetType = ImpalaTypeConverter.createImpalaType(aggCall.getType());
