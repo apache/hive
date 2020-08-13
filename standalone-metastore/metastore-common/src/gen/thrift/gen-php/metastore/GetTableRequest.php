@@ -220,6 +220,7 @@ class GetTableRequest
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
+<<<<<<< HEAD
                         $_size882 = 0;
                         $_etype885 = 0;
                         $xfer += $input->readListBegin($_etype885, $_size882);
@@ -227,6 +228,15 @@ class GetTableRequest
                             $elem887 = null;
                             $xfer += $input->readString($elem887);
                             $this->processorCapabilities []= $elem887;
+=======
+                        $_size884 = 0;
+                        $_etype887 = 0;
+                        $xfer += $input->readListBegin($_etype887, $_size884);
+                        for ($_i888 = 0; $_i888 < $_size884; ++$_i888) {
+                            $elem889 = null;
+                            $xfer += $input->readString($elem889);
+                            $this->processorCapabilities []= $elem889;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -307,8 +317,13 @@ class GetTableRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 8);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
+<<<<<<< HEAD
             foreach ($this->processorCapabilities as $iter888) {
                 $xfer += $output->writeString($iter888);
+=======
+            foreach ($this->processorCapabilities as $iter890) {
+                $xfer += $output->writeString($iter890);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -128,6 +128,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -843,6 +844,110 @@ public class Hive {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Create a dataconnector
+   * @param connector
+   * @param ifNotExist if true, will ignore AlreadyExistsException exception
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDataConnector(DataConnector connector, boolean ifNotExist)
+      throws AlreadyExistsException, HiveException {
+    try {
+      getMSC().createDataConnector(connector);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExist) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Create a DataConnector. Raise an error if a dataconnector with the same name already exists.
+   * @param connector
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDataConnector(DataConnector connector) throws AlreadyExistsException, HiveException {
+    createDataConnector(connector, false);
+  }
+
+  /**
+   * Drop a dataconnector.
+   * @param name
+   * @throws NoSuchObjectException
+   * @throws HiveException
+   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDataConnector(java.lang.String, boolean, boolean)
+   */
+  public void dropDataConnector(String name, boolean ifNotExists) throws HiveException, NoSuchObjectException {
+    dropDataConnector(name, ifNotExists, true);
+  }
+
+  /**
+   * Drop a dataconnector
+   * @param name
+   * @param checkReferences drop only if there are no dbs referencing this connector
+   * @throws HiveException
+   * @throws NoSuchObjectException
+   */
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().dropDataConnector(name, ifNotExists, checkReferences);
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists)
+        throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get the dataconnector by name.
+   * @param dcName the name of the dataconnector.
+   * @return a DataConnector object if this dataconnector exists, null otherwise.
+   * @throws HiveException
+   */
+  public DataConnector getDataConnector(String dcName) throws HiveException {
+    try {
+      return getMSC().getDataConnector(dcName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get all dataconnector names.
+   * @return List of all dataconnector names.
+   * @throws HiveException
+   */
+  public List<String> getAllDataConnectors() throws HiveException {
+    try {
+      return getMSC().getAllDataConnectors();
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterDataConnector(String dcName, DataConnector connector)
+      throws HiveException {
+    try {
+      getMSC().alterDataConnector(dcName, connector);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter dataconnector " + dcName + ". " + e.getMessage(), e);
+    } catch (NoSuchObjectException e) {
+      throw new HiveException("DataConnector " + dcName + " does not exists.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter dataconnector " + dcName + ". " + e.getMessage(), e);
     }
   }
 

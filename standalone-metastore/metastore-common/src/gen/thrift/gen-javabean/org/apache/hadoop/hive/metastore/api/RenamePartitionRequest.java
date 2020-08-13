@@ -773,6 +773,7 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // PART_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list1208 = iprot.readListBegin();
                 struct.partVals = new java.util.ArrayList<java.lang.String>(_list1208.size);
                 @org.apache.thrift.annotation.Nullable java.lang.String _elem1209;
@@ -780,6 +781,15 @@ package org.apache.hadoop.hive.metastore.api;
                 {
                   _elem1209 = iprot.readString();
                   struct.partVals.add(_elem1209);
+=======
+                org.apache.thrift.protocol.TList _list1220 = iprot.readListBegin();
+                struct.partVals = new java.util.ArrayList<java.lang.String>(_list1220.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1221;
+                for (int _i1222 = 0; _i1222 < _list1220.size; ++_i1222)
+                {
+                  _elem1221 = iprot.readString();
+                  struct.partVals.add(_elem1221);
+>>>>>>> External metastore: clean after rebase
                 }
                 iprot.readListEnd();
               }
@@ -839,9 +849,15 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partVals.size()));
+<<<<<<< HEAD
           for (java.lang.String _iter1211 : struct.partVals)
           {
             oprot.writeString(_iter1211);
+=======
+          for (java.lang.String _iter1223 : struct.partVals)
+          {
+            oprot.writeString(_iter1223);
+>>>>>>> External metastore: clean after rebase
           }
           oprot.writeListEnd();
         }
@@ -880,9 +896,15 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tableName);
       {
         oprot.writeI32(struct.partVals.size());
+<<<<<<< HEAD
         for (java.lang.String _iter1212 : struct.partVals)
         {
           oprot.writeString(_iter1212);
+=======
+        for (java.lang.String _iter1224 : struct.partVals)
+        {
+          oprot.writeString(_iter1224);
+>>>>>>> External metastore: clean after rebase
         }
       }
       struct.newPart.write(oprot);
@@ -910,6 +932,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list1213 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.partVals = new java.util.ArrayList<java.lang.String>(_list1213.size);
         @org.apache.thrift.annotation.Nullable java.lang.String _elem1214;
@@ -917,6 +940,15 @@ package org.apache.hadoop.hive.metastore.api;
         {
           _elem1214 = iprot.readString();
           struct.partVals.add(_elem1214);
+=======
+        org.apache.thrift.protocol.TList _list1225 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.partVals = new java.util.ArrayList<java.lang.String>(_list1225.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem1226;
+        for (int _i1227 = 0; _i1227 < _list1225.size; ++_i1227)
+        {
+          _elem1226 = iprot.readString();
+          struct.partVals.add(_elem1226);
+>>>>>>> External metastore: clean after rebase
         }
       }
       struct.setPartValsIsSet(true);

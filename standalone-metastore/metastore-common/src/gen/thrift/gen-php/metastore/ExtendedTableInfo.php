@@ -122,6 +122,7 @@ class ExtendedTableInfo
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->requiredReadCapabilities = array();
+<<<<<<< HEAD
                         $_size917 = 0;
                         $_etype920 = 0;
                         $xfer += $input->readListBegin($_etype920, $_size917);
@@ -129,6 +130,15 @@ class ExtendedTableInfo
                             $elem922 = null;
                             $xfer += $input->readString($elem922);
                             $this->requiredReadCapabilities []= $elem922;
+=======
+                        $_size919 = 0;
+                        $_etype922 = 0;
+                        $xfer += $input->readListBegin($_etype922, $_size919);
+                        for ($_i923 = 0; $_i923 < $_size919; ++$_i923) {
+                            $elem924 = null;
+                            $xfer += $input->readString($elem924);
+                            $this->requiredReadCapabilities []= $elem924;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -138,6 +148,7 @@ class ExtendedTableInfo
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->requiredWriteCapabilities = array();
+<<<<<<< HEAD
                         $_size923 = 0;
                         $_etype926 = 0;
                         $xfer += $input->readListBegin($_etype926, $_size923);
@@ -145,6 +156,15 @@ class ExtendedTableInfo
                             $elem928 = null;
                             $xfer += $input->readString($elem928);
                             $this->requiredWriteCapabilities []= $elem928;
+=======
+                        $_size925 = 0;
+                        $_etype928 = 0;
+                        $xfer += $input->readListBegin($_etype928, $_size925);
+                        for ($_i929 = 0; $_i929 < $_size925; ++$_i929) {
+                            $elem930 = null;
+                            $xfer += $input->readString($elem930);
+                            $this->requiredWriteCapabilities []= $elem930;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -181,8 +201,13 @@ class ExtendedTableInfo
             }
             $xfer += $output->writeFieldBegin('requiredReadCapabilities', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->requiredReadCapabilities));
+<<<<<<< HEAD
             foreach ($this->requiredReadCapabilities as $iter929) {
                 $xfer += $output->writeString($iter929);
+=======
+            foreach ($this->requiredReadCapabilities as $iter931) {
+                $xfer += $output->writeString($iter931);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -193,8 +218,13 @@ class ExtendedTableInfo
             }
             $xfer += $output->writeFieldBegin('requiredWriteCapabilities', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->requiredWriteCapabilities));
+<<<<<<< HEAD
             foreach ($this->requiredWriteCapabilities as $iter930) {
                 $xfer += $output->writeString($iter930);
+=======
+            foreach ($this->requiredWriteCapabilities as $iter932) {
+                $xfer += $output->writeString($iter932);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

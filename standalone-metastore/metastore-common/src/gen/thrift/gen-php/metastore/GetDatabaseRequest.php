@@ -118,6 +118,7 @@ class GetDatabaseRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
+<<<<<<< HEAD
                         $_size931 = 0;
                         $_etype934 = 0;
                         $xfer += $input->readListBegin($_etype934, $_size931);
@@ -125,6 +126,15 @@ class GetDatabaseRequest
                             $elem936 = null;
                             $xfer += $input->readString($elem936);
                             $this->processorCapabilities []= $elem936;
+=======
+                        $_size933 = 0;
+                        $_etype936 = 0;
+                        $xfer += $input->readListBegin($_etype936, $_size933);
+                        for ($_i937 = 0; $_i937 < $_size933; ++$_i937) {
+                            $elem938 = null;
+                            $xfer += $input->readString($elem938);
+                            $this->processorCapabilities []= $elem938;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -168,8 +178,13 @@ class GetDatabaseRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
+<<<<<<< HEAD
             foreach ($this->processorCapabilities as $iter937) {
                 $xfer += $output->writeString($iter937);
+=======
+            foreach ($this->processorCapabilities as $iter939) {
+                $xfer += $output->writeString($iter939);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

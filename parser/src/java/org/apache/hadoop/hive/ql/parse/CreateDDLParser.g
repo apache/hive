@@ -108,3 +108,38 @@ createTableStatement
          selectStatementWithCTE?
         )
     ;
+
+createDataConnectorStatement
+@init { gParent.pushMsg("create connector statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_DATACONNECTOR ifNotExists? name=identifier dataConnectorType dataConnectorUrl dataConnectorComment? ( KW_WITH KW_PROPERTIES dcprops=dbProperties)?
+    -> ^(TOK_CREATEDATACONNECTOR $name ifNotExists? dataConnectorType dataConnectorUrl dataConnectorComment? $dcprops?)
+    ;
+
+dataConnectorComment
+@init { gParent.pushMsg("dataconnector comment", state); }
+@after { gParent.popMsg(state); }
+    : KW_COMMENT comment=StringLiteral
+    -> ^(TOK_DATACONNECTORCOMMENT $comment)
+    ;
+
+dataConnectorUrl
+@init { gParent.pushMsg("dataconnector URL", state); }
+@after { gParent.popMsg(state); }
+    : KW_URL url=StringLiteral
+    -> ^(TOK_DATACONNECTORURL $url)
+    ;
+
+dataConnectorType
+@init { gParent.pushMsg("dataconnector type", state); }
+@after { gParent.popMsg(state); }
+    : KW_TYPE dcType=StringLiteral
+    -> ^(TOK_DATACONNECTORTYPE $dcType)
+    ;
+
+dropDataConnectorStatement
+@init { gParent.pushMsg("drop connector statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP (KW_DATACONNECTOR) ifExists? identifier
+    -> ^(TOK_DROPDATACONNECTOR identifier ifExists?)
+    ;

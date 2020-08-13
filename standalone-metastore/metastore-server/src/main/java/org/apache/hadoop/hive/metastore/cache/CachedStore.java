@@ -1160,6 +1160,38 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.listCachedDatabases(catName);
   }
 
+  @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    rawStore.createDataConnector(connector);
+    // in case of event based cache update, cache will be updated during commit.
+    /*
+    if (!canUseEvents) {
+      sharedCache.addDatabaseToCache(connector);
+    }
+     */
+  }
+
+  @Override public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {
+    // in case of  event based cache update, cache will be updated during commit. So within active transaction, read
+    // directly from rawStore to avoid reading stale data as the data updated during same transaction will not be
+    // updated in the cache.
+      return rawStore.getDataConnector(dcName);
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcName) throws NoSuchObjectException, MetaException {
+     return rawStore.dropDataConnector(dcName);
+  }
+
+  @Override public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.alterDataConnector(dcName, connector);
+  }
+
+  @Override
+  public List<String> getAllDataConnectors() throws MetaException {
+      return rawStore.getAllDataConnectors();
+  }
+  
   @Override public boolean createType(Type type) {
     return rawStore.createType(type);
   }

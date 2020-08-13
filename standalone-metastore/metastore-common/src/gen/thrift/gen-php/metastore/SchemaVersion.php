@@ -201,6 +201,7 @@ class SchemaVersion
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->cols = array();
+<<<<<<< HEAD
                         $_size994 = 0;
                         $_etype997 = 0;
                         $xfer += $input->readListBegin($_etype997, $_size994);
@@ -209,6 +210,16 @@ class SchemaVersion
                             $elem999 = new \metastore\FieldSchema();
                             $xfer += $elem999->read($input);
                             $this->cols []= $elem999;
+=======
+                        $_size996 = 0;
+                        $_etype999 = 0;
+                        $xfer += $input->readListBegin($_etype999, $_size996);
+                        for ($_i1000 = 0; $_i1000 < $_size996; ++$_i1000) {
+                            $elem1001 = null;
+                            $elem1001 = new \metastore\FieldSchema();
+                            $xfer += $elem1001->read($input);
+                            $this->cols []= $elem1001;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -296,8 +307,13 @@ class SchemaVersion
             }
             $xfer += $output->writeFieldBegin('cols', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->cols));
+<<<<<<< HEAD
             foreach ($this->cols as $iter1000) {
                 $xfer += $iter1000->write($output);
+=======
+            foreach ($this->cols as $iter1002) {
+                $xfer += $iter1002->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

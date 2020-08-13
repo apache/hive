@@ -419,6 +419,7 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // ERRORS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list1104 = iprot.readListBegin();
                 struct.errors = new java.util.ArrayList<java.lang.String>(_list1104.size);
                 @org.apache.thrift.annotation.Nullable java.lang.String _elem1105;
@@ -426,6 +427,15 @@ package org.apache.hadoop.hive.metastore.api;
                 {
                   _elem1105 = iprot.readString();
                   struct.errors.add(_elem1105);
+=======
+                org.apache.thrift.protocol.TList _list1106 = iprot.readListBegin();
+                struct.errors = new java.util.ArrayList<java.lang.String>(_list1106.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1107;
+                for (int _i1108 = 0; _i1108 < _list1106.size; ++_i1108)
+                {
+                  _elem1107 = iprot.readString();
+                  struct.errors.add(_elem1107);
+>>>>>>> External metastore: clean after rebase
                 }
                 iprot.readListEnd();
               }
@@ -437,6 +447,7 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // WARNINGS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list1107 = iprot.readListBegin();
                 struct.warnings = new java.util.ArrayList<java.lang.String>(_list1107.size);
                 @org.apache.thrift.annotation.Nullable java.lang.String _elem1108;
@@ -444,6 +455,15 @@ package org.apache.hadoop.hive.metastore.api;
                 {
                   _elem1108 = iprot.readString();
                   struct.warnings.add(_elem1108);
+=======
+                org.apache.thrift.protocol.TList _list1109 = iprot.readListBegin();
+                struct.warnings = new java.util.ArrayList<java.lang.String>(_list1109.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1110;
+                for (int _i1111 = 0; _i1111 < _list1109.size; ++_i1111)
+                {
+                  _elem1110 = iprot.readString();
+                  struct.warnings.add(_elem1110);
+>>>>>>> External metastore: clean after rebase
                 }
                 iprot.readListEnd();
               }
@@ -470,9 +490,15 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(ERRORS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.errors.size()));
+<<<<<<< HEAD
             for (java.lang.String _iter1110 : struct.errors)
             {
               oprot.writeString(_iter1110);
+=======
+            for (java.lang.String _iter1112 : struct.errors)
+            {
+              oprot.writeString(_iter1112);
+>>>>>>> External metastore: clean after rebase
             }
             oprot.writeListEnd();
           }
@@ -484,9 +510,15 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(WARNINGS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.warnings.size()));
+<<<<<<< HEAD
             for (java.lang.String _iter1111 : struct.warnings)
             {
               oprot.writeString(_iter1111);
+=======
+            for (java.lang.String _iter1113 : struct.warnings)
+            {
+              oprot.writeString(_iter1113);
+>>>>>>> External metastore: clean after rebase
             }
             oprot.writeListEnd();
           }
@@ -521,18 +553,30 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetErrors()) {
         {
           oprot.writeI32(struct.errors.size());
+<<<<<<< HEAD
           for (java.lang.String _iter1112 : struct.errors)
           {
             oprot.writeString(_iter1112);
+=======
+          for (java.lang.String _iter1114 : struct.errors)
+          {
+            oprot.writeString(_iter1114);
+>>>>>>> External metastore: clean after rebase
           }
         }
       }
       if (struct.isSetWarnings()) {
         {
           oprot.writeI32(struct.warnings.size());
+<<<<<<< HEAD
           for (java.lang.String _iter1113 : struct.warnings)
           {
             oprot.writeString(_iter1113);
+=======
+          for (java.lang.String _iter1115 : struct.warnings)
+          {
+            oprot.writeString(_iter1115);
+>>>>>>> External metastore: clean after rebase
           }
         }
       }
@@ -544,6 +588,7 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list1114 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.errors = new java.util.ArrayList<java.lang.String>(_list1114.size);
           @org.apache.thrift.annotation.Nullable java.lang.String _elem1115;
@@ -551,12 +596,22 @@ package org.apache.hadoop.hive.metastore.api;
           {
             _elem1115 = iprot.readString();
             struct.errors.add(_elem1115);
+=======
+          org.apache.thrift.protocol.TList _list1116 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.errors = new java.util.ArrayList<java.lang.String>(_list1116.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1117;
+          for (int _i1118 = 0; _i1118 < _list1116.size; ++_i1118)
+          {
+            _elem1117 = iprot.readString();
+            struct.errors.add(_elem1117);
+>>>>>>> External metastore: clean after rebase
           }
         }
         struct.setErrorsIsSet(true);
       }
       if (incoming.get(1)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list1117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.warnings = new java.util.ArrayList<java.lang.String>(_list1117.size);
           @org.apache.thrift.annotation.Nullable java.lang.String _elem1118;
@@ -564,6 +619,15 @@ package org.apache.hadoop.hive.metastore.api;
           {
             _elem1118 = iprot.readString();
             struct.warnings.add(_elem1118);
+=======
+          org.apache.thrift.protocol.TList _list1119 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.warnings = new java.util.ArrayList<java.lang.String>(_list1119.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1120;
+          for (int _i1121 = 0; _i1121 < _list1119.size; ++_i1121)
+          {
+            _elem1120 = iprot.readString();
+            struct.warnings.add(_elem1120);
+>>>>>>> External metastore: clean after rebase
           }
         }
         struct.setWarningsIsSet(true);

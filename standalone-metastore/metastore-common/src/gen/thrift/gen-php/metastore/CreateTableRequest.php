@@ -224,6 +224,7 @@ class CreateTableRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->primaryKeys = array();
+<<<<<<< HEAD
                         $_size1008 = 0;
                         $_etype1011 = 0;
                         $xfer += $input->readListBegin($_etype1011, $_size1008);
@@ -232,6 +233,16 @@ class CreateTableRequest
                             $elem1013 = new \metastore\SQLPrimaryKey();
                             $xfer += $elem1013->read($input);
                             $this->primaryKeys []= $elem1013;
+=======
+                        $_size1010 = 0;
+                        $_etype1013 = 0;
+                        $xfer += $input->readListBegin($_etype1013, $_size1010);
+                        for ($_i1014 = 0; $_i1014 < $_size1010; ++$_i1014) {
+                            $elem1015 = null;
+                            $elem1015 = new \metastore\SQLPrimaryKey();
+                            $xfer += $elem1015->read($input);
+                            $this->primaryKeys []= $elem1015;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -241,6 +252,7 @@ class CreateTableRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->foreignKeys = array();
+<<<<<<< HEAD
                         $_size1014 = 0;
                         $_etype1017 = 0;
                         $xfer += $input->readListBegin($_etype1017, $_size1014);
@@ -249,6 +261,16 @@ class CreateTableRequest
                             $elem1019 = new \metastore\SQLForeignKey();
                             $xfer += $elem1019->read($input);
                             $this->foreignKeys []= $elem1019;
+=======
+                        $_size1016 = 0;
+                        $_etype1019 = 0;
+                        $xfer += $input->readListBegin($_etype1019, $_size1016);
+                        for ($_i1020 = 0; $_i1020 < $_size1016; ++$_i1020) {
+                            $elem1021 = null;
+                            $elem1021 = new \metastore\SQLForeignKey();
+                            $xfer += $elem1021->read($input);
+                            $this->foreignKeys []= $elem1021;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -258,6 +280,7 @@ class CreateTableRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->uniqueConstraints = array();
+<<<<<<< HEAD
                         $_size1020 = 0;
                         $_etype1023 = 0;
                         $xfer += $input->readListBegin($_etype1023, $_size1020);
@@ -266,6 +289,16 @@ class CreateTableRequest
                             $elem1025 = new \metastore\SQLUniqueConstraint();
                             $xfer += $elem1025->read($input);
                             $this->uniqueConstraints []= $elem1025;
+=======
+                        $_size1022 = 0;
+                        $_etype1025 = 0;
+                        $xfer += $input->readListBegin($_etype1025, $_size1022);
+                        for ($_i1026 = 0; $_i1026 < $_size1022; ++$_i1026) {
+                            $elem1027 = null;
+                            $elem1027 = new \metastore\SQLUniqueConstraint();
+                            $xfer += $elem1027->read($input);
+                            $this->uniqueConstraints []= $elem1027;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -275,6 +308,7 @@ class CreateTableRequest
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->notNullConstraints = array();
+<<<<<<< HEAD
                         $_size1026 = 0;
                         $_etype1029 = 0;
                         $xfer += $input->readListBegin($_etype1029, $_size1026);
@@ -283,6 +317,16 @@ class CreateTableRequest
                             $elem1031 = new \metastore\SQLNotNullConstraint();
                             $xfer += $elem1031->read($input);
                             $this->notNullConstraints []= $elem1031;
+=======
+                        $_size1028 = 0;
+                        $_etype1031 = 0;
+                        $xfer += $input->readListBegin($_etype1031, $_size1028);
+                        for ($_i1032 = 0; $_i1032 < $_size1028; ++$_i1032) {
+                            $elem1033 = null;
+                            $elem1033 = new \metastore\SQLNotNullConstraint();
+                            $xfer += $elem1033->read($input);
+                            $this->notNullConstraints []= $elem1033;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -292,6 +336,7 @@ class CreateTableRequest
                 case 7:
                     if ($ftype == TType::LST) {
                         $this->defaultConstraints = array();
+<<<<<<< HEAD
                         $_size1032 = 0;
                         $_etype1035 = 0;
                         $xfer += $input->readListBegin($_etype1035, $_size1032);
@@ -300,6 +345,16 @@ class CreateTableRequest
                             $elem1037 = new \metastore\SQLDefaultConstraint();
                             $xfer += $elem1037->read($input);
                             $this->defaultConstraints []= $elem1037;
+=======
+                        $_size1034 = 0;
+                        $_etype1037 = 0;
+                        $xfer += $input->readListBegin($_etype1037, $_size1034);
+                        for ($_i1038 = 0; $_i1038 < $_size1034; ++$_i1038) {
+                            $elem1039 = null;
+                            $elem1039 = new \metastore\SQLDefaultConstraint();
+                            $xfer += $elem1039->read($input);
+                            $this->defaultConstraints []= $elem1039;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -309,6 +364,7 @@ class CreateTableRequest
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->checkConstraints = array();
+<<<<<<< HEAD
                         $_size1038 = 0;
                         $_etype1041 = 0;
                         $xfer += $input->readListBegin($_etype1041, $_size1038);
@@ -317,6 +373,16 @@ class CreateTableRequest
                             $elem1043 = new \metastore\SQLCheckConstraint();
                             $xfer += $elem1043->read($input);
                             $this->checkConstraints []= $elem1043;
+=======
+                        $_size1040 = 0;
+                        $_etype1043 = 0;
+                        $xfer += $input->readListBegin($_etype1043, $_size1040);
+                        for ($_i1044 = 0; $_i1044 < $_size1040; ++$_i1044) {
+                            $elem1045 = null;
+                            $elem1045 = new \metastore\SQLCheckConstraint();
+                            $xfer += $elem1045->read($input);
+                            $this->checkConstraints []= $elem1045;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -326,6 +392,7 @@ class CreateTableRequest
                 case 9:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
+<<<<<<< HEAD
                         $_size1044 = 0;
                         $_etype1047 = 0;
                         $xfer += $input->readListBegin($_etype1047, $_size1044);
@@ -333,6 +400,15 @@ class CreateTableRequest
                             $elem1049 = null;
                             $xfer += $input->readString($elem1049);
                             $this->processorCapabilities []= $elem1049;
+=======
+                        $_size1046 = 0;
+                        $_etype1049 = 0;
+                        $xfer += $input->readListBegin($_etype1049, $_size1046);
+                        for ($_i1050 = 0; $_i1050 < $_size1046; ++$_i1050) {
+                            $elem1051 = null;
+                            $xfer += $input->readString($elem1051);
+                            $this->processorCapabilities []= $elem1051;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -382,8 +458,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('primaryKeys', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->primaryKeys));
+<<<<<<< HEAD
             foreach ($this->primaryKeys as $iter1050) {
                 $xfer += $iter1050->write($output);
+=======
+            foreach ($this->primaryKeys as $iter1052) {
+                $xfer += $iter1052->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -394,8 +475,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('foreignKeys', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->foreignKeys));
+<<<<<<< HEAD
             foreach ($this->foreignKeys as $iter1051) {
                 $xfer += $iter1051->write($output);
+=======
+            foreach ($this->foreignKeys as $iter1053) {
+                $xfer += $iter1053->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -406,8 +492,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('uniqueConstraints', TType::LST, 5);
             $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraints));
+<<<<<<< HEAD
             foreach ($this->uniqueConstraints as $iter1052) {
                 $xfer += $iter1052->write($output);
+=======
+            foreach ($this->uniqueConstraints as $iter1054) {
+                $xfer += $iter1054->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -418,8 +509,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('notNullConstraints', TType::LST, 6);
             $output->writeListBegin(TType::STRUCT, count($this->notNullConstraints));
+<<<<<<< HEAD
             foreach ($this->notNullConstraints as $iter1053) {
                 $xfer += $iter1053->write($output);
+=======
+            foreach ($this->notNullConstraints as $iter1055) {
+                $xfer += $iter1055->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -430,8 +526,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('defaultConstraints', TType::LST, 7);
             $output->writeListBegin(TType::STRUCT, count($this->defaultConstraints));
+<<<<<<< HEAD
             foreach ($this->defaultConstraints as $iter1054) {
                 $xfer += $iter1054->write($output);
+=======
+            foreach ($this->defaultConstraints as $iter1056) {
+                $xfer += $iter1056->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -442,8 +543,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('checkConstraints', TType::LST, 8);
             $output->writeListBegin(TType::STRUCT, count($this->checkConstraints));
+<<<<<<< HEAD
             foreach ($this->checkConstraints as $iter1055) {
                 $xfer += $iter1055->write($output);
+=======
+            foreach ($this->checkConstraints as $iter1057) {
+                $xfer += $iter1057->write($output);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -454,8 +560,13 @@ class CreateTableRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 9);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
+<<<<<<< HEAD
             foreach ($this->processorCapabilities as $iter1056) {
                 $xfer += $output->writeString($iter1056);
+=======
+            foreach ($this->processorCapabilities as $iter1058) {
+                $xfer += $output->writeString($iter1058);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

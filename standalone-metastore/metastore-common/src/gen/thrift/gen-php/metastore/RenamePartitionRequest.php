@@ -150,6 +150,7 @@ class RenamePartitionRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
+<<<<<<< HEAD
                         $_size1064 = 0;
                         $_etype1067 = 0;
                         $xfer += $input->readListBegin($_etype1067, $_size1064);
@@ -157,6 +158,15 @@ class RenamePartitionRequest
                             $elem1069 = null;
                             $xfer += $input->readString($elem1069);
                             $this->partVals []= $elem1069;
+=======
+                        $_size1075 = 0;
+                        $_etype1078 = 0;
+                        $xfer += $input->readListBegin($_etype1078, $_size1075);
+                        for ($_i1079 = 0; $_i1079 < $_size1075; ++$_i1079) {
+                            $elem1080 = null;
+                            $xfer += $input->readString($elem1080);
+                            $this->partVals []= $elem1080;
+>>>>>>> External metastore: clean after rebase
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -213,8 +223,13 @@ class RenamePartitionRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partVals));
+<<<<<<< HEAD
             foreach ($this->partVals as $iter1070) {
                 $xfer += $output->writeString($iter1070);
+=======
+            foreach ($this->partVals as $iter1081) {
+                $xfer += $output->writeString($iter1081);
+>>>>>>> External metastore: clean after rebase
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

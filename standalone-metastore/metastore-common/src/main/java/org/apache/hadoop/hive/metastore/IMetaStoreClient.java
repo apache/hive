@@ -1989,6 +1989,58 @@ public interface IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException;
 
   /**
+   * Create a new dataconnector.
+   * @param connector object.
+   * @throws InvalidObjectException There is something wrong with the dataconnector object.
+   * @throws AlreadyExistsException There is already a dataconnector with this name.
+   * @throws MetaException something went wrong, usually in the RDBMS
+   * @throws TException general thrift error
+   */
+  void createDataConnector(DataConnector connector)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
+  /**
+   * Drop a dataconnector.
+   * @param name name of the dataconnector to drop.
+   * @param ifNotExists if specified, drop will not throw an exception if the connector does not exist.
+   * @param checkReferences drop only if there are no dbs referencing this connector.
+   * @throws NoSuchObjectException No such dataconnector exists.
+   * @throws InvalidOperationException The dataconnector cannot be dropped because it is not allowed.
+   * @throws MetaException something went wrong, usually either in the RDMBS or in storage.
+   * @throws TException general thrift error.
+   */
+  void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  /**
+   * Alter a dataconnector.
+   * @param name dataconnector name.
+   * @param connector new dataconnector object.
+   * @throws NoSuchObjectException No dataconnector with this name exists.
+   * @throws MetaException Operation could not be completed, usually in the RDBMS.
+   * @throws TException thrift transport layer error.
+   */
+  void alterDataConnector(String name, DataConnector connector)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get the dataconnector by name
+   * @return DataConnector if there is a match
+   * @throws MetaException error complete the operation
+   * @throws TException thrift transport error
+   */
+  DataConnector getDataConnector(String name)
+      throws MetaException, TException;
+
+  /**
+   * Get the names of all dataconnectors in the MetaStore.
+   * @return List of dataconnector names.
+   * @throws MetaException error accessing RDBMS.
+   * @throws TException thrift transport error
+   */
+  List<String> getAllDataConnectors() throws MetaException, TException;
+
+  /**
    * Drop a partition.
    * @param db_name database name
    * @param tbl_name table name

@@ -331,6 +331,7 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TABLES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list1024 = iprot.readListBegin();
                 struct.tables = new java.util.ArrayList<Table>(_list1024.size);
                 @org.apache.thrift.annotation.Nullable Table _elem1025;
@@ -339,6 +340,16 @@ package org.apache.hadoop.hive.metastore.api;
                   _elem1025 = new Table();
                   _elem1025.read(iprot);
                   struct.tables.add(_elem1025);
+=======
+                org.apache.thrift.protocol.TList _list1026 = iprot.readListBegin();
+                struct.tables = new java.util.ArrayList<Table>(_list1026.size);
+                @org.apache.thrift.annotation.Nullable Table _elem1027;
+                for (int _i1028 = 0; _i1028 < _list1026.size; ++_i1028)
+                {
+                  _elem1027 = new Table();
+                  _elem1027.read(iprot);
+                  struct.tables.add(_elem1027);
+>>>>>>> External metastore: clean after rebase
                 }
                 iprot.readListEnd();
               }
@@ -364,9 +375,15 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TABLES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tables.size()));
+<<<<<<< HEAD
           for (Table _iter1027 : struct.tables)
           {
             _iter1027.write(oprot);
+=======
+          for (Table _iter1029 : struct.tables)
+          {
+            _iter1029.write(oprot);
+>>>>>>> External metastore: clean after rebase
           }
           oprot.writeListEnd();
         }
@@ -391,9 +408,15 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tables.size());
+<<<<<<< HEAD
         for (Table _iter1028 : struct.tables)
         {
           _iter1028.write(oprot);
+=======
+        for (Table _iter1030 : struct.tables)
+        {
+          _iter1030.write(oprot);
+>>>>>>> External metastore: clean after rebase
         }
       }
     }
@@ -402,6 +425,7 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetTablesResult struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list1029 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tables = new java.util.ArrayList<Table>(_list1029.size);
         @org.apache.thrift.annotation.Nullable Table _elem1030;
@@ -410,6 +434,16 @@ package org.apache.hadoop.hive.metastore.api;
           _elem1030 = new Table();
           _elem1030.read(iprot);
           struct.tables.add(_elem1030);
+=======
+        org.apache.thrift.protocol.TList _list1031 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new java.util.ArrayList<Table>(_list1031.size);
+        @org.apache.thrift.annotation.Nullable Table _elem1032;
+        for (int _i1033 = 0; _i1033 < _list1031.size; ++_i1033)
+        {
+          _elem1032 = new Table();
+          _elem1032.read(iprot);
+          struct.tables.add(_elem1032);
+>>>>>>> External metastore: clean after rebase
         }
       }
       struct.setTablesIsSet(true);

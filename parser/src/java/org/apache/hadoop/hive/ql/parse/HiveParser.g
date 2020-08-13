@@ -157,9 +157,17 @@ TOK_MAP;
 TOK_UNIONTYPE;
 TOK_COLTYPELIST;
 TOK_CREATEDATABASE;
+TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
 TOK_TRUNCATETABLE;
 TOK_LIKETABLE;
+TOK_DATACONNECTOR;
+TOK_DATACONNECTORCOMMENT;
+TOK_DATACONNECTORTYPE;
+TOK_DATACONNECTORURL;
+TOK_DATACONNECTOROWNER;
+TOK_DATACONNECTORPROPERTIES;
+TOK_DROPDATACONNECTOR;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
 TOK_ALTERTABLE;
@@ -207,6 +215,7 @@ TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
 TOK_MSCK;
 TOK_SHOWDATABASES;
+TOK_SHOWDATACONNECTORS;
 TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
@@ -355,6 +364,11 @@ TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
 TOK_ALTERDATABASE_MANAGEDLOCATION;
+TOK_DATACONNECTORPROPERTIES;
+TOK_ALTERDATACONNECTOR_PROPERTIES;
+TOK_ALTERDATACONNECTOR_OWNER;
+TOK_ALTERDATACONNECTOR_URL;
+TOK_DESCDATACONNECTOR;
 TOK_DBNAME;
 TOK_TABNAME;
 TOK_TABSRC;
@@ -468,6 +482,7 @@ TOK_EXECUTED_AS;
 TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
+TOK_REMOTE;
 TOK_PARAMETER;
 TOK_PARAMETER_IDX;
 TOK_RESPECT_NULLS;
@@ -670,6 +685,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_TRAILING", "TRAILING");
     xlateMap.put("KW_BOTH", "BOTH");
 
+    xlateMap.put("KW_TYPE", "TYPE");
+    xlateMap.put("KW_DATACONNECTOR", "CONNECTOR");
+    xlateMap.put("KW_DATACONNECTORS", "CONNECTORS");
+    xlateMap.put("KW_REMOTE", "REMOTE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1043,6 +1062,8 @@ ddlStatement
     | abortTransactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
+    | createDataConnectorStatement
+    | dropDataConnectorStatement
     ;
 
 ifExists
@@ -1106,14 +1127,16 @@ orReplace
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (KW_DATABASE|KW_SCHEMA)
+    : KW_CREATE (remote=KW_REMOTE)? (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
         databaseComment?
         dbLocation?
         dbManagedLocation?
+        dbConnectorName?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName?)
+    ->                    ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
     ;
 
 dbLocation
@@ -1144,6 +1167,12 @@ dbPropertiesList
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
     ;
 
+dbConnectorName
+@init { pushMsg("remote database using connector", state); }
+@after { popMsg(state); }
+    :
+      KW_USING dcName=identifier -> ^(TOK_DATACONNECTOR $dcName)
+    ;
 
 switchDatabaseStatement
 @init { pushMsg("switch database statement", state); }
@@ -1222,6 +1251,8 @@ descStatement
     (
     (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     |
+    (KW_DATACONNECTOR) => (KW_DATACONNECTOR) KW_EXTENDED? (dcName=identifier) -> ^(TOK_DESCDATACONNECTOR $dcName KW_EXTENDED?)
+    |
     (KW_FUNCTION) => KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     |
     (KW_FORMATTED|KW_EXTENDED) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED) parttype=tabPartColTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
@@ -1277,6 +1308,7 @@ showStatement
         (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
         | (KW_PLANS -> ^(TOK_SHOW_RP))
       )
+    | KW_SHOW (KW_DATACONNECTORS) -> ^(TOK_SHOWDATACONNECTORS)
     ;
 
 showTablesFilterExpr

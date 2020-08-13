@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.database.create;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -48,6 +49,8 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
     String comment = null;
     String locationUri = null;
     String managedLocationUri = null;
+    String type = "NATIVE";
+    String connectorName = null;
     Map<String, String> props = null;
 
     for (int i = 1; i < root.getChildCount(); i++) {
@@ -70,19 +73,47 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         managedLocationUri = unescapeSQLString(childNode.getChild(0).getText());
         outputs.add(toWriteEntity(managedLocationUri));
         break;
+      case HiveParser.TOK_DATACONNECTOR:
+        type = "REMOTE";
+        locationUri = "REMOTE_DATABASE"; // TODO
+        // i++;
+        ASTNode nextNode = (ASTNode) root.getChild(i);
+        connectorName = ((ASTNode)nextNode).getChild(0).getText();
+        outputs.add(toWriteEntity(connectorName));
+        outputs.remove(toWriteEntity(locationUri));
+        if (managedLocationUri != null) {
+          outputs.remove(toWriteEntity(managedLocationUri));
+          managedLocationUri = null;
+        }
+        break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
 
-    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, managedLocationUri,
-        ifNotExists, props);
+    // String remoteDbName = props.get("connector.remoteDbName");
+    CreateDatabaseDesc desc = null;
+    Database database = new Database(databaseName, comment, locationUri, props);
+    if (type.equalsIgnoreCase("NATIVE")) {
+      desc = new CreateDatabaseDesc(databaseName, comment, locationUri, managedLocationUri, ifNotExists, props);
+      database.setType(DatabaseType.NATIVE);
+      // database = new Database(databaseName, comment, locationUri, props);
+      if (managedLocationUri != null) {
+        database.setManagedLocationUri(managedLocationUri);
+      }
+    } else {
+      String remoteDbName = databaseName;
+      if (props != null && props.get("connector.remoteDbName") != null) // TODO
+        remoteDbName = props.get("connector.remoteDbName");
+      desc = new CreateDatabaseDesc(databaseName, comment, locationUri, null, ifNotExists, props, type,
+          connectorName, remoteDbName);
+      database.setConnector_name(connectorName);
+      database.setType(DatabaseType.REMOTE);
+      database.setRemote_dbname(remoteDbName);
+    }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    Database database = new Database(databaseName, comment, locationUri, props);
-    if (managedLocationUri != null) {
-      database.setManagedLocationUri(managedLocationUri);
-    }
+    // database = new Database(databaseName, comment, locationUri, props);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

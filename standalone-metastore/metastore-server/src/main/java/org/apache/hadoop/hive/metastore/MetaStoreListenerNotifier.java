@@ -40,11 +40,13 @@ import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
@@ -92,6 +94,19 @@ public class MetaStoreListenerNotifier {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
               listener.onDropDatabase((DropDatabaseEvent)event);
+            }
+          })
+          .put(EventType.CREATE_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener,
+                ListenerEvent event) throws MetaException {
+              listener.onCreateDataConnector((CreateDataConnectorEvent)event);
+            }
+          })
+          .put(EventType.DROP_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onDropDataConnector((DropDataConnectorEvent)event);
             }
           })
           .put(EventType.CREATE_TABLE, new EventNotifier() {

@@ -91,6 +91,26 @@ public class FilterUtils {
   }
 
   /**
+   * Filter the list of dataconnectors if filtering is enabled. Otherwise, return original list
+   * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
+   * @param filterHook: the object that does filtering
+   * @param connectorNames: the list of dataconnector names to filter
+   * @return the list of dataconnector names that current user has access if filtering is enabled;
+   *         otherwise, the original list
+   * @throws MetaException
+   */
+  public static List<String> filterDataConnectorsIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      List<String> connectorNames) throws MetaException {
+
+    if (isFilterEnabled) {
+      return filterHook.filterDatabases(connectorNames); // TODO add a new ATZ call
+    }
+    return connectorNames;
+  }
+
+  /**
    * Filter the list of tables if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
