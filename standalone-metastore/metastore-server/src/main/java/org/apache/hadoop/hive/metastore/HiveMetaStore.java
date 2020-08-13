@@ -95,75 +95,10 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
-import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
-import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
-import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
-import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
-import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
-import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.DropTableEvent;
-import org.apache.hadoop.hive.metastore.events.InsertEvent;
-import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
-import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
-import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
-import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreAddSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreEventContext;
-import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
-import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
-import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -2037,6 +1972,267 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
     }
+
+    // Assumes that the catalog has already been set.
+    private void create_dataconnector_core(RawStore ms, final DataConnector connector)
+        throws AlreadyExistsException, InvalidObjectException, MetaException {
+      if (!MetaStoreUtils.validateName(connector.getName(), conf)) {
+        throw new InvalidObjectException(connector.getName() + " is not a valid dataconnector name");
+      }
+
+      // connector.setLocationUri(dbPath.toString());
+      if (connector.getOwnerName() == null){
+        try {
+          connector.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+        }catch (Exception e){
+          LOG.warn("Failed to get owner name for create dataconnector operation.", e);
+        }
+      }
+      long time = System.currentTimeMillis()/1000;
+      connector.setCreateTime((int) time);
+      boolean success = false;
+      boolean madeDir = false;
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      try {
+        firePreEvent(new PreCreateDataConnectorEvent(connector, this));
+
+        ms.openTransaction();
+        ms.createDataConnector(connector);
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.CREATE_DATACONNECTOR,
+                  new CreateDataConnectorEvent(connector, true, this));
+        }
+
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.CREATE_DATACONNECTOR,
+              new CreateDataConnectorEvent(connector, success, this),
+              null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    }
+
+    @Override
+    public void create_dataconnector(final DataConnector connector)
+        throws AlreadyExistsException, InvalidObjectException, MetaException {
+      startFunction("create_dataconnector", ": " + connector.toString());
+      boolean success = false;
+      Exception ex = null;
+      try {
+        try {
+          if (null != get_dataconnector_core(connector.getName())) {
+            throw new AlreadyExistsException("DataConnector " + connector.getName() + " already exists");
+          }
+        } catch (NoSuchObjectException e) {
+          // expected
+        }
+
+        if (TEST_TIMEOUT_ENABLED) {
+          try {
+            Thread.sleep(TEST_TIMEOUT_VALUE);
+          } catch (InterruptedException e) {
+            // do nothing
+          }
+          Deadline.checkTimeout();
+        }
+        create_dataconnector_core(getMS(), connector);
+        success = true;
+      } catch (MetaException | InvalidObjectException | AlreadyExistsException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("create_connector", success, ex);
+      }
+    }
+
+    private DataConnector get_dataconnector_core(final String name) throws NoSuchObjectException, MetaException {
+      DataConnector connector = null;
+      if (name == null) {
+        throw new MetaException("Database name cannot be null.");
+      }
+      try {
+        connector = getMS().getDataConnector(name);
+      } catch (MetaException | NoSuchObjectException e) {
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      }
+      return connector;
+    }
+
+    @Override
+    public DataConnector get_dataconnector_req(GetDataConnectorRequest request) throws NoSuchObjectException, MetaException {
+      startFunction("get_dataconnector", ": " + request.getConnectorName());
+      DataConnector connector = null;
+      Exception ex = null;
+      if (request.getConnectorName() == null) {
+        throw new MetaException("Dataconnector name cannot be null.");
+      }
+      // List<String> processorCapabilities = request.getProcessorCapabilities();
+      // String processorId = request.getProcessorIdentifier();
+      try {
+        connector = getMS().getDataConnector(request.getConnectorName());
+        // firePreEvent(new PreReadDatabaseEvent(connector, this));
+        /*
+        if (processorCapabilities != null && transformer != null) {
+          connector = transformer.transformDatabase(connector, processorCapabilities, processorId);
+        }
+        */
+      } catch (MetaException | NoSuchObjectException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      } finally {
+        endFunction("get_dataconnector", connector != null, ex);
+      }
+      return connector;
+    }
+
+    @Override
+    public void alter_dataconnector(final String dcName, final DataConnector newDC) throws TException {
+      startFunction("alter_dataconnector " + dcName);
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      DataConnector oldDC = null;
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+
+      try {
+        oldDC = get_dataconnector_core(dcName);
+        if (oldDC == null) {
+          throw new MetaException("Could not alter dataconnector \"" + dcName +
+              "\". Could not retrieve old definition.");
+        }
+        // firePreEvent(new PreAlterDatabaseEvent(oldDC, newDC, this));
+
+        ms.openTransaction();
+        ms.alterDataConnector(dcName, newDC);
+
+        /*
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_DATACONNECTOR,
+                  new AlterDataConnectorEvent(oldDC, newDC, true, this));
+        }
+         */
+
+        success = ms.commitTransaction();
+      } catch (MetaException|NoSuchObjectException e) {
+        ex = e;
+        throw e;
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+/*
+        if ((null != oldDC) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.ALTER_DATACONNECTOR,
+              new AlterDataConnectorEvent(oldDC, newDC, success, this),
+              null,
+              transactionalListenersResponses, ms);
+        }
+ */
+        endFunction("alter_database", success, ex);
+      }
+    }
+
+    @Override
+    public List<String> get_dataconnectors() throws MetaException {
+      startFunction("get_dataconnectors");
+
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+          ret = getMS().getAllDataConnectors();
+          ret = FilterUtils.filterDataConnectorsIfEnabled(isServerFilterEnabled, filterHook, ret);
+      } catch (MetaException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_dataconnectors", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public void drop_dataconnector(final String dcName, boolean ifNotExists, boolean checkReferences) throws NoSuchObjectException, InvalidOperationException, MetaException {
+      startFunction("drop_dataconnector", ": " + dcName);
+      boolean success = false;
+      DataConnector connector = null;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        ms.openTransaction();
+        connector = getMS().getDataConnector(dcName);
+
+        if (connector == null) {
+          if (!ifNotExists) {
+            throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
+          } else {
+            return;
+          }
+        }
+        // TODO find DBs with references to this connector
+        // if any existing references and checkReferences=true, do not drop
+
+        // firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
+
+        if (!ms.dropDataConnector(dcName)) {
+          throw new MetaException("Unable to drop dataconnector " + dcName);
+        } else {
+/*
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenerResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DROP_TABLE,
+                    new DropTableEvent(tbl, true, deleteData,
+                        this, isReplicated),
+                    envContext);
+          }
+
+ */
+          success = ms.commitTransaction();
+        }
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+/*
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.DROP_TABLE,
+              new DropTableEvent(tbl, success, deleteData, this, isReplicated),
+              envContext,
+              transactionalListenerResponses, ms);
+        }
+
+ */
+        endFunction("drop_dataconnector", success, ex);
+      }
+    }
+
+
 
     @Override
     public boolean create_type(final Type type) throws AlreadyExistsException,

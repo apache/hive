@@ -122,13 +122,13 @@ class ExtendedTableInfo
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->requiredReadCapabilities = array();
-                        $_size910 = 0;
-                        $_etype913 = 0;
-                        $xfer += $input->readListBegin($_etype913, $_size910);
-                        for ($_i914 = 0; $_i914 < $_size910; ++$_i914) {
-                            $elem915 = null;
-                            $xfer += $input->readString($elem915);
-                            $this->requiredReadCapabilities []= $elem915;
+                        $_size919 = 0;
+                        $_etype922 = 0;
+                        $xfer += $input->readListBegin($_etype922, $_size919);
+                        for ($_i923 = 0; $_i923 < $_size919; ++$_i923) {
+                            $elem924 = null;
+                            $xfer += $input->readString($elem924);
+                            $this->requiredReadCapabilities []= $elem924;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -138,13 +138,13 @@ class ExtendedTableInfo
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->requiredWriteCapabilities = array();
-                        $_size916 = 0;
-                        $_etype919 = 0;
-                        $xfer += $input->readListBegin($_etype919, $_size916);
-                        for ($_i920 = 0; $_i920 < $_size916; ++$_i920) {
-                            $elem921 = null;
-                            $xfer += $input->readString($elem921);
-                            $this->requiredWriteCapabilities []= $elem921;
+                        $_size925 = 0;
+                        $_etype928 = 0;
+                        $xfer += $input->readListBegin($_etype928, $_size925);
+                        for ($_i929 = 0; $_i929 < $_size925; ++$_i929) {
+                            $elem930 = null;
+                            $xfer += $input->readString($elem930);
+                            $this->requiredWriteCapabilities []= $elem930;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -181,8 +181,8 @@ class ExtendedTableInfo
             }
             $xfer += $output->writeFieldBegin('requiredReadCapabilities', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->requiredReadCapabilities));
-            foreach ($this->requiredReadCapabilities as $iter922) {
-                $xfer += $output->writeString($iter922);
+            foreach ($this->requiredReadCapabilities as $iter931) {
+                $xfer += $output->writeString($iter931);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -193,8 +193,8 @@ class ExtendedTableInfo
             }
             $xfer += $output->writeFieldBegin('requiredWriteCapabilities', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->requiredWriteCapabilities));
-            foreach ($this->requiredWriteCapabilities as $iter923) {
-                $xfer += $output->writeString($iter923);
+            foreach ($this->requiredWriteCapabilities as $iter932) {
+                $xfer += $output->writeString($iter932);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -608,7 +608,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, String connectorName, String remoteDbName, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
@@ -620,6 +620,45 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     }
     if (null != ownerType) {
       builder.put("ownerType", ownerType.name());
+    }
+    if (null != connectorName) {
+      builder.put("connector_name", connectorName);
+    }
+    if (null != remoteDbName) {
+      builder.put("remote_dbname", remoteDbName);
+    }
+    if (null != params && !params.isEmpty()) {
+      builder.put("params", params);
+    }
+    asJson(out, builder.build());
+  }
+
+  /**
+   * Show a list of dataconnectors
+   */
+  @Override
+  public void showDataConnectors(DataOutputStream out, List<String> connectors)
+      throws HiveException {
+    asJson(out, MapBuilder.create().put("connectors", connectors).build());
+  }
+
+  /**
+   * Show the description of a dataconnector
+   */
+  @Override
+  public void showDataConnectorDescription(DataOutputStream out, String dcName, String type,
+      String url, String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
+          throws HiveException {
+    MapBuilder builder = MapBuilder.create().put("connector", dcName).put("type", type)
+        .put("url", url);
+    if (null != ownerName) {
+      builder.put("owner", ownerName);
+    }
+    if (null != ownerType) {
+      builder.put("ownerType", ownerType.name());
+    }
+    if (null != comment) {
+      builder.put("comment", comment);
     }
     if (null != params && !params.isEmpty()) {
       builder.put("params", params);

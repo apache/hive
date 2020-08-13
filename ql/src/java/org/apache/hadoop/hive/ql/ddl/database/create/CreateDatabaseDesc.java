@@ -21,9 +21,12 @@ package org.apache.hadoop.hive.ql.ddl.database.create;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import javax.xml.crypto.Data;
 
 /**
  * DDL task description for CREATE DATABASE commands.
@@ -31,20 +34,49 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
+  public static final String REMOTEDB_LOCATION = "REMOTE_LOCATION".intern();
 
   private final String databaseName;
   private final String comment;
   private final String locationUri;
   private final String managedLocationUri;
   private final boolean ifNotExists;
+  private final DatabaseType dbType;
+  private final String connectorName;
+  private final String remoteDbName;
   private final Map<String, String> dbProperties;
 
   public CreateDatabaseDesc(String databaseName, String comment, String locationUri, String managedLocationUri,
       boolean ifNotExists, Map<String, String> dbProperties) {
+    this(databaseName, comment, locationUri, managedLocationUri, ifNotExists, dbProperties, "NATIVE", null, null);
+/*
     this.databaseName = databaseName;
     this.comment = comment;
     this.locationUri = locationUri;
     this.managedLocationUri = managedLocationUri;
+    this.ifNotExists = ifNotExists;
+    this.dbProperties = dbProperties;
+
+ */
+  }
+
+  public CreateDatabaseDesc(String databaseName, String comment, String locationUri, String managedLocationUri,
+      boolean ifNotExists, Map<String, String> dbProperties, String dbtype, String connectorName, String remoteDbName) {
+    this.databaseName = databaseName;
+    this.comment = comment;
+    if (dbtype != null && dbtype.equalsIgnoreCase("REMOTE")) {
+      this.dbType = DatabaseType.REMOTE;
+      this.locationUri = REMOTEDB_LOCATION; // this is non-null in the HMSDB
+      this.connectorName = connectorName;
+      this.remoteDbName = remoteDbName;
+      this.managedLocationUri = null;
+    } else {
+      this.dbType = DatabaseType.NATIVE;
+      this.locationUri = locationUri;
+      this.managedLocationUri = managedLocationUri;
+      this.connectorName = null;
+      this.remoteDbName = null;
+    }
     this.ifNotExists = ifNotExists;
     this.dbProperties = dbProperties;
   }
@@ -76,5 +108,27 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
   @Explain(displayName="managed location uri")
   public String getManagedLocationUri() {
     return managedLocationUri;
+  }
+
+  @Explain(displayName="database type")
+  public DatabaseType getDatabaseType() {
+    return dbType;
+    /*
+    if (dbType == DatabaseType.NATIVE)
+      return "NATIVE";
+    else
+      return "REMOTE";
+
+     */
+  }
+
+  @Explain(displayName="connector name")
+  public String getConnectorName() {
+    return connectorName;
+  }
+
+  @Explain(displayName="remote database name")
+  public String getRemoteDbName() {
+    return remoteDbName;
   }
 }

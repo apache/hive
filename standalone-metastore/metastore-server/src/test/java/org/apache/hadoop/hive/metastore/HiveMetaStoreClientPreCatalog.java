@@ -754,7 +754,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /**
    * Create a new Database
-   * @param db
+   * @param connector
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
@@ -762,9 +762,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_database(Database)
    */
   @Override
-  public void createDatabase(Database db)
+  public void createDatabase(Database connector)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    client.create_database(db);
+    client.create_database(connector);
+  }
+
+  @Override
+  public void createDataConnector(DataConnector connector)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.create_dataconnector(connector);
   }
 
   /**
@@ -945,6 +951,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         }
     }
     client.drop_database(name, deleteData, cascade);
+  }
+
+  @Override
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    client.drop_dataconnector(name, ifNotExists, checkReferences);
   }
 
   /**
@@ -1259,6 +1271,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return null;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<String> getAllDataConnectors() throws MetaException {
+    try {
+      client.get_dataconnectors(); // TODO run thru filterhook
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
   /**
    * @param tbl_name
    * @param db_name
@@ -1420,6 +1443,14 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       MetaException, TException {
     Database d = client.get_database(name);
     return fastpath ? d :deepCopy(filterHook.filterDatabase(d));
+  }
+
+  @Override
+  public DataConnector getDataConnector(String name) throws NoSuchObjectException,
+      MetaException, TException {
+    GetDataConnectorRequest request = new GetDataConnectorRequest();
+    request.setConnectorName(name);
+    return client.get_dataconnector_req(request); // TODO run thru filterhook
   }
 
   /**
@@ -1761,6 +1792,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       throws MetaException, NoSuchObjectException, TException {
     client.alter_database(dbName, db);
   }
+
+  @Override
+  public void alterDataConnector(String dcName, DataConnector connector)
+      throws MetaException, NoSuchObjectException, TException {
+    client.alter_dataconnector(dcName, connector);
+  }
+
   /**
    * @param db
    * @param tableName

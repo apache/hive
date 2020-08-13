@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -52,13 +53,21 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
         params = new TreeMap<>(database.getParameters());
       }
 
-      String location = database.getLocationUri();
-      if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
-        location = "location/in/test";
-      }
+      String location = "";
+      if (database.getType() == DatabaseType.NATIVE) {
+        location = database.getLocationUri();
+        if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
+          location = "location/in/test";
+        }
+        // database.setRemote_dbname("");
+        // database.setConnector_name("");
 
-      context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
-          location, database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params);
+        context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
+            location, database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), "", "", params);
+      } else {
+        context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
+            "", "", database.getOwnerName(), database.getOwnerType(), database.getConnector_name(), database.getRemote_dbname(), params);
+      }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

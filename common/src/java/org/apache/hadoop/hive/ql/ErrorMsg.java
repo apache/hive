@@ -473,6 +473,10 @@ public enum ErrorMsg {
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
   OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
+  DATACONNECTOR_ALREADY_EXISTS(10423,
+      "Dataconnector {0} already exists", true),
+  DATACONNECTOR_NOT_EXISTS(10424, "Dataconnector does not exist:"),
+
 
   //========================== 20000 range starts here ========================//
 

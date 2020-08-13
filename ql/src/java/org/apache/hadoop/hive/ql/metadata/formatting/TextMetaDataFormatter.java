@@ -609,7 +609,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
-      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, String connectorName, String remoteDbName, Map<String, String> params)
           throws HiveException {
     try {
       outStream.write(database.getBytes("UTF-8"));
@@ -632,6 +632,71 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(separator);
       if (ownerType != null) {
         outStream.write(ownerType.name().getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (connectorName != null) {
+        outStream.write(connectorName.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (remoteDbName != null) {
+        outStream.write(remoteDbName.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (params != null && !params.isEmpty()) {
+        outStream.write(params.toString().getBytes("UTF-8"));
+      }
+      outStream.write(terminator);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Show the list of dataconnectors
+   */
+  @Override
+  public void showDataConnectors(DataOutputStream outStream, List<String> connectors)
+      throws HiveException
+      {
+    try {
+      for (String connector : connectors) {
+        // create a row per database name
+        outStream.write(connector.getBytes("UTF-8"));
+        outStream.write(terminator);
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+      }
+
+  /**
+   * Describe a dataConnector
+   */
+  @Override
+  public void showDataConnectorDescription(DataOutputStream outStream, String connector, String type,
+      String url, String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
+          throws HiveException {
+    try {
+      outStream.write(connector.getBytes("UTF-8"));
+      outStream.write(separator);
+      if (type != null) {
+        outStream.write(type.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (url != null) {
+        outStream.write(url.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (ownerName != null) {
+        outStream.write(ownerName.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (ownerType != null) {
+        outStream.write(ownerType.name().getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (comment != null) {
+        outStream.write(HiveStringUtils.escapeJava(comment).getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (params != null && !params.isEmpty()) {

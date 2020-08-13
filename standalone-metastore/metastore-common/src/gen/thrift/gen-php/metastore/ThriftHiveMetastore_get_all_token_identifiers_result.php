@@ -68,13 +68,13 @@ class ThriftHiveMetastore_get_all_token_identifiers_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1678 = 0;
-                        $_etype1681 = 0;
-                        $xfer += $input->readListBegin($_etype1681, $_size1678);
-                        for ($_i1682 = 0; $_i1682 < $_size1678; ++$_i1682) {
-                            $elem1683 = null;
-                            $xfer += $input->readString($elem1683);
-                            $this->success []= $elem1683;
+                        $_size1703 = 0;
+                        $_etype1706 = 0;
+                        $xfer += $input->readListBegin($_etype1706, $_size1703);
+                        for ($_i1707 = 0; $_i1707 < $_size1703; ++$_i1707) {
+                            $elem1708 = null;
+                            $xfer += $input->readString($elem1708);
+                            $this->success []= $elem1708;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,8 +101,8 @@ class ThriftHiveMetastore_get_all_token_identifiers_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRING, count($this->success));
-            foreach ($this->success as $iter1684) {
-                $xfer += $output->writeString($iter1684);
+            foreach ($this->success as $iter1709) {
+                $xfer += $output->writeString($iter1709);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

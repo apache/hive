@@ -103,7 +103,20 @@ public interface MetaDataFormatter {
    * Describe a database.
    */
   void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-      String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String managedLocation, String ownerName, PrincipalType ownerType, String connectorName, String remoteDbName, Map<String, String> params)
+      throws HiveException;
+
+  /**
+   * Show the dataconnectors.
+   */
+  void showDataConnectors(DataOutputStream out, List<String> connectors)
+      throws HiveException;
+
+  /**
+   * Describe a dataconnector.
+   */
+  void showDataConnectorDescription(DataOutputStream out, String connector, String type, String url,
+      String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
       throws HiveException;
 
   void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)

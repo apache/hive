@@ -252,6 +252,19 @@ std::ostream& operator<<(std::ostream& out, const SchemaVersionState::type& val)
 
 std::string to_string(const SchemaVersionState::type& val);
 
+struct DatabaseType {
+  enum type {
+    NATIVE = 1,
+    REMOTE = 2
+  };
+};
+
+extern const std::map<int, const char*> _DatabaseType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const DatabaseType::type& val);
+
+std::string to_string(const DatabaseType::type& val);
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -614,6 +627,8 @@ class GetPartitionsByNamesRequest;
 
 class GetPartitionsByNamesResult;
 
+class DataConnector;
+
 class ResourceUri;
 
 class Function;
@@ -883,6 +898,12 @@ class RuntimeStat;
 class GetRuntimeStatsRequest;
 
 class CreateTableRequest;
+
+class CreateDatabaseRequest;
+
+class CreateDataConnectorRequest;
+
+class GetDataConnectorRequest;
 
 class ScheduledQueryPollRequest;
 
@@ -3045,7 +3066,7 @@ void swap(DropCatalogRequest &a, DropCatalogRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), connector_name(false), remote_dbname(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -3056,6 +3077,9 @@ typedef struct _Database__isset {
   bool catalogName :1;
   bool createTime :1;
   bool managedLocationUri :1;
+  bool type :1;
+  bool connector_name :1;
+  bool remote_dbname :1;
 } _Database__isset;
 
 class Database : public virtual ::apache::thrift::TBase {
@@ -3063,7 +3087,7 @@ class Database : public virtual ::apache::thrift::TBase {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri(), type((DatabaseType::type)0), connector_name(), remote_dbname() {
   }
 
   virtual ~Database() noexcept;
@@ -3077,6 +3101,9 @@ class Database : public virtual ::apache::thrift::TBase {
   std::string catalogName;
   int32_t createTime;
   std::string managedLocationUri;
+  DatabaseType::type type;
+  std::string connector_name;
+  std::string remote_dbname;
 
   _Database__isset __isset;
 
@@ -3099,6 +3126,12 @@ class Database : public virtual ::apache::thrift::TBase {
   void __set_createTime(const int32_t val);
 
   void __set_managedLocationUri(const std::string& val);
+
+  void __set_type(const DatabaseType::type val);
+
+  void __set_connector_name(const std::string& val);
+
+  void __set_remote_dbname(const std::string& val);
 
   bool operator == (const Database & rhs) const
   {
@@ -3133,6 +3166,18 @@ class Database : public virtual ::apache::thrift::TBase {
     if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
       return false;
     else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.connector_name != rhs.__isset.connector_name)
+      return false;
+    else if (__isset.connector_name && !(connector_name == rhs.connector_name))
+      return false;
+    if (__isset.remote_dbname != rhs.__isset.remote_dbname)
+      return false;
+    else if (__isset.remote_dbname && !(remote_dbname == rhs.remote_dbname))
       return false;
     return true;
   }
@@ -7291,6 +7336,100 @@ class GetPartitionsByNamesResult : public virtual ::apache::thrift::TBase {
 void swap(GetPartitionsByNamesResult &a, GetPartitionsByNamesResult &b);
 
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesResult& obj);
+
+typedef struct _DataConnector__isset {
+  _DataConnector__isset() : name(false), type(false), url(false), description(false), parameters(false), ownerName(false), ownerType(false), createTime(false) {}
+  bool name :1;
+  bool type :1;
+  bool url :1;
+  bool description :1;
+  bool parameters :1;
+  bool ownerName :1;
+  bool ownerType :1;
+  bool createTime :1;
+} _DataConnector__isset;
+
+class DataConnector : public virtual ::apache::thrift::TBase {
+ public:
+
+  DataConnector(const DataConnector&);
+  DataConnector& operator=(const DataConnector&);
+  DataConnector() : name(), type(), url(), description(), ownerName(), ownerType((PrincipalType::type)0), createTime(0) {
+  }
+
+  virtual ~DataConnector() noexcept;
+  std::string name;
+  std::string type;
+  std::string url;
+  std::string description;
+  std::map<std::string, std::string>  parameters;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  int32_t createTime;
+
+  _DataConnector__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_url(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
+
+  void __set_createTime(const int32_t val);
+
+  bool operator == (const DataConnector & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(url == rhs.url))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    return true;
+  }
+  bool operator != (const DataConnector &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DataConnector & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DataConnector &a, DataConnector &b);
+
+std::ostream& operator<<(std::ostream& out, const DataConnector& obj);
 
 typedef struct _ResourceUri__isset {
   _ResourceUri__isset() : resourceType(false), uri(false) {}
@@ -14845,6 +14984,213 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
 void swap(CreateTableRequest &a, CreateTableRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj);
+
+typedef struct _CreateDatabaseRequest__isset {
+  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false) {}
+  bool description :1;
+  bool locationUri :1;
+  bool parameters :1;
+  bool privileges :1;
+  bool ownerName :1;
+  bool ownerType :1;
+  bool catalogName :1;
+  bool createTime :1;
+  bool managedLocationUri :1;
+  bool type :1;
+  bool dataConnectorName :1;
+} _CreateDatabaseRequest__isset;
+
+class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CreateDatabaseRequest(const CreateDatabaseRequest&);
+  CreateDatabaseRequest& operator=(const CreateDatabaseRequest&);
+  CreateDatabaseRequest() : databaseName(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri(), type(), dataConnectorName() {
+  }
+
+  virtual ~CreateDatabaseRequest() noexcept;
+  std::string databaseName;
+  std::string description;
+  std::string locationUri;
+  std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  std::string catalogName;
+  int32_t createTime;
+  std::string managedLocationUri;
+  std::string type;
+  std::string dataConnectorName;
+
+  _CreateDatabaseRequest__isset __isset;
+
+  void __set_databaseName(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_locationUri(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_managedLocationUri(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_dataConnectorName(const std::string& val);
+
+  bool operator == (const CreateDatabaseRequest & rhs) const
+  {
+    if (!(databaseName == rhs.databaseName))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.locationUri != rhs.__isset.locationUri)
+      return false;
+    else if (__isset.locationUri && !(locationUri == rhs.locationUri))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
+      return false;
+    else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.dataConnectorName != rhs.__isset.dataConnectorName)
+      return false;
+    else if (__isset.dataConnectorName && !(dataConnectorName == rhs.dataConnectorName))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateDatabaseRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateDatabaseRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateDatabaseRequest &a, CreateDatabaseRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CreateDatabaseRequest& obj);
+
+typedef struct _CreateDataConnectorRequest__isset {
+  _CreateDataConnectorRequest__isset() : connector(false) {}
+  bool connector :1;
+} _CreateDataConnectorRequest__isset;
+
+class CreateDataConnectorRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CreateDataConnectorRequest(const CreateDataConnectorRequest&);
+  CreateDataConnectorRequest& operator=(const CreateDataConnectorRequest&);
+  CreateDataConnectorRequest() {
+  }
+
+  virtual ~CreateDataConnectorRequest() noexcept;
+  DataConnector connector;
+
+  _CreateDataConnectorRequest__isset __isset;
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const CreateDataConnectorRequest & rhs) const
+  {
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateDataConnectorRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateDataConnectorRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateDataConnectorRequest &a, CreateDataConnectorRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CreateDataConnectorRequest& obj);
+
+
+class GetDataConnectorRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetDataConnectorRequest(const GetDataConnectorRequest&);
+  GetDataConnectorRequest& operator=(const GetDataConnectorRequest&);
+  GetDataConnectorRequest() : connectorName() {
+  }
+
+  virtual ~GetDataConnectorRequest() noexcept;
+  std::string connectorName;
+
+  void __set_connectorName(const std::string& val);
+
+  bool operator == (const GetDataConnectorRequest & rhs) const
+  {
+    if (!(connectorName == rhs.connectorName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetDataConnectorRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetDataConnectorRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetDataConnectorRequest &a, GetDataConnectorRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetDataConnectorRequest& obj);
 
 
 class ScheduledQueryPollRequest : public virtual ::apache::thrift::TBase {

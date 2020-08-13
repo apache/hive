@@ -1447,6 +1447,7 @@
         </executions>
         <configuration>
 	  <excludes>
+	    <exclude>*.patch</exclude>
 	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
@@ -1493,6 +1494,8 @@
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
             <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>hcatalog/core/mapred/**/part-m*</exclude>
+            <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
