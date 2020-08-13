@@ -233,7 +233,14 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
     }
     ApplicationId applicationId = coordinator.createExtClientAppId();
-    LOG.info("Generated appID {} for LLAP splits", applicationId.toString());
+    String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVEQUERYNAME);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Generated appID ").append(applicationId.toString()).append(" for LLAP splits");
+    if (externalDagName != null) {
+      sb.append(", with externalID ").append(externalDagName);
+    }
+    LOG.info(sb.toString());
 
     PlanFragment fragment = createPlanFragment(inputArgQuery, applicationId);
     TezWork tezWork = fragment.work;
