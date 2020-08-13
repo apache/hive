@@ -620,7 +620,8 @@ public enum ErrorMsg {
     "from some other path : {1}.", true),
   REPL_INVALID_CONFIG_FOR_SERVICE(40008, "Invalid config error : {0} for {1} service.", true),
   REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE(40009, "Invalid internal config error : {0} for {1} service.", true),
-  REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true)
+  REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),
+  REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention")
   ;
 
   private int errorCode;

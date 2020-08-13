@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +48,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -127,6 +127,22 @@ public class Utils {
       });
     } catch (Exception e) {
       throw new SemanticException(e);
+    }
+  }
+
+  public static void writeStackTrace(Exception e, Path outputFile, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).withFailOnException(FileNotFoundException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        PrintWriter pw = new PrintWriter(outputFile.getFileSystem(conf).create(outputFile));
+        e.printStackTrace(pw);
+        pw.close();
+        return null;
+      });
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
     }
   }
 
