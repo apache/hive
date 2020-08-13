@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.*;
 
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
@@ -54,11 +57,44 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastHashTableLoader.class.getName());
 
+  public class HashTableElement {
+    private BytesWritable key;
+    private BytesWritable value;
+    private long hashCode;
+    private long deserializeKey;
+
+    public HashTableElement(BytesWritable key, BytesWritable value, long hashCode, long deserializeKey) {
+      this.key = key;
+      this.value = value;
+      this.hashCode = hashCode;
+      this.deserializeKey = deserializeKey;
+    }
+
+    public BytesWritable getKey() {
+      return key;
+    }
+
+    public BytesWritable getValue() {
+      return value;
+    }
+
+    public long getDeserializeKey() {
+      return deserializeKey;
+    }
+
+    public long getHashCode() {
+      return hashCode;
+    }
+  }
+
   private Configuration hconf;
   protected MapJoinDesc desc;
   private TezContext tezContext;
   private String cacheKey;
   private TezCounter htLoadCounter;
+  private Deque<HashTableElement>[] sharedQ;
+  private boolean queueFilled;
+  private long numEntries;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext,
@@ -71,6 +107,59 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
+    this.sharedQ = new Deque[4];
+    for(int i=0; i<sharedQ.length; i++){
+      sharedQ[i] = new LinkedList<>();
+    }
+    this.queueFilled = false;
+    this.numEntries = 0;
+  }
+
+  public void drainQueueAndLoad(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer, boolean doMemCheck,
+      String inputName, MemoryMonitorInfo memoryMonitorInfo, long effectiveThreshold, int partitionId)
+      throws InterruptedException, IOException, HiveException, SerDeException {
+    while(!sharedQ[partitionId].isEmpty() || !queueFilled) {
+      HashTableElement e = sharedQ[partitionId].remove();
+      vectorMapJoinFastTableContainer.putRow(e.getKey(), e.getValue(), e.getHashCode(), e.getDeserializeKey());
+      synchronized(this) {
+        numEntries++;
+      }
+      if (doMemCheck && (numEntries % memoryMonitorInfo.getMemoryCheckInterval() == 0)) {
+        final long estMemUsage = vectorMapJoinFastTableContainer.getEstimatedMemorySize();
+        if (estMemUsage > effectiveThreshold) {
+          String msg = "Hash table loading exceeded memory limits for input: " + inputName +
+              " numEntries: " + numEntries + " estimatedMemoryUsage: " + estMemUsage +
+              " effectiveThreshold: " + effectiveThreshold + " memoryMonitorInfo: " + memoryMonitorInfo;
+          LOG.error(msg);
+          throw new MapJoinMemoryExhaustionError(msg);
+        } else {
+          if (LOG.isInfoEnabled()) {
+            LOG.info("Checking hash table loader memory usage for input: {} numEntries: {} " +
+                    "estimatedMemoryUsage: {} effectiveThreshold: {}", inputName, numEntries, estMemUsage,
+                effectiveThreshold);
+          }
+        }
+      }
+    }
+  }
+
+  public void drain(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer, boolean doMemCheck,
+      String inputName, MemoryMonitorInfo memoryMonitorInfo, long effectiveThreshold, ExecutorService executorService) {
+    boolean finalDoMemCheck = doMemCheck;
+    long finalEffectiveThreshold = effectiveThreshold;
+    for (int partitionId = 0; partitionId < 4; ++partitionId) {
+      int finalPartitionId = partitionId;
+      executorService.submit(() -> {
+        try {
+          drainQueueAndLoad(vectorMapJoinFastTableContainer, finalDoMemCheck, inputName, memoryMonitorInfo,
+              finalEffectiveThreshold, finalPartitionId);
+        } catch (HiveException e) {
+          e.printStackTrace();
+        } catch (IOException | InterruptedException | SerDeException e) {
+          e.printStackTrace();
+        }
+      });
+    }
   }
 
   @Override
@@ -110,7 +199,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         continue;
       }
 
-      long numEntries = 0;
+      long numActualEntries = 0;
       String inputName = parentToInput.get(pos);
       LogicalInput input = tezContext.getInput(inputName);
 
@@ -143,32 +232,38 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer =
                 new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
-        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} " +
-                "estKeyCount : {} keyCount : {}", inputName, cacheKey,
-                vectorMapJoinFastTableContainer.getClass().getSimpleName(), pos, estKeyCount, keyCount);
+        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} starttime: {}",
+            inputName, cacheKey, vectorMapJoinFastTableContainer.getClass().getSimpleName(), pos,
+            System.currentTimeMillis());
 
         vectorMapJoinFastTableContainer.setSerde(null, null); // No SerDes here.
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        boolean drained = false;
         long startTime = System.currentTimeMillis();
         while (kvReader.next()) {
-          vectorMapJoinFastTableContainer.putRow((BytesWritable)kvReader.getCurrentKey(),
-              (BytesWritable)kvReader.getCurrentValue());
-          numEntries++;
-          if (doMemCheck && (numEntries % memoryMonitorInfo.getMemoryCheckInterval() == 0)) {
-              final long estMemUsage = vectorMapJoinFastTableContainer.getEstimatedMemorySize();
-              if (estMemUsage > effectiveThreshold) {
-                String msg = "Hash table loading exceeded memory limits for input: " + inputName +
-                  " numEntries: " + numEntries + " estimatedMemoryUsage: " + estMemUsage +
-                  " effectiveThreshold: " + effectiveThreshold + " memoryMonitorInfo: " + memoryMonitorInfo;
-                LOG.error(msg);
-                throw new MapJoinMemoryExhaustionError(msg);
-              } else {
-                if (LOG.isInfoEnabled()) {
-                  LOG.info("Checking hash table loader memory usage for input: {} numEntries: {} " +
-                      "estimatedMemoryUsage: {} effectiveThreshold: {}", inputName, numEntries, estMemUsage,
-                    effectiveThreshold);
-                }
-              }
+          long key = vectorMapJoinFastTableContainer.deserializeToKey((BytesWritable) kvReader.getCurrentKey());
+          long hashCode = vectorMapJoinFastTableContainer.calculateLongHashCode(key,
+              (BytesWritable) kvReader.getCurrentKey());
+          sharedQ[(int) (((1 << 2) - 1) & (hashCode >> 62 - 1))].add(new HashTableElement(
+              (BytesWritable) kvReader.getCurrentKey(), (BytesWritable) kvReader.getCurrentValue(), hashCode, key));
+          ++numActualEntries;
+          if (!drained && numActualEntries == 10000) {
+            drain(vectorMapJoinFastTableContainer, doMemCheck, inputName, memoryMonitorInfo,
+                effectiveThreshold, executorService);
+            drained = true;
           }
+        }
+        queueFilled = true;
+        if (!drained) {
+          drain(vectorMapJoinFastTableContainer, doMemCheck, inputName, memoryMonitorInfo,
+              effectiveThreshold, executorService);
+        }
+
+        executorService.shutdown();
+        try {
+          executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
         }
         long delta = System.currentTimeMillis() - startTime;
         htLoadCounter.increment(delta);
@@ -176,12 +271,12 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         vectorMapJoinFastTableContainer.seal();
         mapJoinTables[pos] = vectorMapJoinFastTableContainer;
         if (doMemCheck) {
-          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
-              "estimatedMemoryUsage: {} Load Time : {} ", inputName, cacheKey, numEntries,
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numActualEntries: {} numEntries: {} " +
+              "estimatedMemoryUsage: {} Load Time : {} ", inputName, cacheKey, numActualEntries, numEntries,
             vectorMapJoinFastTableContainer.getEstimatedMemorySize(), delta);
         } else {
-          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} Load Time : {} ",
-                  inputName, cacheKey, numEntries, delta);
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numActualEntries: {} numEntries: {} Load Time : {} ",
+                  inputName, cacheKey, numActualEntries, numEntries, delta);
         }
       } catch (IOException e) {
         throw new HiveException(e);

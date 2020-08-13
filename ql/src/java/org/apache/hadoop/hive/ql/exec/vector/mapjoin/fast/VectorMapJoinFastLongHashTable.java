@@ -71,37 +71,21 @@ public abstract class VectorMapJoinFastLongHashTable
     return max;
   }
 
-  public boolean adaptPutRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    byte[] keyBytes = currentKey.getBytes();
-    int keyLength = currentKey.getLength();
-    keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
-    try {
-      if (!keyBinarySortableDeserializeRead.readNextField()) {
-        return false;
-      }
-    } catch (Exception e) {
-      throw new HiveException(
-          "\nDeserializeRead details: " +
-              keyBinarySortableDeserializeRead.getDetailedReadPositionString() +
-          "\nException: " + e.toString());
-    }
-
-    long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(
-                            keyBinarySortableDeserializeRead, hashTableKeyType);
-
-    add(key, currentValue);
+  public boolean adaptPutRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException {
+    add(hashCode, key, currentValue);
     return true;
   }
 
   protected abstract void assignSlot(int slot, long key, boolean isNewKey, BytesWritable currentValue);
 
-  public void add(long key, BytesWritable currentValue) {
+  public void add(long hashCode, long key, BytesWritable currentValue) {
 
     if (checkResize()) {
       expandAndRehash();
     }
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    //long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;

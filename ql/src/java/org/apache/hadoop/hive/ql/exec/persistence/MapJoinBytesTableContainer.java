@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -497,6 +498,13 @@ public class MapJoinBytesTableContainer
   public void put(Writable currentKey, Writable currentValue) throws SerDeException {
     directWriteHelper.setKeyValue(currentKey, currentValue);
     hashMap.put(directWriteHelper, -1);
+  }
+
+  @Override public long calculateLongHashCode(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException, SerDeException {
+    directWriteHelper.setKeyValue(currentKey, currentValue);
+    directWriteHelper.getHashFromKey();
+    return 0;
   }
 
   public static boolean hasComplexObjects(LazyBinaryStructObjectInspector lazyBinaryStructObjectInspector) {

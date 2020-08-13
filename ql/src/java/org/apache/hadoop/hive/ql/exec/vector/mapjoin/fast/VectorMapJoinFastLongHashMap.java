@@ -54,7 +54,7 @@ public class VectorMapJoinFastLongHashMap
 
   private long fullOuterNullKeyValueRef;
 
-  private static class NonMatchedLongHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
+  public static class NonMatchedLongHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
 
     private VectorMapJoinFastLongHashMap hashMap;
 
@@ -67,7 +67,7 @@ public class VectorMapJoinFastLongHashMap
 
     private VectorMapJoinFastValueStore.HashMapResult nonMatchedHashMapResult;
 
-    NonMatchedLongHashMapIterator(MatchTracker matchTracker,
+    public NonMatchedLongHashMapIterator(MatchTracker matchTracker,
         VectorMapJoinFastLongHashMap hashMap) {
       super(matchTracker);
       this.hashMap = hashMap;
@@ -144,8 +144,14 @@ public class VectorMapJoinFastLongHashMap
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue)
       throws HiveException, IOException {
+    throw new RuntimeException("Not implemented");
+  }
 
-    if (!adaptPutRow(currentKey, currentValue)) {
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException {
+
+    if (!adaptPutRow(currentKey, currentValue, hashCode, key)) {
 
       // Ignore NULL keys, except for FULL OUTER.
       if (isFullOuter) {
@@ -170,7 +176,8 @@ public class VectorMapJoinFastLongHashMap
       testValueBytesWritable = new BytesWritable();
     }
     testValueBytesWritable.set(currentValue, 0, currentValue.length);
-    add(currentKey, testValueBytesWritable);
+    long hashCode = HashCodeUtil.calculateLongHashCode(currentKey);
+    add(hashCode, currentKey, testValueBytesWritable);
   }
 
   @Override

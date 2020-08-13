@@ -748,6 +748,8 @@ public class MapJoinTestConfig {
     Output keyOutput = new Output();
     int round = 0;
     boolean atLeastOneValueAdded = false;
+    VectorMapJoinDesc vectorDesc = MapJoinTestConfig.createVectorMapJoinDesc(testDesc);
+    boolean isFast = (vectorDesc.getHashTableImplementationType() == HashTableImplementationType.FAST);
     while (true) {
       for (Entry<RowTestObjects, Integer> testRowEntry : testData.smallTableKeyHashMap.entrySet()) {
         final int smallTableKeyIndex = testRowEntry.getValue();
@@ -779,7 +781,15 @@ public class MapJoinTestConfig {
 
           if (valueRow == null) {
             // Empty value.
-            mapJoinTableContainer.putRow(keyBytesWritable, valueBytesWritable);
+            if (isFast && mapJoinTableContainer instanceof VectorMapJoinFastTableContainer) {
+              long key = ((VectorMapJoinFastTableContainer)mapJoinTableContainer).deserializeToKey(keyBytesWritable);
+              long hashCode = ((VectorMapJoinFastTableContainer)mapJoinTableContainer).calculateLongHashCode(key,
+                  keyBytesWritable);
+              ((VectorMapJoinFastTableContainer)mapJoinTableContainer).putRow(keyBytesWritable, valueBytesWritable,
+                  hashCode, key);
+            } else {
+              mapJoinTableContainer.putRow(keyBytesWritable, valueBytesWritable);
+            }
           } else {
             Object[] smallTableValue = valueRow.getRow();
             valueOutput.reset();
@@ -792,7 +802,15 @@ public class MapJoinTestConfig {
                   valueSerializeWrite, (PrimitiveTypeInfo) testDesc.smallTableValueTypeInfos[index], valueWritable);
             }
             valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
-            mapJoinTableContainer.putRow(keyBytesWritable, valueBytesWritable);
+            if (isFast && mapJoinTableContainer instanceof VectorMapJoinFastTableContainer) {
+              long key = ((VectorMapJoinFastTableContainer)mapJoinTableContainer).deserializeToKey(keyBytesWritable);
+              long hashCode = ((VectorMapJoinFastTableContainer)mapJoinTableContainer).calculateLongHashCode(key,
+                  keyBytesWritable);
+              ((VectorMapJoinFastTableContainer)mapJoinTableContainer).putRow(keyBytesWritable, valueBytesWritable,
+                  hashCode, key);
+            } else {
+              mapJoinTableContainer.putRow(keyBytesWritable, valueBytesWritable);
+            }
           }
         }
       }

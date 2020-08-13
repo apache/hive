@@ -806,6 +806,12 @@ public class HybridHashTableContainer
     internalPutRow(directWriteHelper, currentKey, currentValue);
   }
 
+  @Override
+  public long calculateLongHashCode(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException, SerDeException {
+    directWriteHelper.setKeyValue(currentKey, currentValue);
+    return (long)directWriteHelper.getHashFromKey();
+  }
+
   /** Implementation of ReusableGetAdaptor that has Output for key serialization; row
    * container is also created once and reused for every row. */
   private class GetAdaptor implements ReusableGetAdaptor, ReusableGetAdaptorDirectAccess {

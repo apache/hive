@@ -36,8 +36,15 @@ public class VectorMapJoinFastStringHashMultiSet extends VectorMapJoinFastBytesH
   private long fullOuterNullKeyValueCount;
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
+    throw new RuntimeException("Not implemented");
+  }
+
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException {
+    if (!stringCommon.adaptPutRow(this, currentKey, currentValue, hashCode)) {
 
       // Ignore NULL keys, except for FULL OUTER.
       if (isFullOuter) {

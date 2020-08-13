@@ -134,7 +134,11 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
      * Get our Multi-Key hash multi-set information for this specialized class.
      */
 
-    hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
+    }
   }
 
   @Override

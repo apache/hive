@@ -93,7 +93,13 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
     super.commonSetup();
 
     // Semi join specific.
-    VectorMapJoinHashSet baseHashSet = (VectorMapJoinHashSet) vectorMapJoinHashTable;
+    VectorMapJoinHashSet baseHashSet = null;
+
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      baseHashSet = (VectorMapJoinHashSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      baseHashSet = (VectorMapJoinHashSet) vectorMapJoinHashTable;
+    }
 
     hashSetResults = new VectorMapJoinHashSetResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashSetResults.length; i++) {

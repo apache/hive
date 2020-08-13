@@ -34,7 +34,7 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
   protected final boolean isFullOuter;
 
-  protected int logicalHashBucketCount;
+  public int logicalHashBucketCount;
   protected int logicalHashBucketMask;
 
   protected final float loadFactor;
@@ -64,7 +64,7 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
   private static void validateCapacity(long capacity) {
     if (Long.bitCount(capacity) != 1) {
-      throw new AssertionError("Capacity must be a power of two");
+      throw new AssertionError("Capacity must be a power of two " + capacity);
     }
     if (capacity <= 0) {
       throw new AssertionError("Invalid capacity " + capacity);
@@ -72,7 +72,11 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   private static int nextHighestPowerOfTwo(int v) {
-    return Integer.highestOneBit(v) << 1;
+    int value = Integer.highestOneBit(v);
+    if (Integer.highestOneBit(v) == HIGHEST_INT_POWER_OF_2) {
+      return value;
+    }
+    return value << 1;
   }
 
   public VectorMapJoinFastHashTable(
@@ -81,8 +85,12 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
     this.isFullOuter = isFullOuter;
 
+    LOG.info("Initial Capacity is: " + initialCapacity);
+
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
+
+    LOG.info("Recomputed Initial Capacity is: " + initialCapacity);
 
     validateCapacity(initialCapacity);
 

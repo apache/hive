@@ -130,7 +130,11 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
      * Get our Multi-Key hash set information for this specialized class.
      */
 
-    hashSet = (VectorMapJoinBytesHashSet) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashSet = (VectorMapJoinBytesHashSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashSet = (VectorMapJoinBytesHashSet) vectorMapJoinHashTable;
+    }
   }
 
   @Override

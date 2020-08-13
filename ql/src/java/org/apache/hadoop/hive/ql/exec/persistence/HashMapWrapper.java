@@ -91,6 +91,8 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
 
   public static int calculateTableSize(
       float keyCountAdj, int threshold, float loadFactor, long keyCount) {
+    LOG.info("Old threshold is " + threshold);
+    LOG.info("estimated keycount: "+ keyCount);
     if (keyCount >= 0 && keyCountAdj != 0) {
       // We have statistics for the table. Size appropriately.
       threshold = (int)Math.ceil(keyCount / (keyCountAdj * loadFactor));

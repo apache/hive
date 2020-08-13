@@ -21,11 +21,15 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 public interface MapJoinTableContainerDirectAccess {
 
   void put(Writable currentKey, Writable currentValue) throws SerDeException, IOException;
+
+  long calculateLongHashCode(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException, SerDeException;
 
 }

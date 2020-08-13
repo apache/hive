@@ -44,13 +44,13 @@ public abstract class VectorMapJoinFastBytesHashSet
     return new VectorMapJoinFastBytesHashSetStore.HashSetResult();
   }
 
-  public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue) {
+  public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue, long hashCode) {
 
     if (checkResize()) {
       expandAndRehash();
     }
 
-    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
+    //long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;

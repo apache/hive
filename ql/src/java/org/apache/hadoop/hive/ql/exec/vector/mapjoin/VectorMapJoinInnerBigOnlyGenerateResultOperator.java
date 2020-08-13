@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastHashTableWrapper;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -27,9 +29,6 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSet;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -107,7 +106,13 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
     super.commonSetup();
 
     // Inner big-table only join specific.
-    VectorMapJoinHashMultiSet baseHashMultiSet = (VectorMapJoinHashMultiSet) vectorMapJoinHashTable;
+    VectorMapJoinHashMultiSet baseHashMultiSet = null;
+
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      baseHashMultiSet = (VectorMapJoinHashMultiSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      baseHashMultiSet = (VectorMapJoinHashMultiSet) vectorMapJoinHashTable;
+    }
 
     hashMultiSetResults = new VectorMapJoinHashMultiSetResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashMultiSetResults.length; i++) {

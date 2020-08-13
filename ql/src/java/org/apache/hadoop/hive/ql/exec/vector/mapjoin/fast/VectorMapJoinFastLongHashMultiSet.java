@@ -53,8 +53,14 @@ public class VectorMapJoinFastLongHashMultiSet
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue)
       throws HiveException, IOException {
+    throw new RuntimeException("Not implemented");
+  }
 
-    if (!adaptPutRow(currentKey, currentValue)) {
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException {
+
+    if (!adaptPutRow(currentKey, currentValue, hashCode, key)) {
 
       // Ignore NULL keys, except for FULL OUTER.
       if (isFullOuter) {
@@ -75,7 +81,8 @@ public class VectorMapJoinFastLongHashMultiSet
    */
   @VisibleForTesting
   public void testPutRow(long currentKey) throws HiveException, IOException {
-    add(currentKey, null);
+    long hashCode = HashCodeUtil.calculateLongHashCode(currentKey);
+    add(hashCode, currentKey, null);
   }
 
   @Override
