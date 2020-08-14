@@ -109,7 +109,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
 
     OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs);
 
@@ -145,7 +145,7 @@ public class SparkCompiler extends TaskCompiler {
       new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
     }
 
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
   private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
@@ -352,7 +352,7 @@ public class SparkCompiler extends TaskCompiler {
   protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
 
     GenSparkUtils utils = GenSparkUtils.getUtils();
     utils.resetSequenceNumber();
@@ -421,7 +421,7 @@ public class SparkCompiler extends TaskCompiler {
       utils.processPartitionPruningSink(procCtx, (SparkPartitionPruningSinkOperator) prunerSink);
     }
 
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
   }
 
   private void generateTaskTreeHelper(GenSparkProcContext procCtx, List<Node> topNodes)
@@ -564,7 +564,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
@@ -622,7 +622,7 @@ public class SparkCompiler extends TaskCompiler {
       new AnnotateRunTimeStatsOptimizer().resolve(physicalCtx);
     }
 
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     return;
   }
 }

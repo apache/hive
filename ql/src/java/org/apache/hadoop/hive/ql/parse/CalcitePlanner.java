@@ -1858,7 +1858,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
       // 1. Gen Calcite Plan
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
@@ -1869,7 +1869,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         semanticException = e;
         throw new RuntimeException(e);
       }
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
@@ -2145,9 +2145,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // Trigger program
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
           "Calcite: Prejoin ordering transformation");
 
       return basePlan;
@@ -2214,7 +2214,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return calcitePreMVRewritingPlan;
       }
 
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
       // We need to expand IN/BETWEEN expressions when materialized view rewriting
       // is triggered since otherwise this may prevent some rewritings from happening
@@ -2271,7 +2271,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
       }
 
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
       List<Table> materializedViewsUsedOriginalPlan = getMaterializedViewsUsed(calcitePreMVRewritingPlan);
       List<Table> materializedViewsUsedAfterRewrite = getMaterializedViewsUsed(basePlan);
@@ -2376,7 +2376,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
           new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
 
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       RelNode calciteOptimizedPlan;
       try {
         calciteOptimizedPlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
@@ -2390,7 +2390,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           throw e;
         }
       }
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Join Reordering");
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Join Reordering");
 
       return calciteOptimizedPlan;
     }
@@ -2532,9 +2532,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // Trigger program
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
           "Calcite: Postjoin ordering transformation");
 
       return basePlan;
