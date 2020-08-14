@@ -609,7 +609,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   private void checkSingleViewInput(List<HivePrivilegeObject> inputs) {
-    assertEquals("number of inputs", 2, inputs.size());
+    assertEquals("number of inputs", 1, inputs.size());
 
     HivePrivilegeObject tableObj = inputs.get(0);
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());

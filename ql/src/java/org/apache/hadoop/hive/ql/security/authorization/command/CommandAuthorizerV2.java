@@ -111,15 +111,21 @@ final class CommandAuthorizerV2 {
         // This ReadEntity represents one of the underlying tables/views of a view, skip it if
         // it's not inside a deferred authorized view.
         ReadEntity reTable = (ReadEntity)privObject;
+        Boolean isDeferred = false;
         if( reTable.getParents() != null && reTable.getParents().size() > 0){
           for( ReadEntity re: reTable.getParents()){
             if (re.getTyp() == Type.TABLE && re.getTable() != null ) {
               Table t = re.getTable();
               if(!isDeferredAuthView(t)){
                 continue;
+              }else{
+                isDeferred = true;
               }
             }
           }
+        }
+        if(!isDeferred){
+          continue;
         }
       }
       if (privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()) {
