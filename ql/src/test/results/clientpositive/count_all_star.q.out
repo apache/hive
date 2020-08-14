@@ -1,0 +1,27 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT COUNT(ALL *)
+ FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT COUNT(ALL *)
+ FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: SELECT COUNT(ALL *)
+ FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(ALL *)
+ FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500

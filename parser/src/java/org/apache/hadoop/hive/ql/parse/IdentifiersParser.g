@@ -221,8 +221,12 @@ function
     functionName
     LPAREN
       (
-        (STAR) => (star=STAR)
-        | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
+        KW_ALL?
+          (
+            (STAR) => (star=STAR)
+            | (selectExpression (COMMA selectExpression)*)?
+          )
+        | dist=KW_DISTINCT (selectExpression (COMMA selectExpression)*)?
       )
     RPAREN (KW_OVER ws=window_specification)?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
