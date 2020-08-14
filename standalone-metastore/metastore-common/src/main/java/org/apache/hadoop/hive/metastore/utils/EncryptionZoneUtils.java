@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.UnsupportedFileSystemException;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 
@@ -37,9 +38,6 @@ public class EncryptionZoneUtils {
       fullPath = path;
     } else {
       fullPath = path.getFileSystem(conf).makeQualified(path);
-    }
-    if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
-      return false;
     }
     return (EncryptionZoneUtils.getEncryptionZoneForPath(fullPath, conf) != null);
   }
@@ -64,6 +62,8 @@ public class EncryptionZoneUtils {
     if ("hdfs".equals(uri.getScheme())) {
       HdfsAdmin hdfsAdmin = new HdfsAdmin(uri, conf);
       hdfsAdmin.createEncryptionZone(path, keyName);
+    } else {
+      throw new UnsupportedOperationException("Cannot create encryption zone for scheme {}" + uri.getScheme());
     }
   }
 }
