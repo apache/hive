@@ -182,15 +182,6 @@ jobWrappers {
       stage('Checkout') {
         checkout scm
       }
-      stage('Prechecks') {
-        def spotbugsProjects = [
-            ":hive-common",
-            ":hive-shims",
-            ":hive-storage-api",
-            ":hive-standalone-metastore-common"
-        ]
-        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
-      }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
       }
