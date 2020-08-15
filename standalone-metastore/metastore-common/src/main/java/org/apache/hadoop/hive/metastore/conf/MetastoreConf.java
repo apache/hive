@@ -583,7 +583,7 @@ public class MetastoreConf {
     EVENT_EXPIRY_DURATION("metastore.event.expiry.duration", "hive.metastore.event.expiry.duration",
         0, TimeUnit.SECONDS, "Duration after which events expire from events table"),
     EVENT_LISTENERS("metastore.event.listeners", "hive.metastore.event.listeners", "",
-        "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
             " interface. The metastore event and corresponding listener method will be invoked in separate JDO transactions. " +
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
     EVENT_MESSAGE_FACTORY("metastore.event.message.factory",
@@ -646,7 +646,7 @@ public class MetastoreConf {
             "'datanucleus1' is used for backward compatibility with DataNucleus v1"),
     INIT_HOOKS("metastore.init.hooks", "hive.metastore.init.hooks", "",
         "A comma separated list of hooks to be invoked at the beginning of HMSHandler initialization. \n" +
-            "An init hook is specified as the name of Java class which extends org.apache.riven.MetaStoreInitListener."),
+            "An init hook is specified as the name of Java class which extends org.apache.hadoop.hive.metastore.MetaStoreInitListener."),
     INIT_METADATA_COUNT_ENABLED("metastore.initial.metadata.count.enabled",
         "hive.metastore.initial.metadata.count.enabled", true,
         "Enable a metadata count at metastore startup for metrics."),
@@ -958,7 +958,7 @@ public class MetastoreConf {
         "password to use against metastore database"),
     RAW_STORE_IMPL("metastore.rawstore.impl", "hive.metastore.rawstore.impl",
         "org.apache.hadoop.hive.metastore.ObjectStore",
-        "Name of the class that implements org.apache.riven.rawstore interface. \n" +
+        "Name of the class that implements org.apache.hadoop.hive.metastore.RawStore interface. \n" +
             "This class is used to store and retrieval of raw metadata objects such as table, database"),
     REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
@@ -1195,7 +1195,7 @@ public class MetastoreConf {
             "Can notification events from notification log table be used for updating the metastore cache."),
     TRANSACTIONAL_EVENT_LISTENERS("metastore.transactional.event.listeners",
         "hive.metastore.transactional.event.listeners", "",
-        "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
             " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,
         "Whether the metastore should try to use direct SQL queries instead of the\n" +
@@ -1229,7 +1229,7 @@ public class MetastoreConf {
         "ex.getMessage() + \" (SQLState=\" + ex.getSQLState() + \", ErrorCode=\" + ex.getErrorCode() + \")\""),
     TXN_STORE_IMPL("metastore.txn.store.impl", "hive.metastore.txn.store.impl",
         "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
-        "Name of class that implements org.apache.riven.txn.TxnStore.  This " +
+        "Name of class that implements org.apache.hadoop.hive.metastore.txn.TxnStore.  This " +
             "class is used to store and retrieve transactions and locks"),
     TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
