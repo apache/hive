@@ -28,7 +28,6 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
@@ -71,13 +70,8 @@ import javax.jdo.JDODataStoreException;
 import com.google.common.collect.ImmutableList;
 
 import org.apache.calcite.plan.RelOptMaterialization;
-import org.apache.calcite.plan.hep.HepPlanner;
-import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -199,7 +193,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -216,7 +209,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1623,7 +1615,7 @@ public class Hive {
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
 
     if (dbName == null) {
       dbName = SessionState.get().getCurrentDatabase();
@@ -1648,7 +1640,7 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
     }
   }
 
@@ -2038,7 +2030,7 @@ public class Hive {
    */
   public Database getDatabase(String dbName) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
     try {
       return getMSC().getDatabase(dbName);
     } catch (NoSuchObjectException e) {
@@ -2046,7 +2038,7 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE, "HS2-cache");
     }
   }
 
@@ -2059,7 +2051,7 @@ public class Hive {
    */
   public Database getDatabase(String catName, String dbName) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
     try {
       return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
@@ -2067,7 +2059,7 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2, "HS2-cache");
     }
   }
 
@@ -2132,7 +2124,7 @@ public class Hive {
                                  int stmtId, boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
+    perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
 
     // Get the partition object if it already exists
     Partition oldPart = getPartition(tbl, partSpec, false);
@@ -2169,7 +2161,7 @@ public class Hive {
       }
     }
 
-    perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
+    perfLogger.perfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
 
     return newTPart;
   }
@@ -2257,7 +2249,7 @@ public class Hive {
           ? genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
       }
 
-      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
 
       // Note: the stats for ACID tables do not have any coordination with either Hive ACID logic
       //       like txn commits, time outs, etc.; nor the lower level sync in metastore pertaining
@@ -2313,7 +2305,7 @@ public class Hive {
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged, false);
         }
       }
-      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
@@ -2771,7 +2763,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+    perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
@@ -2967,7 +2959,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       LOG.info("Loaded " + result.size() + "partitionsToAdd");
 
-      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+      perfLogger.perfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
 
       return result;
     } catch (TException te) {
@@ -3004,7 +2996,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Long writeId, int stmtId, boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
+    perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
 
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
@@ -3052,7 +3044,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
           + " (replace = " + loadFileType + ")");
 
-      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
 
       boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
 
@@ -3073,7 +3065,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
       }
-      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       LOG.debug("setting table statistics false for " + tbl.getDbName() + "." + tbl.getTableName());
@@ -3115,7 +3107,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
     }
 
-    perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
+    perfLogger.perfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
   }
 
   /**
@@ -3592,7 +3584,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
 
     try {
       if (tbl.isPartitioned()) {
@@ -3626,7 +3618,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         return Collections.singletonList(new Partition(tbl));
       }
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS, "HS2-cache");
     }
   }
 
@@ -3669,7 +3661,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       short limit)
   throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2);
     try {
       if (!tbl.isPartitioned()) {
         throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
@@ -3692,7 +3684,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return qlPartitions;
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_2, "HS2-cache");
     }
   }
 
@@ -3909,7 +3901,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> partitions) throws HiveException, TException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
       byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
@@ -3932,7 +3924,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return hasUnknownParts;
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR, "HS2-cache");
     }
   }
 
@@ -5288,7 +5280,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
     List<ColumnStatisticsObj> retv = null;
     try {
       if (checkTransactional) {
@@ -5305,7 +5297,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS, "HS2-cache");
     }
   }
 
@@ -5332,7 +5324,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
      List<String> colNames, List<String> partName, boolean checkTransactional) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
     String writeIdList = null;
     try {
       if (checkTransactional) {
@@ -5348,7 +5340,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
   }
 
@@ -5719,7 +5711,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PK);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PK);
     try {
       List<SQLPrimaryKey> primaryKeys = getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
       if (onlyReliable && primaryKeys != null && !primaryKeys.isEmpty()) {
@@ -5732,7 +5724,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PK, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PK, "HS2-cache");
     }
   }
 
@@ -5763,7 +5755,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private ForeignKeyInfo getForeignKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_FK);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_FK);
     try {
       List<SQLForeignKey> foreignKeys = getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
       if (onlyReliable && foreignKeys != null && !foreignKeys.isEmpty()) {
@@ -5776,7 +5768,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_FK, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_FK, "HS2-cache");
     }
   }
 
@@ -5807,7 +5799,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private UniqueConstraint getUniqueConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT);
     try {
       List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
               new UniqueConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5821,7 +5813,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT, "HS2-cache");
     }
   }
 
@@ -5923,7 +5915,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT);
     try {
       List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
               new NotNullConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5937,7 +5929,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT, "HS2-cache");
     }
   }
 
