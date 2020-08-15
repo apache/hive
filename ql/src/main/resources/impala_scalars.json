@@ -651,6 +651,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "BOOLEAN",
+            "BOOLEAN"
+        ],
+        "symbolName": "_ZN6impala9Operators24Ne_BooleanVal_BooleanValEPN10impala_udf15FunctionContextERKNS1_10BooleanValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -733,6 +749,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "TINYINT",
+            "TINYINT"
+        ],
+        "symbolName": "_ZN6impala9Operators24Ne_TinyIntVal_TinyIntValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -843,6 +875,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "SMALLINT",
+            "SMALLINT"
+        ],
+        "symbolName": "_ZN6impala9Operators26Ne_SmallIntVal_SmallIntValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -925,6 +973,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "INT",
+            "INT"
+        ],
+        "symbolName": "_ZN6impala9Operators16Ne_IntVal_IntValEPN10impala_udf15FunctionContextERKNS1_6IntValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -1035,6 +1099,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "BIGINT",
+            "BIGINT"
+        ],
+        "symbolName": "_ZN6impala9Operators22Ne_BigIntVal_BigIntValEPN10impala_udf15FunctionContextERKNS1_9BigIntValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -1117,6 +1197,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "FLOAT",
+            "FLOAT"
+        ],
+        "symbolName": "_ZN6impala9Operators20Ne_FloatVal_FloatValEPN10impala_udf15FunctionContextERKNS1_8FloatValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -1227,6 +1323,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "DOUBLE",
+            "DOUBLE"
+        ],
+        "symbolName": "_ZN6impala9Operators22Ne_DoubleVal_DoubleValEPN10impala_udf15FunctionContextERKNS1_9DoubleValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -1323,6 +1435,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "STRING",
+            "STRING"
+        ],
+        "symbolName": "_ZN6impala9Operators22Ne_StringVal_StringValEPN10impala_udf15FunctionContextERKNS1_9StringValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -1405,6 +1533,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "VARCHAR",
+            "VARCHAR"
+        ],
+        "symbolName": "_ZN6impala9Operators22Ne_StringVal_StringValEPN10impala_udf15FunctionContextERKNS1_9StringValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -1515,6 +1659,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "CHAR",
+            "CHAR"
+        ],
+        "symbolName": "_ZN6impala9Operators12Ne_Char_CharEPN10impala_udf15FunctionContextERKNS1_9StringValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -1597,6 +1757,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "TIMESTAMP",
+            "TIMESTAMP"
+        ],
+        "symbolName": "_ZN6impala9Operators28Ne_TimestampVal_TimestampValEPN10impala_udf15FunctionContextERKNS1_12TimestampValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -1707,6 +1883,22 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "ne",
+        "fnName": "!=",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "DECIMAL",
+            "DECIMAL"
+        ],
+        "symbolName": "_ZN6impala16DecimalOperators24Ne_DecimalVal_DecimalValEPN10impala_udf15FunctionContextERKNS1_10DecimalValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "le",
         "fnName": "<=",
         "userVisible": "false",
@@ -1789,6 +1981,22 @@
     {
         "impalaFnName": "ne",
         "fnName": "<>",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BOOLEAN",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "DATE",
+            "DATE"
+        ],
+        "symbolName": "_ZN6impala9Operators18Ne_DateVal_DateValEPN10impala_udf15FunctionContextERKNS1_7DateValES6_",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "ne",
+        "fnName": "!=",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9573,7 +9781,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9589,7 +9797,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9605,7 +9813,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9621,7 +9829,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9637,7 +9845,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9653,7 +9861,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -9669,7 +9877,7 @@
     },
     {
         "impalaFnName": "mod",
-        "fnName": "mod",
+        "fnName": "%",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
