@@ -44,8 +44,8 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
     JobExecutionStatus lastState = null;
     Map<SparkStage, SparkStageProgress> lastProgressMap = null;
 
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
 
     startTime = System.currentTimeMillis();
 
@@ -73,7 +73,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
           switch (state) {
           case RUNNING:
             if (!running) {
-              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+              perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               // print job stages.
               console.printInfo("\nQuery Hive on Spark job["
                 + sparkJobStatus.getJobId() + "] stages:");
@@ -136,7 +136,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     return rc;
   }
 }

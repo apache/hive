@@ -76,7 +76,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -112,7 +111,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.DriverState;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -161,8 +159,6 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.api.Adjacency;
-import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -1453,9 +1449,9 @@ public final class Utilities {
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
         LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPathOriginal + " to " + tmpPath);
-        perfLogger.PerfLogBegin("FileSinkOperator", "rename");
+        perfLogger.perfLogBegin("FileSinkOperator", "rename");
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
-        perfLogger.PerfLogEnd("FileSinkOperator", "rename");
+        perfLogger.perfLogEnd("FileSinkOperator", "rename");
       }
 
       // Remove duplicates from tmpPath
@@ -1464,21 +1460,21 @@ public final class Utilities {
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         Set<FileStatus> filesKept = new HashSet<>();
-        perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+        perfLogger.perfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
         List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
             fs, statuses, dpCtx, conf, hconf, filesKept, false);
-        perfLogger.PerfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+        perfLogger.perfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // create empty buckets if necessary
         if (!emptyBuckets.isEmpty()) {
-          perfLogger.PerfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
+          perfLogger.perfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
           createEmptyBuckets(
               hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
           for(Path p:emptyBuckets) {
             FileStatus[] items = fs.listStatus(p);
             filesKept.addAll(Arrays.asList(items));
           }
-          perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
+          perfLogger.perfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
 
         // move to the file destination
@@ -1489,16 +1485,16 @@ public final class Utilities {
           conf.getFilesToFetch().addAll(filesKept);
         } else if (conf !=null && conf.isCTASorCM() && isBlobStorage) {
           // for CTAS or Create MV statements
-          perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+          perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
           LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
           moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, filesKept);
-          perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+          perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
           // for rest of the statement e.g. INSERT, LOAD etc
-          perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+          perfLogger.perfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
           LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
           renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
-          perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
+          perfLogger.perfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
       }
     } else {
@@ -1528,7 +1524,7 @@ public final class Utilities {
     LOG.info("rename {} files from {} to dest {}",
         filesToMove.size(), srcPath, destPath);
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+    perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
 
     final ExecutorService pool = createMoveThreadPool(conf);
 
@@ -1538,7 +1534,7 @@ public final class Utilities {
     shutdownAndCleanup(pool, futures);
     LOG.info("Completed rename from {} to {}", srcPath, destPath);
 
-    perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+    perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
   }
 
   /**
@@ -2542,7 +2538,7 @@ public final class Utilities {
   public static ContentSummary getInputSummary(final Context ctx, MapWork work, PathFilter filter)
       throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     final long[] summary = {0L, 0L, 0L};
     final Set<Path> pathNeedProcess = new HashSet<>();
@@ -2584,7 +2580,7 @@ public final class Utilities {
       }
       getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
           work, summary, executor);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
     }
     return new ContentSummary.Builder().length(summary[0])
         .fileCount(summary[1]).directoryCount(summary[2]).build();
@@ -3463,7 +3459,7 @@ public final class Utilities {
       Context ctx, boolean skipDummy) throws Exception {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
@@ -3552,7 +3548,7 @@ public final class Utilities {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }

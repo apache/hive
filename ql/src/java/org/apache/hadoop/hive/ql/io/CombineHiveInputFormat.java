@@ -504,7 +504,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
 
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();
@@ -532,7 +532,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         }
       } catch (Exception e) {
         LOG.error("Error checking non-combinable path", e);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
         throw new IOException(e);
       }
     }
@@ -585,7 +585,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     LOG.info("Number of all splits " + result.size());
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new InputSplit[result.size()]);
   }
 

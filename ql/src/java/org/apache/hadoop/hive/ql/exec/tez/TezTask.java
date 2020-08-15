@@ -188,10 +188,10 @@ public class TezTask extends Task<TezWork> {
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
       try {
         ss.setTezSession(session);
@@ -406,7 +406,7 @@ public class TezTask extends Task<TezWork> {
   DAG build(JobConf conf, TezWork tezWork, Path scratchDir, Context ctx,
       Map<String, LocalResource> vertexResources) throws Exception {
 
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
 
     // getAllWork returns a topologically sorted list, which we use to make
     // sure that vertices are created before they are used in edges.
@@ -438,7 +438,7 @@ public class TezTask extends Task<TezWork> {
     for (BaseWork workUnit: topologicalWorkList) {
 
       // translate work to vertex
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
 
       if (workUnit instanceof UnionWork) {
         // Special case for unions. These items translate to VertexGroups
@@ -505,7 +505,7 @@ public class TezTask extends Task<TezWork> {
         } // Otherwise just leave it up to Tez to decide how much memory to allocate
         dag.addVertex(wx);
         utils.addCredentials(workUnit, dag);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
         workToVertex.put(workUnit, wx);
         workToConf.put(workUnit, wxConf);
 
@@ -522,7 +522,7 @@ public class TezTask extends Task<TezWork> {
     }
     // Clear the work map after build. TODO: remove caching instead?
     Utilities.clearWorkMap(conf);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
   }
 
@@ -564,7 +564,7 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAGClient submit(DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
     TezSessionState sessionState = sessionStateRef.value;
     try {
@@ -598,7 +598,7 @@ public class TezTask extends Task<TezWork> {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     return new SyncDagClient(dagClient);
   }
 
