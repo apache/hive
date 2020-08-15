@@ -145,16 +145,17 @@ public class HiveSemiJoinRule {
       }
 
       LOG.debug("All conditions matched for HiveSemiJoinRule. Going to apply transformation.");
-      final boolean updateLeft = topRefs.cardinality() != left.getRowType().getFieldCount();
+      final ImmutableBitSet leftNeededRefs = topRefs.union(ImmutableBitSet.of(joinInfo.leftKeys));
+      final boolean updateLeft = leftNeededRefs.cardinality() != left.getRowType().getFieldCount();
       final RelNode newLeft = updateLeft
-          ? buildProjectLeftInput(left, topRefs, rexBuilder, call.builder()) : left;
+          ? buildProjectLeftInput(left, leftNeededRefs, rexBuilder, call.builder()) : left;
       final RelNode newRight = needProject(aggregateInput, aggregate)
           ? buildProjectRightInput(aggregate, rexBuilder, call.builder()) : aggregateInput;
       final ImmutableIntList leftKeys;
       if (updateLeft) {
         List<Integer> newLeftKeys = new ArrayList<>();
         for (int pos : joinInfo.leftKeys) {
-          newLeftKeys.add(topRefs.indexOf(pos));
+          newLeftKeys.add(leftNeededRefs.indexOf(pos));
         }
         leftKeys = ImmutableIntList.copyOf(newLeftKeys);
       } else {
@@ -166,17 +167,17 @@ public class HiveSemiJoinRule {
       RelNode semi = call.builder().push(newLeft).push(newRight).semiJoin(newCondition).build();
       int[] adjustments = new int[left.getRowType().getFieldCount()];
       for (int i = 0; i < adjustments.length; i++) {
-        adjustments[i] = topRefs.indexOf(i) - i;
+        adjustments[i] = leftNeededRefs.indexOf(i) - i;
       }
       call.transformTo(
           recreateTopOperatorUnforced(
               call.builder(), rexBuilder, adjustments, topOperator, semi));
     }
 
-    private RelNode buildProjectLeftInput(final RelNode node, final ImmutableBitSet topRefs,
+    private RelNode buildProjectLeftInput(final RelNode node, final ImmutableBitSet neededRefs,
         final RexBuilder rexBuilder, final RelBuilder builder) {
       List<RexNode> exprs = new ArrayList<>();
-      for (int pos : topRefs) {
+      for (int pos : neededRefs) {
         exprs.add(rexBuilder.makeInputRef(node, pos));
       }
       return builder.push(node).project(exprs).build();
