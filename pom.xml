@@ -1440,10 +1440,11 @@
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
+            <exclude>docs/Gemfile</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-      <exclude>**/README.md</exclude>
-      <exclude>**/*.iml</exclude>
+            <exclude>**/README.md</exclude>
+            <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
 	    <exclude>**/.factorypath</exclude>
@@ -1457,6 +1458,7 @@
 	    <exclude>**/*.q.out</exclude>
 	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
+	    <exclude>**/*.yml</exclude>
 	    <exclude>**/gen/**</exclude>
 	    <exclude>**/target/**</exclude>
 	    <exclude>**/scripts/**</exclude>
@@ -1475,10 +1477,10 @@
 	    <exclude>**/xmlReport.pl</exclude>
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
-      <exclude>**/test/queries/**/*.sql</exclude>
-      <exclude>**/patchprocess/**</exclude>
-      <exclude>**/metastore_db/**</exclude>
-      <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>**/test/queries/**/*.sql</exclude>
+            <exclude>**/patchprocess/**</exclude>
+            <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
