@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -226,7 +225,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param hmsTimings map of HMS Client method-calls and duration in miliseconds, during given phase.
    */
-  public synchronized void setHmsTimings(Phase phase, ImmutableMap<String, Long> hmsTimings) {
+  public synchronized void setHmsTimings(Phase phase, Map<String, Long> hmsTimings) {
     hmsTimingMap.put(phase, hmsTimings);
   }
 
@@ -242,7 +241,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param perfLogStarts map of PerfLogger call-trace name and start time in miliseconds, during given phase.
    */
-  public synchronized void setPerfLogStarts(Phase phase, ImmutableMap<String, Long> perfLogStarts) {
+  public synchronized void setPerfLogStarts(Phase phase, Map<String, Long> perfLogStarts) {
     perfLogStartMap.put(phase, perfLogStarts);
   }
 
@@ -258,7 +257,7 @@ public class QueryDisplay {
    * @param phase phase of query
    * @param perfLogEnds map of PerfLogger call-trace name and end time in miliseconds, during given phase.
    */
-   public synchronized void setPerfLogEnds(Phase phase, ImmutableMap<String, Long> perfLogEnds) {
+   public synchronized void setPerfLogEnds(Phase phase, Map<String, Long> perfLogEnds) {
     perfLogEndMap.put(phase, perfLogEnds);
   }
 
