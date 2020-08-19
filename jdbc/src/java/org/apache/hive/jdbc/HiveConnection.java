@@ -583,6 +583,18 @@ public class HiveConnection implements java.sql.Connection {
     // Add the request interceptor to the client builder
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
 
+    // Add user defined request interceptor if exists
+    if (sessConfMap.get(JdbcConnectionParams.HTTP_INTERCEPTOR) != null) {
+      String className = sessConfMap.get(JdbcConnectionParams.HTTP_INTERCEPTOR);
+      try {
+        Class<?> userRequestInterceptorClass = Class.forName(className);
+        Object additionInterceptor = userRequestInterceptorClass.newInstance();
+        httpClientBuilder.addInterceptorLast((HttpRequestInterceptor) additionInterceptor);
+      } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+        throw new SQLException("Could not add user passed in http interceptor: " + className, e);
+      }
+    }
+
     // Add an interceptor to add in an XSRF header
     httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
 
