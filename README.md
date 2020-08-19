@@ -13,7 +13,7 @@ using SQL. Built on top of Apache Hadoop (TM), it provides:
 
 * A mechanism to impose structure on a variety of data formats
 
-* Access to files stored either directly in Apache HDFS (TM) or in other
+* Access to files stored either directly in Apache HDFS (TM) or other
   data storage systems such as Apache HBase (TM)
 
 * Query execution using Apache Hadoop MapReduce, Apache Tez
@@ -31,10 +31,10 @@ Apache Spark frameworks as their execution backend. MapReduce is a
 mature framework that is proven at large scales. However, MapReduce
 is a purely batch framework, and queries using it may experience
 higher latencies (tens of seconds), even over small datasets. Apache
-Tez is designed for interactive query, and has substantially reduced
+Tez is designed for interactive query and has substantially reduced
 overheads versus MapReduce. Apache Spark is a cluster computing
 framework that's built outside of MapReduce, but on top of HDFS,
-with a notion of composable and transformable distributed collection
+with a notion of a composable and transformable distributed collection
 of items called Resilient Distributed Dataset (RDD) which allows
 processing and analysis without traditional intermediate stages that
 MapReduce introduces.
@@ -54,7 +54,7 @@ loose-coupling with its input formats.
 General Info
 ============
 
-For the latest information about Hive, please visit out website at:
+For the latest information about Hive, please visit our website at:
 
   http://hive.apache.org/
 
@@ -113,13 +113,13 @@ Useful mailing lists
 ====================
 
 1. user@hive.apache.org - To discuss and ask usage questions. Send an
-   empty email to user-subscribe@hive.apache.org in order to subscribe
+   empty email to user-subscribe@hive.apache.org to subscribe
    to this mailing list.
 
 2. dev@hive.apache.org - For discussions about code, design and features.
-   Send an empty email to dev-subscribe@hive.apache.org in order to
+   Send an empty email to dev-subscribe@hive.apache.org to
    subscribe to this mailing list.
 
-3. commits@hive.apache.org - In order to monitor commits to the source
+3. commits@hive.apache.org - To monitor commits to the source
    repository. Send an empty email to commits-subscribe@hive.apache.org
-   in order to subscribe to this mailing list.
+   to subscribe to this mailing list.
