@@ -69,6 +69,10 @@ public class ReduceSinkDeDuplication extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
 
+    if (pctx.getSkipGroupByReduceDeduplication()) {
+      return pctx;
+    }
+
     // generate pruned column list for all relevant operators
     ReduceSinkDeduplicateProcCtx cppCtx = new ReduceSinkDeduplicateProcCtx(pGraphContext);
 

@@ -141,8 +141,8 @@ public class CountDistinctRewriteProc extends Transform {
     // Check if we can process it or not by the index of distinct
     protected int checkCountDistinct(GroupByOperator mGby, ReduceSinkOperator rs,
         GroupByOperator rGby) {
-      // Position of distinct column in aggregator list of map Gby before rewrite.
-      int indexOfDist = -1;
+      int indexOfDist = -1; // Position of distinct column in aggregator list of map Gby before rewrite.
+      boolean isNondistinctCountUsed = false;
       List<ExprNodeDesc> keys = mGby.getConf().getKeys();
       if (!(mGby.getConf().getMode() == GroupByDesc.Mode.HASH
           && !mGby.getConf().isGroupingSetsPresent() && rs.getConf().getKeyCols().size() == 1
@@ -174,10 +174,14 @@ public class CountDistinctRewriteProc extends Transform {
               return -1;
             }
           }
+        } else if (aggr.getGenericUDAFName().equalsIgnoreCase("count")) {
+          isNondistinctCountUsed = true;
         }
       }
       if (indexOfDist == -1) {
         return -1;
+      } else if (isNondistinctCountUsed) {
+        pGraphContext.setSkipGroupByReduceDeduplication(true);
       }
       // check if it is potential to trigger nullscan
       if (pGraphContext.getConf().getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {

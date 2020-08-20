@@ -143,6 +143,8 @@ public class ParseContext {
   private boolean disableMapJoin;
   private Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap;
 
+  private boolean skipGroupByReduceDeduplication;
+
   public ParseContext() {
   }
 
@@ -716,5 +718,13 @@ public class ParseContext {
 
   public Multimap<TerminalOperator<?>, ReduceSinkOperator> getTerminalOpToRSMap() {
     return terminalOpToRSMap;
+  }
+
+  public boolean getSkipGroupByReduceDeduplication() {
+    return skipGroupByReduceDeduplication;
+  }
+
+  public void setSkipGroupByReduceDeduplication(boolean skipGroupByReduceDeduplication) {
+    this.skipGroupByReduceDeduplication = skipGroupByReduceDeduplication;
   }
 }
